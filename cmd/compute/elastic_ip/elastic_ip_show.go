@@ -1,4 +1,4 @@
-package cmd
+package elastic_ip
 
 import (
 	"errors"
@@ -9,6 +9,11 @@ import (
 
 	"github.com/spf13/cobra"
 
+<<<<<<< Updated upstream:cmd/elastic_ip_show.go
+=======
+	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
+>>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_show.go
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -77,7 +82,7 @@ func (o *elasticIPShowOutput) ToTable() {
 }
 
 type elasticIPShowCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -86,7 +91,7 @@ type elasticIPShowCmd struct {
 	Zone string `cli-short:"z" cli-usage:"Elastic IP zone"`
 }
 
-func (c *elasticIPShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *elasticIPShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *elasticIPShowCmd) CmdShort() string {
 	return "Show an Elastic IP details"
@@ -100,13 +105,20 @@ Supported output template annotations: %s`,
 }
 
 func (c *elasticIPShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
+<<<<<<< Updated upstream:cmd/elastic_ip_show.go
+func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+=======
 func (c *elasticIPShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+
+	elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
+>>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_show.go
 	if err != nil {
 		return err
 	}
@@ -173,7 +185,7 @@ func (c *elasticIPShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(elasticIPCmd, &elasticIPShowCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(elasticIPCmd, &elasticIPShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

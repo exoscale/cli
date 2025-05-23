@@ -1,4 +1,4 @@
-package cmd
+package elastic_ip
 
 import (
 	"fmt"
@@ -6,13 +6,18 @@ import (
 
 	"github.com/spf13/cobra"
 
+<<<<<<< Updated upstream:cmd/elastic_ip_create.go
+=======
+	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
+>>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_create.go
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type elasticIPCreateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -30,7 +35,7 @@ type elasticIPCreateCmd struct {
 	Zone                      string `cli-short:"z" cli-usage:"Elastic IP zone"`
 }
 
-func (c *elasticIPCreateCmd) CmdAliases() []string { return GCreateAlias }
+func (c *elasticIPCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *elasticIPCreateCmd) CmdShort() string {
 	return "Create an Elastic IP"
@@ -44,16 +49,21 @@ Supported output template annotations: %s`,
 }
 
 func (c *elasticIPCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+<<<<<<< Updated upstream:cmd/elastic_ip_create.go
+func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
+=======
+func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+>>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_create.go
 
 	var healthcheck *v3.ElasticIPHealthcheck
 	if c.HealthcheckMode != "" {
@@ -92,23 +102,34 @@ func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
+<<<<<<< Updated upstream:cmd/elastic_ip_create.go
 	decorateAsyncOperation("Creating Elastic IP...", func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+=======
+	var err error
+	utils.DecorateAsyncOperation("Creating Elastic IP...", func() {
+		elasticIP, err = globalstate.EgoscaleClient.CreateElasticIP(ctx, c.Zone, elasticIP)
+>>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_create.go
 	})
 	if err != nil {
 		return err
 	}
 
 	return (&elasticIPShowCmd{
-		CliCommandSettings: c.CliCommandSettings,
+<<<<<<< Updated upstream:cmd/elastic_ip_create.go
+		cliCommandSettings: c.cliCommandSettings,
 		ElasticIP:          op.Reference.ID.String(),
+=======
+		CliCommandSettings: c.CliCommandSettings,
+		ElasticIP:          *elasticIP.ID,
+>>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_create.go
 		Zone:               c.Zone,
 	}).CmdRun(nil, nil)
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(elasticIPCmd, &elasticIPCreateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(elasticIPCmd, &elasticIPCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
 		HealthcheckInterval:    10,
 		HealthcheckStrikesFail: 2,

@@ -1,4 +1,4 @@
-package cmd
+package elastic_ip
 
 import (
 	"fmt"
@@ -7,7 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/globalstate"
+	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -26,14 +27,14 @@ func (o *elasticIPListOutput) ToText()  { output.Text(o) }
 func (o *elasticIPListOutput) ToTable() { output.Table(o) }
 
 type elasticIPListCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *elasticIPListCmd) CmdAliases() []string { return GListAlias }
+func (c *elasticIPListCmd) CmdAliases() []string { return exocmd.GListAlias }
 
 func (c *elasticIPListCmd) CmdShort() string { return "List Elastic IPs" }
 
@@ -45,12 +46,12 @@ Supported output template annotations: %s`,
 }
 
 func (c *elasticIPListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *elasticIPListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var zones []string
-	ctx := GContext
+	ctx := gContext
 
 	if c.Zone != "" {
 		zones = []string{c.Zone}
@@ -69,10 +70,14 @@ func (c *elasticIPListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+<<<<<<< Updated upstream:cmd/elastic_ip_list.go
+		client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 		if err != nil {
 			return err
 		}
+=======
+		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+>>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_list.go
 
 		list, err := client.ListElasticIPS(ctx)
 		if err != nil {
@@ -103,7 +108,7 @@ func (c *elasticIPListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(elasticIPCmd, &elasticIPListCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(elasticIPCmd, &elasticIPListCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
