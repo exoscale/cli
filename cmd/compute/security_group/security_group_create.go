@@ -1,4 +1,4 @@
-package cmd
+package security_group
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -15,7 +16,7 @@ import (
 )
 
 type securityGroupCreateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -24,7 +25,7 @@ type securityGroupCreateCmd struct {
 	Description string `cli-usage:"Security Group description"`
 }
 
-func (c *securityGroupCreateCmd) CmdAliases() []string { return GCreateAlias }
+func (c *securityGroupCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *securityGroupCreateCmd) CmdShort() string {
 	return "Create a Security Group"
@@ -38,13 +39,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *securityGroupCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *securityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	securityGroup := &egoscale.SecurityGroup{
 		Description: utils.NonEmptyStringPtr(c.Description),
@@ -52,7 +53,7 @@ func (c *securityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	var err error
-	decorateAsyncOperation(fmt.Sprintf("Creating Security Group %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Security Group %q...", c.Name), func() {
 		securityGroup, err = globalstate.EgoscaleClient.CreateSecurityGroup(ctx, zone, securityGroup)
 	})
 	if err != nil {
@@ -70,7 +71,7 @@ func (c *securityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(securityGroupCmd, &securityGroupCreateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(securityGroupCmd, &securityGroupCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

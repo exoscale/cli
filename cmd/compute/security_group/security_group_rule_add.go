@@ -1,4 +1,4 @@
-package cmd
+package security_group
 
 import (
 	"errors"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -29,7 +30,7 @@ var securityGroupRuleProtocols = []string{
 }
 
 type securityGroupAddRuleCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"add"`
 
@@ -63,13 +64,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *securityGroupAddRuleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *securityGroupAddRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
@@ -160,7 +161,7 @@ func (c *securityGroupAddRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		securityGroupRule.ICMPType = &c.ICMPType
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Adding rule to Security Group %q...", *securityGroup.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Adding rule to Security Group %q...", *securityGroup.Name), func() {
 		_, err = globalstate.EgoscaleClient.CreateSecurityGroupRule(ctx, zone, securityGroup, securityGroupRule)
 	})
 	if err != nil {
@@ -174,8 +175,8 @@ func (c *securityGroupAddRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(securityGroupRuleCmd, &securityGroupAddRuleCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(securityGroupRuleCmd, &securityGroupAddRuleCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
 		FlowDirection: "ingress",
 		Protocol:      "tcp",

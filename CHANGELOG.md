@@ -25,6 +25,7 @@
 - NLB: moving the logic to the corresponding folder #686
 - AntiAffinity: moving the logic to the corresponding folder #690
 - Blockstorage: moving the logic to the corresponding folder
+- SG: moving the logic to the corresponding folder
 
 ## 1.84.1
 
