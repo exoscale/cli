@@ -1,4 +1,4 @@
-package cmd
+package ssh_key
 
 import (
 	"fmt"
@@ -9,13 +9,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type computeSSHKeyRegisterCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"register"`
 
@@ -23,7 +25,7 @@ type computeSSHKeyRegisterCmd struct {
 	PublicKeyFile string `cli-arg:"#"`
 }
 
-func (c *computeSSHKeyRegisterCmd) CmdAliases() []string { return GCreateAlias }
+func (c *computeSSHKeyRegisterCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *computeSSHKeyRegisterCmd) CmdShort() string {
 	return "Register an SSH key"
@@ -37,7 +39,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *computeSSHKeyRegisterCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *computeSSHKeyRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -45,7 +47,7 @@ func (c *computeSSHKeyRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error 
 	// the Exoscale API client timeout as a precaution.
 	client := globalstate.EgoscaleV3Client.WithHttpClient(&http.Client{Timeout: 30 * time.Minute})
 
-	ctx := GContext
+	ctx := exocmd.GContext
 
 	publicKey, err := os.ReadFile(c.PublicKeyFile)
 	if err != nil {
@@ -57,7 +59,7 @@ func (c *computeSSHKeyRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error 
 		PublicKey: string(publicKey),
 	}
 
-	err = decorateAsyncOperations(fmt.Sprintf("Registering SSH key %q...", c.Name), func() error {
+	err = utils.DecorateAsyncOperations(fmt.Sprintf("Registering SSH key %q...", c.Name), func() error {
 		op, err := client.RegisterSSHKey(ctx, registerKeyRequest)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while registering SSH key: %w", err)
@@ -85,7 +87,7 @@ func (c *computeSSHKeyRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyRegisterCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyRegisterCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

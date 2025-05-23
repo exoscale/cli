@@ -1,4 +1,4 @@
-package cmd
+package ssh_key
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 )
@@ -21,14 +22,14 @@ func (o *computeSSHKeyShowOutput) ToText()      { output.Text(o) }
 func (o *computeSSHKeyShowOutput) ToTable()     { output.Table(o) }
 
 type computeSSHKeyShowCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
 	Key string `cli-arg:"#"`
 }
 
-func (c *computeSSHKeyShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *computeSSHKeyShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *computeSSHKeyShowCmd) CmdShort() string {
 	return "Show an SSH key details"
@@ -42,11 +43,11 @@ Supported output template annotations: %s`,
 }
 
 func (c *computeSSHKeyShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *computeSSHKeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
+	ctx := exocmd.GContext
 
 	sshKey, err := globalstate.EgoscaleV3Client.GetSSHKey(ctx, c.Key)
 	if err != nil {
@@ -60,7 +61,7 @@ func (c *computeSSHKeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyShowCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
