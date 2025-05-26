@@ -8,6 +8,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -46,14 +47,14 @@ func (o *instanceTypeShowOutput) ToTable() {
 }
 
 type instanceTypeShowCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
 	Type string `cli-arg:"#" cli-usage:"[FAMILY.]SIZE"`
 }
 
-func (c *instanceTypeShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *instanceTypeShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *instanceTypeShowCmd) CmdShort() string {
 	return "Show a Compute instance type details"
@@ -67,12 +68,12 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceTypeShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
-		GContext,
+		exocmd.GContext,
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
@@ -98,7 +99,7 @@ func (c *instanceTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceTypeCmd, &instanceTypeShowCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceTypeCmd, &instanceTypeShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
