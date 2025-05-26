@@ -10,6 +10,7 @@ import (
 	_ "github.com/exoscale/cli/cmd/compute/deploy_target"
 	_ "github.com/exoscale/cli/cmd/compute/elastic_ip"
 	_ "github.com/exoscale/cli/cmd/compute/load_balancer"
+	_ "github.com/exoscale/cli/cmd/compute/security_group"
 	_ "github.com/exoscale/cli/cmd/compute/sks"
 	_ "github.com/exoscale/cli/cmd/compute/ssh_key"
 )

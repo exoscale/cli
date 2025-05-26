@@ -1,4 +1,4 @@
-package cmd
+package security_group
 
 import (
 	"fmt"
@@ -6,15 +6,17 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type securityGroupDeleteRuleCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -24,7 +26,7 @@ type securityGroupDeleteRuleCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *securityGroupDeleteRuleCmd) CmdAliases() []string { return GRemoveAlias }
+func (c *securityGroupDeleteRuleCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
 
 func (c *securityGroupDeleteRuleCmd) CmdShort() string {
 	return "Delete a Security Group rule"
@@ -38,13 +40,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *securityGroupDeleteRuleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *securityGroupDeleteRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
@@ -52,16 +54,18 @@ func (c *securityGroupDeleteRuleCmd) CmdRun(_ *cobra.Command, _ []string) error 
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf(
-			"Are you sure you want to delete rule %s from Security Group %q?",
-			c.Rule,
-			*securityGroup.Name,
-		)) {
+		if !utils.AskQuestion(
+			ctx,
+			fmt.Sprintf(
+				"Are you sure you want to delete rule %s from Security Group %q?",
+				c.Rule,
+				*securityGroup.Name,
+			)) {
 			return nil
 		}
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting Security Group rule %s...", c.Rule), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting Security Group rule %s...", c.Rule), func() {
 		err = globalstate.EgoscaleClient.DeleteSecurityGroupRule(ctx, zone, securityGroup, &egoscale.SecurityGroupRule{ID: &c.Rule})
 	})
 	if err != nil {
@@ -75,7 +79,7 @@ func (c *securityGroupDeleteRuleCmd) CmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(securityGroupRuleCmd, &securityGroupDeleteRuleCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(securityGroupRuleCmd, &securityGroupDeleteRuleCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
