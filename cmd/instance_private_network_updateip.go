@@ -38,7 +38,7 @@ func (c *instancePrivnetUpdateIPCmd) CmdLong() string {
 managed Private Network.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "),
 	)
 }
 

@@ -37,7 +37,7 @@ Supported Compute instance type sizes: %s
 
 Supported output template annotations: %s`,
 		strings.Join(instanceTypeSizes, ", "),
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "))
 }
 
 func (c *instanceScaleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {

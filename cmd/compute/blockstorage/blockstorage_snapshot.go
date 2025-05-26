@@ -1,4 +1,4 @@
-package cmd
+package blockstorage
 
 import (
 	"github.com/spf13/cobra"

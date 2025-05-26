@@ -33,6 +33,7 @@
 - anti-affinity-group: moving the logic to the corresponding subfolder #696
 - security-group: moving the logic to the corresponding subfolder #702
 - instance-pool: moving the logic to the corresponding subfolder #704
+- blockstorage: moving the logic to the corresponding subfolder #703
 
 ## 1.84.1
 

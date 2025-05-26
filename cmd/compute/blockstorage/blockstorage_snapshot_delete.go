@@ -1,4 +1,4 @@
-package cmd
+package blockstorage
 
 import (
 	"fmt"
@@ -6,13 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type blockStorageSnapshotDeleteCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -21,7 +23,7 @@ type blockStorageSnapshotDeleteCmd struct {
 	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *blockStorageSnapshotDeleteCmd) CmdAliases() []string { return GDeleteAlias }
+func (c *blockStorageSnapshotDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
 
 func (c *blockStorageSnapshotDeleteCmd) CmdShort() string {
 	return "Delete a Block Storage Volume Snapshot"
@@ -35,13 +37,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *blockStorageSnapshotDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockStorageSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -56,7 +58,7 @@ func (c *blockStorageSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) err
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to delete block storage volume snapshot %q?", c.Name)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete block storage volume snapshot %q?", c.Name)) {
 			return nil
 		}
 	}
@@ -66,7 +68,7 @@ func (c *blockStorageSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) err
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting block storage volume snapshot %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting block storage volume snapshot %q...", c.Name), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 
@@ -74,7 +76,7 @@ func (c *blockStorageSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) err
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotDeleteCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotDeleteCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

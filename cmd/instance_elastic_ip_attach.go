@@ -35,7 +35,7 @@ func (c *instanceEIPAttachCmd) CmdLong() string {
 	return fmt.Sprintf(`This command attaches an Elastic IP address to a Compute instance.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "),
 	)
 }
 

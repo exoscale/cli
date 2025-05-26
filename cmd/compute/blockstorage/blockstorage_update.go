@@ -1,4 +1,4 @@
-package cmd
+package blockstorage
 
 import (
 	"fmt"
@@ -6,13 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type blockStorageUpdateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -35,13 +37,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *blockStorageUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockStorageUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -59,7 +61,7 @@ func (c *blockStorageUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var resized bool
 
 	if c.Size > 0 {
-		decorateAsyncOperation(fmt.Sprintf("Updating block storage volume %q...", c.Name), func() {
+		utils.DecorateAsyncOperation(fmt.Sprintf("Updating block storage volume %q...", c.Name), func() {
 			_, err = client.ResizeBlockStorageVolume(ctx, volume.ID,
 				v3.ResizeBlockStorageVolumeRequest{
 					Size: c.Size,
@@ -77,13 +79,13 @@ func (c *blockStorageUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	var updated bool
 	updateReq := v3.UpdateBlockStorageVolumeRequest{}
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
-		updateReq.Labels = ConvertIfSpecialEmptyMap(c.Labels)
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
+		updateReq.Labels = exocmd.ConvertIfSpecialEmptyMap(c.Labels)
 
 		updated = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Rename)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Rename)) {
 		updateReq.Name = &c.Rename
 
 		updated = true
@@ -117,7 +119,7 @@ func (c *blockStorageUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(blockstorageCmd, &blockStorageUpdateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(blockstorageCmd, &blockStorageUpdateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

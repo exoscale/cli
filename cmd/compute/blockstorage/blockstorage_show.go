@@ -1,4 +1,4 @@
-package cmd
+package blockstorage
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -30,7 +31,7 @@ func (o *blockStorageShowOutput) ToText()      { output.Text(o) }
 func (o *blockStorageShowOutput) ToTable()     { output.Table(o) }
 
 type blockStorageShowCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -38,7 +39,7 @@ type blockStorageShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"block storage volume zone"`
 }
 
-func (c *blockStorageShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *blockStorageShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *blockStorageShowCmd) CmdShort() string { return "Show a Block Storage Volume details" }
 
@@ -46,17 +47,17 @@ func (c *blockStorageShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Block Storage Volume details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&exocmd.InstanceShowOutput{}), ", "))
 }
 
 func (c *blockStorageShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockStorageShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -88,7 +89,7 @@ func (c *blockStorageShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(blockstorageCmd, &blockStorageShowCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(blockstorageCmd, &blockStorageShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
