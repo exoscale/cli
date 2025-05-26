@@ -1,4 +1,4 @@
-package cmd
+package security_group
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -131,14 +132,14 @@ func (o *securityGroupShowOutput) ToTable() {
 }
 
 type securityGroupShowCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
 	SecurityGroup string `cli-arg:"#" cli-usage:"NAME|ID"`
 }
 
-func (c *securityGroupShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *securityGroupShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *securityGroupShowCmd) CmdShort() string {
 	return "Show a Security Group details"
@@ -155,13 +156,13 @@ Supported output template annotations for Security Group rules: %s`,
 }
 
 func (c *securityGroupShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *securityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
@@ -224,17 +225,17 @@ func (c *securityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("error retrieving instances in Security Group: %w", err)
 	}
 
-	for _, instance := range instances {
-		publicIP := emptyIPAddressVisualization
-		if instance.PublicIPAddress != nil && (!instance.PublicIPAddress.IsUnspecified() || len(*instance.PublicIPAddress) > 0) {
-			publicIP = instance.PublicIPAddress.String()
+	for _, vm := range instances {
+		publicIP := exocmd.EmptyIPAddressVisualization
+		if vm.PublicIPAddress != nil && (!vm.PublicIPAddress.IsUnspecified() || len(*vm.PublicIPAddress) > 0) {
+			publicIP = vm.PublicIPAddress.String()
 		}
 
 		out.Instances = append(out.Instances, securityGroupInstanceOutput{
-			Name:     utils.DefaultString(instance.Name, "-"),
+			Name:     utils.DefaultString(vm.Name, "-"),
 			PublicIP: publicIP,
-			ID:       utils.DefaultString(instance.ID, "-"),
-			Zone:     utils.DefaultString(instance.Zone, "-"),
+			ID:       utils.DefaultString(vm.ID, "-"),
+			Zone:     utils.DefaultString(vm.Zone, "-"),
 		})
 	}
 
@@ -242,7 +243,7 @@ func (c *securityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(securityGroupCmd, &securityGroupShowCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(securityGroupCmd, &securityGroupShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
