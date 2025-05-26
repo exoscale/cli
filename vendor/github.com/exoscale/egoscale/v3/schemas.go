@@ -1072,13 +1072,13 @@ type DBAASServiceKafka struct {
 	// Whether Kafka Connect is enabled
 	KafkaConnectEnabled *bool `json:"kafka-connect-enabled,omitempty"`
 	// Kafka Connect configuration values
-	KafkaConnectSettings JSONSchemaKafkaConnect `json:"kafka-connect-settings,omitempty"`
+	KafkaConnectSettings *JSONSchemaKafkaConnect `json:"kafka-connect-settings,omitempty"`
 	// Whether Kafka REST is enabled
 	KafkaRestEnabled *bool `json:"kafka-rest-enabled,omitempty"`
 	// Kafka REST configuration
-	KafkaRestSettings JSONSchemaKafkaRest `json:"kafka-rest-settings,omitempty"`
+	KafkaRestSettings *JSONSchemaKafkaRest `json:"kafka-rest-settings,omitempty"`
 	// Kafka broker configuration values
-	KafkaSettings JSONSchemaKafka `json:"kafka-settings,omitempty"`
+	KafkaSettings *JSONSchemaKafka `json:"kafka-settings,omitempty"`
 	// Automatic maintenance settings
 	Maintenance *DBAASServiceMaintenance `json:"maintenance,omitempty"`
 	Name        DBAASServiceName         `json:"name" validate:"required,gte=0,lte=63"`
@@ -1099,8 +1099,8 @@ type DBAASServiceKafka struct {
 	// Whether Schema-Registry is enabled
 	SchemaRegistryEnabled *bool `json:"schema-registry-enabled,omitempty"`
 	// Schema Registry configuration
-	SchemaRegistrySettings JSONSchemaSchemaRegistry `json:"schema-registry-settings,omitempty"`
-	State                  EnumServiceState         `json:"state,omitempty"`
+	SchemaRegistrySettings *JSONSchemaSchemaRegistry `json:"schema-registry-settings,omitempty"`
+	State                  EnumServiceState          `json:"state,omitempty"`
 	// Service is protected against termination and powering off
 	TerminationProtection *bool                `json:"termination-protection,omitempty"`
 	Type                  DBAASServiceTypeName `json:"type" validate:"required,gte=0,lte=64"`
@@ -1215,7 +1215,7 @@ type DBAASServiceMysql struct {
 	// Automatic maintenance settings
 	Maintenance *DBAASServiceMaintenance `json:"maintenance,omitempty"`
 	// mysql.conf configuration values
-	MysqlSettings JSONSchemaMysql  `json:"mysql-settings,omitempty"`
+	MysqlSettings *JSONSchemaMysql `json:"mysql-settings,omitempty"`
 	Name          DBAASServiceName `json:"name" validate:"required,gte=0,lte=63"`
 	// Number of service nodes in the active plan
 	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
@@ -1385,7 +1385,7 @@ type DBAASServiceOpensearch struct {
 	// OpenSearch Dashboards settings
 	OpensearchDashboards *DBAASServiceOpensearchOpensearchDashboards `json:"opensearch-dashboards,omitempty"`
 	// OpenSearch settings
-	OpensearchSettings JSONSchemaOpensearch `json:"opensearch-settings,omitempty"`
+	OpensearchSettings *JSONSchemaOpensearch `json:"opensearch-settings,omitempty"`
 	// Subscription plan
 	Plan string `json:"plan" validate:"required"`
 	// Prometheus integration URI
@@ -1499,7 +1499,7 @@ type DBAASServicePG struct {
 	// Service notifications
 	Notifications []DBAASServiceNotification `json:"notifications,omitempty"`
 	// postgresql.conf configuration values
-	PGSettings JSONSchemaPG `json:"pg-settings,omitempty"`
+	PGSettings *JSONSchemaPG `json:"pg-settings,omitempty"`
 	// System-wide settings for pgbouncer.
 	PgbouncerSettings *JSONSchemaPgbouncer `json:"pgbouncer-settings,omitempty"`
 	// System-wide settings for pglookout.
@@ -2426,6 +2426,98 @@ const (
 	JSONSchemaGrafanaAlertingNodataORNullvaluesOk        JSONSchemaGrafanaAlertingNodataORNullvalues = "ok"
 )
 
+// Azure AD OAuth integration
+type JSONSchemaGrafanaAuthAzuread struct {
+	// Automatically sign-up users on successful sign-in
+	AllowSignUP *bool `json:"allow_sign_up,omitempty"`
+	// Allowed domains
+	AllowedDomains []string `json:"allowed_domains,omitempty"`
+	// Require users to belong to one of given groups
+	AllowedGroups []string `json:"allowed_groups,omitempty"`
+	// Authorization URL
+	AuthURL string `json:"auth_url" validate:"required,lte=2048"`
+	// Client ID from provider
+	ClientID string `json:"client_id" validate:"required,lte=1024"`
+	// Client secret from provider
+	ClientSecret string `json:"client_secret" validate:"required,lte=1024"`
+	// Token URL
+	TokenURL string `json:"token_url" validate:"required,lte=2048"`
+}
+
+// Generic OAuth integration
+type JSONSchemaGrafanaAuthGenericOauth struct {
+	// Automatically sign-up users on successful sign-in
+	AllowSignUP *bool `json:"allow_sign_up,omitempty"`
+	// Allowed domains
+	AllowedDomains []string `json:"allowed_domains,omitempty"`
+	// Require user to be member of one of the listed organizations
+	AllowedOrganizations []string `json:"allowed_organizations,omitempty"`
+	// API URL
+	APIURL string `json:"api_url" validate:"required,lte=2048"`
+	// Authorization URL
+	AuthURL string `json:"auth_url" validate:"required,lte=2048"`
+	// Allow users to bypass the login screen and automatically log in
+	AutoLogin *bool `json:"auto_login,omitempty"`
+	// Client ID from provider
+	ClientID string `json:"client_id" validate:"required,lte=1024"`
+	// Client secret from provider
+	ClientSecret string `json:"client_secret" validate:"required,lte=1024"`
+	// Name of the OAuth integration
+	Name string `json:"name,omitempty" validate:"omitempty,lte=128"`
+	// OAuth scopes
+	Scopes []string `json:"scopes,omitempty"`
+	// Token URL
+	TokenURL string `json:"token_url" validate:"required,lte=2048"`
+}
+
+// Github Auth integration
+type JSONSchemaGrafanaAuthGithub struct {
+	// Automatically sign-up users on successful sign-in
+	AllowSignUP *bool `json:"allow_sign_up,omitempty"`
+	// Require users to belong to one of given organizations
+	AllowedOrganizations []string `json:"allowed_organizations,omitempty"`
+	// Allow users to bypass the login screen and automatically log in
+	AutoLogin *bool `json:"auto_login,omitempty"`
+	// Client ID from provider
+	ClientID string `json:"client_id" validate:"required,lte=1024"`
+	// Client secret from provider
+	ClientSecret string `json:"client_secret" validate:"required,lte=1024"`
+	// Stop automatically syncing user roles
+	SkipOrgRoleSync *bool `json:"skip_org_role_sync,omitempty"`
+	// Require users to belong to one of given team IDs
+	TeamIDS []int `json:"team_ids,omitempty"`
+}
+
+// GitLab Auth integration
+type JSONSchemaGrafanaAuthGitlab struct {
+	// Automatically sign-up users on successful sign-in
+	AllowSignUP *bool `json:"allow_sign_up,omitempty"`
+	// Require users to belong to one of given groups
+	AllowedGroups []string `json:"allowed_groups" validate:"required"`
+	// API URL. This only needs to be set when using self hosted GitLab
+	APIURL string `json:"api_url,omitempty" validate:"omitempty,lte=2048"`
+	// Authorization URL. This only needs to be set when using self hosted GitLab
+	AuthURL string `json:"auth_url,omitempty" validate:"omitempty,lte=2048"`
+	// Client ID from provider
+	ClientID string `json:"client_id" validate:"required,lte=1024"`
+	// Client secret from provider
+	ClientSecret string `json:"client_secret" validate:"required,lte=1024"`
+	// Token URL. This only needs to be set when using self hosted GitLab
+	TokenURL string `json:"token_url,omitempty" validate:"omitempty,lte=2048"`
+}
+
+// Google Auth integration
+type JSONSchemaGrafanaAuthGoogle struct {
+	// Automatically sign-up users on successful sign-in
+	AllowSignUP *bool `json:"allow_sign_up,omitempty"`
+	// Domains allowed to sign-in to this Grafana
+	AllowedDomains []string `json:"allowed_domains" validate:"required"`
+	// Client ID from provider
+	ClientID string `json:"client_id" validate:"required,lte=1024"`
+	// Client secret from provider
+	ClientSecret string `json:"client_secret" validate:"required,lte=1024"`
+}
+
 type JSONSchemaGrafanaCookieSamesite string
 
 const (
@@ -2433,6 +2525,54 @@ const (
 	JSONSchemaGrafanaCookieSamesiteStrict JSONSchemaGrafanaCookieSamesite = "strict"
 	JSONSchemaGrafanaCookieSamesiteNone   JSONSchemaGrafanaCookieSamesite = "none"
 )
+
+// Grafana date format specifications
+type JSONSchemaGrafanaDateFormats struct {
+	// Default time zone for user preferences. Value 'browser' uses browser local time zone.
+	DefaultTimezone string `json:"default_timezone,omitempty" validate:"omitempty,lte=64"`
+	// Moment.js style format string for cases where full date is shown
+	FullDate string `json:"full_date,omitempty" validate:"omitempty,lte=128"`
+	// Moment.js style format string used when a time requiring day accuracy is shown
+	IntervalDay string `json:"interval_day,omitempty" validate:"omitempty,lte=128"`
+	// Moment.js style format string used when a time requiring hour accuracy is shown
+	IntervalHour string `json:"interval_hour,omitempty" validate:"omitempty,lte=128"`
+	// Moment.js style format string used when a time requiring minute accuracy is shown
+	IntervalMinute string `json:"interval_minute,omitempty" validate:"omitempty,lte=128"`
+	// Moment.js style format string used when a time requiring month accuracy is shown
+	IntervalMonth string `json:"interval_month,omitempty" validate:"omitempty,lte=128"`
+	// Moment.js style format string used when a time requiring second accuracy is shown
+	IntervalSecond string `json:"interval_second,omitempty" validate:"omitempty,lte=128"`
+	// Moment.js style format string used when a time requiring year accuracy is shown
+	IntervalYear string `json:"interval_year,omitempty" validate:"omitempty,lte=128"`
+}
+
+type JSONSchemaGrafanaSMTPServerStarttlsPolicy string
+
+const (
+	JSONSchemaGrafanaSMTPServerStarttlsPolicyOpportunisticStartTLS JSONSchemaGrafanaSMTPServerStarttlsPolicy = "OpportunisticStartTLS"
+	JSONSchemaGrafanaSMTPServerStarttlsPolicyMandatoryStartTLS     JSONSchemaGrafanaSMTPServerStarttlsPolicy = "MandatoryStartTLS"
+	JSONSchemaGrafanaSMTPServerStarttlsPolicyNoStartTLS            JSONSchemaGrafanaSMTPServerStarttlsPolicy = "NoStartTLS"
+)
+
+// SMTP server settings
+type JSONSchemaGrafanaSMTPServer struct {
+	// Address used for sending emails
+	FromAddress string `json:"from_address" validate:"required,lte=319"`
+	// Name used in outgoing emails, defaults to Grafana
+	FromName *string `json:"from_name,omitempty" validate:"omitempty,lte=128"`
+	// Server hostname or IP
+	Host string `json:"host" validate:"required,lte=255"`
+	// Password for SMTP authentication
+	Password *string `json:"password,omitempty" validate:"omitempty,lte=255"`
+	// SMTP server port
+	Port int `json:"port" validate:"required,gte=1,lte=65535"`
+	// Skip verifying server certificate. Defaults to false
+	SkipVerify *bool `json:"skip_verify,omitempty"`
+	// Either OpportunisticStartTLS, MandatoryStartTLS or NoStartTLS. Default is OpportunisticStartTLS.
+	StarttlsPolicy JSONSchemaGrafanaSMTPServerStarttlsPolicy `json:"starttls_policy,omitempty"`
+	// Username for SMTP authentication
+	Username *string `json:"username,omitempty" validate:"omitempty,lte=255"`
+}
 
 type JSONSchemaGrafanaUserAutoAssignOrgRole string
 
@@ -2455,17 +2595,17 @@ type JSONSchemaGrafana struct {
 	// Allow embedding Grafana dashboards with iframe/frame/object/embed tags. Disabled by default to limit impact of clickjacking
 	AllowEmbedding *bool `json:"allow_embedding,omitempty"`
 	// Azure AD OAuth integration
-	AuthAzuread map[string]any `json:"auth_azuread,omitempty"`
+	AuthAzuread *JSONSchemaGrafanaAuthAzuread `json:"auth_azuread,omitempty"`
 	// Enable or disable basic authentication form, used by Grafana built-in login
 	AuthBasicEnabled *bool `json:"auth_basic_enabled,omitempty"`
 	// Generic OAuth integration
-	AuthGenericOauth map[string]any `json:"auth_generic_oauth,omitempty"`
+	AuthGenericOauth *JSONSchemaGrafanaAuthGenericOauth `json:"auth_generic_oauth,omitempty"`
 	// Github Auth integration
-	AuthGithub map[string]any `json:"auth_github,omitempty"`
+	AuthGithub *JSONSchemaGrafanaAuthGithub `json:"auth_github,omitempty"`
 	// GitLab Auth integration
-	AuthGitlab map[string]any `json:"auth_gitlab,omitempty"`
+	AuthGitlab *JSONSchemaGrafanaAuthGitlab `json:"auth_gitlab,omitempty"`
 	// Google Auth integration
-	AuthGoogle map[string]any `json:"auth_google,omitempty"`
+	AuthGoogle *JSONSchemaGrafanaAuthGoogle `json:"auth_google,omitempty"`
 	// Cookie SameSite attribute: 'strict' prevents sending cookie for cross-site requests, effectively disabling direct linking from other sites to Grafana. 'lax' is the default value.
 	CookieSamesite JSONSchemaGrafanaCookieSamesite `json:"cookie_samesite,omitempty"`
 	// Serve the web frontend using a custom CNAME pointing to the Aiven DNS name
@@ -2481,7 +2621,7 @@ type JSONSchemaGrafana struct {
 	// Timeout for data proxy requests in seconds
 	DataproxyTimeout int `json:"dataproxy_timeout,omitempty" validate:"omitempty,gte=15,lte=90"`
 	// Grafana date format specifications
-	DateFormats map[string]any `json:"date_formats,omitempty"`
+	DateFormats *JSONSchemaGrafanaDateFormats `json:"date_formats,omitempty"`
 	// Set to true to disable gravatar. Defaults to false (gravatar is enabled)
 	DisableGravatar *bool `json:"disable_gravatar,omitempty"`
 	// Editors can manage folders, teams and dashboards created by them
@@ -2495,7 +2635,7 @@ type JSONSchemaGrafana struct {
 	// Store logs for the service so that they are available in the HTTP API and console.
 	ServiceLog *bool `json:"service_log,omitempty"`
 	// SMTP server settings
-	SMTPServer map[string]any `json:"smtp_server,omitempty"`
+	SMTPServer *JSONSchemaGrafanaSMTPServer `json:"smtp_server,omitempty"`
 	// Enable or disable Grafana unified alerting functionality. By default this is enabled and any legacy alerts will be migrated on upgrade to Grafana 9+. To stay on legacy alerting, set unified_alerting_enabled to false and alerting_enabled to true. See https://grafana.com/docs/grafana/latest/alerting/set-up/migrating-alerts/ for more details.
 	UnifiedAlertingEnabled *bool `json:"unified_alerting_enabled,omitempty"`
 	// Auto-assign new users on signup to main organization. Defaults to false
@@ -2818,6 +2958,66 @@ type JSONSchemaMysql struct {
 	WaitTimeout int `json:"wait_timeout,omitempty" validate:"omitempty,gte=1,lte=2.147483e+06"`
 }
 
+type JSONSchemaOpensearchAuthFailureListenersInternalAuthenticationBackendLimitingAuthenticationBackend string
+
+const (
+	JSONSchemaOpensearchAuthFailureListenersInternalAuthenticationBackendLimitingAuthenticationBackendInternal JSONSchemaOpensearchAuthFailureListenersInternalAuthenticationBackendLimitingAuthenticationBackend = "internal"
+)
+
+type JSONSchemaOpensearchAuthFailureListenersInternalAuthenticationBackendLimitingType string
+
+const (
+	JSONSchemaOpensearchAuthFailureListenersInternalAuthenticationBackendLimitingTypeUsername JSONSchemaOpensearchAuthFailureListenersInternalAuthenticationBackendLimitingType = "username"
+)
+
+// Internal Authentication Backend Limiting
+type JSONSchemaOpensearchAuthFailureListenersInternalAuthenticationBackendLimiting struct {
+	// The number of login attempts allowed before login is blocked
+	AllowedTries int `json:"allowed_tries,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
+	// The internal backend. Enter `internal`
+	AuthenticationBackend JSONSchemaOpensearchAuthFailureListenersInternalAuthenticationBackendLimitingAuthenticationBackend `json:"authentication_backend,omitempty" validate:"omitempty,lte=1024"`
+	// The duration of time that login remains blocked after a failed login
+	BlockExpirySeconds int `json:"block_expiry_seconds,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
+	// The maximum number of blocked IP addresses
+	MaxBlockedClients int `json:"max_blocked_clients,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
+	// The maximum number of tracked IP addresses that have failed login
+	MaxTrackedClients int `json:"max_tracked_clients,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
+	// The window of time in which the value for `allowed_tries` is enforced
+	TimeWindowSeconds int `json:"time_window_seconds,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
+	// The type of rate limiting
+	Type JSONSchemaOpensearchAuthFailureListenersInternalAuthenticationBackendLimitingType `json:"type,omitempty" validate:"omitempty,lte=1024"`
+}
+
+type JSONSchemaOpensearchAuthFailureListenersIPRateLimitingType string
+
+const (
+	JSONSchemaOpensearchAuthFailureListenersIPRateLimitingTypeIP JSONSchemaOpensearchAuthFailureListenersIPRateLimitingType = "ip"
+)
+
+// IP address rate limiting settings
+type JSONSchemaOpensearchAuthFailureListenersIPRateLimiting struct {
+	// The number of login attempts allowed before login is blocked
+	AllowedTries int `json:"allowed_tries,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
+	// The duration of time that login remains blocked after a failed login
+	BlockExpirySeconds int `json:"block_expiry_seconds,omitempty" validate:"omitempty,gte=1,lte=36000"`
+	// The maximum number of blocked IP addresses
+	MaxBlockedClients int `json:"max_blocked_clients,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
+	// The maximum number of tracked IP addresses that have failed login
+	MaxTrackedClients int `json:"max_tracked_clients,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
+	// The window of time in which the value for `allowed_tries` is enforced
+	TimeWindowSeconds int `json:"time_window_seconds,omitempty" validate:"omitempty,gte=1,lte=36000"`
+	// The type of rate limiting
+	Type JSONSchemaOpensearchAuthFailureListenersIPRateLimitingType `json:"type,omitempty" validate:"omitempty,lte=1024"`
+}
+
+// Opensearch Security Plugin Settings
+type JSONSchemaOpensearchAuthFailureListeners struct {
+	// Internal Authentication Backend Limiting
+	InternalAuthenticationBackendLimiting *JSONSchemaOpensearchAuthFailureListenersInternalAuthenticationBackendLimiting `json:"internal_authentication_backend_limiting,omitempty"`
+	// IP address rate limiting settings
+	IPRateLimiting *JSONSchemaOpensearchAuthFailureListenersIPRateLimiting `json:"ip_rate_limiting,omitempty"`
+}
+
 // Opensearch Email Sender Settings
 type JSONSchemaOpensearchEmailSender struct {
 	// This should be identical to the Sender name defined in Opensearch dashboards
@@ -2844,6 +3044,118 @@ type JSONSchemaOpensearchIsmHistory struct {
 	IsmHistoryRolloverRetentionPeriod int `json:"ism_history_rollover_retention_period,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
 }
 
+type JSONSchemaOpensearchSearchBackpressureMode string
+
+const (
+	JSONSchemaOpensearchSearchBackpressureModeMonitorOnly JSONSchemaOpensearchSearchBackpressureMode = "monitor_only"
+	JSONSchemaOpensearchSearchBackpressureModeEnforced    JSONSchemaOpensearchSearchBackpressureMode = "enforced"
+	JSONSchemaOpensearchSearchBackpressureModeDisabled    JSONSchemaOpensearchSearchBackpressureMode = "disabled"
+)
+
+// Node duress settings
+type JSONSchemaOpensearchSearchBackpressureNodeDuress struct {
+	// The CPU usage threshold (as a percentage) required for a node to be considered to be under duress. Default is 0.9
+	CPUThreshold float64 `json:"cpu_threshold,omitempty" validate:"omitempty,gte=0,lte=1"`
+	// The heap usage threshold (as a percentage) required for a node to be considered to be under duress. Default is 0.7
+	HeapThreshold float64 `json:"heap_threshold,omitempty" validate:"omitempty,gte=0,lte=1"`
+	// The number of successive limit breaches after which the node is considered to be under duress. Default is 3
+	NumSuccessiveBreaches int `json:"num_successive_breaches,omitempty" validate:"omitempty,gte=1"`
+}
+
+// Search shard settings
+type JSONSchemaOpensearchSearchBackpressureSearchShardTask struct {
+	// The maximum number of search tasks to cancel in a single iteration of the observer thread. Default is 10.0
+	CancellationBurst float64 `json:"cancellation_burst,omitempty" validate:"omitempty,gte=1"`
+	// The maximum number of tasks to cancel per millisecond of elapsed time. Default is 0.003
+	CancellationRate float64 `json:"cancellation_rate,omitempty" validate:"omitempty,gte=0"`
+	// The maximum number of tasks to cancel, as a percentage of successful task completions. Default is 0.1
+	CancellationRatio float64 `json:"cancellation_ratio,omitempty" validate:"omitempty,gte=0,lte=1"`
+	// The CPU usage threshold (in milliseconds) required for a single search shard task before it is considered for cancellation. Default is 15000
+	CPUTimeMillisThreshold int `json:"cpu_time_millis_threshold,omitempty" validate:"omitempty,gte=0"`
+	// The elapsed time threshold (in milliseconds) required for a single search shard task before it is considered for cancellation. Default is 30000
+	ElapsedTimeMillisThreshold int `json:"elapsed_time_millis_threshold,omitempty" validate:"omitempty,gte=0"`
+	// The number of previously completed search shard tasks to consider when calculating the rolling average of heap usage. Default is 100
+	HeapMovingAverageWindowSize int `json:"heap_moving_average_window_size,omitempty" validate:"omitempty,gte=0"`
+	// The heap usage threshold (as a percentage) required for a single search shard task before it is considered for cancellation. Default is 0.5
+	HeapPercentThreshold float64 `json:"heap_percent_threshold,omitempty" validate:"omitempty,gte=0,lte=1"`
+	// The minimum variance required for a single search shard task’s heap usage compared to the rolling average of previously completed tasks before it is considered for cancellation. Default is 2.0
+	HeapVariance float64 `json:"heap_variance,omitempty" validate:"omitempty,gte=0"`
+	// The heap usage threshold (as a percentage) required for the sum of heap usages of all search shard tasks before cancellation is applied. Default is 0.5
+	TotalHeapPercentThreshold float64 `json:"total_heap_percent_threshold,omitempty" validate:"omitempty,gte=0,lte=1"`
+}
+
+// Search task settings
+type JSONSchemaOpensearchSearchBackpressureSearchTask struct {
+	// The maximum number of search tasks to cancel in a single iteration of the observer thread. Default is 5.0
+	CancellationBurst float64 `json:"cancellation_burst,omitempty" validate:"omitempty,gte=1"`
+	// The maximum number of search tasks to cancel per millisecond of elapsed time. Default is 0.003
+	CancellationRate float64 `json:"cancellation_rate,omitempty" validate:"omitempty,gte=0"`
+	// The maximum number of search tasks to cancel, as a percentage of successful search task completions. Default is 0.1
+	CancellationRatio float64 `json:"cancellation_ratio,omitempty" validate:"omitempty,gte=0,lte=1"`
+	// The CPU usage threshold (in milliseconds) required for an individual parent task before it is considered for cancellation. Default is 30000
+	CPUTimeMillisThreshold int `json:"cpu_time_millis_threshold,omitempty" validate:"omitempty,gte=0"`
+	// The elapsed time threshold (in milliseconds) required for an individual parent task before it is considered for cancellation. Default is 45000
+	ElapsedTimeMillisThreshold int `json:"elapsed_time_millis_threshold,omitempty" validate:"omitempty,gte=0"`
+	// The window size used to calculate the rolling average of the heap usage for the completed parent tasks. Default is 10
+	HeapMovingAverageWindowSize int `json:"heap_moving_average_window_size,omitempty" validate:"omitempty,gte=0"`
+	// The heap usage threshold (as a percentage) required for an individual parent task before it is considered for cancellation. Default is 0.2
+	HeapPercentThreshold float64 `json:"heap_percent_threshold,omitempty" validate:"omitempty,gte=0,lte=1"`
+	// The heap usage variance required for an individual parent task before it is considered for cancellation. A task is considered for cancellation when taskHeapUsage is greater than or equal to heapUsageMovingAverage * variance. Default is 2.0
+	HeapVariance float64 `json:"heap_variance,omitempty" validate:"omitempty,gte=0"`
+	// The heap usage threshold (as a percentage) required for the sum of heap usages of all search tasks before cancellation is applied. Default is 0.5
+	TotalHeapPercentThreshold float64 `json:"total_heap_percent_threshold,omitempty" validate:"omitempty,gte=0,lte=1"`
+}
+
+// Search Backpressure Settings
+type JSONSchemaOpensearchSearchBackpressure struct {
+	// The search backpressure mode. Valid values are monitor_only, enforced, or disabled. Default is monitor_only
+	Mode JSONSchemaOpensearchSearchBackpressureMode `json:"mode,omitempty"`
+	// Node duress settings
+	NodeDuress *JSONSchemaOpensearchSearchBackpressureNodeDuress `json:"node_duress,omitempty"`
+	// Search shard settings
+	SearchShardTask *JSONSchemaOpensearchSearchBackpressureSearchShardTask `json:"search_shard_task,omitempty"`
+	// Search task settings
+	SearchTask *JSONSchemaOpensearchSearchBackpressureSearchTask `json:"search_task,omitempty"`
+}
+
+// Operating factor
+type JSONSchemaOpensearchShardIndexingPressureOperatingFactor struct {
+	// Specify the lower occupancy limit of the allocated quota of memory for the shard. If the total memory usage of a shard is below this limit, shard indexing backpressure decreases the current allocated memory for that shard. Default is 0.75
+	Lower float64 `json:"lower,omitempty" validate:"omitempty,gte=0"`
+	// Specify the optimal occupancy of the allocated quota of memory for the shard. If the total memory usage of a shard is at this level, shard indexing backpressure doesn’t change the current allocated memory for that shard. Default is 0.85
+	Optimal float64 `json:"optimal,omitempty" validate:"omitempty,gte=0"`
+	// Specify the upper occupancy limit of the allocated quota of memory for the shard. If the total memory usage of a shard is above this limit, shard indexing backpressure increases the current allocated memory for that shard. Default is 0.95
+	Upper float64 `json:"upper,omitempty" validate:"omitempty,gte=0"`
+}
+
+type JSONSchemaOpensearchShardIndexingPressurePrimaryParameterNode struct {
+	// Define the percentage of the node-level memory threshold that acts as a soft indicator for strain on a node. Default is 0.7
+	SoftLimit float64 `json:"soft_limit,omitempty" validate:"omitempty,gte=0"`
+}
+
+type JSONSchemaOpensearchShardIndexingPressurePrimaryParameterShard struct {
+	// Specify the minimum assigned quota for a new shard in any role (coordinator, primary, or replica). Shard indexing backpressure increases or decreases this allocated quota based on the inflow of traffic for the shard. Default is 0.001
+	MinLimit float64 `json:"min_limit,omitempty" validate:"omitempty,gte=0"`
+}
+
+// Primary parameter
+type JSONSchemaOpensearchShardIndexingPressurePrimaryParameter struct {
+	Node  *JSONSchemaOpensearchShardIndexingPressurePrimaryParameterNode  `json:"node,omitempty"`
+	Shard *JSONSchemaOpensearchShardIndexingPressurePrimaryParameterShard `json:"shard,omitempty"`
+}
+
+// Shard indexing back pressure settings
+type JSONSchemaOpensearchShardIndexingPressure struct {
+	// Enable or disable shard indexing backpressure. Default is false
+	Enabled *bool `json:"enabled,omitempty"`
+	// Run shard indexing backpressure in shadow mode or enforced mode. In shadow mode (value set as false), shard indexing backpressure tracks all granular-level metrics, but it doesn’t actually reject any indexing requests. In enforced mode (value set as true), shard indexing backpressure rejects any requests to the cluster that might cause a dip in its performance. Default is false
+	Enforced *bool `json:"enforced,omitempty"`
+	// Operating factor
+	OperatingFactor *JSONSchemaOpensearchShardIndexingPressureOperatingFactor `json:"operating_factor,omitempty"`
+	// Primary parameter
+	PrimaryParameter *JSONSchemaOpensearchShardIndexingPressurePrimaryParameter `json:"primary_parameter,omitempty"`
+}
+
 // OpenSearch settings
 type JSONSchemaOpensearch struct {
 	// Explicitly allow or block automatic creation of indices. Defaults to true
@@ -2851,7 +3163,7 @@ type JSONSchemaOpensearch struct {
 	// Require explicit index names when deleting
 	ActionDestructiveRequiresName *bool `json:"action_destructive_requires_name,omitempty"`
 	// Opensearch Security Plugin Settings
-	AuthFailureListeners map[string]any `json:"auth_failure_listeners,omitempty"`
+	AuthFailureListeners *JSONSchemaOpensearchAuthFailureListeners `json:"auth_failure_listeners,omitempty"`
 	// Controls the number of shards allowed in the cluster per data node
 	ClusterMaxShardsPerNode int `json:"cluster_max_shards_per_node,omitempty" validate:"omitempty,gte=100,lte=10000"`
 	// How many concurrent incoming/outgoing shard recoveries (normally replicas) are allowed to happen on a node. Defaults to 2.
@@ -2897,11 +3209,11 @@ type JSONSchemaOpensearch struct {
 	// Script compilation circuit breaker limits the number of inline script compilations within a period of time. Default is use-context
 	ScriptMaxCompilationsRate string `json:"script_max_compilations_rate,omitempty" validate:"omitempty,lte=1024"`
 	// Search Backpressure Settings
-	SearchBackpressure map[string]any `json:"search_backpressure,omitempty"`
+	SearchBackpressure *JSONSchemaOpensearchSearchBackpressure `json:"search_backpressure,omitempty"`
 	// Maximum number of aggregation buckets allowed in a single response. OpenSearch default value is used when this is not defined.
 	SearchMaxBuckets *int `json:"search_max_buckets,omitempty" validate:"omitempty,gte=1,lte=1e+06"`
 	// Shard indexing back pressure settings
-	ShardIndexingPressure map[string]any `json:"shard_indexing_pressure,omitempty"`
+	ShardIndexingPressure *JSONSchemaOpensearchShardIndexingPressure `json:"shard_indexing_pressure,omitempty"`
 	// Size for the thread pool queue. See documentation for exact details.
 	ThreadPoolAnalyzeQueueSize int `json:"thread_pool_analyze_queue_size,omitempty" validate:"omitempty,gte=10,lte=2000"`
 	// Size for the thread pool. See documentation for exact details. Do note this may have maximum value depending on CPU count - value is automatically lowered if set to higher than maximum value.

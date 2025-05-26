@@ -3465,13 +3465,13 @@ type CreateDBAASServiceKafkaRequest struct {
 	// Allow clients to connect to kafka_connect from the public internet for service nodes that are in a project VPC or another type of private network
 	KafkaConnectEnabled *bool `json:"kafka-connect-enabled,omitempty"`
 	// Kafka Connect configuration values
-	KafkaConnectSettings JSONSchemaKafkaConnect `json:"kafka-connect-settings,omitempty"`
+	KafkaConnectSettings *JSONSchemaKafkaConnect `json:"kafka-connect-settings,omitempty"`
 	// Enable Kafka-REST service
 	KafkaRestEnabled *bool `json:"kafka-rest-enabled,omitempty"`
 	// Kafka REST configuration
-	KafkaRestSettings JSONSchemaKafkaRest `json:"kafka-rest-settings,omitempty"`
+	KafkaRestSettings *JSONSchemaKafkaRest `json:"kafka-rest-settings,omitempty"`
 	// Kafka broker configuration values
-	KafkaSettings JSONSchemaKafka `json:"kafka-settings,omitempty"`
+	KafkaSettings *JSONSchemaKafka `json:"kafka-settings,omitempty"`
 	// Automatic maintenance settings
 	Maintenance *CreateDBAASServiceKafkaRequestMaintenance `json:"maintenance,omitempty"`
 	// Subscription plan
@@ -3479,7 +3479,7 @@ type CreateDBAASServiceKafkaRequest struct {
 	// Enable Schema-Registry service
 	SchemaRegistryEnabled *bool `json:"schema-registry-enabled,omitempty"`
 	// Schema Registry configuration
-	SchemaRegistrySettings JSONSchemaSchemaRegistry `json:"schema-registry-settings,omitempty"`
+	SchemaRegistrySettings *JSONSchemaSchemaRegistry `json:"schema-registry-settings,omitempty"`
 	// Service is protected against termination and powering off
 	TerminationProtection *bool `json:"termination-protection,omitempty"`
 	// Kafka major version
@@ -3574,13 +3574,13 @@ type UpdateDBAASServiceKafkaRequest struct {
 	// Allow clients to connect to kafka_connect from the public internet for service nodes that are in a project VPC or another type of private network
 	KafkaConnectEnabled *bool `json:"kafka-connect-enabled,omitempty"`
 	// Kafka Connect configuration values
-	KafkaConnectSettings JSONSchemaKafkaConnect `json:"kafka-connect-settings,omitempty"`
+	KafkaConnectSettings *JSONSchemaKafkaConnect `json:"kafka-connect-settings,omitempty"`
 	// Enable Kafka-REST service
 	KafkaRestEnabled *bool `json:"kafka-rest-enabled,omitempty"`
 	// Kafka REST configuration
-	KafkaRestSettings JSONSchemaKafkaRest `json:"kafka-rest-settings,omitempty"`
+	KafkaRestSettings *JSONSchemaKafkaRest `json:"kafka-rest-settings,omitempty"`
 	// Kafka broker configuration values
-	KafkaSettings JSONSchemaKafka `json:"kafka-settings,omitempty"`
+	KafkaSettings *JSONSchemaKafka `json:"kafka-settings,omitempty"`
 	// Automatic maintenance settings
 	Maintenance *UpdateDBAASServiceKafkaRequestMaintenance `json:"maintenance,omitempty"`
 	// Subscription plan
@@ -3588,7 +3588,7 @@ type UpdateDBAASServiceKafkaRequest struct {
 	// Enable Schema-Registry service
 	SchemaRegistryEnabled *bool `json:"schema-registry-enabled,omitempty"`
 	// Schema Registry configuration
-	SchemaRegistrySettings JSONSchemaSchemaRegistry `json:"schema-registry-settings,omitempty"`
+	SchemaRegistrySettings *JSONSchemaSchemaRegistry `json:"schema-registry-settings,omitempty"`
 	// Service is protected against termination and powering off
 	TerminationProtection *bool `json:"termination-protection,omitempty"`
 	// Kafka major version
@@ -4378,7 +4378,7 @@ type CreateDBAASServiceMysqlRequest struct {
 	// Migrate data from existing server
 	Migration *CreateDBAASServiceMysqlRequestMigration `json:"migration,omitempty"`
 	// mysql.conf configuration values
-	MysqlSettings JSONSchemaMysql `json:"mysql-settings,omitempty"`
+	MysqlSettings *JSONSchemaMysql `json:"mysql-settings,omitempty"`
 	// Subscription plan
 	Plan string `json:"plan" validate:"required,gte=1,lte=128"`
 	// ISO time of a backup to recover from for services that support arbitrary times
@@ -4498,7 +4498,7 @@ type UpdateDBAASServiceMysqlRequest struct {
 	// Migrate data from existing server
 	Migration *UpdateDBAASServiceMysqlRequestMigration `json:"migration,omitempty"`
 	// mysql.conf configuration values
-	MysqlSettings JSONSchemaMysql `json:"mysql-settings,omitempty"`
+	MysqlSettings *JSONSchemaMysql `json:"mysql-settings,omitempty"`
 	// Subscription plan
 	Plan string `json:"plan,omitempty" validate:"omitempty,gte=1,lte=128"`
 	// Service is protected against termination and powering off
@@ -5149,7 +5149,7 @@ type CreateDBAASServiceOpensearchRequest struct {
 	// OpenSearch Dashboards settings
 	OpensearchDashboards *CreateDBAASServiceOpensearchRequestOpensearchDashboards `json:"opensearch-dashboards,omitempty"`
 	// OpenSearch settings
-	OpensearchSettings JSONSchemaOpensearch `json:"opensearch-settings,omitempty"`
+	OpensearchSettings *JSONSchemaOpensearch `json:"opensearch-settings,omitempty"`
 	// Subscription plan
 	Plan string `json:"plan" validate:"required,gte=1,lte=128"`
 	// Name of a backup to recover from for services that support backup names
@@ -5284,7 +5284,7 @@ type UpdateDBAASServiceOpensearchRequest struct {
 	// OpenSearch Dashboards settings
 	OpensearchDashboards *UpdateDBAASServiceOpensearchRequestOpensearchDashboards `json:"opensearch-dashboards,omitempty"`
 	// OpenSearch settings
-	OpensearchSettings JSONSchemaOpensearch `json:"opensearch-settings,omitempty"`
+	OpensearchSettings *JSONSchemaOpensearch `json:"opensearch-settings,omitempty"`
 	// Subscription plan
 	Plan string `json:"plan,omitempty" validate:"omitempty,gte=1,lte=128"`
 	// Service is protected against termination and powering off
@@ -5847,7 +5847,7 @@ type CreateDBAASServicePGRequest struct {
 	// Migrate data from existing server
 	Migration *CreateDBAASServicePGRequestMigration `json:"migration,omitempty"`
 	// postgresql.conf configuration values
-	PGSettings JSONSchemaPG `json:"pg-settings,omitempty"`
+	PGSettings *JSONSchemaPG `json:"pg-settings,omitempty"`
 	// System-wide settings for pgbouncer.
 	PgbouncerSettings *JSONSchemaPgbouncer `json:"pgbouncer-settings,omitempty"`
 	// System-wide settings for pglookout.
@@ -5976,7 +5976,7 @@ type UpdateDBAASServicePGRequest struct {
 	// Migrate data from existing server
 	Migration *UpdateDBAASServicePGRequestMigration `json:"migration,omitempty"`
 	// postgresql.conf configuration values
-	PGSettings JSONSchemaPG `json:"pg-settings,omitempty"`
+	PGSettings *JSONSchemaPG `json:"pg-settings,omitempty"`
 	// System-wide settings for pgbouncer.
 	PgbouncerSettings *JSONSchemaPgbouncer `json:"pgbouncer-settings,omitempty"`
 	// System-wide settings for pglookout.

@@ -83,7 +83,7 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 			return fmt.Errorf("invalid settings: %w", err)
 
 		}
-		databaseService.MysqlSettings = *settings
+		databaseService.MysqlSettings = settings
 	}
 
 	if c.MysqlMigrationHost != "" {

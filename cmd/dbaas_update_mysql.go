@@ -77,7 +77,7 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 			return fmt.Errorf("invalid settings: %w", err)
 
 		}
-		databaseService.MysqlSettings = *settings
+		databaseService.MysqlSettings = settings
 		updated = true
 	}
 

@@ -93,7 +93,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 
-		databaseService.KafkaConnectSettings = *settings
+		databaseService.KafkaConnectSettings = settings
 		updated = true
 	}
 
@@ -109,7 +109,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 		if err = json.Unmarshal([]byte(c.KafkaRESTSettings), settings); err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.KafkaRestSettings = *settings
+		databaseService.KafkaRestSettings = settings
 		updated = true
 	}
 
@@ -125,7 +125,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 		if err = json.Unmarshal([]byte(c.KafkaSettings), settings); err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.KafkaSettings = *settings
+		databaseService.KafkaSettings = settings
 		updated = true
 	}
 
@@ -141,7 +141,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 		if err = json.Unmarshal([]byte(c.KafkaSchemaRegistrySettings), settings); err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.SchemaRegistrySettings = *settings
+		databaseService.SchemaRegistrySettings = settings
 		updated = true
 	}
 
