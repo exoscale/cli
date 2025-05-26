@@ -1,4 +1,4 @@
-package cmd
+package sks
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -31,7 +32,7 @@ func (o *sksListDeprecatedResourcesOutput) ToText()  { output.Text(o) }
 func (o *sksListDeprecatedResourcesOutput) ToTable() { output.Table(o) }
 
 type sksDeprecatedResourcesCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"deprecated-resources"`
 
@@ -61,12 +62,12 @@ func emptyIfNil(inp *string) string {
 }
 
 func (c *sksDeprecatedResourcesCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksDeprecatedResourcesCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
@@ -101,7 +102,7 @@ func (c *sksDeprecatedResourcesCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksDeprecatedResourcesCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksDeprecatedResourcesCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

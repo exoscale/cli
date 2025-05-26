@@ -1,4 +1,4 @@
-package cmd
+package sks
 
 import (
 	"errors"
@@ -7,13 +7,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksNodepoolEvictCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"evict"`
 
@@ -42,27 +44,30 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksNodepoolEvictCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksNodepoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+
 	if len(c.Nodes) == 0 {
-		cmdExitOnUsageError(cmd, "no nodes specified")
+		exocmd.CmdExitOnUsageError(cmd, "no nodes specified")
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf(
-			"Are you sure you want to evict %v from Nodepool %q?",
-			c.Nodes,
-			c.Nodepool,
-		)) {
+		if !utils.AskQuestion(
+			ctx,
+			fmt.Sprintf(
+				"Are you sure you want to evict %v from Nodepool %q?",
+				c.Nodes,
+				c.Nodepool,
+			)) {
 			return nil
 		}
 	}
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -111,7 +116,7 @@ func (c *sksNodepoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Evicting Nodes from Nodepool %q...", c.Nodepool), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Evicting Nodes from Nodepool %q...", c.Nodepool), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -131,7 +136,7 @@ func (c *sksNodepoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(sksNodepoolCmd, &sksNodepoolEvictCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolEvictCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

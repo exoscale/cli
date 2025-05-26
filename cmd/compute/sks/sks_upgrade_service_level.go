@@ -1,16 +1,19 @@
-package cmd
+package sks
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksUpgradeServiceLevelCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"upgrade-service-level"`
 
@@ -34,26 +37,29 @@ to a lower level.`
 }
 
 func (c *sksUpgradeServiceLevelCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksUpgradeServiceLevelCmd) confirmUpgrade(cluster string) bool {
-	return askQuestion(fmt.Sprintf(
-		"Are you sure you want to upgrade the cluster %q to service level pro?",
-		c.Cluster,
-	))
+func (c *sksUpgradeServiceLevelCmd) confirmUpgrade(ctx context.Context, cluster string) bool {
+	return utils.AskQuestion(
+		ctx,
+		fmt.Sprintf(
+			"Are you sure you want to upgrade the cluster %q to service level pro?",
+			c.Cluster,
+		))
 }
 
 func (c *sksUpgradeServiceLevelCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+
 	if !c.Force {
-		if !c.confirmUpgrade(c.Cluster) {
+		if !c.confirmUpgrade(ctx, c.Cluster) {
 			return nil
 		}
 	}
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -70,7 +76,7 @@ func (c *sksUpgradeServiceLevelCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	op, err := client.UpgradeSKSClusterServiceLevel(ctx, cluster.ID)
 
-	decorateAsyncOperation(fmt.Sprintf("Upgrading SKS cluster %q service level...", c.Cluster), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Upgrading SKS cluster %q service level...", c.Cluster), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 
@@ -90,7 +96,7 @@ func (c *sksUpgradeServiceLevelCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksUpgradeServiceLevelCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksUpgradeServiceLevelCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

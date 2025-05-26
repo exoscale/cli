@@ -1,4 +1,4 @@
-package cmd
+package sks
 
 import (
 	"errors"
@@ -7,13 +7,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksNodepoolScaleCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"scale"`
 
@@ -43,8 +45,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksNodepoolScaleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksNodepoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -52,14 +54,15 @@ func (c *sksNodepoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return errors.New("minimum Nodepool size is 1")
 	}
 
+	ctx := exocmd.GContext
+
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to scale Nodepool %q to %d?", c.Nodepool, c.Size)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to scale Nodepool %q to %d?", c.Nodepool, c.Size)) {
 			return nil
 		}
 	}
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -94,7 +97,7 @@ func (c *sksNodepoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Scaling Nodepool %q...", c.Nodepool), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Scaling Nodepool %q...", c.Nodepool), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -114,7 +117,7 @@ func (c *sksNodepoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(sksNodepoolCmd, &sksNodepoolScaleCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolScaleCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
