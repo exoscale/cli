@@ -1,6 +1,7 @@
-package cmd
+package private_network
 
 import (
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -11,5 +12,5 @@ var privateNetworkCmd = &cobra.Command{
 }
 
 func init() {
-	ComputeCmd.AddCommand(privateNetworkCmd)
+	exocmd.ComputeCmd.AddCommand(privateNetworkCmd)
 }

@@ -1,16 +1,18 @@
-package cmd
+package private_network
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type privateNetworkDeleteCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -20,7 +22,7 @@ type privateNetworkDeleteCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
 }
 
-func (c *privateNetworkDeleteCmd) CmdAliases() []string { return GRemoveAlias }
+func (c *privateNetworkDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
 
 func (c *privateNetworkDeleteCmd) CmdShort() string {
 	return "Delete a Private Network"
@@ -29,13 +31,13 @@ func (c *privateNetworkDeleteCmd) CmdShort() string {
 func (c *privateNetworkDeleteCmd) CmdLong() string { return "" }
 
 func (c *privateNetworkDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *privateNetworkDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -51,7 +53,7 @@ func (c *privateNetworkDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to delete Private Network %s?", c.PrivateNetwork)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete Private Network %s?", c.PrivateNetwork)) {
 			return nil
 		}
 	}
@@ -61,7 +63,7 @@ func (c *privateNetworkDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting Private Network %s...", c.PrivateNetwork), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting Private Network %s...", c.PrivateNetwork), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -72,7 +74,7 @@ func (c *privateNetworkDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(privateNetworkCmd, &privateNetworkDeleteCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(privateNetworkCmd, &privateNetworkDeleteCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -1,4 +1,4 @@
-package cmd
+package private_network
 
 import (
 	"fmt"
@@ -7,13 +7,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type privateNetworkUpdateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -44,15 +46,15 @@ Supported output template annotations: %s`,
 }
 
 func (c *privateNetworkUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -68,29 +70,29 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	updateReq := v3.UpdatePrivateNetworkRequest{}
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
 		updateReq.Description = c.Description
 		updated = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.EndIP)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.EndIP)) {
 		ip := net.ParseIP(c.EndIP)
 		updateReq.EndIP = ip
 		updated = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
 		updateReq.Name = c.Name
 		updated = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Netmask)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Netmask)) {
 		ip := net.ParseIP(c.Netmask)
 		updateReq.Netmask = ip
 		updated = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.StartIP)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.StartIP)) {
 		ip := net.ParseIP(c.StartIP)
 		updateReq.StartIP = ip
 		updated = true
@@ -103,7 +105,7 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	optionsChanged := false
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.DNSServers)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DNSServers)) {
 		opts.DNSServers = nil // Reset before adding new values
 		for _, server := range c.DNSServers {
 			if ip := net.ParseIP(server); ip != nil {
@@ -115,7 +117,7 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		optionsChanged = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.NTPServers)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.NTPServers)) {
 		opts.NtpServers = nil // Reset before adding new values
 		for _, server := range c.NTPServers {
 			if ip := net.ParseIP(server); ip != nil {
@@ -127,7 +129,7 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		optionsChanged = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Routers)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Routers)) {
 		opts.Routers = nil // Reset before adding new values
 		for _, router := range c.Routers {
 			if ip := net.ParseIP(router); ip != nil {
@@ -139,7 +141,7 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		optionsChanged = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.DomainSearch)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DomainSearch)) {
 		opts.DomainSearch = c.DomainSearch
 		optionsChanged = true
 	}
@@ -158,7 +160,7 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		}
 		privnetID = op.Reference.ID
 
-		decorateAsyncOperation(fmt.Sprintf("Updating Private Network %q...", c.PrivateNetwork), func() {
+		utils.DecorateAsyncOperation(fmt.Sprintf("Updating Private Network %q...", c.PrivateNetwork), func() {
 			op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 		if err != nil {
@@ -178,7 +180,7 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(privateNetworkCmd, &privateNetworkUpdateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(privateNetworkCmd, &privateNetworkUpdateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

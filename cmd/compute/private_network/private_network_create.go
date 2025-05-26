@@ -1,4 +1,4 @@
-package cmd
+package private_network
 
 import (
 	"fmt"
@@ -7,13 +7,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type privateNetworkCreateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -30,7 +32,7 @@ type privateNetworkCreateCmd struct {
 	DomainSearch []string    `cli-usage:"DHCP option 119: domain search list (limited to 255 octets, can be specified multiple times)"`
 }
 
-func (c *privateNetworkCreateCmd) CmdAliases() []string { return GCreateAlias }
+func (c *privateNetworkCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *privateNetworkCreateCmd) CmdShort() string {
 	return "Create a Private Network"
@@ -44,13 +46,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *privateNetworkCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *privateNetworkCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -106,7 +108,7 @@ func (c *privateNetworkCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Creating Private Network %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Private Network %q...", c.Name), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -125,7 +127,7 @@ func (c *privateNetworkCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(privateNetworkCmd, &privateNetworkCreateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(privateNetworkCmd, &privateNetworkCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
