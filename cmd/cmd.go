@@ -76,10 +76,10 @@ func CmdSetZoneFlagFromDefault(cmd *cobra.Command) {
 	}
 }
 
-// cmdSetTemplateFlagFromDefault  attempts to set the "--template" flag value based on the current active account's
+// CmdSetTemplateFlagFromDefault  attempts to set the "--template" flag value based on the current active account's
 // default template setting if set. This is a convenience helper, there is no guarantee that the flag will be
 // set once this function returns.
-func cmdSetTemplateFlagFromDefault(cmd *cobra.Command) {
+func CmdSetTemplateFlagFromDefault(cmd *cobra.Command) {
 	if cmd.Flag("template").Value.String() == "" {
 		if account.CurrentAccount.DefaultTemplate != "" {
 			cmd.Flag("template").Value.Set(account.CurrentAccount.DefaultTemplate) // nolint:errcheck
@@ -173,7 +173,7 @@ func cliCommandFlagName(c cliCommand, field interface{}) (string, error) {
 	return "", fmt.Errorf("field not found in struct %s", cv.Type())
 }
 
-func convertIfSpecialEmptyMap(m map[string]string) map[string]string {
+func ConvertIfSpecialEmptyMap(m map[string]string) map[string]string {
 	// since it is not possible to pass an empty map
 	// with a spf13/pflag https://github.com/spf13/pflag/issues/312
 	// we use the special value of a map with only

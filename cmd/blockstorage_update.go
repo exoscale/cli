@@ -78,7 +78,7 @@ func (c *blockStorageUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 	updateReq := v3.UpdateBlockStorageVolumeRequest{}
 	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
-		updateReq.Labels = convertIfSpecialEmptyMap(c.Labels)
+		updateReq.Labels = ConvertIfSpecialEmptyMap(c.Labels)
 
 		updated = true
 	}

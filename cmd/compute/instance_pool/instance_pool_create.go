@@ -1,4 +1,4 @@
-package cmd
+package instance_pool
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -16,7 +17,7 @@ import (
 )
 
 type instancePoolCreateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -43,7 +44,7 @@ type instancePoolCreateCmd struct {
 	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
-func (c *instancePoolCreateCmd) CmdAliases() []string { return GCreateAlias }
+func (c *instancePoolCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *instancePoolCreateCmd) CmdShort() string { return "Create an Instance Pool" }
 
@@ -56,15 +57,15 @@ Supported output template annotations: %s`,
 
 func (c *instancePoolCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 
-	CmdSetZoneFlagFromDefault(cmd)
-	cmdSetTemplateFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetTemplateFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -208,7 +209,7 @@ func (c *instancePoolCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	var instancePoolID v3.UUID
 
-	decorateAsyncOperation(fmt.Sprintf("Creating Instance Pool %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Instance Pool %q...", c.Name), func() {
 		var op *v3.Operation
 		op, err = client.CreateInstancePool(ctx, instancePoolReq)
 		if err != nil {
@@ -241,13 +242,13 @@ func (c *instancePoolCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instancePoolCmd, &instancePoolCreateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instancePoolCmd, &instancePoolCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
 		DiskSize:           50,
-		InstanceType:       fmt.Sprintf("%s.%s", DefaultInstanceTypeFamily, DefaultInstanceType),
+		InstanceType:       fmt.Sprintf("%s.%s", exocmd.DefaultInstanceTypeFamily, exocmd.DefaultInstanceType),
 		Size:               1,
 		MinAvailable:       0,
-		TemplateVisibility: defaultTemplateVisibility,
+		TemplateVisibility: exocmd.DefaultTemplateVisibility,
 	}))
 }

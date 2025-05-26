@@ -1,6 +1,7 @@
-package cmd
+package instance_pool
 
 import (
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -11,5 +12,5 @@ var instancePoolCmd = &cobra.Command{
 }
 
 func init() {
-	ComputeCmd.AddCommand(instancePoolCmd)
+	exocmd.ComputeCmd.AddCommand(instancePoolCmd)
 }
