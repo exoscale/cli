@@ -7,6 +7,7 @@ package subcommands
 
 import (
 	_ "github.com/exoscale/cli/cmd/compute/anti_affinity_group"
+	_ "github.com/exoscale/cli/cmd/compute/blockstorage"
 	_ "github.com/exoscale/cli/cmd/compute/deploy_target"
 	_ "github.com/exoscale/cli/cmd/compute/elastic_ip"
 	_ "github.com/exoscale/cli/cmd/compute/instance_pool"

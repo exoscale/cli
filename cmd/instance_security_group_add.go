@@ -34,7 +34,7 @@ func (c *instanceSGAddCmd) CmdLong() string {
 	return fmt.Sprintf(`This command adds a Compute instance to Security Groups.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "),
 	)
 }
 
