@@ -24,7 +24,7 @@ const (
 	DefaultInstanceType       = "medium"
 	DefaultInstanceTypeFamily = "standard"
 	defaultTemplate           = "Linux Ubuntu 22.04 LTS 64-bit"
-	defaultTemplateVisibility = "public"
+	DefaultTemplateVisibility = "public"
 	defaultSosEndpoint        = "https://sos-{zone}.exo.io"
 	defaultZone               = "ch-dk-2"
 	defaultOutputFormat       = "table"

@@ -29,6 +29,7 @@
 - load-balancer: move to egoscale v3 #687
 - anti-affinity-group: moving the logic to the corresponding subfolder #696
 - security-group: moving the logic to the corresponding subfolder #702
+- instance-pool: moving the logic to the corresponding subfolder #704
 
 ## 1.84.1
 

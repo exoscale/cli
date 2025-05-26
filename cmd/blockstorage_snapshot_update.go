@@ -60,7 +60,7 @@ func (c *blockStorageSnapshotUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) e
 	var updated bool
 	updateReq := v3.UpdateBlockStorageSnapshotRequest{}
 	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
-		updateReq.Labels = convertIfSpecialEmptyMap(c.Labels)
+		updateReq.Labels = ConvertIfSpecialEmptyMap(c.Labels)
 
 		updated = true
 	}

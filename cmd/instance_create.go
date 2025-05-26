@@ -69,7 +69,7 @@ Supported output template annotations: %s`,
 
 func (c *instanceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	CmdSetZoneFlagFromDefault(cmd)
-	cmdSetTemplateFlagFromDefault(cmd)
+	CmdSetTemplateFlagFromDefault(cmd)
 	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
@@ -332,6 +332,6 @@ func init() {
 
 		DiskSize:           50,
 		InstanceType:       fmt.Sprintf("%s.%s", DefaultInstanceTypeFamily, DefaultInstanceType),
-		TemplateVisibility: defaultTemplateVisibility,
+		TemplateVisibility: DefaultTemplateVisibility,
 	}))
 }
