@@ -10,6 +10,7 @@ import (
 	_ "github.com/exoscale/cli/cmd/compute/deploy_target"
 	_ "github.com/exoscale/cli/cmd/compute/elastic_ip"
 	_ "github.com/exoscale/cli/cmd/compute/instance_pool"
+	_ "github.com/exoscale/cli/cmd/compute/instance_template"
 	_ "github.com/exoscale/cli/cmd/compute/instance_type"
 	_ "github.com/exoscale/cli/cmd/compute/load_balancer"
 	_ "github.com/exoscale/cli/cmd/compute/private_network"
