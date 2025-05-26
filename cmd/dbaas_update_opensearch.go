@@ -55,7 +55,7 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 
-		db.OpensearchSettings = *settings
+		db.OpensearchSettings = settings
 		updated = true
 	}
 

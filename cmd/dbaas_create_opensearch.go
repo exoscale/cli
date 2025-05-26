@@ -68,7 +68,7 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 
-		db.OpensearchSettings = *settings
+		db.OpensearchSettings = settings
 	}
 
 	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) {

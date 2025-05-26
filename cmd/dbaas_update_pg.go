@@ -111,7 +111,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		if err = json.Unmarshal([]byte(c.PGSettings), settings); err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.PGSettings = *settings
+		databaseService.PGSettings = settings
 		updated = true
 	}
 

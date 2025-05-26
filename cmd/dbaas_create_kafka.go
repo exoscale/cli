@@ -69,7 +69,7 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 
-		databaseService.KafkaConnectSettings = *settings
+		databaseService.KafkaConnectSettings = settings
 	}
 
 	if c.KafkaRESTSettings != "" {
@@ -84,7 +84,7 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 		if err = json.Unmarshal([]byte(c.KafkaRESTSettings), settings); err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.KafkaRestSettings = *settings
+		databaseService.KafkaRestSettings = settings
 	}
 
 	if c.KafkaSettings != "" {
@@ -99,7 +99,7 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 		if err = json.Unmarshal([]byte(c.KafkaSettings), settings); err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.KafkaSettings = *settings
+		databaseService.KafkaSettings = settings
 	}
 
 	if c.KafkaSchemaRegistrySettings != "" {
@@ -114,7 +114,7 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 		if err = json.Unmarshal([]byte(c.KafkaSchemaRegistrySettings), settings); err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.SchemaRegistrySettings = *settings
+		databaseService.SchemaRegistrySettings = settings
 	}
 
 	op, err := client.CreateDBAASServiceKafka(ctx, c.Name, databaseService)

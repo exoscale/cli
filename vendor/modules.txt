@@ -220,8 +220,8 @@ github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
 github.com/exoscale/egoscale/v2/oapi
 github.com/exoscale/egoscale/version
-# github.com/exoscale/egoscale/v3 v3.1.18
-## explicit; go 1.22.0
+# github.com/exoscale/egoscale/v3 v3.1.19
+## explicit; go 1.23.8
 github.com/exoscale/egoscale/v3
 github.com/exoscale/egoscale/v3/credentials
 # github.com/exoscale/openapi-cli-generator v1.1.0
