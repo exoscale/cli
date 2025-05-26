@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -16,7 +17,7 @@ import (
 )
 
 type instanceTemplateRegisterCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"register"`
 
@@ -37,7 +38,7 @@ type instanceTemplateRegisterCmd struct {
 	Zone            string `cli-short:"z" cli-usage:"zone to register the template into (default: current account's default zone)"`
 }
 
-func (c *instanceTemplateRegisterCmd) CmdAliases() []string { return GCreateAlias }
+func (c *instanceTemplateRegisterCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *instanceTemplateRegisterCmd) CmdShort() string {
 	return "Register a new Compute instance template"
@@ -51,15 +52,15 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceTemplateRegisterCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 
 	// In case the user specified a snapshot ID using the `--from-snapshot` flag,
 	// we add empty positional argument placeholders in order to trick the
-	// cliCommandDefaultPreRun() wrapper into believing URL/Checksum args were provided,
+	// exocmd.CliCommandDefaultPreRun() wrapper into believing URL/Checksum args were provided,
 	// but the actual command function won't use them since it will dynamically retrieve
 	// this information from the specified snapshot export information.
 
-	snapshotID, err := cmd.Flags().GetString(MustCLICommandFlagName(c, &c.FromSnapshot))
+	snapshotID, err := cmd.Flags().GetString(exocmd.MustCLICommandFlagName(c, &c.FromSnapshot))
 	if err != nil {
 		return err
 	}
@@ -67,7 +68,7 @@ func (c *instanceTemplateRegisterCmd) CmdPreRun(cmd *cobra.Command, args []strin
 		args = append(args, "", "")
 	}
 
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -79,7 +80,7 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 	globalstate.EgoscaleClient.SetTimeout(time.Duration(c.Timeout) * time.Second)
 
 	ctx := exoapi.WithEndpoint(
-		GContext,
+		exocmd.GContext,
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
@@ -128,30 +129,30 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 
 		// Above properties are inherited from snapshot source template, unless otherwise specified
 		// by the user from the command line
-		if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.DisablePassword)) {
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DisablePassword)) {
 			template.PasswordEnabled = &passwordEnabled
 		} else {
 			template.PasswordEnabled = srcTemplate.PasswordEnabled
 		}
 
-		if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.DisableSSHKey)) {
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DisableSSHKey)) {
 			template.SSHKeyEnabled = &sshKeyEnabled
 		} else {
 			template.SSHKeyEnabled = srcTemplate.SSHKeyEnabled
 		}
 
-		if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Username)) {
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Username)) {
 			template.DefaultUser = utils.NonEmptyStringPtr(c.Username)
 		} else {
 			template.DefaultUser = srcTemplate.DefaultUser
 		}
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.BootMode)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.BootMode)) {
 		template.BootMode = &c.BootMode
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Registering template %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Registering template %q...", c.Name), func() {
 		template, err = globalstate.EgoscaleClient.RegisterTemplate(ctx, c.Zone, template)
 	})
 	if err != nil {
@@ -182,8 +183,8 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceTemplateCmd, &instanceTemplateRegisterCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceTemplateCmd, &instanceTemplateRegisterCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
 		BootMode: "legacy",
 

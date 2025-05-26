@@ -17,6 +17,7 @@
 - instance: show migrated to egoscale v3
 - instance-type: moving the logic to the corresponding subfolder #700
 - private-networks: moving the logic to the corresponding subfolder #700
+- instance-template: moving the logic to the corresponding subfolder #701
 - SKS: more related commands are migrated to egoscale v3
 - SKS: moving the logic to the corresponding subfolder #697
 - dbaas: move all commands to egoscale v3

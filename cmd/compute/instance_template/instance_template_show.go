@@ -8,6 +8,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -61,7 +62,7 @@ func (o *instanceTemplateShowOutput) ToTable() {
 }
 
 type instanceTemplateShowCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -71,7 +72,7 @@ type instanceTemplateShowCmd struct {
 	Zone       string `cli-short:"z" cli-usage:"zone to filter results to (default: current account's default zone)"`
 }
 
-func (c *instanceTemplateShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *instanceTemplateShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *instanceTemplateShowCmd) CmdShort() string {
 	return "Show a Compute instance template details"
@@ -85,13 +86,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceTemplateShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceTemplateShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
-		GContext,
+		exocmd.GContext,
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
@@ -126,9 +127,9 @@ func (c *instanceTemplateShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceTemplateCmd, &instanceTemplateShowCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceTemplateCmd, &instanceTemplateShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
-		Visibility: DefaultTemplateVisibility,
+		Visibility: exocmd.DefaultTemplateVisibility,
 	}))
 }

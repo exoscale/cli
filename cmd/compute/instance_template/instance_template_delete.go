@@ -5,13 +5,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type instanceTemplateDeleteCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -21,7 +23,7 @@ type instanceTemplateDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"template zone"`
 }
 
-func (c *instanceTemplateDeleteCmd) CmdAliases() []string { return GRemoveAlias }
+func (c *instanceTemplateDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
 
 func (c *instanceTemplateDeleteCmd) CmdShort() string {
 	return "Delete a Compute instance template"
@@ -30,12 +32,12 @@ func (c *instanceTemplateDeleteCmd) CmdShort() string {
 func (c *instanceTemplateDeleteCmd) CmdLong() string { return "" }
 
 func (c *instanceTemplateDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceTemplateDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	template, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, c.TemplateID)
 	if err != nil {
@@ -43,16 +45,18 @@ func (c *instanceTemplateDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf(
-			"Are you sure you want to delete template %s (%q)?",
-			c.TemplateID,
-			*template.Name,
-		)) {
+		if !utils.AskQuestion(
+			ctx,
+			fmt.Sprintf(
+				"Are you sure you want to delete template %s (%q)?",
+				c.TemplateID,
+				*template.Name,
+			)) {
 			return nil
 		}
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting template %s...", c.TemplateID), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting template %s...", c.TemplateID), func() {
 		err = globalstate.EgoscaleClient.DeleteTemplate(ctx, c.Zone, template)
 	})
 	if err != nil {
@@ -63,7 +67,7 @@ func (c *instanceTemplateDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceTemplateCmd, &instanceTemplateDeleteCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceTemplateCmd, &instanceTemplateDeleteCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
