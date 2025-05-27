@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -15,11 +14,8 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 
-	"github.com/exoscale/cli/pkg/account"
-	v2 "github.com/exoscale/egoscale/v2"
 	"github.com/exoscale/egoscale/v2/oapi"
 )
 
@@ -60,46 +56,6 @@ func RandStringBytes(n int) (string, error) {
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(b), nil
-}
-
-func GetInstancesInSecurityGroup(ctx context.Context, client *v2.Client, securityGroupID string) ([]*v2.Instance, error) {
-	allInstances := make([]*v2.Instance, 0)
-	err := ForEachZone(AllZones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(ctx, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-		instances, err := client.ListInstances(ctx, zone)
-		if err != nil {
-			if !errors.Is(err, exoapi.ErrNotFound) {
-				return err
-			}
-		} else {
-			allInstances = append(allInstances, instances...)
-		}
-
-		return nil
-	})
-	if err != nil {
-		if allInstances == nil {
-			return nil, err
-		} else {
-			fmt.Printf("error while listing instances in security group: %s", err)
-		}
-	}
-
-	var instancesInSG []*v2.Instance
-	for _, instance := range allInstances {
-		if instance.SecurityGroupIDs == nil {
-			continue
-		}
-
-		for _, sgID := range *instance.SecurityGroupIDs {
-			if sgID == securityGroupID {
-				instancesInSG = append(instancesInSG, instance)
-			}
-		}
-	}
-
-	return instancesInSG, nil
 }
 
 func GetInstancesAttachedToEIP(ctx context.Context, client *v3.Client, elasticIPID string) ([]v3.ListInstancesResponseInstances, error) {
