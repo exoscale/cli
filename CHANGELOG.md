@@ -12,6 +12,8 @@
 
 ### Bug fixes
 
+- eip show: correctly list associated instances #706
+
 ### Improvements
 
 - instance: show migrated to egoscale v3
