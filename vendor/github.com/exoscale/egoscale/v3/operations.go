@@ -465,7 +465,7 @@ type ListBlockStorageVolumesOpt func(url.Values)
 
 func ListBlockStorageVolumesWithInstanceID(instanceID UUID) ListBlockStorageVolumesOpt {
 	return func(q url.Values) {
-		q.Add("instanceID", fmt.Sprint(instanceID))
+		q.Add("instance-id", fmt.Sprint(instanceID))
 	}
 }
 
@@ -10674,19 +10674,19 @@ type ListInstancesOpt func(url.Values)
 
 func ListInstancesWithManagerID(managerID UUID) ListInstancesOpt {
 	return func(q url.Values) {
-		q.Add("managerID", fmt.Sprint(managerID))
+		q.Add("manager-id", fmt.Sprint(managerID))
 	}
 }
 
 func ListInstancesWithManagerType(managerType ListInstancesManagerType) ListInstancesOpt {
 	return func(q url.Values) {
-		q.Add("managerType", fmt.Sprint(managerType))
+		q.Add("manager-type", fmt.Sprint(managerType))
 	}
 }
 
 func ListInstancesWithIPAddress(ipAddress string) ListInstancesOpt {
 	return func(q url.Values) {
-		q.Add("ipAddress", fmt.Sprint(ipAddress))
+		q.Add("ip-address", fmt.Sprint(ipAddress))
 	}
 }
 
@@ -14620,6 +14620,8 @@ type CreateSKSClusterRequest struct {
 	Level CreateSKSClusterRequestLevel `json:"level" validate:"required"`
 	// Cluster name
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
+	// Cluster networking configuration.
+	Networking *Networking `json:"networking,omitempty"`
 	// SKS Cluster OpenID config map
 	Oidc *SKSOidc `json:"oidc,omitempty"`
 	// Control plane Kubernetes version
@@ -14784,7 +14786,7 @@ type ListSKSClusterVersionsOpt func(url.Values)
 
 func ListSKSClusterVersionsWithIncludeDeprecated(includeDeprecated string) ListSKSClusterVersionsOpt {
 	return func(q url.Values) {
-		q.Add("includeDeprecated", fmt.Sprint(includeDeprecated))
+		q.Add("include-deprecated", fmt.Sprint(includeDeprecated))
 	}
 }
 

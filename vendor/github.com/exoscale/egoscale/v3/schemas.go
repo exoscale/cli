@@ -3707,6 +3707,20 @@ type Manager struct {
 	Type ManagerType `json:"type,omitempty"`
 }
 
+// Cluster networking configuration.
+type Networking struct {
+	// CIDR Range for Pods in cluster. This must not overlap with any IP ranges assigned to pods. Max of two, comma-separated, dual-stack CIDRs is allowed.
+	// If not specified, defaults to 192.168.0.0/16.
+	ClusterCidr string `json:"cluster-cidr,omitempty"`
+	// Mask size for node cidr in cluster. It must be larger than the Pod CIDR subnet mask. Defaults to 24
+	NodeCidrMaskSizeIpv4 int64 `json:"node-cidr-mask-size-ipv4,omitempty" validate:"omitempty,gt=0"`
+	// Mask size for node cidr in cluster. It must be larger than the Pod CIDR subnet mask. Defaults to 64
+	NodeCidrMaskSizeIpv6 int64 `json:"node-cidr-mask-size-ipv6,omitempty" validate:"omitempty,gt=0"`
+	// CIDR range for service cluster IPs. This must not overlap with any IP ranges assigned to nodes or pods. Max of two, comma-separated, dual-stack CIDRs is allowed.
+	// If not specified, defaults to 10.96.0.0/12.
+	ServiceClusterIPRange string `json:"service-cluster-ip-range,omitempty"`
+}
+
 type OperationReason string
 
 const (
