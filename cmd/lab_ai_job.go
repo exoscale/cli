@@ -5,10 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exossh "github.com/exoscale/cli/pkg/ssh"
-	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
 
@@ -170,16 +167,16 @@ func init() {
 
 // Show command
 
-type labAIJobShowOutput struct {
-	Instance    string
-	InstanceID  string
-	AIJobStatus string `json:"ai_job_status"`
-}
+// type labAIJobShowOutput struct {
+// 	Instance    string
+// 	InstanceID  string
+// 	AIJobStatus string `json:"ai_job_status"`
+// }
 
-func (o *labAIJobShowOutput) Type() string { return "AI Job instance" }
-func (o *labAIJobShowOutput) ToJSON()      { output.JSON(o) }
-func (o *labAIJobShowOutput) ToText()      { output.Text(o) }
-func (o *labAIJobShowOutput) ToTable()     { output.Table(o) }
+// func (o *labAIJobShowOutput) Type() string { return "AI Job instance" }
+// func (o *labAIJobShowOutput) ToJSON()      { output.JSON(o) }
+// func (o *labAIJobShowOutput) ToText()      { output.Text(o) }
+// func (o *labAIJobShowOutput) ToTable()     { output.Table(o) }
 
 var (
 	// Job status command
@@ -191,16 +188,11 @@ type labAIJobShowCmd struct {
 
 	_ bool `cli-cmd:"show"`
 
-	AIJobInstance string      `cli-arg:"#" cli-usage:"NAME|ID"`
-	Zone          v3.ZoneName `cli-short:"z" cli-usage:"AI job Instance zone"`
+	AIJobInstance string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	// SSH options
-	SshKey  string `cli-short:"k" cli-flag:"ssh-key" cli-usage:"instance ssh private key"`
-	SshUser string `cli-short:"u" cli-flag:"ssh-user" cli-usage:"instance ssh user"`
-	SshPort string `cli-short:"p" cli-flag:"ssh-port" cli-usage:"instance ssh port"`
-
-	// AI job options
 	JobName string `cli-flag:"job" cli-usage:"job name of the AI job to show"`
+
+	InstanceSSHCmd
 }
 
 func (c *labAIJobShowCmd) cmdAliases() []string { return gShowAlias }
@@ -214,55 +206,24 @@ Supported output template annotations: %s`,
 }
 
 func (c *labAIJobShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+	jobStatusCommand = fmt.Sprintf(jobStatusCommand, defaultAIJobName)
+	args = append(args, jobStatusCommand)
+	cmd.SetArgs(args)
+
+	return c.InstanceSSHCmd.cmdPreRun(cmd, args)
 }
 
-func (c *labAIJobShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
-	if err != nil {
-		return err
-	}
-
-	instances, err := client.ListInstances(ctx)
-	if err != nil {
-		return err
-	}
-
-	i, err := instances.FindListInstancesResponseInstances(c.AIJobInstance)
-	if err != nil {
-		return err
-	}
-
-	instance, err := client.GetInstance(ctx, i.ID)
-	if err != nil {
-		return err
-	}
-
-	jobStatusCommand = fmt.Sprintf(jobStatusCommand, defaultAIJobName)
-
-	// Connect via the SSH tunnel and issue the command to check the job
-	cmdResponse, err := exossh.RunCmd(instance.PublicIP, c.SshUser, c.SshPort, c.SshKey, jobStatusCommand)
-	if err != nil {
-		return err
-	}
-
-	out := labAIJobShowOutput{
-		Instance:    instance.Name,
-		InstanceID:  instance.ID.String(),
-		AIJobStatus: cmdResponse,
-	}
-
-	return c.outputFunc(&out, nil)
-
+func (c *labAIJobShowCmd) cmdRun(cmd *cobra.Command, args []string) error { //nolint:gocyclo
+	return c.InstanceSSHCmd.cmdRun(cmd, args)
 }
 
 func init() {
 	cobra.CheckErr(registerCLICommand(labAIJobCmd, &labAIJobShowCmd{
+		InstanceSSHCmd: InstanceSSHCmd{
+			//Login:              "debian", TODO to be tested with your template.
+			cliCommandSettings: defaultCLICmdSettings(),
+		},
 		JobName:            defaultAIJobName,
-		SshPort:            "22",
-		SshUser:            "debian",
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }
