@@ -125,9 +125,9 @@ func init() {
 		InstanceCreateCmd: InstanceCreateCmd{
 			cliCommandSettings: defaultCLICmdSettings(),
 			DiskSize:           50,
-			InstanceType:       fmt.Sprintf("%s.%s", "gpu3", "small"), // Default to gpu3.small
-			TemplateVisibility: "private",                             // TODO change it to defaultTemplateVisibility (public) once this template is published
-			Template:           "linux-debian-12-gpu",
+			InstanceType:       fmt.Sprintf("%s.%s", "gpu", "small"),
+			TemplateVisibility: defaultTemplateVisibility,
+			Template:           "Exoscale Lab AI runner",
 		},
 	}))
 }
