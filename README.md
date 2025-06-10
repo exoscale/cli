@@ -7,7 +7,7 @@ Manage your Exoscale infrastructure easily from the command-line with `exo`.
 
 ## Installation
 
-Follow the steps for your platform on our [community docs](https://community.exoscale.com/documentation/tools/exoscale-command-line-interface/#installation).
+Follow the steps for your platform on our [community docs](https://community.exoscale.com/tools/command-line-interface/#installation).
 
 
 ## Configuration
