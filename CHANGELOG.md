@@ -4,6 +4,7 @@
 
 ### Features
 
+- Instance SSH: Add command argument #709
 - instance: enable tpm cmd
 - instance: secureboot and tpm support on create
 - sks: add rotate operators CA cmd
