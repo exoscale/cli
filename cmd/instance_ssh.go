@@ -26,7 +26,8 @@ type instanceSSHCmd struct {
 	} `cli-cmd:"-"`
 	_ bool `cli-cmd:"ssh"`
 
-	Instance string `cli-arg:"#" cli-usage:"INSTANCE-NAME|ID"`
+	Instance        string `cli-arg:"#" cli-usage:"INSTANCE-NAME|ID"`
+	CommandArgument string `cli-arg:"?" cli-usage:"COMMAND ARGUMENT"`
 
 	IPv6        bool   `cli-flag:"ipv6" cli-short:"6" cli-help:"connect to the instance via its IPv6 address"`
 	Login       string `cli-short:"l" cli-help:"SSH username to use for logging in (default: instance template default username)"`
@@ -118,6 +119,9 @@ func (c *instanceSSHCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	sshCmd := c.buildSSHCommand()
+	if c.CommandArgument != "" {
+		sshCmd = append(sshCmd, c.CommandArgument)
+	}
 
 	switch {
 	case c.PrintConfig:
