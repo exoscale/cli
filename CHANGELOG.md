@@ -18,6 +18,7 @@
 ### Improvements
 
 - instance: show migrated to egoscale v3
+- instance: moving the logic to the corresponding subfolder #710
 - instance-type: moving the logic to the corresponding subfolder #700
 - private-networks: moving the logic to the corresponding subfolder #700
 - instance-template: moving the logic to the corresponding subfolder #701
