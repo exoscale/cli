@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"context"
@@ -7,13 +7,10 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
-<<<<<<< Updated upstream:cmd/dbaas_migration_stop.go
-	v3 "github.com/exoscale/egoscale/v3"
-=======
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
->>>>>>> Stashed changes:cmd/dbaas/dbaas_migration_stop.go
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasMigrationStopCmd struct {
@@ -36,20 +33,13 @@ func (c *dbaasMigrationStopCmd) CmdLong() string {
 }
 
 func (c *dbaasMigrationStopCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-<<<<<<< Updated upstream:cmd/dbaas_migration_stop.go
-func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
-=======
 func (c *dbaasMigrationStopCmd) CmdRun(cmd *cobra.Command, args []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
->>>>>>> Stashed changes:cmd/dbaas/dbaas_migration_stop.go
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -81,7 +71,6 @@ func (c *dbaasMigrationStopCmd) CmdRun(cmd *cobra.Command, args []string) error 
 		return fmt.Errorf("failed to retrieve migration status: %s", err)
 	}
 
-<<<<<<< Updated upstream:cmd/dbaas_migration_stop.go
 	op, err := stopMigrationFuncs[db.Type](ctx, c.Name)
 	if err != nil {
 		if errors.Is(err, v3.ErrNotFound) {
@@ -89,12 +78,8 @@ func (c *dbaasMigrationStopCmd) CmdRun(cmd *cobra.Command, args []string) error 
 		}
 		return err
 	}
-	decorateAsyncOperation("Stopping Database Migration...", func() {
-		_, err = client.Wait(ctx, op)
-=======
 	utils.DecorateAsyncOperation("Stopping Database Migration...", func() {
-		err = stopMigrationFuncs[dbType](ctx, c.Zone, c.Name)
->>>>>>> Stashed changes:cmd/dbaas/dbaas_migration_stop.go
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 
 	if err != nil {
@@ -106,6 +91,6 @@ func (c *dbaasMigrationStopCmd) CmdRun(cmd *cobra.Command, args []string) error 
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasMigrationCmd, &dbaasMigrationStopCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

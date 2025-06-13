@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -60,19 +61,11 @@ func (c *dbaasTypeListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-<<<<<<< Updated upstream:cmd/dbaas_type_list.go
-func (c *dbaasTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-=======
 func (c *dbaasTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(
-		exocmd.GContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
-	)
->>>>>>> Stashed changes:cmd/dbaas/dbaas_type_list.go
 
-	ctx := gContext
+	ctx := exocmd.GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -102,6 +95,6 @@ func (c *dbaasTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasTypeCmd, &dbaasTypeListCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

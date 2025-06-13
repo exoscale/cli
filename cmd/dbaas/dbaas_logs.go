@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"errors"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -81,21 +82,16 @@ Example usage with custom output containing only the actual log messages:
 }
 
 func (c *dbaasServiceLogsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-<<<<<<< Updated upstream:cmd/dbaas_logs.go
-func (c *dbaasServiceLogsCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+func (c *dbaasServiceLogsCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
-=======
-func (c *dbaasServiceLogsCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
->>>>>>> Stashed changes:cmd/dbaas/dbaas_logs.go
 
 	svcLogRequest := v3.GetDBAASServiceLogsRequest{}
 	if cmd.Flags().Changed("limit") {
@@ -143,7 +139,7 @@ func (c *dbaasServiceLogsCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasCmd, &dbaasServiceLogsCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
 		Limit: 10,
 		Sort:  "desc",

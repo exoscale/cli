@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"encoding/json"
@@ -6,20 +6,18 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error {
 	var err error
 
-<<<<<<< Updated upstream:cmd/dbaas_create_kafka.go
-	ctx := gContext
-=======
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
->>>>>>> Stashed changes:cmd/dbaas/dbaas_create_kafka.go
+	ctx := exocmd.GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -73,7 +71,7 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 
-		databaseService.KafkaConnectSettings = *settings
+		databaseService.KafkaConnectSettings = settings
 	}
 
 	if c.KafkaRESTSettings != "" {
@@ -88,7 +86,7 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 		if err = json.Unmarshal([]byte(c.KafkaRESTSettings), settings); err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.KafkaRestSettings = *settings
+		databaseService.KafkaRestSettings = settings
 	}
 
 	if c.KafkaSettings != "" {
@@ -103,7 +101,7 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 		if err = json.Unmarshal([]byte(c.KafkaSettings), settings); err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.KafkaSettings = *settings
+		databaseService.KafkaSettings = settings
 	}
 
 	if c.KafkaSchemaRegistrySettings != "" {
@@ -118,22 +116,15 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 		if err = json.Unmarshal([]byte(c.KafkaSchemaRegistrySettings), settings); err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.SchemaRegistrySettings = *settings
+		databaseService.SchemaRegistrySettings = settings
 	}
 
-<<<<<<< Updated upstream:cmd/dbaas_create_kafka.go
 	op, err := client.CreateDBAASServiceKafka(ctx, c.Name, databaseService)
-=======
-	var res *oapi.CreateDbaasServiceKafkaResponse
-	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = globalstate.EgoscaleClient.CreateDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
-	})
->>>>>>> Stashed changes:cmd/dbaas/dbaas_create_kafka.go
 	if err != nil {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {

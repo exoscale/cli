@@ -1,10 +1,11 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
@@ -14,7 +15,7 @@ import (
 func (c *dbaasExternalIntegrationSettingsUpdateCmd) updateDatadog(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -51,7 +52,7 @@ func (c *dbaasExternalIntegrationSettingsUpdateCmd) updateDatadog(cmd *cobra.Com
 
 	if !globalstate.Quiet {
 		return (&dbaasExternalIntegrationSettingsShowCmd{
-			cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+			CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 			IntegrationID:      string(integrationID),
 			Type:               "datadog",
 		}).CmdRun(nil, nil)

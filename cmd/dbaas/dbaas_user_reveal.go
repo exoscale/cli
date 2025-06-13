@@ -1,9 +1,10 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 	"os"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
@@ -55,9 +56,9 @@ func (c *dbaasUserRevealCmd) CmdLong() string {
 }
 
 func (c *dbaasUserRevealCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 
-	return cmd.exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasUserRevealCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -90,6 +91,6 @@ func (c *dbaasUserRevealCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasUserCmd, &dbaasUserRevealCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

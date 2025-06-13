@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"encoding/json"
@@ -7,20 +7,18 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error {
 	var err error
 
-<<<<<<< Updated upstream:cmd/dbaas_create_mysql.go
-	ctx := gContext
-=======
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
->>>>>>> Stashed changes:cmd/dbaas/dbaas_create_mysql.go
+	ctx := exocmd.GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -87,7 +85,7 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 			return fmt.Errorf("invalid settings: %w", err)
 
 		}
-		databaseService.MysqlSettings = *settings
+		databaseService.MysqlSettings = settings
 	}
 
 	if c.MysqlMigrationHost != "" {
@@ -119,19 +117,12 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 		databaseService.BinlogRetentionPeriod = c.MysqlBinlogRetentionPeriod
 	}
 
-<<<<<<< Updated upstream:cmd/dbaas_create_mysql.go
 	op, err := client.CreateDBAASServiceMysql(ctx, c.Name, databaseService)
-=======
-	var res *oapi.CreateDbaasServiceMysqlResponse
-	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = globalstate.EgoscaleClient.CreateDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
-	})
->>>>>>> Stashed changes:cmd/dbaas/dbaas_create_mysql.go
 	if err != nil {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {

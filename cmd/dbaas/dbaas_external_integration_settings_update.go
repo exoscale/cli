@@ -1,9 +1,10 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 	"os"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +32,7 @@ func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdLong() string {
 func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-datadog"):
-		cmdShowHelpFlags(cmd.Flags(), "datadog-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "datadog-")
 		os.Exit(0)
 	}
 
@@ -49,6 +50,6 @@ func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdRun(cmd *cobra.Command, a
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalIntegrationSettingsCmd, &dbaasExternalIntegrationSettingsUpdateCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -1,9 +1,10 @@
-package cmd
+package dbaas
 
 import (
 	"context"
 	"fmt"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -20,7 +21,7 @@ func (o *dbaasMysqlUserShowOutput) formatUser(t *table.Table) {
 
 func (c *dbaasUserShowCmd) showMysql(ctx context.Context) (output.Outputter, error) {
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return &dbaasUserShowOutput{}, err
 	}

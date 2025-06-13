@@ -1,9 +1,10 @@
-package cmd
+package dbaas
 
 import (
 	"context"
 	"fmt"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -11,7 +12,7 @@ import (
 
 func (c *dbaasUserShowCmd) showValkey(ctx context.Context) (output.Outputter, error) {
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return &dbaasUserShowOutput{}, err
 	}

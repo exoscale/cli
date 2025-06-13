@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/mitchellh/go-wordwrap"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -77,7 +78,7 @@ func formatDatabaseServiceRedisTable(t *table.Table, o *dbServiceRedisShowOutput
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (output.Outputter, error) {
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +140,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (out
 
 	case c.ShowURI:
 		// Read password from dedicated endpoint
-		client, err := SwitchClientZoneV3(
+		client, err := exocmd.SwitchClientZoneV3(
 			ctx,
 			globalstate.EgoscaleV3Client,
 			v3.ZoneName(c.Zone),

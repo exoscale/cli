@@ -1,8 +1,9 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -56,6 +57,6 @@ func (c *dbaasExternalEndpointShowCmd) CmdRun(cmd *cobra.Command, args []string)
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointShowCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

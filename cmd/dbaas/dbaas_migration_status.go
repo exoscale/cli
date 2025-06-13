@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"errors"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -31,7 +32,7 @@ func (c *dbaasMigrationStatusCmd) CmdLong() string {
 }
 
 func (c *dbaasMigrationStatusCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
@@ -41,16 +42,9 @@ func (o *databaseMigrationStatus) ToJSON()  { output.JSON(o) }
 func (o *databaseMigrationStatus) ToText()  { output.Text(o) }
 func (o *databaseMigrationStatus) ToTable() { output.Table(o) }
 
-<<<<<<< Updated upstream:cmd/dbaas_migration_status.go
-func (c *dbaasMigrationStatusCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
-=======
 func (c *dbaasMigrationStatusCmd) CmdRun(cmd *cobra.Command, args []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	res, err := globalstate.EgoscaleClient.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
->>>>>>> Stashed changes:cmd/dbaas/dbaas_migration_status.go
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -68,6 +62,6 @@ func (c *dbaasMigrationStatusCmd) CmdRun(cmd *cobra.Command, args []string) erro
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasMigrationCmd, &dbaasMigrationStatusCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

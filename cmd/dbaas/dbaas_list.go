@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -69,15 +70,11 @@ func (c *dbaasServiceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-<<<<<<< Updated upstream:cmd/dbaas_list.go
-		ctx := gContext
-		client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+		ctx := exocmd.GContext
+		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 		if err != nil {
 			return err
 		}
-=======
-		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
->>>>>>> Stashed changes:cmd/dbaas/dbaas_list.go
 
 		list, err := client.ListDBAASServices(ctx)
 		if err != nil {
@@ -108,6 +105,6 @@ func (c *dbaasServiceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasCmd, &dbaasServiceListCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

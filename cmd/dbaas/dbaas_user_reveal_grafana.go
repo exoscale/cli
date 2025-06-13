@@ -1,8 +1,9 @@
-package cmd
+package dbaas
 
 import (
 	"context"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -10,7 +11,7 @@ import (
 
 func (c *dbaasUserRevealCmd) revealGrafana(ctx context.Context) (output.Outputter, error) {
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return &dbaasUserRevealOutput{}, err
 	}

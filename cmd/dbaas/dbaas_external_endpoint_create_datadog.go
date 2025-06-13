@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
@@ -15,7 +16,7 @@ import (
 func (c *dbaasExternalEndpointCreateCmd) createDatadog(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -71,7 +72,7 @@ func (c *dbaasExternalEndpointCreateCmd) createDatadog(cmd *cobra.Command, _ []s
 
 	if !globalstate.Quiet {
 		return (&dbaasExternalEndpointShowCmd{
-			cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+			CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 			EndpointID:         endpointID,
 			Type:               "datadog",
 		}).CmdRun(nil, nil)

@@ -1,10 +1,11 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 	"os"
 	"strconv"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -62,7 +63,7 @@ func (o *datadogOutput) ToTable() {
 func (c *dbaasExternalEndpointShowCmd) showDatadog() (output.Outputter, error) {
 	ctx := exocmd.GContext
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return nil, err
 	}

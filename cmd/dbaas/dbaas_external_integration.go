@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"github.com/spf13/cobra"

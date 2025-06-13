@@ -1,8 +1,9 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
@@ -40,7 +41,7 @@ func (c *dbaasExternalIntegrationDetachCmd) CmdRun(cmd *cobra.Command, args []st
 
 	ctx := exocmd.GContext
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -69,6 +70,6 @@ func (c *dbaasExternalIntegrationDetachCmd) CmdRun(cmd *cobra.Command, args []st
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationDetachCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
