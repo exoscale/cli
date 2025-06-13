@@ -1,9 +1,10 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 	"os"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -35,7 +36,7 @@ func (o *prometheusOutput) ToTable() {
 
 func (c *dbaasExternalEndpointShowCmd) showPrometheus() (output.Outputter, error) {
 	ctx := exocmd.GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return nil, err
 	}

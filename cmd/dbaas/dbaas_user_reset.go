@@ -1,8 +1,10 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 	"os"
+
+	exocmd "github.com/exoscale/cli/cmd"
 
 	"github.com/spf13/cobra"
 )
@@ -33,16 +35,16 @@ func (c *dbaasUserResetCmd) CmdLong() string {
 }
 
 func (c *dbaasUserResetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 
 	switch {
 
 	case cmd.Flags().Changed("help-mysql"):
-		cmdShowHelpFlags(cmd.Flags(), "mysql-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "mysql-")
 		os.Exit(0)
 	}
 
-	return cmd.exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasUserResetCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -74,6 +76,6 @@ func (c *dbaasUserResetCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasUserCmd, &dbaasUserResetCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

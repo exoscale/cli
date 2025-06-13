@@ -1,14 +1,11 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
-<<<<<<< Updated upstream:cmd/dbaas_database_delete_mysql.go
-=======
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
->>>>>>> Stashed changes:cmd/dbaas/dbaas_database_delete_mysql.go
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
@@ -16,7 +13,7 @@ import (
 func (c dbaasDatabaseDeleteCmd) deleteMysql(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -38,8 +35,10 @@ func (c dbaasDatabaseDeleteCmd) deleteMysql(cmd *cobra.Command, _ []string) erro
 		return fmt.Errorf("database %q not found for service %q", c.Database, c.Name)
 	}
 	if !c.Force {
-		if !utils.AskQuestion(fmt.Sprintf(
-			"Are you sure you want to delete database %q", c.Database)) {
+		if !utils.AskQuestion(
+			ctx,
+			fmt.Sprintf(
+				"Are you sure you want to delete database %q", c.Database)) {
 			return nil
 		}
 	}
@@ -60,11 +59,7 @@ func (c dbaasDatabaseDeleteCmd) deleteMysql(cmd *cobra.Command, _ []string) erro
 		return c.OutputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
-<<<<<<< Updated upstream:cmd/dbaas_database_delete_mysql.go
 		}).showDatabaseServiceMysql(ctx))
-=======
-		}).showDatabaseServiceMysql(exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))))
->>>>>>> Stashed changes:cmd/dbaas/dbaas_database_delete_mysql.go
 	}
 
 	return err

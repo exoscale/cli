@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/output"
 )
 
@@ -130,29 +131,29 @@ Supported output template annotations: %s`,
 func (c *dbaasServiceUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-grafana"):
-		cmdShowHelpFlags(cmd.Flags(), "grafana-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "grafana-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-kafka"):
-		cmdShowHelpFlags(cmd.Flags(), "kafka-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "kafka-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-opensearch"):
-		cmdShowHelpFlags(cmd.Flags(), "opensearch-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "opensearch-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-mysql"):
-		cmdShowHelpFlags(cmd.Flags(), "mysql-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "mysql-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-pg"):
-		cmdShowHelpFlags(cmd.Flags(), "pg-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "pg-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-valkey"):
-		cmdShowHelpFlags(cmd.Flags(), "valkey-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "valkey-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-redis"):
-		cmdShowHelpFlags(cmd.Flags(), "redis-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "redis-")
 		os.Exit(0)
 	}
 
-	exocmd.exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
@@ -167,11 +168,7 @@ func (c *dbaasServiceUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 			exocmd.MustCLICommandFlagName(c, &c.MaintenanceTime))
 	}
 
-<<<<<<< Updated upstream:cmd/dbaas_update.go
-	ctx := gContext
-=======
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
->>>>>>> Stashed changes:cmd/dbaas/dbaas_update.go
+	ctx := exocmd.GContext
 
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
@@ -201,6 +198,6 @@ func (c *dbaasServiceUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasCmd, &dbaasServiceUpdateCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

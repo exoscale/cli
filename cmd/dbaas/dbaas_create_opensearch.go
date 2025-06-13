@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"encoding/json"
@@ -6,22 +6,20 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string) error {
 	var err error
 
-<<<<<<< Updated upstream:cmd/dbaas_create_opensearch.go
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
-=======
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
->>>>>>> Stashed changes:cmd/dbaas/dbaas_create_opensearch.go
 
 	db := v3.CreateDBAASServiceOpensearchRequest{
 		KeepIndexRefreshInterval: &c.OpensearchKeepIndexRefreshInterval,
@@ -72,85 +70,47 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 
-		db.OpensearchSettings = *settings
+		db.OpensearchSettings = settings
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) {
 		db.OpensearchDashboards.Enabled = &c.OpensearchDashboardEnabled
 	}
 
-<<<<<<< Updated upstream:cmd/dbaas_create_opensearch.go
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
 		db.OpensearchDashboards.OpensearchRequestTimeout = c.OpensearchDashboardRequestTimeout
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
 		db.OpensearchDashboards.MaxOldSpaceSize = c.OpensearchDashboardMaxOldSpaceSize
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
 		db.IndexTemplate.MappingNestedObjectsLimit = c.OpensearchIndexTemplateMappingNestedObjectsLimit
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
 		db.IndexTemplate.NumberOfReplicas = c.OpensearchIndexTemplateNumberOfReplicas
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
 		db.IndexTemplate.NumberOfShards = c.OpensearchIndexTemplateNumberOfShards
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexPatterns)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexPatterns)) {
 		db.IndexPatterns = make([]v3.CreateDBAASServiceOpensearchRequestIndexPatterns, 0)
 		err := json.Unmarshal([]byte(c.OpensearchIndexPatterns), &db.IndexPatterns)
-=======
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
-		db.OpensearchDashboards.OpensearchRequestTimeout = &c.OpensearchDashboardRequestTimeout
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
-		db.OpensearchDashboards.MaxOldSpaceSize = &c.OpensearchDashboardMaxOldSpaceSize
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
-		db.IndexTemplate.MappingNestedObjectsLimit = &c.OpensearchIndexTemplateMappingNestedObjectsLimit
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
-		db.IndexTemplate.NumberOfReplicas = &c.OpensearchIndexTemplateNumberOfReplicas
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
-		db.IndexTemplate.NumberOfShards = &c.OpensearchIndexTemplateNumberOfShards
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexPatterns)) {
-		db.IndexPatterns = &[]struct {
-			MaxIndexCount    *int64                                                                  `json:"max-index-count,omitempty"`
-			Pattern          *string                                                                 `json:"pattern,omitempty"`
-			SortingAlgorithm *oapi.CreateDbaasServiceOpensearchJSONBodyIndexPatternsSortingAlgorithm `json:"sorting-algorithm,omitempty"`
-		}{}
-
-		err := json.Unmarshal([]byte(c.OpensearchIndexPatterns), db.IndexPatterns)
->>>>>>> Stashed changes:cmd/dbaas/dbaas_create_opensearch.go
 		if err != nil {
 			return fmt.Errorf("failed to decode Opensearch index patterns JSON: %s", err)
 		}
 	}
 
-<<<<<<< Updated upstream:cmd/dbaas_create_opensearch.go
 	op, err := client.CreateDBAASServiceOpensearch(ctx, c.Name, db)
-=======
-	var res *oapi.CreateDbaasServiceOpensearchResponse
-	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = globalstate.EgoscaleClient.CreateDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name), db)
-	})
->>>>>>> Stashed changes:cmd/dbaas/dbaas_create_opensearch.go
 	if err != nil {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {

@@ -1,9 +1,10 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 	"os"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -35,14 +36,14 @@ func (c *dbaasDatabaseCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) er
 	switch {
 
 	case cmd.Flags().Changed("help-mysql"):
-		cmdShowHelpFlags(cmd.Flags(), "mysql-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "mysql-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-pg"):
-		cmdShowHelpFlags(cmd.Flags(), "pg-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "pg-")
 		os.Exit(0)
 	}
 
-	exocmd.exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
@@ -67,6 +68,6 @@ func (c *dbaasDatabaseCreateCmd) CmdRun(cmd *cobra.Command, args []string) error
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasDatabaseCmd, &dbaasDatabaseCreateCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -1,8 +1,9 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +30,7 @@ func (c *dbaasDatabaseDeleteCmd) CmdLong() string {
 
 func (c *dbaasDatabaseDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 
-	exocmd.exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
@@ -54,6 +55,6 @@ func (c *dbaasDatabaseDeleteCmd) CmdRun(cmd *cobra.Command, args []string) error
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasDatabaseCmd, &dbaasDatabaseDeleteCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -1,10 +1,12 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
@@ -39,7 +41,7 @@ func (c *dbaasExternalEndpointDeleteCmd) CmdRun(cmd *cobra.Command, args []strin
 
 	ctx := exocmd.GContext
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -79,6 +81,6 @@ func (c *dbaasExternalEndpointDeleteCmd) CmdRun(cmd *cobra.Command, args []strin
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointDeleteCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

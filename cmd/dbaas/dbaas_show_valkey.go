@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/mitchellh/go-wordwrap"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -77,7 +78,7 @@ func formatDatabaseServiceValkeyTable(t *table.Table, o *dbServiceValkeyShowOutp
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceValkey(ctx context.Context) (output.Outputter, error) {
 
-	client, err := SwitchClientZoneV3(
+	client, err := exocmd.SwitchClientZoneV3(
 		ctx,
 		globalstate.EgoscaleV3Client,
 		v3.ZoneName(c.Zone),

@@ -1,9 +1,10 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 	"os"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -59,19 +60,19 @@ type dbaasExternalEndpointUpdateCmd struct {
 func (c *dbaasExternalEndpointUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-datadog"):
-		cmdShowHelpFlags(cmd.Flags(), "datadog-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "datadog-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-elasticsearch"):
-		cmdShowHelpFlags(cmd.Flags(), "elasticsearch-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "elasticsearch-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-opensearch"):
-		cmdShowHelpFlags(cmd.Flags(), "opensearch-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "opensearch-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-prometheus"):
-		cmdShowHelpFlags(cmd.Flags(), "prometheus-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "prometheus-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-rsyslog"):
-		cmdShowHelpFlags(cmd.Flags(), "rsyslog-")
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "rsyslog-")
 		os.Exit(0)
 	}
 
@@ -110,6 +111,6 @@ func (c *dbaasExternalEndpointUpdateCmd) CmdRun(cmd *cobra.Command, args []strin
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointUpdateCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

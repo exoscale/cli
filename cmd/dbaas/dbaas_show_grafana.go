@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/mitchellh/go-wordwrap"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -80,7 +81,7 @@ func formatDatabaseServiceGrafanaTable(t *table.Table, o *dbServiceGrafanaShowOu
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (output.Outputter, error) {
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return nil, err
 	}

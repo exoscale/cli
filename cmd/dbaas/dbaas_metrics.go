@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -34,24 +35,17 @@ period in JSON format.`
 }
 
 func (c *dbaasServiceMetricsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-<<<<<<< Updated upstream:cmd/dbaas_metrics.go
-func (c *dbaasServiceMetricsCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+func (c *dbaasServiceMetricsCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
 	res, err := client.GetDBAASServiceMetrics(
-=======
-func (c *dbaasServiceMetricsCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	res, err := globalstate.EgoscaleClient.GetDbaasServiceMetricsWithResponse(
->>>>>>> Stashed changes:cmd/dbaas/dbaas_metrics.go
 		ctx,
 		c.Name,
 		v3.GetDBAASServiceMetricsRequest{
@@ -76,7 +70,7 @@ func (c *dbaasServiceMetricsCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasCmd, &dbaasServiceMetricsCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
 		Period: "hour",
 	}))

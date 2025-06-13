@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 )
@@ -190,18 +191,13 @@ Supported output template annotations:
 }
 
 func (c *dbaasServiceShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-<<<<<<< Updated upstream:cmd/dbaas_show.go
-func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	var err error
-=======
 func (c *dbaasServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
->>>>>>> Stashed changes:cmd/dbaas/dbaas_show.go
+	ctx := exocmd.GContext
+	var err error
 
 	svc, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
@@ -230,6 +226,6 @@ func (c *dbaasServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasCmd, &dbaasServiceShowCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

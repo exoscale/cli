@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"encoding/json"
@@ -7,24 +7,16 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
-<<<<<<< Updated upstream:cmd/dbaas_update_opensearch.go
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
-=======
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
-)
+	ctx := exocmd.GContext
 
-func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
->>>>>>> Stashed changes:cmd/dbaas/dbaas_update_opensearch.go
-
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -65,7 +57,7 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 
-		db.OpensearchSettings = *settings
+		db.OpensearchSettings = settings
 		updated = true
 	}
 
@@ -74,63 +66,33 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 		updated = true
 	}
 
-<<<<<<< Updated upstream:cmd/dbaas_update_opensearch.go
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
 		db.OpensearchDashboards.OpensearchRequestTimeout = c.OpensearchDashboardRequestTimeout
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
 		db.OpensearchDashboards.MaxOldSpaceSize = c.OpensearchDashboardMaxOldSpaceSize
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
 		db.IndexTemplate.MappingNestedObjectsLimit = c.OpensearchIndexTemplateMappingNestedObjectsLimit
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
 		db.IndexTemplate.NumberOfReplicas = c.OpensearchIndexTemplateNumberOfReplicas
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
 		db.IndexTemplate.NumberOfShards = c.OpensearchIndexTemplateNumberOfShards
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Plan)) {
-		db.Plan = c.Plan
-=======
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
-		db.OpensearchDashboards.OpensearchRequestTimeout = &c.OpensearchDashboardRequestTimeout
-		updated = true
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
-		db.OpensearchDashboards.MaxOldSpaceSize = &c.OpensearchDashboardMaxOldSpaceSize
-		updated = true
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
-		db.IndexTemplate.MappingNestedObjectsLimit = &c.OpensearchIndexTemplateMappingNestedObjectsLimit
-		updated = true
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
-		db.IndexTemplate.NumberOfReplicas = &c.OpensearchIndexTemplateNumberOfReplicas
-		updated = true
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
-		db.IndexTemplate.NumberOfShards = &c.OpensearchIndexTemplateNumberOfShards
-		updated = true
-	}
-
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Plan)) {
-		db.Plan = &c.Plan
->>>>>>> Stashed changes:cmd/dbaas/dbaas_update_opensearch.go
+		db.Plan = c.Plan
 		updated = true
 	}
 
@@ -144,20 +106,9 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 		updated = true
 	}
 
-<<<<<<< Updated upstream:cmd/dbaas_update_opensearch.go
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexPatterns)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexPatterns)) {
 		db.IndexPatterns = make([]v3.UpdateDBAASServiceOpensearchRequestIndexPatterns, 0)
 		err := json.Unmarshal([]byte(c.OpensearchIndexPatterns), &db.IndexPatterns)
-=======
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexPatterns)) {
-		db.IndexPatterns = &[]struct {
-			MaxIndexCount    *int64                                                                  `json:"max-index-count,omitempty"`
-			Pattern          *string                                                                 `json:"pattern,omitempty"`
-			SortingAlgorithm *oapi.UpdateDbaasServiceOpensearchJSONBodyIndexPatternsSortingAlgorithm `json:"sorting-algorithm,omitempty"`
-		}{}
-
-		err := json.Unmarshal([]byte(c.OpensearchIndexPatterns), db.IndexPatterns)
->>>>>>> Stashed changes:cmd/dbaas/dbaas_update_opensearch.go
 		if err != nil {
 			return fmt.Errorf("failed to decode Opensearch index patterns JSON: %w", err)
 		}
@@ -165,14 +116,7 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 	}
 
 	if updated {
-<<<<<<< Updated upstream:cmd/dbaas_update_opensearch.go
 		op, err := client.UpdateDBAASServiceOpensearch(ctx, c.Name, db)
-=======
-		var res *oapi.UpdateDbaasServiceOpensearchResponse
-		utils.DecorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
-			res, err = globalstate.EgoscaleClient.UpdateDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name), db)
-		})
->>>>>>> Stashed changes:cmd/dbaas/dbaas_update_opensearch.go
 		if err != nil {
 			if errors.Is(err, v3.ErrNotFound) {
 				return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -180,7 +124,7 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 			return err
 		}
 
-		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
+		utils.DecorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
 			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 		if err != nil {

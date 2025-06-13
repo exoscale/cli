@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -62,13 +63,13 @@ func (o *dbaasTypePlanBackupOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 
-	t.Append([]string{"Backup interval (hours)", Int64PtrFormatOutput(o.Interval)})
-	t.Append([]string{"Max backups", Int64PtrFormatOutput(o.MaxCount)})
+	t.Append([]string{"Backup interval (hours)", utils.Int64PtrFormatOutput(o.Interval)})
+	t.Append([]string{"Max backups", utils.Int64PtrFormatOutput(o.MaxCount)})
 	t.Append([]string{"Recovery mode", utils.DefaultString(o.RecoveryMode, "")})
-	t.Append([]string{"Frequent backup interval", Int64PtrFormatOutput(o.FrequentIntervalMinutes)})
-	t.Append([]string{"Frequent backup max age", Int64PtrFormatOutput(o.FrequentOldestAgeMinutes)})
-	t.Append([]string{"Infrequent backup interval", Int64PtrFormatOutput(o.InfrequentIntervalMinutes)})
-	t.Append([]string{"Infrequent backup max age", Int64PtrFormatOutput(o.InfrequentOldestAgeMinutes)})
+	t.Append([]string{"Frequent backup interval", utils.Int64PtrFormatOutput(o.FrequentIntervalMinutes)})
+	t.Append([]string{"Frequent backup max age", utils.Int64PtrFormatOutput(o.FrequentOldestAgeMinutes)})
+	t.Append([]string{"Infrequent backup interval", utils.Int64PtrFormatOutput(o.InfrequentIntervalMinutes)})
+	t.Append([]string{"Infrequent backup max age", utils.Int64PtrFormatOutput(o.InfrequentOldestAgeMinutes)})
 }
 
 type dbaasTypeShowOutput struct {
@@ -158,19 +159,11 @@ func (c *dbaasTypeShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-<<<<<<< Updated upstream:cmd/dbaas_type_show.go
-func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
-	ctx := gContext
-	var err error
-=======
 func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
-	ctx := exoapi.WithEndpoint(
-		exocmd.GContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
-	)
->>>>>>> Stashed changes:cmd/dbaas/dbaas_type_show.go
+	ctx := exocmd.GContext
+	var err error
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -339,16 +332,7 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-<<<<<<< Updated upstream:cmd/dbaas_type_show.go
 			res, err := client.GetDBAASSettingsValkey(ctx)
-=======
-			clientV3, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
-			if err != nil {
-				return err
-			}
-
-			res, err := clientV3.GetDBAASSettingsValkey(ctx)
->>>>>>> Stashed changes:cmd/dbaas/dbaas_type_show.go
 
 			if err != nil {
 				return err
@@ -375,8 +359,7 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 		if bc == nil {
 			return fmt.Errorf("%q is not a valid plan", c.ShowBackupConfig)
 		}
-<<<<<<< Updated upstream:cmd/dbaas_type_show.go
-		return c.outputFunc(&dbaasTypePlanBackupOutput{
+		return c.OutputFunc(&dbaasTypePlanBackupOutput{
 			Interval:                   &bc.Interval,
 			MaxCount:                   &bc.MaxCount,
 			RecoveryMode:               &bc.RecoveryMode,
@@ -387,25 +370,9 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 		}, nil)
 	}
 
-	return c.outputFunc(&dbaasTypeShowOutput{
+	return c.OutputFunc(&dbaasTypeShowOutput{
 		Name:        string(dt.Name),
 		Description: dt.Description,
-=======
-		return c.OutputFunc(&dbaasTypePlanBackupOutput{
-			Interval:                   bc.Interval,
-			MaxCount:                   bc.MaxCount,
-			RecoveryMode:               bc.RecoveryMode,
-			FrequentIntervalMinutes:    bc.FrequentIntervalMinutes,
-			FrequentOldestAgeMinutes:   bc.FrequentOldestAgeMinutes,
-			InfrequentIntervalMinutes:  bc.InfrequentIntervalMinutes,
-			InfrequentOldestAgeMinutes: bc.InfrequentOldestAgeMinutes,
-		}, nil)
-	}
-
-	return c.OutputFunc(&dbaasTypeShowOutput{
-		Name:        *dt.Name,
-		Description: utils.DefaultString(dt.Description, ""),
->>>>>>> Stashed changes:cmd/dbaas/dbaas_type_show.go
 		AvailableVersions: func() (v []string) {
 			if dt.AvailableVersions != nil {
 				v = dt.AvailableVersions
@@ -418,6 +385,6 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasTypeCmd, &dbaasTypeShowCmd{
-		cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -19,4 +19,5 @@ import (
 	_ "github.com/exoscale/cli/cmd/compute/security_group"
 	_ "github.com/exoscale/cli/cmd/compute/sks"
 	_ "github.com/exoscale/cli/cmd/compute/ssh_key"
+	_ "github.com/exoscale/cli/cmd/dbaas"
 )

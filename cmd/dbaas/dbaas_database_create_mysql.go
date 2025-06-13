@@ -1,14 +1,11 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
-<<<<<<< Updated upstream:cmd/dbaas_database_create_mysql.go
-=======
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
->>>>>>> Stashed changes:cmd/dbaas/dbaas_database_create_mysql.go
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
@@ -17,7 +14,7 @@ func (c dbaasDatabaseCreateCmd) createMysql(cmd *cobra.Command, _ []string) erro
 
 	ctx := exocmd.GContext
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -51,11 +48,7 @@ func (c dbaasDatabaseCreateCmd) createMysql(cmd *cobra.Command, _ []string) erro
 		return c.OutputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
-<<<<<<< Updated upstream:cmd/dbaas_database_create_mysql.go
 		}).showDatabaseServiceMysql(ctx))
-=======
-		}).showDatabaseServiceMysql(exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))))
->>>>>>> Stashed changes:cmd/dbaas/dbaas_database_create_mysql.go
 	}
 
 	return err

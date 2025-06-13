@@ -1,4 +1,4 @@
-package cmd
+package dbaas
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/xeipuuv/gojsonschema"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -36,7 +37,7 @@ var dbaasCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(dbaasCmd)
+	exocmd.RootCmd.AddCommand(dbaasCmd)
 }
 
 // parseDtabaseBackupSchedule parses a Database Service backup schedule value
@@ -165,7 +166,7 @@ func dbaasShowSettings(settings map[string]interface{}) {
 
 func dbaasGetV3(ctx context.Context, name, zone string) (v3.DBAASServiceCommon, error) {
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 	if err != nil {
 		return v3.DBAASServiceCommon{}, err
 	}

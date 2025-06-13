@@ -1,9 +1,10 @@
-package cmd
+package dbaas
 
 import (
 	"context"
 	"time"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -25,7 +26,7 @@ func (o *dbaasKafkaUserRevealOutput) formatUser(t *table.Table) {
 
 func (c *dbaasUserRevealCmd) revealKafka(ctx context.Context) (output.Outputter, error) {
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return &dbaasUserRevealOutput{}, err
 	}

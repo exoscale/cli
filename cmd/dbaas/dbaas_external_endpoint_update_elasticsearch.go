@@ -1,8 +1,9 @@
-package cmd
+package dbaas
 
 import (
 	"fmt"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
@@ -12,7 +13,7 @@ import (
 
 func (c *dbaasExternalEndpointUpdateCmd) updateElasticsearch(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -52,7 +53,7 @@ func (c *dbaasExternalEndpointUpdateCmd) updateElasticsearch(_ *cobra.Command, _
 	endpointID := op.Reference.ID.String()
 	if !globalstate.Quiet {
 		return (&dbaasExternalEndpointShowCmd{
-			cliCommandSettings: exocmd.DefaultCLICmdSettings(),
+			CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 			EndpointID:         endpointID,
 			Type:               "elasticsearch",
 		}).CmdRun(nil, nil)
