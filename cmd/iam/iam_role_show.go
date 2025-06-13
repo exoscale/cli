@@ -1,4 +1,4 @@
-package cmd
+package iam
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -28,7 +29,7 @@ func (o *iamRoleShowOutput) ToText()  { output.Text(o) }
 func (o *iamRoleShowOutput) ToTable() { output.Table(o) }
 
 type iamRoleShowCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -37,7 +38,7 @@ type iamRoleShowCmd struct {
 	Role string `cli-arg:"#" cli-usage:"ID|NAME"`
 }
 
-func (c *iamRoleShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *iamRoleShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *iamRoleShowCmd) CmdShort() string {
 	return "Show Role details"
@@ -51,7 +52,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *iamRoleShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamRoleShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -59,8 +60,8 @@ func (c *iamRoleShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return errors.New("role ID not provided")
 	}
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -116,7 +117,7 @@ func (c *iamRoleShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(iamRoleCmd, &iamRoleShowCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(iamRoleCmd, &iamRoleShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

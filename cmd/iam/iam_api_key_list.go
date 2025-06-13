@@ -1,4 +1,4 @@
-package cmd
+package iam
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -32,7 +33,7 @@ func (o *iamAPIKeyListOutput) ToTable() {
 	})
 	defer t.Render()
 
-	ctx := GContext
+	ctx := exocmd.GContext
 	client := globalstate.EgoscaleV3Client
 
 	rolesMap := map[string]string{}
@@ -63,12 +64,12 @@ func (o *iamAPIKeyListOutput) ToTable() {
 }
 
 type iamAPIKeyListCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *iamAPIKeyListCmd) CmdAliases() []string { return GListAlias }
+func (c *iamAPIKeyListCmd) CmdAliases() []string { return exocmd.GListAlias }
 
 func (c *iamAPIKeyListCmd) CmdShort() string { return "List API Keys" }
 
@@ -80,11 +81,11 @@ Supported output template annotations: %s`,
 }
 
 func (c *iamAPIKeyListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamAPIKeyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
+	ctx := exocmd.GContext
 	client := globalstate.EgoscaleV3Client
 
 	listAPIKeysResp, err := client.ListAPIKeys(ctx)
@@ -106,7 +107,7 @@ func (c *iamAPIKeyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(iamAPIKeyCmd, &iamAPIKeyListCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(iamAPIKeyCmd, &iamAPIKeyListCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
