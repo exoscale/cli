@@ -1,4 +1,4 @@
-package cmd
+package iam
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 
@@ -19,7 +20,7 @@ var iamCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(iamCmd)
+	exocmd.RootCmd.AddCommand(iamCmd)
 }
 
 type iamPolicyOutput struct {

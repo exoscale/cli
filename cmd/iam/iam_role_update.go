@@ -1,4 +1,4 @@
-package cmd
+package iam
 
 import (
 	"errors"
@@ -8,14 +8,16 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamRoleUpdateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	Role string `cli-arg:"#" cli-usage:"ID|NAME"`
 
@@ -42,7 +44,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *iamRoleUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -50,8 +52,8 @@ func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return errors.New("role not provided")
 	}
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -67,13 +69,13 @@ func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	updateRole := v3.UpdateIAMRoleRequest{}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
 		updateRole.Description = c.Description
 	}
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
 		updateRole.Labels = c.Labels
 	}
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Permissions)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Permissions)) {
 		updateRole.Permissions = c.Permissions
 	}
 
@@ -81,7 +83,7 @@ func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	decorateAsyncOperation("Updating IAM role...", func() {
+	utils.DecorateAsyncOperation("Updating IAM role...", func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -119,7 +121,7 @@ func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	decorateAsyncOperation("Updating IAM role policy...", func() {
+	utils.DecorateAsyncOperation("Updating IAM role policy...", func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -137,7 +139,7 @@ func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(iamRoleCmd, &iamRoleUpdateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(iamRoleCmd, &iamRoleUpdateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
