@@ -1,4 +1,4 @@
-package cmd
+package iam
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -26,12 +27,12 @@ func (o *iamRoleListOutput) ToText()  { output.Text(o) }
 func (o *iamRoleListOutput) ToTable() { output.Table(o) }
 
 type iamRoleListCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *iamRoleListCmd) CmdAliases() []string { return GListAlias }
+func (c *iamRoleListCmd) CmdAliases() []string { return exocmd.GListAlias }
 
 func (c *iamRoleListCmd) CmdShort() string { return "List IAM Roles" }
 
@@ -43,12 +44,12 @@ Supported output template annotations: %s`,
 }
 
 func (c *iamRoleListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamRoleListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -72,7 +73,7 @@ func (c *iamRoleListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(iamRoleCmd, &iamRoleListCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(iamRoleCmd, &iamRoleListCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -1,17 +1,19 @@
-package cmd
+package iam
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamRoleDeleteCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -20,7 +22,7 @@ type iamRoleDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *iamRoleDeleteCmd) CmdAliases() []string { return GDeleteAlias }
+func (c *iamRoleDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
 
 func (c *iamRoleDeleteCmd) CmdShort() string {
 	return "Delete IAM Role"
@@ -32,12 +34,12 @@ It will fail if the Role is attached to an IAM Key.`
 }
 
 func (c *iamRoleDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamRoleDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -52,7 +54,7 @@ func (c *iamRoleDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to delete IAM Role %s?", role.ID.String())) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete IAM Role %s?", role.ID.String())) {
 			return nil
 		}
 	}
@@ -62,14 +64,14 @@ func (c *iamRoleDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting IAM role %s...", role.ID.String()), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting IAM role %s...", role.ID.String()), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	return err
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(iamRoleCmd, &iamRoleDeleteCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(iamRoleCmd, &iamRoleDeleteCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
