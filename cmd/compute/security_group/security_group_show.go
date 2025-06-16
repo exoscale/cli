@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute/instance"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -226,7 +227,7 @@ func (c *securityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	for _, vm := range instances {
-		publicIP := exocmd.EmptyIPAddressVisualization
+		publicIP := instance.EmptyIPAddressVisualization
 		if vm.PublicIPAddress != nil && (!vm.PublicIPAddress.IsUnspecified() || len(*vm.PublicIPAddress) > 0) {
 			publicIP = vm.PublicIPAddress.String()
 		}
