@@ -95,9 +95,9 @@ func CmdExitOnUsageError(cmd *cobra.Command, reason string) {
 	os.Exit(1)
 }
 
-// cmdShowHelpFlags outputs flags matching the specified prefix in the provided flag set.
+// CmdShowHelpFlags outputs flags matching the specified prefix in the provided flag set.
 // This can be used for example to craft specialized usage help messages for hidden flags.
-func cmdShowHelpFlags(flags *pflag.FlagSet, prefix string) {
+func CmdShowHelpFlags(flags *pflag.FlagSet, prefix string) {
 	buf := bytes.NewBuffer(nil)
 	t := table.NewEmbeddedTable(buf)
 

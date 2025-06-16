@@ -38,6 +38,7 @@
 - security-group: moving the logic to the corresponding subfolder #702
 - instance-pool: moving the logic to the corresponding subfolder #704
 - blockstorage: moving the logic to the corresponding subfolder #703
+- db-aas: moving the logic to the corresponding subfolder #712
 
 ## 1.84.1
 
