@@ -42,6 +42,7 @@
 - instance-pool: moving the logic to the corresponding subfolder #704
 - blockstorage: moving the logic to the corresponding subfolder #703
 - db-aas: moving the logic to the corresponding subfolder #712
+- storage: moving the logic to the corresponding subfolder #713
 
 ## 1.84.1
 
