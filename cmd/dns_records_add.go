@@ -15,7 +15,7 @@ var dnsACmd = &cobra.Command{
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{"address"})
+		return CmdCheckRequiredFlags(cmd, []string{"address"})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name, err := cmd.Flags().GetString("name")
@@ -58,7 +58,7 @@ var dnsAAAACmd = &cobra.Command{
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{"address"})
+		return CmdCheckRequiredFlags(cmd, []string{"address"})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name, err := cmd.Flags().GetString("name")
@@ -104,7 +104,7 @@ More information on CAA flags: https://tools.ietf.org/html/rfc6844#section-3`,
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{})
+		return CmdCheckRequiredFlags(cmd, []string{})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name, err := cmd.Flags().GetString("name")
@@ -159,7 +159,7 @@ the record name. Note: If you want to redirect to a URL, use a URL record instea
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{"alias"})
+		return CmdCheckRequiredFlags(cmd, []string{"alias"})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name, err := cmd.Flags().GetString("name")
@@ -203,7 +203,7 @@ These types of records are used when a server is reached by several names. Only 
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{
+		return CmdCheckRequiredFlags(cmd, []string{
 			"alias",
 			"name",
 		})
@@ -249,7 +249,7 @@ var dnsHINFOCmd = &cobra.Command{
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{
+		return CmdCheckRequiredFlags(cmd, []string{
 			"cpu",
 			"os",
 		})
@@ -304,7 +304,7 @@ These types of records are used to describe which servers handle incoming email.
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{
+		return CmdCheckRequiredFlags(cmd, []string{
 			"mail-server-host",
 			"priority",
 		})
@@ -356,7 +356,7 @@ the domain name syntax to a label that is. More information can be found in RFC 
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{
+		return CmdCheckRequiredFlags(cmd, []string{
 			"order",
 			"preference",
 			"service",
@@ -466,7 +466,7 @@ You may only delegate subdomains (for example subdomain.yourdomain.com).`,
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{
+		return CmdCheckRequiredFlags(cmd, []string{
 			"name",
 			"name-server",
 		})
@@ -513,7 +513,7 @@ part of a pool of available CNAME records. This is a DNSimple custom record type
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{
+		return CmdCheckRequiredFlags(cmd, []string{
 			"name",
 			"alias",
 		})
@@ -559,7 +559,7 @@ var dnsSRVCmd = &cobra.Command{
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{
+		return CmdCheckRequiredFlags(cmd, []string{
 			"symbolic-name",
 			"protocol",
 			"priority",
@@ -639,7 +639,7 @@ var dnsSSHFPCmd = &cobra.Command{
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{
+		return CmdCheckRequiredFlags(cmd, []string{
 			"algorithm",
 			"fingerprint-type",
 		})
@@ -696,7 +696,7 @@ the standard record types. For example, Google uses this type of record for doma
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{"content"})
+		return CmdCheckRequiredFlags(cmd, []string{"content"})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name, err := cmd.Flags().GetString("name")
@@ -740,7 +740,7 @@ This type of record uses an HTTP redirect to redirect visitors from a domain to 
 			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		return cmdCheckRequiredFlags(cmd, []string{"destination-url"})
+		return CmdCheckRequiredFlags(cmd, []string{"destination-url"})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name, err := cmd.Flags().GetString("name")

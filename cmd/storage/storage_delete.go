@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/utils"
 )
 
 var storageDeleteCmd = &cobra.Command{
@@ -27,7 +29,7 @@ argument with "/":
 
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if len(args) != 1 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
@@ -72,21 +74,21 @@ argument with "/":
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete %s%s/%s?",
+			if !utils.AskQuestion(exocmd.GContext, fmt.Sprintf("Are you sure you want to delete %s%s/%s?",
 				sos.BucketPrefix, bucket, prefix)) {
 				return nil
 			}
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
-			sos.ClientOptZoneFromBucket(GContext, bucket),
+			exocmd.GContext,
+			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		deleted, err := storage.DeleteObjects(GContext, bucket, prefix, recursive)
+		deleted, err := storage.DeleteObjects(exocmd.GContext, bucket, prefix, recursive)
 		if err != nil {
 			if merr, ok := err.(*multierror.Error); ok {
 				// Error in individual files, print to stderr & continue
@@ -110,7 +112,7 @@ argument with "/":
 }
 
 func init() {
-	storageDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
+	storageDeleteCmd.Flags().BoolP("force", "f", false, exocmd.CmdFlagForceHelp)
 	storageDeleteCmd.Flags().BoolP("recursive", "r", false, "delete objects recursively")
 	storageDeleteCmd.Flags().BoolP("verbose", "v", false, "output deleted objects")
 	storageCmd.AddCommand(storageDeleteCmd)

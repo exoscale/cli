@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"encoding/json"
@@ -6,12 +6,13 @@ import (
 	"os"
 	"strings"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	storageBucketReplicationSetCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
+	storageBucketReplicationSetCmd.Flags().StringP(exocmd.ZoneFlagLong, exocmd.ZoneFlagShort, "", exocmd.ZoneFlagMsg)
 	storageBucketReplicationCmd.AddCommand(storageBucketReplicationSetCmd)
 }
 
@@ -44,8 +45,8 @@ More information at https://docs.aws.amazon.com/cli/latest/reference/s3api/put-b
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		CmdSetZoneFlagFromDefault(cmd)
-		return cmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
+		exocmd.CmdSetZoneFlagFromDefault(cmd)
+		return exocmd.CmdCheckRequiredFlags(cmd, []string{exocmd.ZoneFlagLong})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -63,13 +64,13 @@ More information at https://docs.aws.amazon.com/cli/latest/reference/s3api/put-b
 
 		bucket := args[0]
 
-		zone, err := cmd.Flags().GetString(zoneFlagLong)
+		zone, err := cmd.Flags().GetString(exocmd.ZoneFlagLong)
 		if err != nil {
 			return err
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
+			exocmd.GContext,
 			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {
@@ -78,7 +79,7 @@ More information at https://docs.aws.amazon.com/cli/latest/reference/s3api/put-b
 
 		s3conf := configuration.ToS3()
 
-		err = storage.PutBucketReplication(GContext, bucket, s3conf)
+		err = storage.PutBucketReplication(exocmd.GContext, bucket, s3conf)
 
 		return err
 	},

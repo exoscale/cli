@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -7,8 +7,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/utils"
 )
 
 const (
@@ -74,12 +76,12 @@ Example:
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		return cmdCheckRequiredFlags(cmd, []string{
+		return exocmd.CmdCheckRequiredFlags(cmd, []string{
 			storageCORSAddCmdFlagAllowedOrigin,
 			storageCORSAddCmdFlagAllowedMethod,
 		})
@@ -89,20 +91,20 @@ Example:
 		bucket := args[0]
 
 		storage, err := sos.NewStorageClient(
-			GContext,
-			sos.ClientOptZoneFromBucket(GContext, bucket),
+			exocmd.GContext,
+			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		cors := CORSRuleFromCmdFlags(cmd.Flags())
-		if err := storage.AddBucketCORSRule(GContext, bucket, cors); err != nil {
+		if err := storage.AddBucketCORSRule(exocmd.GContext, bucket, cors); err != nil {
 			return fmt.Errorf("unable to add rule to the bucket CORS configuration: %w", err)
 		}
 
 		if !globalstate.Quiet {
-			return printOutput(storage.ShowBucket(GContext, bucket))
+			return utils.PrintOutput(storage.ShowBucket(exocmd.GContext, bucket))
 		}
 
 		return nil

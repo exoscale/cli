@@ -1,15 +1,17 @@
-package cmd
+package storage
 
 import (
 	"fmt"
 	"strings"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/utils"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	storageBucketReplicationShowCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
+	storageBucketReplicationShowCmd.Flags().StringP(exocmd.ZoneFlagLong, exocmd.ZoneFlagShort, "", exocmd.ZoneFlagMsg)
 	storageBucketReplicationCmd.AddCommand(storageBucketReplicationShowCmd)
 }
 
@@ -21,31 +23,31 @@ var storageBucketReplicationShowCmd = &cobra.Command{
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		CmdSetZoneFlagFromDefault(cmd)
-		return cmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
+		exocmd.CmdSetZoneFlagFromDefault(cmd)
+		return exocmd.CmdCheckRequiredFlags(cmd, []string{exocmd.ZoneFlagLong})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		bucket := args[0]
 
-		zone, err := cmd.Flags().GetString(zoneFlagLong)
+		zone, err := cmd.Flags().GetString(exocmd.ZoneFlagLong)
 		if err != nil {
 			return err
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
+			exocmd.GContext,
 			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		o, err := storage.GetBucketReplication(GContext, bucket)
+		o, err := storage.GetBucketReplication(exocmd.GContext, bucket)
 		if err != nil {
 			return err
 		}
 
-		return printOutput(o, nil)
+		return utils.PrintOutput(o, nil)
 	},
 }

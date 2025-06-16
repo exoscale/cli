@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -6,8 +6,10 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/collections"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/utils"
 )
 
 const (
@@ -20,7 +22,7 @@ const (
 )
 
 func init() {
-	storageBucketObjectOwnershipCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
+	storageBucketObjectOwnershipCmd.Flags().StringP(exocmd.ZoneFlagLong, exocmd.ZoneFlagShort, "", exocmd.ZoneFlagMsg)
 	storageBucketCmd.AddCommand(storageBucketObjectOwnershipCmd)
 }
 
@@ -30,34 +32,34 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 	Short:   "Manage the Object Ownership setting of a Storage Bucket",
 	Long:    storageBucketObjectOwnershipCmdLongHelp(),
 
-	PreRunE: func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(c *cobra.Command, args []string) error {
 		if len(args) != 2 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(c, "invalid arguments")
 		}
 
 		permittedOps := collections.NewSet(objOwnershipStatus, objOwnershipObjectWriter, objOwnershipBucketOwnerEnforced, objOwnershipBucketOwnerPreferred)
 		if !permittedOps.Contains(args[objOwnershipOpArgIndex]) {
-			CmdExitOnUsageError(cmd, "invalid operation")
+			exocmd.CmdExitOnUsageError(c, "invalid operation")
 		}
 
 		args[objOwnershipBucketArgIndex] = strings.TrimPrefix(args[objOwnershipBucketArgIndex], sos.BucketPrefix)
 
-		CmdSetZoneFlagFromDefault(cmd)
+		exocmd.CmdSetZoneFlagFromDefault(c)
 
-		return cmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
+		return exocmd.CmdCheckRequiredFlags(c, []string{exocmd.ZoneFlagLong})
 	},
 
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(c *cobra.Command, args []string) error {
 		ownershipCommand := args[objOwnershipOpArgIndex]
 		bucket := args[objOwnershipBucketArgIndex]
 
-		zone, err := cmd.Flags().GetString(zoneFlagLong)
+		zone, err := c.Flags().GetString(exocmd.ZoneFlagLong)
 		if err != nil {
 			return err
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
+			exocmd.GContext,
 			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {
@@ -66,13 +68,13 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 
 		switch ownershipCommand {
 		case objOwnershipStatus:
-			return printOutput(storage.GetBucketObjectOwnershipInfo(cmd.Context(), bucket))
+			return utils.PrintOutput(storage.GetBucketObjectOwnershipInfo(c.Context(), bucket))
 		case objOwnershipObjectWriter:
-			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, sos.ObjectOwnershipObjectWriter)
+			return storage.SetBucketObjectOwnership(c.Context(), bucket, sos.ObjectOwnershipObjectWriter)
 		case objOwnershipBucketOwnerPreferred:
-			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, sos.ObjectOwnershipBucketOwnerPreferred)
+			return storage.SetBucketObjectOwnership(c.Context(), bucket, sos.ObjectOwnershipBucketOwnerPreferred)
 		case objOwnershipBucketOwnerEnforced:
-			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, sos.ObjectOwnershipBucketOwnerEnforced)
+			return storage.SetBucketObjectOwnership(c.Context(), bucket, sos.ObjectOwnershipBucketOwnerEnforced)
 		}
 
 		return fmt.Errorf("invalid operation")

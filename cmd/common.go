@@ -1,7 +1,7 @@
 package cmd
 
 const (
-	zoneFlagLong  = "zone"
-	zoneFlagShort = "z"
-	zoneFlagMsg   = "bucket zone"
+	ZoneFlagLong  = "zone"
+	ZoneFlagShort = "z"
+	ZoneFlagMsg   = "bucket zone"
 )

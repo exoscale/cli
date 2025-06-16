@@ -30,7 +30,7 @@ func init() {
 		},
 	}
 	dnsCmd.AddCommand(dnsDeleteCmd)
-	dnsDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
+	dnsDeleteCmd.Flags().BoolP("force", "f", false, CmdFlagForceHelp)
 }
 
 func deleteDomain(ident string, force bool) error {

@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -6,9 +6,11 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/utils"
 )
 
 var storageMetadataAddCmd = &cobra.Command{
@@ -33,18 +35,18 @@ Supported output template annotations: %s`,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
-			CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
+			exocmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
 		}
 
 		for _, kv := range args[1:] {
 			if !strings.Contains(kv, "=") {
-				CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", kv))
+				exocmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", kv))
 			}
 		}
 
@@ -72,19 +74,19 @@ Supported output template annotations: %s`,
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
-			sos.ClientOptZoneFromBucket(GContext, bucket),
+			exocmd.GContext,
+			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.AddObjectsMetadata(GContext, bucket, prefix, metadata, recursive); err != nil {
+		if err := storage.AddObjectsMetadata(exocmd.GContext, bucket, prefix, metadata, recursive); err != nil {
 			return fmt.Errorf("unable to add metadata to object: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return printOutput(storage.ShowObject(GContext, bucket, prefix))
+			return utils.PrintOutput(storage.ShowObject(exocmd.GContext, bucket, prefix))
 		}
 
 		if !globalstate.Quiet {

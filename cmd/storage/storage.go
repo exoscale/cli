@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ import (
 	"github.com/aws/smithy-go/middleware"
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	egoscale "github.com/exoscale/egoscale/v2"
 )
@@ -33,7 +34,7 @@ func init() {
 			// Custom HTTP client User-Agent
 			awsconfig.WithAPIOptions([]func(*middleware.Stack) error{
 				awsmiddleware.AddUserAgentKeyValue("Exoscale-CLI",
-					fmt.Sprintf("%s (%s) %s", gVersion, gCommit, egoscale.UserAgent)),
+					fmt.Sprintf("%s (%s) %s", exocmd.GVersion, exocmd.GCommit, egoscale.UserAgent)),
 			}),
 
 			// Conditional HTTP client request tracing
@@ -47,7 +48,7 @@ func init() {
 
 		return nil
 	}
-	RootCmd.AddCommand(storageCmd)
+	exocmd.RootCmd.AddCommand(storageCmd)
 }
 
 var storageCmdLongHelp = func() string {

@@ -31,12 +31,12 @@ func (e cliCommandImplemError) Error() string {
 		e.reason)
 }
 
-const cmdFlagForceHelp = "attempt to perform the operation without prompting for confirmation"
+const CmdFlagForceHelp = "attempt to perform the operation without prompting for confirmation"
 
-// cmdCheckRequiredFlags evaluates the specified flags as parsed in the cobra.Command flagset to check that
+// CmdCheckRequiredFlags evaluates the specified flags as parsed in the cobra.Command flagset to check that
 // their value is unset (i.e. null/empty/zero, depending on the type), and returns a multierror listing all
 // flags missing a required value.
-func cmdCheckRequiredFlags(cmd *cobra.Command, flags []string) error {
+func CmdCheckRequiredFlags(cmd *cobra.Command, flags []string) error {
 	var err *multierror.Error
 
 	cmd.Flags().VisitAll(func(flag *pflag.Flag) {

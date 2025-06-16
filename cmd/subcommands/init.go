@@ -21,4 +21,5 @@ import (
 	_ "github.com/exoscale/cli/cmd/compute/ssh_key"
 	_ "github.com/exoscale/cli/cmd/dbaas"
 	_ "github.com/exoscale/cli/cmd/iam"
+	_ "github.com/exoscale/cli/cmd/storage"
 )
