@@ -1,4 +1,4 @@
-package cmd
+package iam
 
 import (
 	"errors"
@@ -8,14 +8,16 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamRoleCreateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -46,7 +48,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *iamRoleCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamRoleCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -54,8 +56,8 @@ func (c *iamRoleCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return errors.New("NAME not provided")
 	}
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -99,7 +101,7 @@ func (c *iamRoleCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	decorateAsyncOperation("Creating IAM role...", func() {
+	utils.DecorateAsyncOperation("Creating IAM role...", func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -117,8 +119,8 @@ func (c *iamRoleCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(iamRoleCmd, &iamRoleCreateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(iamRoleCmd, &iamRoleCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 		Editable:           true,
 	}))
 }

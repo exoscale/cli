@@ -1,4 +1,4 @@
-package cmd
+package iam
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -23,7 +24,7 @@ func (o *iamAPIKeyShowOutput) ToText()  { output.Text(o) }
 func (o *iamAPIKeyShowOutput) ToTable() { output.Table(o) }
 
 type iamAPIKeyCreateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -46,11 +47,11 @@ Supported output template annotations: %s`,
 }
 
 func (c *iamAPIKeyCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamAPIKeyCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := GContext
+	ctx := exocmd.GContext
 	client := globalstate.EgoscaleV3Client
 
 	listIAMRolesResp, err := client.ListIAMRoles(ctx)
@@ -84,7 +85,7 @@ func (c *iamAPIKeyCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(iamAPIKeyCmd, &iamAPIKeyCreateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(iamAPIKeyCmd, &iamAPIKeyCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

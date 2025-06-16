@@ -1,4 +1,4 @@
-package cmd
+package iam
 
 import (
 	"github.com/spf13/cobra"

@@ -1,15 +1,17 @@
-package cmd
+package iam
 
 import (
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamOrgPolicyResetCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 
@@ -28,18 +30,19 @@ This will remove any constraints that were set in the Org Policy.`
 }
 
 func (c *iamOrgPolicyResetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamOrgPolicyResetCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+
 	if !c.Force {
-		if !askQuestion("This action will reset your Org Policy to the default, removing any constraints that were set in the Org Policy. Proceed?") {
+		if !utils.AskQuestion(ctx, "This action will reset your Org Policy to the default, removing any constraints that were set in the Org Policy. Proceed?") {
 			return nil
 		}
 	}
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -54,14 +57,14 @@ func (c *iamOrgPolicyResetCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation("Resetting IAM org policy...", func() {
+	utils.DecorateAsyncOperation("Resetting IAM org policy...", func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	return err
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(iamOrgPolicyCmd, &iamOrgPolicyResetCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(iamOrgPolicyCmd, &iamOrgPolicyResetCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
