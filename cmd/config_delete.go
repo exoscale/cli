@@ -58,6 +58,6 @@ var configDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	configDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
+	configDeleteCmd.Flags().BoolP("force", "f", false, CmdFlagForceHelp)
 	configCmd.AddCommand(configDeleteCmd)
 }

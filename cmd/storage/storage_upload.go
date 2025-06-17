@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
 )
@@ -33,7 +34,7 @@ Examples:
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[len(args)-1] = strings.TrimPrefix(args[len(args)-1], sos.BucketPrefix)
@@ -86,14 +87,14 @@ Examples:
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
-			sos.ClientOptZoneFromBucket(GContext, bucket),
+			exocmd.GContext,
+			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return storage.UploadFiles(GContext, sources, &sos.StorageUploadConfig{
+		return storage.UploadFiles(exocmd.GContext, sources, &sos.StorageUploadConfig{
 			Bucket:    bucket,
 			Prefix:    prefix,
 			ACL:       acl,

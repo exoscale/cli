@@ -53,8 +53,8 @@ input parameters can be supplied either via stdin or using Shorthands[2].
 
 		x.SetClientUserAgent(fmt.Sprintf(
 			"Exoscale-CLI-X/%s (%s) %s",
-			gVersion,
-			gCommit,
+			GVersion,
+			GCommit,
 			egoscale.UserAgent,
 		))
 

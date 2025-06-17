@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -7,9 +7,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/utils"
 )
 
 var storageSetACLCmd = &cobra.Command{
@@ -60,14 +62,14 @@ Supported output template annotations:
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 || len(args) > 2 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if (len(args) == 2 && storageACLFromCmdFlags(cmd.Flags()) != nil) ||
 			(len(args) == 1 && storageACLFromCmdFlags(cmd.Flags()) == nil) {
-			CmdExitOnUsageError(cmd, "either a canned ACL or ACL grantee options must be specified")
+			exocmd.CmdExitOnUsageError(cmd, "either a canned ACL or ACL grantee options must be specified")
 		}
 
 		return nil
@@ -99,8 +101,8 @@ Supported output template annotations:
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
-			sos.ClientOptZoneFromBucket(GContext, bucket),
+			exocmd.GContext,
+			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
@@ -111,22 +113,22 @@ Supported output template annotations:
 		}
 
 		if prefix == "" {
-			if err := storage.SetBucketACL(GContext, bucket, acl); err != nil {
+			if err := storage.SetBucketACL(exocmd.GContext, bucket, acl); err != nil {
 				return fmt.Errorf("unable to set ACL: %w", err)
 			}
 
 			if !globalstate.Quiet {
-				return printOutput(storage.ShowBucket(GContext, bucket))
+				return utils.PrintOutput(storage.ShowBucket(exocmd.GContext, bucket))
 			}
 			return nil
 		}
 
-		if err := storage.SetObjectsACL(GContext, bucket, prefix, acl, recursive); err != nil {
+		if err := storage.SetObjectsACL(exocmd.GContext, bucket, prefix, acl, recursive); err != nil {
 			return fmt.Errorf("unable to set ACL: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return printOutput(storage.ShowObject(GContext, bucket, prefix))
+			return utils.PrintOutput(storage.ShowObject(exocmd.GContext, bucket, prefix))
 		}
 
 		if !globalstate.Quiet {

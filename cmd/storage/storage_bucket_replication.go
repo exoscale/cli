@@ -1,11 +1,12 @@
-package cmd
+package storage
 
 import (
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	storageBucketReplicationCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
+	storageBucketReplicationCmd.Flags().StringP(exocmd.ZoneFlagLong, exocmd.ZoneFlagShort, "", exocmd.ZoneFlagMsg)
 	storageBucketCmd.AddCommand(storageBucketReplicationCmd)
 }
 

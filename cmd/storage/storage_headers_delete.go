@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -6,9 +6,11 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/utils"
 )
 
 var storageHeaderDeleteCmd = &cobra.Command{
@@ -31,13 +33,13 @@ Supported output template annotations: %s`,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
-			CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
+			exocmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
 		}
 
 		var hasHeaderFlagsSet bool
@@ -55,7 +57,7 @@ Supported output template annotations: %s`,
 			}
 		}
 		if !hasHeaderFlagsSet {
-			CmdExitOnUsageError(cmd, "no header flag specified")
+			exocmd.CmdExitOnUsageError(cmd, "no header flag specified")
 		}
 
 		return nil
@@ -77,8 +79,8 @@ Supported output template annotations: %s`,
 		bucket, prefix = parts[0], parts[1]
 
 		storage, err := sos.NewStorageClient(
-			GContext,
-			sos.ClientOptZoneFromBucket(GContext, bucket),
+			exocmd.GContext,
+			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
@@ -97,12 +99,12 @@ Supported output template annotations: %s`,
 			}
 		}
 
-		if err := storage.DeleteObjectsHeaders(GContext, bucket, prefix, headers, recursive); err != nil {
+		if err := storage.DeleteObjectsHeaders(exocmd.GContext, bucket, prefix, headers, recursive); err != nil {
 			return fmt.Errorf("unable to add headers to object: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return printOutput(storage.ShowObject(GContext, bucket, prefix))
+			return utils.PrintOutput(storage.ShowObject(exocmd.GContext, bucket, prefix))
 		}
 
 		if !globalstate.Quiet {

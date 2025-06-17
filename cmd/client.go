@@ -34,7 +34,7 @@ func newCLIRoundTripper(next http.RoundTripper, headers map[string]string) cliRo
 	}
 
 	roundTripper.reqHeaders.Add("User-Agent", fmt.Sprintf("Exoscale-CLI/%s (%s) %s",
-		gVersion, gCommit, exov2.UserAgent))
+		GVersion, GCommit, exov2.UserAgent))
 
 	for k, v := range headers {
 		roundTripper.reqHeaders.Add(k, v)

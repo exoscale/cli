@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
@@ -16,7 +17,7 @@ var storagePresignCmd = &cobra.Command{
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
@@ -47,14 +48,14 @@ var storagePresignCmd = &cobra.Command{
 		bucket, key = parts[0], parts[1]
 
 		storage, err := sos.NewStorageClient(
-			GContext,
-			sos.ClientOptZoneFromBucket(GContext, bucket),
+			exocmd.GContext,
+			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		url, err := storage.GenPresignedURL(GContext, method, bucket, key, expires)
+		url, err := storage.GenPresignedURL(exocmd.GContext, method, bucket, key, expires)
 		if err != nil {
 			return fmt.Errorf("unable to pre-sign %s%s/%s: %w", sos.BucketPrefix, bucket, key, err)
 		}

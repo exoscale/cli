@@ -28,7 +28,7 @@ func init() {
 			return removeDomainRecord(args[0], args[1], force)
 		},
 	}
-	dnsRemoveCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
+	dnsRemoveCmd.Flags().BoolP("force", "f", false, CmdFlagForceHelp)
 	dnsCmd.AddCommand(dnsRemoveCmd)
 }
 

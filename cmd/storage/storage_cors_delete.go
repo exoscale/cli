@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -6,8 +6,10 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/utils"
 )
 
 var storageCORSDeleteCmd = &cobra.Command{
@@ -17,7 +19,7 @@ var storageCORSDeleteCmd = &cobra.Command{
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
@@ -34,21 +36,21 @@ var storageCORSDeleteCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete bucket %s CORS configuration?",
+			if !utils.AskQuestion(exocmd.GContext, fmt.Sprintf("Are you sure you want to delete bucket %s CORS configuration?",
 				bucket)) {
 				return nil
 			}
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
-			sos.ClientOptZoneFromBucket(GContext, bucket),
+			exocmd.GContext,
+			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.DeleteBucketCORS(GContext, bucket); err != nil {
+		if err := storage.DeleteBucketCORS(exocmd.GContext, bucket); err != nil {
 			return fmt.Errorf("unable to delete bucket CORS configuration: %w", err)
 		}
 
@@ -61,6 +63,6 @@ var storageCORSDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	storageCORSDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
+	storageCORSDeleteCmd.Flags().BoolP("force", "f", false, exocmd.CmdFlagForceHelp)
 	storageCORSCmd.AddCommand(storageCORSDeleteCmd)
 }

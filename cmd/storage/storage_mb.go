@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -6,9 +6,11 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/utils"
 )
 
 var storageMbCmd = &cobra.Command{
@@ -22,14 +24,14 @@ Supported output template annotations: %s`,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		CmdSetZoneFlagFromDefault(cmd)
+		exocmd.CmdSetZoneFlagFromDefault(cmd)
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
+		return exocmd.CmdCheckRequiredFlags(cmd, []string{"zone"})
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -46,19 +48,19 @@ Supported output template annotations: %s`,
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
+			exocmd.GContext,
 			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.CreateNewBucket(GContext, bucket, acl); err != nil {
+		if err := storage.CreateNewBucket(exocmd.GContext, bucket, acl); err != nil {
 			return fmt.Errorf("unable to create bucket: %w", err)
 		}
 
 		if !globalstate.Quiet {
-			return printOutput(storage.ShowBucket(GContext, bucket))
+			return utils.PrintOutput(storage.ShowBucket(exocmd.GContext, bucket))
 		}
 
 		return nil
@@ -68,6 +70,6 @@ Supported output template annotations: %s`,
 func init() {
 	storageMbCmd.Flags().String("acl", "",
 		fmt.Sprintf("canned ACL to set on bucket (%s)", strings.Join(sos.BucketCannedACLToStrings(), "|")))
-	storageMbCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
+	storageMbCmd.Flags().StringP(exocmd.ZoneFlagLong, exocmd.ZoneFlagShort, "", exocmd.ZoneFlagMsg)
 	storageCmd.AddCommand(storageMbCmd)
 }

@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
@@ -34,7 +35,7 @@ Examples:
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 || len(args) > 2 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
@@ -85,15 +86,15 @@ Examples:
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
-			sos.ClientOptZoneFromBucket(GContext, bucket),
+			exocmd.GContext,
+			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %v", err)
 		}
 
 		objects := make([]*s3types.Object, 0)
-		if err := storage.ForEachObject(GContext, bucket, prefix, recursive, func(o *s3types.Object) error {
+		if err := storage.ForEachObject(exocmd.GContext, bucket, prefix, recursive, func(o *s3types.Object) error {
 			objects = append(objects, o)
 			return nil
 		}); err != nil {
@@ -111,7 +112,7 @@ Examples:
 			object := objects[0]
 
 			err := storage.DownloadFile(
-				GContext,
+				exocmd.GContext,
 				bucket,
 				dst,
 				object,
@@ -123,7 +124,7 @@ Examples:
 			}
 		default:
 			err := storage.DownloadFiles(
-				GContext,
+				exocmd.GContext,
 				bucket,
 				prefix,
 				src,

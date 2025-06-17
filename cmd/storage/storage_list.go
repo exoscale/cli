@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -6,12 +6,14 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/pkg/storage/sos/object"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
@@ -30,7 +32,7 @@ Supported output template annotations:
   * When listing objects: %s`,
 		strings.Join(output.TemplateAnnotations(&sos.ListBucketsItemOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&object.ListObjectsItemOutput{}), ", ")),
-	Aliases: GListAlias,
+	Aliases: exocmd.GListAlias,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 1 {
@@ -56,7 +58,7 @@ Supported output template annotations:
 		}
 
 		if len(args) == 0 {
-			return printOutput(listStorageBuckets(zone))
+			return utils.PrintOutput(listStorageBuckets(zone))
 		}
 
 		recursive, err := cmd.Flags().GetBool("recursive")
@@ -81,8 +83,8 @@ Supported output template annotations:
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
-			sos.ClientOptZoneFromBucket(GContext, bucket),
+			exocmd.GContext,
+			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
@@ -100,11 +102,11 @@ Supported output template annotations:
 
 		if listVersions || len(versionFilters) > 0 {
 			list := storage.ListVersionedObjectsFunc(bucket, prefix, recursive, stream)
-			return printOutput(storage.ListObjectsVersions(GContext, list, recursive, stream, filters, versionFilters))
+			return utils.PrintOutput(storage.ListObjectsVersions(exocmd.GContext, list, recursive, stream, filters, versionFilters))
 		}
 
 		list := storage.ListObjectsFunc(bucket, prefix, recursive, stream)
-		return printOutput(storage.ListObjects(GContext, list, recursive, stream, filters))
+		return utils.PrintOutput(storage.ListObjects(exocmd.GContext, list, recursive, stream, filters))
 	},
 }
 
@@ -124,7 +126,7 @@ func listStorageBuckets(zone string) (output.Outputter, error) {
 	out := make(sos.ListBucketsOutput, 0)
 
 	// ListSosBucketsUsageWithResponse is a global command, use default zone
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 
 	res, err := globalstate.EgoscaleClient.ListSosBucketsUsageWithResponse(ctx)
 	if err != nil {

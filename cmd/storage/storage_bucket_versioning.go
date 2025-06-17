@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"fmt"
@@ -6,8 +6,10 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/collections"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/utils"
 )
 
 const (
@@ -19,7 +21,7 @@ const (
 )
 
 func init() {
-	storageBucketObjectVersioningCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
+	storageBucketObjectVersioningCmd.Flags().StringP(exocmd.ZoneFlagLong, exocmd.ZoneFlagShort, "", exocmd.ZoneFlagMsg)
 	storageBucketCmd.AddCommand(storageBucketObjectVersioningCmd)
 }
 
@@ -31,32 +33,32 @@ var storageBucketObjectVersioningCmd = &cobra.Command{
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
-			CmdExitOnUsageError(cmd, "invalid arguments")
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		permittedOps := collections.NewSet(objVersioningStatus, objVersioningEnable, objVersioningSuspend)
 		if !permittedOps.Contains(args[objOwnershipOpArgIndex]) {
-			CmdExitOnUsageError(cmd, "invalid operation")
+			exocmd.CmdExitOnUsageError(cmd, "invalid operation")
 		}
 
 		args[objVersioningBucketArgIndex] = strings.TrimPrefix(args[objVersioningBucketArgIndex], sos.BucketPrefix)
 
-		CmdSetZoneFlagFromDefault(cmd)
+		exocmd.CmdSetZoneFlagFromDefault(cmd)
 
-		return cmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
+		return exocmd.CmdCheckRequiredFlags(cmd, []string{exocmd.ZoneFlagLong})
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		versioningCommand := args[objVersioningOpArgIndex]
 		bucket := args[objVersioningBucketArgIndex]
 
-		zone, err := cmd.Flags().GetString(zoneFlagLong)
+		zone, err := cmd.Flags().GetString(exocmd.ZoneFlagLong)
 		if err != nil {
 			return err
 		}
 
 		storage, err := sos.NewStorageClient(
-			GContext,
+			exocmd.GContext,
 			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {
@@ -65,7 +67,7 @@ var storageBucketObjectVersioningCmd = &cobra.Command{
 
 		switch versioningCommand {
 		case objVersioningStatus:
-			return printOutput(storage.BucketVersioningStatus(cmd.Context(), bucket))
+			return utils.PrintOutput(storage.BucketVersioningStatus(cmd.Context(), bucket))
 		case objVersioningEnable:
 			return storage.EnableBucketVersioning(cmd.Context(), bucket)
 		case objVersioningSuspend:
