@@ -30,6 +30,7 @@
 - EIP: moving the logic to the corresponding subfolder #698
 - EIP: move to egoscale v3 #684
 - dns: move to egoscale v3 #683
+- deploy-target: move to egoscale v3 #683
 - JSON output: do not escape HTML #682
 - IAM org policy and roles: move to egoscale v3 #685
 - IAM: moving the logic to the corresponding subfolder #711
