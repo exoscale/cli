@@ -23,8 +23,8 @@ import (
 
 var GContext context.Context
 
-var gConfig *viper.Viper
-var gConfigFilePath string
+var GConfig *viper.Viper
+var GConfigFilePath string
 
 // current Account information
 var gAccountName string
@@ -87,14 +87,14 @@ func Execute(version, commit string) {
 
 func init() {
 	account.CurrentAccount = &account.Account{
-		DefaultZone: defaultZone,
-		Environment: defaultEnvironment,
-		SosEndpoint: defaultSosEndpoint,
+		DefaultZone: DefaultZone,
+		Environment: DefaultEnvironment,
+		SosEndpoint: DefaultSosEndpoint,
 	}
 
-	gConfig = viper.New()
+	GConfig = viper.New()
 
-	RootCmd.PersistentFlags().StringVarP(&gConfigFilePath, "config", "C", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
+	RootCmd.PersistentFlags().StringVarP(&GConfigFilePath, "config", "C", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
 	RootCmd.PersistentFlags().StringVarP(&gAccountName, "use-account", "A", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
 	RootCmd.PersistentFlags().StringVarP(&globalstate.OutputFormat, "output-format", "O", "", "Output format (table|json|text), see \"exo output --help\" for more information")
 	RootCmd.PersistentFlags().StringVar(&output.GOutputTemplate, "output-template", "", "Template to use if output format is \"text\"")
@@ -157,7 +157,7 @@ func initConfig() { //nolint:gocyclo
 
 	if apiKeyFromEnv != "" && apiSecretFromEnv != "" {
 		account.CurrentAccount.Name = "<environment variables>"
-		gConfigFilePath = "<environment variables>"
+		GConfigFilePath = "<environment variables>"
 		account.CurrentAccount.Key = apiKeyFromEnv
 		account.CurrentAccount.Secret = apiSecretFromEnv
 
@@ -214,31 +214,31 @@ func initConfig() { //nolint:gocyclo
 		globalstate.ConfigFolder = path.Join(usr.HomeDir, ".exoscale")
 	}
 
-	if gConfigFilePath != "" {
-		configFileStat, err := os.Stat(gConfigFilePath)
+	if GConfigFilePath != "" {
+		configFileStat, err := os.Stat(GConfigFilePath)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		if configFileStat.IsDir() {
-			log.Fatalf("%q is a directory but but should be configuration file", gConfigFilePath)
+			log.Fatalf("%q is a directory but but should be configuration file", GConfigFilePath)
 		}
 
 		// Use config file from the flag.
-		gConfig.SetConfigFile(gConfigFilePath)
+		GConfig.SetConfigFile(GConfigFilePath)
 	} else {
-		gConfig.SetConfigName("exoscale")
-		gConfig.SetConfigType("toml")
-		gConfig.AddConfigPath(globalstate.ConfigFolder)
+		GConfig.SetConfigName("exoscale")
+		GConfig.SetConfigType("toml")
+		GConfig.AddConfigPath(globalstate.ConfigFolder)
 		// Retain backwards compatibility
-		gConfig.AddConfigPath(path.Join(usr.HomeDir, ".exoscale"))
-		gConfig.AddConfigPath(usr.HomeDir)
-		gConfig.AddConfigPath(".")
+		GConfig.AddConfigPath(path.Join(usr.HomeDir, ".exoscale"))
+		GConfig.AddConfigPath(usr.HomeDir)
+		GConfig.AddConfigPath(".")
 	}
 
 	nonCredentialCmds := []string{"config", "version", "status"}
 
-	if err := gConfig.ReadInConfig(); err != nil {
+	if err := GConfig.ReadInConfig(); err != nil {
 		if isNonCredentialCmd(nonCredentialCmds...) {
 			ignoreClientBuild = true
 			return
@@ -252,10 +252,10 @@ func initConfig() { //nolint:gocyclo
 	}
 
 	// All the stored data (e.g. ssh keys) will be put next to the config file.
-	gConfigFilePath = gConfig.ConfigFileUsed()
-	globalstate.ConfigFolder = filepath.Dir(gConfigFilePath)
+	GConfigFilePath = GConfig.ConfigFileUsed()
+	globalstate.ConfigFolder = filepath.Dir(GConfigFilePath)
 
-	if err := gConfig.Unmarshal(config); err != nil {
+	if err := GConfig.Unmarshal(config); err != nil {
 		log.Fatal(fmt.Errorf("couldn't read config: %s", err))
 	}
 
@@ -265,7 +265,7 @@ func initConfig() { //nolint:gocyclo
 			return
 		}
 
-		log.Fatalf("no accounts were found into %q", gConfig.ConfigFileUsed())
+		log.Fatalf("no accounts were found into %q", GConfig.ConfigFileUsed())
 		return
 	}
 
@@ -292,11 +292,11 @@ func initConfig() { //nolint:gocyclo
 	}
 
 	if account.CurrentAccount.Environment == "" {
-		account.CurrentAccount.Environment = defaultEnvironment
+		account.CurrentAccount.Environment = DefaultEnvironment
 	}
 
 	if account.CurrentAccount.DefaultZone == "" {
-		account.CurrentAccount.DefaultZone = defaultZone
+		account.CurrentAccount.DefaultZone = DefaultZone
 	}
 
 	// if an output format isn't specified via cli argument, use
@@ -305,12 +305,12 @@ func initConfig() { //nolint:gocyclo
 		if account.CurrentAccount.DefaultOutputFormat != "" {
 			globalstate.OutputFormat = account.CurrentAccount.DefaultOutputFormat
 		} else {
-			globalstate.OutputFormat = defaultOutputFormat
+			globalstate.OutputFormat = DefaultOutputFormat
 		}
 	}
 
 	if account.CurrentAccount.SosEndpoint == "" {
-		account.CurrentAccount.SosEndpoint = defaultSosEndpoint
+		account.CurrentAccount.SosEndpoint = DefaultSosEndpoint
 	}
 
 	clientTimeoutFromEnv := readFromEnv("EXOSCALE_API_TIMEOUT")

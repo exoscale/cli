@@ -84,7 +84,7 @@ func CmdSetTemplateFlagFromDefault(cmd *cobra.Command) {
 		if account.CurrentAccount.DefaultTemplate != "" {
 			cmd.Flag("template").Value.Set(account.CurrentAccount.DefaultTemplate) // nolint:errcheck
 		} else {
-			cmd.Flag("template").Value.Set(defaultTemplate) // nolint:errcheck
+			cmd.Flag("template").Value.Set(DefaultTemplate) // nolint:errcheck
 		}
 	}
 }

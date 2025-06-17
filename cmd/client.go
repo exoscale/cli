@@ -64,7 +64,7 @@ func buildClient() {
 
 	clientTimeout := account.CurrentAccount.ClientTimeout
 	if clientTimeout == 0 {
-		clientTimeout = defaultClientTimeout
+		clientTimeout = DefaultClientTimeout
 	}
 	clientExoV2, err := exov2.NewClient(
 		account.CurrentAccount.Key,

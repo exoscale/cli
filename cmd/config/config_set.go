@@ -1,10 +1,11 @@
-package cmd
+package config
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 )
 
@@ -23,9 +24,9 @@ var configSetCmd = &cobra.Command{
 			return fmt.Errorf("account %q does not exist", args[0])
 		}
 
-		gConfig.Set("defaultAccount", args[0])
+		exocmd.GConfig.Set("defaultAccount", args[0])
 
-		if err := saveConfig(gConfig.ConfigFileUsed(), nil); err != nil {
+		if err := saveConfig(exocmd.GConfig.ConfigFileUsed(), nil); err != nil {
 			return err
 		}
 

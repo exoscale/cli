@@ -1,4 +1,4 @@
-package cmd
+package dns
 
 import (
 	"fmt"
@@ -8,6 +8,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/utils"
+
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -48,16 +51,16 @@ Optional patterns can be provided to filter results by ID, or name.
 
 Supported output template annotations: %s`,
 			strings.Join(output.TemplateAnnotations(&dnsListOutput{}), ", ")),
-		Aliases: GListAlias,
+		Aliases: exocmd.GListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return printOutput(listDomains(args))
+			return utils.PrintOutput(listDomains(args))
 		},
 	})
 }
 
 func listDomains(filters []string) (output.Outputter, error) {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return nil, err
 	}

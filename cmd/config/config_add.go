@@ -1,4 +1,4 @@
-package cmd
+package config
 
 import (
 	"bufio"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
@@ -24,12 +25,12 @@ func init() {
 			}
 
 			config := &account.Config{Accounts: []account.Account{*newAccount}}
-			if askQuestion("Set [" + newAccount.Name + "] as default account?") {
+			if utils.AskQuestion(exocmd.GContext, "Set ["+newAccount.Name+"] as default account?") {
 				config.DefaultAccount = newAccount.Name
-				gConfig.Set("defaultAccount", newAccount.Name)
+				exocmd.GConfig.Set("defaultAccount", newAccount.Name)
 			}
 
-			return saveConfig(gConfig.ConfigFileUsed(), config)
+			return saveConfig(exocmd.GConfig.ConfigFileUsed(), config)
 		},
 	})
 }
@@ -40,14 +41,14 @@ func addConfigAccount(firstRun bool) error {
 		err    error
 	)
 
-	filePath := gConfig.ConfigFileUsed()
+	filePath := exocmd.GConfig.ConfigFileUsed()
 
 	if firstRun {
-		if filePath, err = createConfigFile(defaultConfigFileName); err != nil {
+		if filePath, err = createConfigFile(exocmd.DefaultConfigFileName); err != nil {
 			return err
 		}
 
-		gConfig.SetConfigFile(filePath)
+		exocmd.GConfig.SetConfigFile(filePath)
 	}
 
 	newAccount, err := promptAccountInformation()
@@ -56,7 +57,7 @@ func addConfigAccount(firstRun bool) error {
 	}
 	config.DefaultAccount = newAccount.Name
 	config.Accounts = []account.Account{*newAccount}
-	gConfig.Set("defaultAccount", newAccount.Name)
+	exocmd.GConfig.Set("defaultAccount", newAccount.Name)
 
 	if len(config.Accounts) == 0 {
 		return nil
@@ -68,10 +69,12 @@ func addConfigAccount(firstRun bool) error {
 func promptAccountInformation() (*account.Account, error) {
 	var client *exo.Client
 
+	ctx := exocmd.GContext
+
 	reader := bufio.NewReader(os.Stdin)
 	account := &account.Account{}
 
-	apiKey, err := readInput(reader, "API Key", account.Key)
+	apiKey, err := utils.ReadInput(ctx, reader, "API Key", account.Key)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +87,7 @@ func promptAccountInformation() (*account.Account, error) {
 	if secret != "" && len(secret) > 10 {
 		secretShow = secret[0:7] + "..."
 	}
-	secretKey, err := readInput(reader, "Secret Key", secretShow)
+	secretKey, err := utils.ReadInput(ctx, reader, "Secret Key", secretShow)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +95,7 @@ func promptAccountInformation() (*account.Account, error) {
 		account.Secret = secretKey
 	}
 
-	name, err := readInput(reader, "Name", account.Name)
+	name, err := utils.ReadInput(ctx, reader, "Name", account.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +109,7 @@ func promptAccountInformation() (*account.Account, error) {
 		}
 
 		fmt.Printf("Name [%s] already exist\n", name)
-		name, err = readInput(reader, "Name", account.Name)
+		name, err = utils.ReadInput(ctx, reader, "Name", account.Name)
 		if err != nil {
 			return nil, err
 		}

@@ -1,4 +1,4 @@
-package cmd
+package config
 
 import (
 	"fmt"
@@ -6,8 +6,11 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/cmd"
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 )
 
 type configShowOutput struct {
@@ -35,7 +38,7 @@ func init() {
 
 Supported output template annotations: %s`,
 			strings.Join(output.TemplateAnnotations(&configShowOutput{}), ", ")),
-		Aliases: GShowAlias,
+		Aliases: exocmd.GShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if account.GAllAccount == nil {
 				return fmt.Errorf("no accounts configured")
@@ -46,7 +49,7 @@ Supported output template annotations: %s`,
 				name = args[0]
 			}
 
-			return printOutput(showConfig(name))
+			return utils.PrintOutput(showConfig(name))
 		},
 	})
 }
@@ -64,7 +67,7 @@ func showConfig(name string) (output.Outputter, error) {
 
 	out := configShowOutput{
 		Name:               account.Name,
-		ConfigFile:         gConfigFilePath,
+		ConfigFile:         cmd.GConfigFilePath,
 		Endpoint:           account.Endpoint,
 		APIKey:             account.Key,
 		APISecret:          secret,
