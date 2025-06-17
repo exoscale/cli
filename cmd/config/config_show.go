@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/cmd"
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
@@ -67,7 +66,7 @@ func showConfig(name string) (output.Outputter, error) {
 
 	out := configShowOutput{
 		Name:               account.Name,
-		ConfigFile:         cmd.GConfigFilePath,
+		ConfigFile:         exocmd.GConfigFilePath,
 		Endpoint:           account.Endpoint,
 		APIKey:             account.Key,
 		APISecret:          secret,
