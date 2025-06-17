@@ -8,11 +8,10 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type deployTargetListItemOutput struct {
@@ -71,18 +70,23 @@ func (c *deployTargetListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+		ctx := exocmd.GContext
 
-		list, err := globalstate.EgoscaleClient.ListDeployTargets(ctx, zone)
+		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+		if err != nil {
+			return err
+		}
+
+		list, err := client.ListDeployTargets(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to list Deploy Targets in zone %s: %w", zone, err)
 		}
 
-		for _, dt := range list {
+		for _, dt := range list.DeployTargets {
 			res <- deployTargetListItemOutput{
-				ID:   *dt.ID,
-				Name: *dt.Name,
-				Type: *dt.Type,
+				ID:   dt.ID.String(),
+				Name: dt.Name,
+				Type: string(dt.Type),
 				Zone: zone,
 			}
 		}
