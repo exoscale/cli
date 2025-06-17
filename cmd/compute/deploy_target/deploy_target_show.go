@@ -7,11 +7,9 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type deployTargetShowOutput struct {
@@ -53,18 +51,28 @@ func (c *deployTargetShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *deployTargetShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exocmd.GContext
 
-	dt, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
+
+	deployTargetListResp, err := client.ListDeployTargets(ctx)
+	if err != nil {
+		return fmt.Errorf("error retrieving Deploy Target: %w", err)
+	}
+
+	dt, err := deployTargetListResp.FindDeployTarget(c.DeployTarget)
 	if err != nil {
 		return fmt.Errorf("error retrieving Deploy Target: %w", err)
 	}
 
 	return c.OutputFunc(&deployTargetShowOutput{
-		ID:          *dt.ID,
-		Name:        *dt.Name,
-		Description: utils.DefaultString(dt.Description, ""),
-		Type:        *dt.Type,
+		ID:          dt.ID.String(),
+		Name:        dt.Name,
+		Description: dt.Description,
+		Type:        string(dt.Type),
 		Zone:        c.Zone,
 	}, nil)
 }
