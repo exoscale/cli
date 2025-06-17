@@ -9,6 +9,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -36,7 +37,7 @@ func init() {
 Supported output template annotations: %s`,
 			strings.Join(output.TemplateAnnotations(&zoneListOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return printOutput(listZones())
+			return utils.PrintOutput(listZones())
 		},
 	})
 }

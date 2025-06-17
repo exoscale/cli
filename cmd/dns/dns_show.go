@@ -1,4 +1,4 @@
-package cmd
+package dns
 
 import (
 	"errors"
@@ -7,9 +7,11 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -49,7 +51,7 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return printOutput(showDNS(args[0], name, args[1:]))
+			return utils.PrintOutput(showDNS(args[0], name, args[1:]))
 		},
 	}
 
@@ -65,8 +67,8 @@ func showDNS(ident, name string, types []string) (output.Outputter, error) {
 		tMap[t] = struct{}{}
 	}
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return nil, err
 	}
@@ -114,11 +116,11 @@ func showDNS(ident, name string, types []string) (output.Outputter, error) {
 			DomainID:   domain.ID.String(),
 			Name:       record.Name,
 			RecordType: string(record.Type),
-			Content:    StrPtrFormatOutput(&record.Content),
+			Content:    utils.StrPtrFormatOutput(&record.Content),
 			TTL:        ttl,
 			Prio:       priority,
-			CreatedAt:  DatePtrFormatOutput(&record.CreatedAT),
-			UpdatedAt:  DatePtrFormatOutput(&record.UpdatedAT),
+			CreatedAt:  utils.DatePtrFormatOutput(&record.CreatedAT),
+			UpdatedAt:  utils.DatePtrFormatOutput(&record.UpdatedAT),
 		})
 	}
 

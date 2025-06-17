@@ -1,6 +1,7 @@
-package cmd
+package dns
 
 import (
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -10,5 +11,5 @@ var dnsCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(dnsCmd)
+	exocmd.RootCmd.AddCommand(dnsCmd)
 }

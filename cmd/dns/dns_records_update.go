@@ -1,12 +1,14 @@
-package cmd
+package dns
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -90,8 +92,8 @@ func updateDomainRecord(
 	name, content *string,
 	ttl, priority *int64,
 ) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -133,7 +135,7 @@ func updateDomainRecord(
 	if err != nil {
 		return err
 	}
-	decorateAsyncOperation(fmt.Sprintf("Updating DNS record %q...", record.ID), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Updating DNS record %q...", record.ID), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {

@@ -1,10 +1,13 @@
-package cmd
+package dns
 
 import (
 	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/utils"
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -15,7 +18,7 @@ func init() {
 	dnsDeleteCmd := &cobra.Command{
 		Use:     "delete DOMAIN-NAME|ID",
 		Short:   "Delete a domain",
-		Aliases: GDeleteAlias,
+		Aliases: exocmd.GDeleteAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return cmd.Usage()
@@ -30,12 +33,12 @@ func init() {
 		},
 	}
 	dnsCmd.AddCommand(dnsDeleteCmd)
-	dnsDeleteCmd.Flags().BoolP("force", "f", false, CmdFlagForceHelp)
+	dnsDeleteCmd.Flags().BoolP("force", "f", false, exocmd.CmdFlagForceHelp)
 }
 
 func deleteDomain(ident string, force bool) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -52,7 +55,7 @@ func deleteDomain(ident string, force bool) error {
 		return err
 	}
 
-	if !force && !askQuestion(fmt.Sprintf("Are you sure you want to delete %q domain?", domain.UnicodeName)) {
+	if !force && !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete %q domain?", domain.UnicodeName)) {
 		return nil
 	}
 
@@ -64,7 +67,7 @@ func deleteDomain(ident string, force bool) error {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting DNS domain %q...", domain.UnicodeName), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting DNS domain %q...", domain.UnicodeName), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {

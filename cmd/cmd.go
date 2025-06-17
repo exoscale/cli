@@ -16,6 +16,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 )
 
 // cliCommandImplemError represents an implementation error for a cliCommand.
@@ -84,7 +85,7 @@ func CmdSetTemplateFlagFromDefault(cmd *cobra.Command) {
 		if account.CurrentAccount.DefaultTemplate != "" {
 			cmd.Flag("template").Value.Set(account.CurrentAccount.DefaultTemplate) // nolint:errcheck
 		} else {
-			cmd.Flag("template").Value.Set(defaultTemplate) // nolint:errcheck
+			cmd.Flag("template").Value.Set(DefaultTemplate) // nolint:errcheck
 		}
 	}
 }
@@ -120,7 +121,7 @@ type CliCommandSettings struct {
 // with default values.
 func DefaultCLICmdSettings() CliCommandSettings {
 	return CliCommandSettings{
-		OutputFunc: printOutput,
+		OutputFunc: utils.PrintOutput,
 	}
 }
 
@@ -579,4 +580,61 @@ func RegisterCLICommand(parent *cobra.Command, c cliCommand) error {
 	parent.AddCommand(cmd)
 
 	return nil
+}
+
+func init() {
+	RootCmd.AddCommand(&cobra.Command{
+		Use:   "output",
+		Short: "Output formatting usage",
+		Long: `The exo CLI tool allows you to customize its commands output using different
+formats such as table, JSON or text template using the "--output-format" flag
+("-O" in short version).
+
+By default the "table" format is applied, best suited for human reading. In
+case you need to process a command output with other CLI tools, for example
+in a shell script, you can either use the "json" output format (e.g. to be
+piped into jq):
+
+	$ exo config list -O json | jq .
+	[
+	  {
+	    "name": "alice",
+	    "default": true
+	  },
+	  {
+	    "name": "bob",
+	    "default": false
+	  }
+	]
+
+The "text" format prints a command's output in plain text according to a
+user-defined formatting template provided with the "--output-template" flag:
+
+	$ exo config list --output-template '{{ .Name }}' | sort
+	alice
+	bob
+
+The templating format is Go's text/template, which allows conditional
+formatting. For example to display a "*" next to the default configuration
+account:
+
+	$ exo config list --output-template '{{ .Name }}{{ if .Default }}*{{ end }}'
+	alice*
+	bob
+
+If no output template is provided, the default is to print all fields
+separated by a tabulation (\t) character so the output can be parsed by a
+delimiter-based processing tool such as cut(1) or AWK.
+
+Each CLI "show"/"list" command supports specific template annotations that are
+documented in the command's help page (e.g. "exo config list --help").
+
+Note: in "list" commands the templating is applied per entry, so it is not
+necessary to range on iterable data types. Each entry is terminated by a line
+return character.
+
+For the complete Go templating reference, see https://godoc.org/text/template
+`,
+	},
+	)
 }

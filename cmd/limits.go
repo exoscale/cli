@@ -9,6 +9,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
@@ -87,7 +88,7 @@ Supported output template annotations: %s`,
 			})
 		}
 
-		return printOutput(&out, nil)
+		return utils.PrintOutput(&out, nil)
 	},
 }
 

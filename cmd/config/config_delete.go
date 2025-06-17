@@ -1,17 +1,19 @@
-package cmd
+package config
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/utils"
 )
 
 var configDeleteCmd = &cobra.Command{
 	Use:     "delete NAME",
 	Short:   "Delete an account from configuration",
-	Aliases: GDeleteAlias,
+	Aliases: exocmd.GDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()
@@ -33,7 +35,7 @@ var configDeleteCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete the account %q from configuration?", args[0])) {
+			if !utils.AskQuestion(exocmd.GContext, fmt.Sprintf("Are you sure you want to delete the account %q from configuration?", args[0])) {
 				return nil
 			}
 		}
@@ -48,7 +50,7 @@ var configDeleteCmd = &cobra.Command{
 
 		account.GAllAccount.Accounts = append(account.GAllAccount.Accounts[:pos], account.GAllAccount.Accounts[pos+1:]...)
 
-		if err := saveConfig(gConfig.ConfigFileUsed(), nil); err != nil {
+		if err := saveConfig(exocmd.GConfig.ConfigFileUsed(), nil); err != nil {
 			return err
 		}
 
@@ -58,6 +60,6 @@ var configDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	configDeleteCmd.Flags().BoolP("force", "f", false, CmdFlagForceHelp)
+	configDeleteCmd.Flags().BoolP("force", "f", false, exocmd.CmdFlagForceHelp)
 	configCmd.AddCommand(configDeleteCmd)
 }
