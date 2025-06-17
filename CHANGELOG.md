@@ -9,6 +9,8 @@
 ### Improvements
 
 - storage: moving the logic to the corresponding subfolder #713
+- dns: moving the logic to the corresponding subfolder #715
+- config: moving the logic to the corresponding subfolder #715
 
 ## 1.85.0
 
