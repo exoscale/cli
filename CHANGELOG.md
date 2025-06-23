@@ -6,6 +6,8 @@
 
 ### Bug fixes
 
+- Fix [Bug]: 1.85.0 exo compute sks kubeconfig prepends config with strange symbols #718
+
 ### Improvements
 
 - storage: moving the logic to the corresponding subfolder #713
