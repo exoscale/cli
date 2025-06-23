@@ -139,7 +139,6 @@ func (c *sksKubeconfigCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	generateResp, err := client.GenerateSKSClusterKubeconfig(ctx, cluster.ID, req)
-	fmt.Println(generateResp)
 
 	if err != nil {
 		return fmt.Errorf("error retrieving kubeconfig: %w", err)
