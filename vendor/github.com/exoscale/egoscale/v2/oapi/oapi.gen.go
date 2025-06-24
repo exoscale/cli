@@ -685,8 +685,6 @@ const (
 	ZoneNameDeFra1 ZoneName = "de-fra-1"
 
 	ZoneNameDeMuc1 ZoneName = "de-muc-1"
-
-	ZoneNameHrZag1 ZoneName = "hr-zag-1"
 )
 
 // IAM Access Key

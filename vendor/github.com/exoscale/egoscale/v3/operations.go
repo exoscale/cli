@@ -9057,7 +9057,7 @@ type CreateDNSDomainRequest struct {
 }
 
 // Create DNS domain
-func (c Client) CreateDNSDomain(ctx context.Context, req CreateDNSDomainRequest) (*DNSDomain, error) {
+func (c Client) CreateDNSDomain(ctx context.Context, req CreateDNSDomainRequest) (*Operation, error) {
 	path := "/dns-domain"
 
 	body, err := prepareJSONBody(req)
@@ -9099,7 +9099,7 @@ func (c Client) CreateDNSDomain(ctx context.Context, req CreateDNSDomainRequest)
 		return nil, fmt.Errorf("CreateDNSDomain: http response: %w", err)
 	}
 
-	bodyresp := &DNSDomain{}
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDNSDomain: prepare Json response: %w", err)
 	}
@@ -10759,7 +10759,7 @@ type CreateInstanceRequest struct {
 	// Instance name
 	Name               string             `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	PublicIPAssignment PublicIPAssignment `json:"public-ip-assignment,omitempty"`
-	// [Beta] Enable secure boot
+	// Enable secure boot
 	SecurebootEnabled *bool `json:"secureboot-enabled,omitempty"`
 	// Instance Security Groups
 	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
@@ -10769,7 +10769,7 @@ type CreateInstanceRequest struct {
 	SSHKeys []SSHKey `json:"ssh-keys,omitempty"`
 	// Instance template
 	Template *Template `json:"template" validate:"required"`
-	// [Beta] Enable Trusted Platform Module (TPM)
+	// Enable Trusted Platform Module (TPM)
 	TpmEnabled *bool `json:"tpm-enabled,omitempty"`
 	// Instance Cloud-init user-data (base64 encoded)
 	UserData string `json:"user-data,omitempty" validate:"omitempty,gte=1,lte=32768"`
@@ -11743,7 +11743,7 @@ func (c Client) CreateSnapshot(ctx context.Context, id UUID) (*Operation, error)
 	return bodyresp, nil
 }
 
-// [Beta] Enable tpm for the instance.
+// Enable tpm for the instance.
 func (c Client) EnableTpm(ctx context.Context, id UUID) (*Operation, error) {
 	path := fmt.Sprintf("/instance/%v:enable-tpm", id)
 
@@ -14166,8 +14166,8 @@ const (
 
 // ICMP details (default: -1 (ANY))
 type AddRuleToSecurityGroupRequestICMP struct {
-	Code int64 `json:"code,omitempty" validate:"omitempty,gte=-1,lte=254"`
-	Type int64 `json:"type,omitempty" validate:"omitempty,gte=-1,lte=254"`
+	Code *int64 `json:"code,omitempty" validate:"omitempty,gte=-1,lte=254"`
+	Type *int64 `json:"type,omitempty" validate:"omitempty,gte=-1,lte=254"`
 }
 
 type AddRuleToSecurityGroupRequestProtocol string

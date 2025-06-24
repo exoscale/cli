@@ -48,6 +48,10 @@ func AllZonesV3(ctx context.Context, client v3.Client) ([]v3.ZoneName, error) {
 	return zoneNames, nil
 }
 
+const (
+	EmptyIPAddressVisualization = "-"
+)
+
 // RandStringBytes Generate random string of n bytes
 func RandStringBytes(n int) (string, error) {
 	b := make([]byte, n)

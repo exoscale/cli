@@ -66,9 +66,9 @@ func (c *securityGroupAddRuleCmd) CmdPreRun(cmd *cobra.Command, args []string) e
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+func (c *securityGroupAddRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -128,7 +128,7 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		if err != nil {
 			return fmt.Errorf("invalid value for network %q: %w", c.TargetNetwork, err)
 		}
-		securityGroupRule.Network = network.Network()
+		securityGroupRule.Network = network.String()
 	}
 
 	if c.Port != "" {
@@ -175,8 +175,8 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if strings.HasPrefix(string(lowercaseProtocol), "icmp") {
 		securityGroupRule.ICMP = &v3.AddRuleToSecurityGroupRequestICMP{
-			Code: c.ICMPCode,
-			Type: c.ICMPType,
+			Code: &c.ICMPCode,
+			Type: &c.ICMPType,
 		}
 	}
 
@@ -184,7 +184,7 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	decorateAsyncOperation(fmt.Sprintf("Adding rule to Security Group %q...", securityGroup.Name), func() {
+	exocmd.DecorateAsyncOperation(fmt.Sprintf("Adding rule to Security Group %q...", securityGroup.Name), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -193,9 +193,9 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&securityGroupShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			SecurityGroup:      securityGroup.ID.String(),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 	return nil
 }
