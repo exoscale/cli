@@ -43,11 +43,11 @@ func printOutput(o output.Outputter, err error) error {
 	return nil
 }
 
-// decorateAsyncOperation is a cosmetic helper intended for wrapping long
+// DecorateAsyncOperation is a cosmetic helper intended for wrapping long
 // asynchronous operations, outputting progress feedback to the user's
 // terminal.
 // TODO remove this one once all has been migrated to decorateAsyncOperations.
-func decorateAsyncOperation(message string, fn func()) {
+func DecorateAsyncOperation(message string, fn func()) {
 	p := mpb.New(
 		mpb.WithOutput(os.Stderr),
 		mpb.WithWidth(1),

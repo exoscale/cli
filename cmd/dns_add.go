@@ -55,7 +55,7 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Adding DNS record %q to %q...", rType, domain.UnicodeName), func() {
+	DecorateAsyncOperation(fmt.Sprintf("Adding DNS record %q to %q...", rType, domain.UnicodeName), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
