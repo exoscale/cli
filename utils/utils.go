@@ -32,6 +32,10 @@ var (
 	}
 )
 
+const (
+	EmptyIPAddressVisualization = "-"
+)
+
 // RandStringBytes Generate random string of n bytes
 func RandStringBytes(n int) (string, error) {
 	b := make([]byte, n)

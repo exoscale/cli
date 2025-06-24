@@ -8,6 +8,7 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -34,10 +35,10 @@ func (c *securityGroupDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) er
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
+func (c *securityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
 	var err error
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -54,7 +55,7 @@ func (c *securityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !c.DeleteRules {
 		if !c.Force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete Security Group %s?", c.SecurityGroup)) {
+			if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete Security Group %s?", c.SecurityGroup)) {
 				return nil
 			}
 		}
@@ -64,17 +65,17 @@ func (c *securityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			return err
 		}
 
-		decorateAsyncOperation(fmt.Sprintf("Deleting Security Group %s...", c.SecurityGroup), func() {
+		exocmd.DecorateAsyncOperation(fmt.Sprintf("Deleting Security Group %s...", c.SecurityGroup), func() {
 			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 	} else {
 		if !c.Force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete the rules associated with Security Group %s?", c.SecurityGroup)) {
+			if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete the rules associated with Security Group %s?", c.SecurityGroup)) {
 				return nil
 			}
 		}
 
-		decorateAsyncOperation(fmt.Sprintf("Deleting Rules for Security Group %s...", c.SecurityGroup), func() {
+		exocmd.DecorateAsyncOperation(fmt.Sprintf("Deleting Rules for Security Group %s...", c.SecurityGroup), func() {
 			for _, rule := range securityGroup.Rules {
 				op, err := client.DeleteRuleFromSecurityGroup(ctx, securityGroup.ID, rule.ID)
 				if err != nil {

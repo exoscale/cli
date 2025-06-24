@@ -4013,11 +4013,11 @@ type SKSClusterLabels map[string]string
 // Kubeconfig request for a SKS cluster
 type SKSKubeconfigRequest struct {
 	// List of roles. The certificate present in the Kubeconfig will have these roles set in the Org field.
-	Groups []string `json:"groups,omitempty"`
+	Groups []string `json:"groups" validate:"required"`
 	// Validity in seconds of the Kubeconfig user certificate (default: 30 days)
 	Ttl int64 `json:"ttl,omitempty" validate:"omitempty,gt=0"`
 	// User name in the generated Kubeconfig. The certificate present in the Kubeconfig will also have this name set for the CN field.
-	User string `json:"user,omitempty"`
+	User string `json:"user" validate:"required"`
 }
 
 type SKSNodepoolPublicIPAssignment string
@@ -4267,4 +4267,5 @@ const (
 	ZoneNameDEFra1 ZoneName = "de-fra-1"
 	ZoneNameBGSof1 ZoneName = "bg-sof-1"
 	ZoneNameATVie2 ZoneName = "at-vie-2"
+	ZoneNameHrZag1 ZoneName = "hr-zag-1"
 )

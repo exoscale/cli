@@ -133,7 +133,7 @@ func updateDomainRecord(
 	if err != nil {
 		return err
 	}
-	decorateAsyncOperation(fmt.Sprintf("Updating DNS record %q...", record.ID), func() {
+	DecorateAsyncOperation(fmt.Sprintf("Updating DNS record %q...", record.ID), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {

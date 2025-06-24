@@ -159,9 +159,9 @@ func (c *securityGroupShowCmd) CmdPreRun(cmd *cobra.Command, args []string) erro
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+func (c *securityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -229,7 +229,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	zones := utils.AllZones
 
 	err = utils.ForEachZone(zones, func(zone string) error {
-		client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 		if err != nil {
 			return err
 		}
@@ -243,7 +243,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			for _, sgID := range instance.SecurityGroups {
 				if sgID.ID == securityGroup.ID {
 
-					publicIP := emptyIPAddressVisualization
+					publicIP := utils.EmptyIPAddressVisualization
 					if instance.PublicIP != nil && (!instance.PublicIP.IsUnspecified() || len(instance.PublicIP) > 0) {
 						publicIP = instance.PublicIP.String()
 					}

@@ -11,6 +11,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -42,9 +43,9 @@ func (c *securityGroupRemoveSourceCmd) CmdPreRun(cmd *cobra.Command, args []stri
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupRemoveSourceCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+func (c *securityGroupRemoveSourceCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -63,7 +64,7 @@ func (c *securityGroupRemoveSourceCmd) cmdRun(_ *cobra.Command, _ []string) erro
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to remove external source %s from Security Group %s?", c.Cidr, c.SecurityGroup)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to remove external source %s from Security Group %s?", c.Cidr, c.SecurityGroup)) {
 			return nil
 		}
 	}
@@ -71,7 +72,7 @@ func (c *securityGroupRemoveSourceCmd) cmdRun(_ *cobra.Command, _ []string) erro
 	op, err := client.RemoveExternalSourceFromSecurityGroup(ctx, securityGroup.ID, v3.RemoveExternalSourceFromSecurityGroupRequest{
 		Cidr: c.Cidr,
 	})
-	decorateAsyncOperation(fmt.Sprintf("Adding Security Group source %s...", c.Cidr), func() {
+	exocmd.DecorateAsyncOperation(fmt.Sprintf("Adding Security Group source %s...", c.Cidr), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -80,9 +81,9 @@ func (c *securityGroupRemoveSourceCmd) cmdRun(_ *cobra.Command, _ []string) erro
 
 	if !globalstate.Quiet {
 		return (&securityGroupShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			SecurityGroup:      securityGroup.ID.String(),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 	return nil
 }

@@ -33,7 +33,7 @@ func createDomain(domainName string) error {
 	if err != nil {
 		return err
 	}
-	decorateAsyncOperation(fmt.Sprintf("Creating DNS domain %q...", domainName), func() {
+	DecorateAsyncOperation(fmt.Sprintf("Creating DNS domain %q...", domainName), func() {
 		_, err = client.CreateDNSDomain(ctx, v3.CreateDNSDomainRequest{
 			UnicodeName: domainName,
 		})
