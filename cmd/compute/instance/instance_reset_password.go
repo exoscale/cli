@@ -1,15 +1,14 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	"github.com/exoscale/cli/utils"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceResetPasswordCmd struct {
@@ -36,17 +35,32 @@ func (c *instanceResetPasswordCmd) CmdPreRun(cmd *cobra.Command, args []string) 
 }
 
 func (c *instanceResetPasswordCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	_, err = globalstate.EgoscaleClient.ResetInstancePasswordWithResponse(ctx, *instance.ID)
+	instances, err := client.ListInstances(ctx)
+	if err != nil {
+		return err
+	}
+	instance, err := instances.FindListInstancesResponseInstances(c.Instance)
+	if err != nil {
+		return err
+	}
+
+	op, err := client.ResetInstancePassword(ctx, instance.ID)
+	if err != nil {
+		return err
+	}
+
+	utils.DecorateAsyncOperation(
+		fmt.Sprintf("Reseting instance password..."),
+		func() {
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		})
+
 	return err
 }
 
