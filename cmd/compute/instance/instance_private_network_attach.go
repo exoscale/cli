@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -9,12 +8,9 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -50,24 +46,38 @@ func (c *instancePrivnetAttachCmd) CmdPreRun(cmd *cobra.Command, args []string) 
 }
 
 func (c *instancePrivnetAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
+	instances, err := client.ListInstances(ctx)
 	if err != nil {
-		return fmt.Errorf("error retrieving Private Network: %w", err)
+		return err
+	}
+	instance, err := instances.FindListInstancesResponseInstances(c.Instance)
+	if err != nil {
+		return err
 	}
 
-	opts := make([]egoscale.AttachInstanceToPrivateNetworkOpt, 0)
-	if c.IPAddress != "" {
-		opts = append(opts, egoscale.AttachInstanceToPrivateNetworkWithIPAddress(net.ParseIP(c.IPAddress)))
+	privateNetworks, err := client.ListPrivateNetworks(ctx)
+	if err != nil {
+		return err
+	}
+	privateNetwork, err := privateNetworks.FindPrivateNetwork(c.PrivateNetwork)
+	if err != nil {
+		return err
+	}
+
+	op, err := client.AttachInstanceToPrivateNetwork(ctx, privateNetwork.ID, v3.AttachInstanceToPrivateNetworkRequest{
+		Instance: &v3.AttachInstanceToPrivateNetworkRequestInstance{
+			ID: instance.ID,
+		},
+		IP: net.ParseIP(c.IPAddress),
+	})
+	if err != nil {
+		return err
 	}
 
 	utils.DecorateAsyncOperation(
@@ -76,9 +86,7 @@ func (c *instancePrivnetAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			c.Instance,
 			c.PrivateNetwork,
 		), func() {
-			if err = globalstate.EgoscaleClient.AttachInstanceToPrivateNetwork(ctx, c.Zone, instance, privateNetwork, opts...); err != nil {
-				return
-			}
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 	if err != nil {
 		return err
@@ -87,7 +95,7 @@ func (c *instancePrivnetAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
-			Instance:           *instance.ID,
+			Instance:           instance.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).CmdRun(nil, nil)
 	}
