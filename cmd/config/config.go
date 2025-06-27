@@ -1,7 +1,6 @@
-package cmd
+package config
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -11,24 +10,11 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-)
-
-const (
-	legacyAPIVersion          = "compute"
-	defaultEnvironment        = "api"
-	defaultConfigFileName     = "exoscale"
-	DefaultInstanceType       = "medium"
-	DefaultInstanceTypeFamily = "standard"
-	defaultTemplate           = "Linux Ubuntu 22.04 LTS 64-bit"
-	DefaultTemplateVisibility = "public"
-	defaultSosEndpoint        = "https://sos-{zone}.exo.io"
-	defaultZone               = "ch-dk-2"
-	defaultOutputFormat       = "table"
-	defaultClientTimeout      = 20
 )
 
 var configCmd = &cobra.Command{
@@ -43,11 +29,11 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 		newAccountLabel    = "<Configure a new account>"
 	)
 
-	if gConfigFilePath == "" && account.CurrentAccount.Key != "" {
+	if exocmd.GConfigFilePath == "" && account.CurrentAccount.Key != "" {
 		log.Fatalf("remove ENV credentials variables to use %s", cmd.CalledAs())
 	}
 
-	if gConfigFilePath != "" && account.CurrentAccount.Key != "" {
+	if exocmd.GConfigFilePath != "" && account.CurrentAccount.Key != "" {
 		accounts := listAccounts(defaultAccountMark)
 		accounts = append(accounts, newAccountLabel)
 		prompt := promptui.Select{
@@ -71,8 +57,8 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 
 		if strings.TrimSuffix(selectedAccount, defaultAccountMark) != account.GAllAccount.DefaultAccount {
 			fmt.Printf("Setting default account to [%s]\n", selectedAccount)
-			gConfig.Set("defaultAccount", selectedAccount)
-			return saveConfig(gConfig.ConfigFileUsed(), nil)
+			exocmd.GConfig.Set("defaultAccount", selectedAccount)
+			return saveConfig(exocmd.GConfig.ConfigFileUsed(), nil)
 		}
 
 		return nil
@@ -163,16 +149,16 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 		}
 	}
 
-	gConfig.SetConfigType("toml")
-	gConfig.SetConfigFile(filePath)
+	exocmd.GConfig.SetConfigType("toml")
+	exocmd.GConfig.SetConfigFile(filePath)
 
-	gConfig.Set("accounts", accounts)
+	exocmd.GConfig.Set("accounts", accounts)
 
-	if err := gConfig.WriteConfig(); err != nil {
+	if err := exocmd.GConfig.WriteConfig(); err != nil {
 		return err
 	}
 
-	conf.DefaultAccount = gConfig.Get("defaultAccount").(string)
+	conf.DefaultAccount = exocmd.GConfig.Get("defaultAccount").(string)
 	if conf.DefaultAccount == "" {
 		fmt.Println("no default account set")
 	}
@@ -191,7 +177,7 @@ func createConfigFile(fileName string) (string, error) {
 
 	filepath := path.Join(globalstate.ConfigFolder, fileName+".toml")
 
-	if gConfig.ConfigFileUsed() == "" {
+	if exocmd.GConfig.ConfigFileUsed() == "" {
 		if _, err := os.Stat(filepath); !os.IsNotExist(err) {
 			return "", fmt.Errorf("%q exists already", filepath)
 		}
@@ -204,50 +190,6 @@ func createConfigFile(fileName string) (string, error) {
 	defer fp.Close() // nolint: errcheck
 
 	return filepath, nil
-}
-
-func readInput(reader *bufio.Reader, text, def string) (string, error) {
-	if def == "" {
-		fmt.Printf("[+] %s [%s]: ", text, "none")
-	} else {
-		fmt.Printf("[+] %s [%s]: ", text, def)
-	}
-	c := make(chan bool)
-	defer close(c)
-
-	input := ""
-	var err error
-	go func() {
-		input, err = reader.ReadString('\n')
-		c <- true
-	}()
-
-	select {
-	case <-c:
-	case <-GContext.Done():
-		err = fmt.Errorf("")
-	}
-
-	if err != nil {
-		return "", err
-	}
-
-	input = strings.TrimSpace(input)
-	if input == "" {
-		input = def
-	}
-	return input, nil
-}
-
-func askQuestion(text string) bool {
-	reader := bufio.NewReader(os.Stdin)
-
-	resp, err := readInput(reader, text, "yN")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return (strings.ToLower(resp) == "y" || strings.ToLower(resp) == "yes")
 }
 
 func listAccounts(defaultAccountMark string) []string {
@@ -281,7 +223,7 @@ func getAccountByName(name string) *account.Account {
 func chooseZone(client *egoscale.Client, zones []string) (string, error) {
 	if zones == nil {
 
-		ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(defaultEnvironment, defaultZone))
+		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(exocmd.DefaultEnvironment, exocmd.DefaultZone))
 		var err error
 		zones, err = client.ListZones(ctx)
 
@@ -310,5 +252,5 @@ func chooseZone(client *egoscale.Client, zones []string) (string, error) {
 }
 
 func init() {
-	RootCmd.AddCommand(configCmd)
+	exocmd.RootCmd.AddCommand(configCmd)
 }

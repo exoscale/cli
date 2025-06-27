@@ -1,4 +1,4 @@
-package cmd
+package dns
 
 import (
 	"errors"
@@ -6,8 +6,10 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -22,8 +24,8 @@ func init() {
 
 func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priority *int64) error {
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -55,7 +57,7 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Adding DNS record %q to %q...", rType, domain.UnicodeName), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Adding DNS record %q to %q...", rType, domain.UnicodeName), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {

@@ -1,7 +1,7 @@
 package blockstorage
 
 import (
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/spf13/cobra"
 )
 
@@ -12,5 +12,5 @@ var blockstorageCmd = &cobra.Command{
 }
 
 func init() {
-	exocmd.ComputeCmd.AddCommand(blockstorageCmd)
+	compute.ComputeCmd.AddCommand(blockstorageCmd)
 }

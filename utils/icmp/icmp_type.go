@@ -1,4 +1,4 @@
-package cmd
+package icmp
 
 import (
 	"github.com/fatih/camelcase"

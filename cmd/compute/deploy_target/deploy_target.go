@@ -1,7 +1,7 @@
 package deploy_target
 
 import (
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/spf13/cobra"
 )
 
@@ -12,5 +12,5 @@ var deployTargetCmd = &cobra.Command{
 }
 
 func init() {
-	exocmd.ComputeCmd.AddCommand(deployTargetCmd)
+	compute.ComputeCmd.AddCommand(deployTargetCmd)
 }

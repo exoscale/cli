@@ -1,7 +1,7 @@
 package load_balancer
 
 import (
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/spf13/cobra"
 )
 
@@ -12,5 +12,5 @@ var nlbCmd = &cobra.Command{
 }
 
 func init() {
-	exocmd.ComputeCmd.AddCommand(nlbCmd)
+	compute.ComputeCmd.AddCommand(nlbCmd)
 }

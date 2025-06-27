@@ -1,4 +1,4 @@
-package cmd
+package dns
 
 import (
 	"github.com/spf13/cobra"

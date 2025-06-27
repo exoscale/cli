@@ -315,7 +315,7 @@ func GetSettingBool(settings map[string]interface{}, key string) bool {
 	return false
 }
 
-func readInput(ctx context.Context, reader *bufio.Reader, text, def string) (string, error) {
+func ReadInput(ctx context.Context, reader *bufio.Reader, text, def string) (string, error) {
 	if def == "" {
 		fmt.Printf("[+] %s [%s]: ", text, "none")
 	} else {
@@ -351,7 +351,7 @@ func readInput(ctx context.Context, reader *bufio.Reader, text, def string) (str
 func AskQuestion(ctx context.Context, text string) bool {
 	reader := bufio.NewReader(os.Stdin)
 
-	resp, err := readInput(ctx, reader, text, "yN")
+	resp, err := ReadInput(ctx, reader, text, "yN")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,4 +1,4 @@
-package cmd
+package config
 
 import (
 	"fmt"
@@ -7,9 +7,11 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 )
 
 type configListItemOutput struct {
@@ -47,9 +49,9 @@ func init() {
 
 Supported output template annotations: %s`,
 			strings.Join(output.TemplateAnnotations(&configListOutput{}), ", ")),
-		Aliases: GListAlias,
+		Aliases: exocmd.GListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return printOutput(listConfigs(), nil)
+			return utils.PrintOutput(listConfigs(), nil)
 		},
 	})
 }

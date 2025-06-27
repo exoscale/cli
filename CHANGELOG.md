@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Features
+
+### Bug fixes
+
+### Improvements
+
+- dns: moving the logic to the corresponding subfolder #715
+- config: moving the logic to the corresponding subfolder #715
+
 ## 1.85.1
 
 ### Features
