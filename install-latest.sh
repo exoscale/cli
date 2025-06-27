@@ -6,7 +6,7 @@
 set -eu
 
 # detect the latest version of the exoscale cli
-LATEST_URL=$(curl -L -s -o /dev/null -w %{url_effective} https://github.com/exoscale/cli/releases/latest)
+LATEST_URL=$(curl -L -s -o /dev/null -w '%{url_effective}' https://github.com/exoscale/cli/releases/latest)
 LATEST_TAG=$(basename "${LATEST_URL}")
 LATEST_VERSION=$(echo "$LATEST_TAG" | cut -c 2-)
 
@@ -34,6 +34,7 @@ is_apt_newer_than_v2_2() {
 }
 
 if [ -f /etc/os-release ]; then
+    # shellcheck disable=SC1091
     . /etc/os-release
     case "$ID" in
         debian | ubuntu | pop | neon | zorin | linuxmint | elementary | parrot | mendel | galliumos | pureos | raspian | kali | Deepin)
@@ -113,7 +114,7 @@ if [ $RC != 0 ]; then
     echo "The installer cannot reach $TEST_URL"
     echo "Please make sure that your machine has internet access."
     echo "Test output:"
-    echo $TEST_OUT
+    echo "$TEST_OUT"
     exit 1
 fi
 
@@ -147,32 +148,34 @@ PKGPATH=$TEMPDIR/$PKGFILE
 PKGSIGPATH=$TEMPDIR/$PKGSIGFILE
 
 download_pkg() {
-    $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGFILE" >$PKGPATH
+    $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGFILE" >"$PKGPATH"
+
 
     CHECKSUMSFILE="${PKGPREFIX}_${LATEST_VERSION}_checksums.txt"
     CHECKSUMSPATH=$TEMPDIR/$CHECKSUMSFILE
-    $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$CHECKSUMSFILE" >$CHECKSUMSPATH
+    $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$CHECKSUMSFILE" >"$CHECKSUMSPATH"
+
 
     COMPUTED_CHECKSUM=$(sha256sum "$PKGPATH" | cut -d " " -f 1)
-    EXPECTED_CHECKSUM=$(grep -m 1 $PKGFILE $CHECKSUMSPATH | cut -d " " -f 1)
+    EXPECTED_CHECKSUM=$(grep -m 1 "$PKGFILE" "$CHECKSUMSPATH" | cut -d " " -f 1)
+
 
     if [ "$COMPUTED_CHECKSUM" != "$EXPECTED_CHECKSUM" ]; then
         echo "Error: Checksum of $PKGFILE does not match the expected checksum"
-        echo $COMPUTED_CHECKSUM
-        echo $EXPECTED_CHECKSUM
+        echo "$COMPUTED_CHECKSUM"
+        echo "$EXPECTED_CHECKSUM"
         exit 1
     fi
 }
 
-TOOLING_KEY_NAME="Exoscale Tooling <tooling@exoscale.ch>"
 TOOLING_KEY_FINGERPRINT="7100E8BFD6199CE0374CB7F003686F8CDE378D41"
 
 GPG_AVAILABLE=no
 # downloads and verifies the signature file for the package if gpg is available
 verify_pkg() {
     if [ "$GPG_AVAILABLE" = "yes" ]; then
-        $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGSIGFILE" >$PKGSIGPATH
-        gpg --verify $PKGSIGPATH $PKGPATH
+        $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGSIGFILE" >"$PKGSIGPATH"
+        gpg --verify "$PKGSIGPATH" "$PKGPATH"
     fi
 }
 
@@ -227,7 +230,7 @@ case "$PACKAGETYPE" in
     dpkg)
         download_pkg
         verify_pkg
-        $SUDO dpkg -i $PKGPATH
+        $SUDO dpkg -i "$PKGPATH"
         ;;
     yum)
         install_rpm_pkg
