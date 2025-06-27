@@ -8,9 +8,21 @@
 
 ### Improvements
 
-- storage: moving the logic to the corresponding subfolder #713
 - dns: moving the logic to the corresponding subfolder #715
 - config: moving the logic to the corresponding subfolder #715
+
+## 1.85.1
+
+### Features
+
+### Bug fixes
+
+- Fix [Bug]: 1.85.0 exo compute sks kubeconfig prepends config with strange symbols #718
+
+### Improvements
+
+- storage: moving the logic to the corresponding subfolder #713
+- deploy-target: move to egoscale v3 #683
 
 ## 1.85.0
 
@@ -42,7 +54,6 @@
 - EIP: moving the logic to the corresponding subfolder #698
 - EIP: move to egoscale v3 #684
 - dns: move to egoscale v3 #683
-- deploy-target: move to egoscale v3 #683
 - JSON output: do not escape HTML #682
 - IAM org policy and roles: move to egoscale v3 #685
 - IAM: moving the logic to the corresponding subfolder #711
