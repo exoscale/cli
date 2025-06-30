@@ -51,12 +51,20 @@ func (c *deployTargetListCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *deployTargetListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var zones []string
+	var zones []v3.ZoneName
+	ctx := exocmd.GContext
 
 	if c.Zone != "" {
-		zones = []string{c.Zone}
+		zones = []v3.ZoneName{v3.ZoneName(c.Zone)}
 	} else {
-		zones = utils.AllZones
+		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+		if err != nil {
+			return err
+		}
+		zones, err = utils.AllZonesV3(ctx, *client)
+		if err != nil {
+			return err
+		}
 	}
 
 	out := make(deployTargetListOutput, 0)
@@ -69,8 +77,7 @@ func (c *deployTargetListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 		done <- struct{}{}
 	}()
-	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exocmd.GContext
+	err := utils.ForEachZone(zones, func(zone v3.ZoneName) error {
 
 		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 		if err != nil {
@@ -87,7 +94,7 @@ func (c *deployTargetListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				ID:   dt.ID.String(),
 				Name: dt.Name,
 				Type: string(dt.Type),
-				Zone: zone,
+				Zone: string(zone),
 			}
 		}
 

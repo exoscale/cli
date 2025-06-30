@@ -58,12 +58,20 @@ func (c *instanceListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var zones []string
+	var zones []v3.ZoneName
+	ctx := exocmd.GContext
 
 	if c.Zone != "" {
-		zones = []string{c.Zone}
+		zones = []v3.ZoneName{v3.ZoneName(c.Zone)}
 	} else {
-		zones = utils.AllZones
+		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+		if err != nil {
+			return err
+		}
+		zones, err = utils.AllZonesV3(ctx, *client)
+		if err != nil {
+			return err
+		}
 	}
 
 	out := make(instanceListOutput, 0)
@@ -78,7 +86,7 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 		done <- struct{}{}
 	}()
-	err := utils.ForEachZone(zones, func(zone string) error {
+	err := utils.ForEachZone(zones, func(zone v3.ZoneName) error {
 		ctx := exocmd.GContext
 		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 		if err != nil {
@@ -109,7 +117,7 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			res <- instanceListItemOutput{
 				ID:        i.ID.String(),
 				Name:      i.Name,
-				Zone:      zone,
+				Zone:      string(zone),
 				Type:      fmt.Sprintf("%s.%s", instanceType.Family, instanceType.Size),
 				IPAddress: utils.DefaultIP(&i.PublicIP, EmptyIPAddressVisualization),
 				State:     string(i.State),

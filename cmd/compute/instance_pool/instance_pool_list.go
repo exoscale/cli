@@ -13,6 +13,7 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instancePoolListItemOutput struct {
@@ -53,12 +54,20 @@ func (c *instancePoolListCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *instancePoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var zones []string
+	var zones []v3.ZoneName
+	ctx := exocmd.GContext
 
 	if c.Zone != "" {
-		zones = []string{c.Zone}
+		zones = []v3.ZoneName{v3.ZoneName(c.Zone)}
 	} else {
-		zones = utils.AllZones
+		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+		if err != nil {
+			return err
+		}
+		zones, err = utils.AllZonesV3(ctx, *client)
+		if err != nil {
+			return err
+		}
 	}
 
 	out := make(instancePoolListOutput, 0)
@@ -71,10 +80,10 @@ func (c *instancePoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 		done <- struct{}{}
 	}()
-	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	err := utils.ForEachZone(zones, func(zone v3.ZoneName) error {
+		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, string(zone)))
 
-		list, err := globalstate.EgoscaleClient.ListInstancePools(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListInstancePools(ctx, string(zone))
 		if err != nil {
 			return fmt.Errorf("unable to list Instance Pools in zone %s: %w", zone, err)
 		}
@@ -83,7 +92,7 @@ func (c *instancePoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			res <- instancePoolListItemOutput{
 				ID:    *i.ID,
 				Name:  *i.Name,
-				Zone:  zone,
+				Zone:  string(zone),
 				Size:  *i.Size,
 				State: *i.State,
 			}
