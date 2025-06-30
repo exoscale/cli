@@ -66,6 +66,9 @@ func (c *instanceResizeDiskCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	op, err := client.ResizeInstanceDisk(ctx, instance.ID, v3.ResizeInstanceDiskRequest{
 		DiskSize: c.Size,
 	})
+	if err != nil {
+		return err
+	}
 	utils.DecorateAsyncOperation(fmt.Sprintf("Resizing disk of instance %q...", c.Instance), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})

@@ -77,6 +77,9 @@ func (c *instanceScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	op, err := client.ScaleInstance(ctx, instance.ID, v3.ScaleInstanceRequest{
 		InstanceType: &instanceType,
 	})
+	if err != nil {
+		return err
+	}
 	utils.DecorateAsyncOperation(fmt.Sprintf("Scaling instance %q...", c.Instance), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
