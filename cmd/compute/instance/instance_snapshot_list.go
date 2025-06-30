@@ -75,7 +75,7 @@ func (c *instanceSnapshotListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
 		ctx := exocmd.GContext
-		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 		if err != nil {
 			return err
 		}
