@@ -33,6 +33,7 @@ var (
 		string(oapi.ZoneNameChGva2),
 		string(oapi.ZoneNameDeFra1),
 		string(oapi.ZoneNameDeMuc1),
+		string(oapi.ZoneNameHrZag1),
 	}
 )
 
