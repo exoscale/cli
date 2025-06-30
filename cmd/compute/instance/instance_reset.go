@@ -78,13 +78,7 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	if c.Template != "" {
 
-		var templates *v3.ListTemplatesResponse
-
-		if c.TemplateVisibility != "" {
-			templates, err = client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
-		} else {
-			templates, err = client.ListTemplates(ctx)
-		}
+		templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
 
 		if err != nil {
 			return err
@@ -129,7 +123,6 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceResetCmd{
 		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
-
 		TemplateVisibility: exocmd.DefaultTemplateVisibility,
 	}))
 }
