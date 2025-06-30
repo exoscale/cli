@@ -1,17 +1,15 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceSnapshotShowOutput struct {
@@ -58,28 +56,32 @@ func (c *instanceSnapshotShowCmd) CmdPreRun(cmd *cobra.Command, args []string) e
 }
 
 func (c *instanceSnapshotShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
-		return fmt.Errorf("error retrieving Compute instance snapshot: %w", err)
+		return err
 	}
 
-	instance, err := globalstate.EgoscaleClient.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
+	snapshots, err := client.ListSnapshots(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to retrieve Compute instance %s: %w", *snapshot.InstanceID, err)
+		return err
+	}
+	snapshot, err := snapshots.FindSnapshot(c.ID)
+	if err != nil {
+		return err
+	}
+	instance, err := client.GetInstance(ctx, snapshot.Instance.ID)
+	if err != nil {
+		return fmt.Errorf("unable to retrieve Compute instance %s: %w", snapshot.Instance.ID, err)
 	}
 
 	return c.OutputFunc(&instanceSnapshotShowOutput{
-		ID:           *snapshot.ID,
-		Name:         *snapshot.Name,
-		CreationDate: snapshot.CreatedAt.String(),
-		State:        *snapshot.State,
-		Size:         *snapshot.Size,
-		Instance:     *instance.Name,
+		ID:           snapshot.ID.String(),
+		Name:         snapshot.Name,
+		CreationDate: snapshot.CreatedAT.String(),
+		State:        string(snapshot.State),
+		Size:         snapshot.Size,
+		Instance:     instance.Name,
 		Zone:         c.Zone,
 	}, nil)
 }
