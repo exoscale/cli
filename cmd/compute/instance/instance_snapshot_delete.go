@@ -1,16 +1,14 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceSnapshotDeleteCmd struct {
@@ -38,24 +36,33 @@ func (c *instanceSnapshotDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string)
 }
 
 func (c *instanceSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
+		return err
+	}
+
+	snapshots, err := client.ListSnapshots(ctx)
+	if err != nil {
+		return err
+	}
+	snapshot, err := snapshots.FindSnapshot(c.ID)
+	if err != nil {
 		return err
 	}
 
 	if !c.Force {
-		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete snapshot %s?", c.ID)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete snapshot %s for instance %s?", snapshot.ID, snapshot.Instance.ID)) {
 			return nil
 		}
 	}
 
+	op, err := client.DeleteSnapshot(ctx, snapshot.ID)
+	if err != nil {
+		return err
+	}
 	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting snapshot %s...", c.ID), func() {
-		err = globalstate.EgoscaleClient.DeleteSnapshot(ctx, c.Zone, snapshot)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
