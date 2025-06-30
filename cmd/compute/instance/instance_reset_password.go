@@ -1,8 +1,6 @@
 package instance
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -56,7 +54,7 @@ func (c *instanceResetPasswordCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	utils.DecorateAsyncOperation(
-		fmt.Sprintln("Reseting instance password..."),
+		"Reseting instance password...",
 		func() {
 			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})

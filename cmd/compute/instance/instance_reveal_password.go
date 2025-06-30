@@ -1,16 +1,12 @@
 package instance
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceRevealCmd struct {
@@ -44,24 +40,29 @@ func (c *instanceRevealCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceRevealCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	pwd, err := globalstate.EgoscaleClient.RevealInstancePassword(ctx, c.Zone, instance)
+	instances, err := client.ListInstances(ctx)
+	if err != nil {
+		return err
+	}
+	instance, err := instances.FindListInstancesResponseInstances(c.Instance)
+	if err != nil {
+		return err
+	}
+
+	pwd, err := client.RevealInstancePassword(ctx, instance.ID)
 	if err != nil {
 		return err
 	}
 
 	out := instanceRevealOutput{
-		ID:       *instance.ID,
-		Password: pwd,
+		ID:       instance.ID.String(),
+		Password: pwd.Password,
 	}
 	return c.OutputFunc(&out, nil)
 }
