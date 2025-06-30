@@ -9,12 +9,10 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceSnapshotListItemOutput struct {
@@ -76,31 +74,35 @@ func (c *instanceSnapshotListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-		list, err := globalstate.EgoscaleClient.ListSnapshots(ctx, zone)
+		ctx := exocmd.GContext
+		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 		if err != nil {
-			return fmt.Errorf("unable to list Compute instance snapshots in zone %s: %w", zone, err)
+			return err
 		}
 
-		for _, s := range list {
-			var instance *egoscale.Instance
-			instanceI, cached := instances.Load(*s.InstanceID)
+		snapshots, err := client.ListSnapshots(ctx)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range snapshots.Snapshots {
+			var instance *v3.Instance
+			instanceI, cached := instances.Load(s.Instance.ID.String())
 			if cached {
-				instance = instanceI.(*egoscale.Instance)
+				instance = instanceI.(*v3.Instance)
 			} else {
-				instance, err = globalstate.EgoscaleClient.GetInstance(ctx, zone, *s.InstanceID)
+				instance, err = client.GetInstance(ctx, s.Instance.ID)
 				if err != nil {
-					return fmt.Errorf("unable to retrieve Compute instance %q: %w", *s.InstanceID, err)
+					return fmt.Errorf("unable to retrieve Compute instance %q: %w", s.Instance.ID.String(), err)
 				}
-				instances.Store(*s.InstanceID, instance)
+				instances.Store(s.Instance.ID.String(), instance)
 			}
 
 			res <- instanceSnapshotListItemOutput{
-				ID:           *s.ID,
-				CreationDate: s.CreatedAt.String(),
-				Instance:     *instance.Name,
-				State:        *s.State,
+				ID:           s.ID.String(),
+				CreationDate: s.CreatedAT.String(),
+				Instance:     instance.Name,
+				State:        string(s.State),
 				Zone:         zone,
 			}
 		}
