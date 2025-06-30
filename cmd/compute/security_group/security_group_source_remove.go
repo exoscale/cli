@@ -72,7 +72,7 @@ func (c *securityGroupRemoveSourceCmd) CmdRun(_ *cobra.Command, _ []string) erro
 	op, err := client.RemoveExternalSourceFromSecurityGroup(ctx, securityGroup.ID, v3.RemoveExternalSourceFromSecurityGroupRequest{
 		Cidr: c.Cidr,
 	})
-	exocmd.DecorateAsyncOperation(fmt.Sprintf("Adding Security Group source %s...", c.Cidr), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Adding Security Group source %s...", c.Cidr), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {

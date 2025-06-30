@@ -10,6 +10,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -56,7 +57,7 @@ func (c *securityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	exocmd.DecorateAsyncOperation(fmt.Sprintf("Creating Security Group %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Security Group %q...", c.Name), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {

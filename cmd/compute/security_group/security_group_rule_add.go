@@ -184,7 +184,7 @@ func (c *securityGroupAddRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	exocmd.DecorateAsyncOperation(fmt.Sprintf("Adding rule to Security Group %q...", securityGroup.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Adding rule to Security Group %q...", securityGroup.Name), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {

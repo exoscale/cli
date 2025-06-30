@@ -65,7 +65,7 @@ func (c *securityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			return err
 		}
 
-		exocmd.DecorateAsyncOperation(fmt.Sprintf("Deleting Security Group %s...", c.SecurityGroup), func() {
+		utils.DecorateAsyncOperation(fmt.Sprintf("Deleting Security Group %s...", c.SecurityGroup), func() {
 			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 	} else {
@@ -75,7 +75,7 @@ func (c *securityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			}
 		}
 
-		exocmd.DecorateAsyncOperation(fmt.Sprintf("Deleting Rules for Security Group %s...", c.SecurityGroup), func() {
+		utils.DecorateAsyncOperation(fmt.Sprintf("Deleting Rules for Security Group %s...", c.SecurityGroup), func() {
 			for _, rule := range securityGroup.Rules {
 				op, err := client.DeleteRuleFromSecurityGroup(ctx, securityGroup.ID, rule.ID)
 				if err != nil {
