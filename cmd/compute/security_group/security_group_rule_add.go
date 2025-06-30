@@ -97,10 +97,6 @@ func (c *securityGroupAddRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		(c.TargetNetwork != "" && c.TargetSecurityGroup != "") ||
 		(c.TargetNetwork != "" && c.TargetPublicSecurityGroup != "") ||
 		(c.TargetSecurityGroup != "" && c.TargetPublicSecurityGroup != "") {
-		fmt.Println((c.TargetNetwork == "" && c.TargetSecurityGroup == "" && c.TargetPublicSecurityGroup == ""))
-		fmt.Println((c.TargetNetwork != "" && c.TargetSecurityGroup != ""))
-		fmt.Println((c.TargetNetwork != "" && c.TargetPublicSecurityGroup != ""))
-		fmt.Println((c.TargetSecurityGroup != "" && c.TargetPublicSecurityGroup != ""))
 		return fmt.Errorf("either a target network address or Security Group name/ID must be specified")
 	}
 
