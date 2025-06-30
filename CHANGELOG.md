@@ -1,12 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.85.2
 
 ### Features
 
 - utils: Add hr-zag-1 in the list of zones (egoscale v2) #723
-
-### Bug fixes
 
 ### Improvements
 
