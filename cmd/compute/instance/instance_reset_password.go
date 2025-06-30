@@ -56,7 +56,7 @@ func (c *instanceResetPasswordCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	utils.DecorateAsyncOperation(
-		fmt.Sprintf("Reseting instance password..."),
+		fmt.Sprintln("Reseting instance password..."),
 		func() {
 			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})

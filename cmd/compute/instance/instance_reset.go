@@ -7,12 +7,9 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -52,9 +49,17 @@ func (c *instanceResetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
 
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	instances, err := client.ListInstances(ctx)
+	if err != nil {
+		return err
+	}
+	instance, err := instances.FindListInstancesResponseInstances(c.Instance)
 	if err != nil {
 		return err
 	}
@@ -65,15 +70,27 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	opts := make([]egoscale.ResetInstanceOpt, 0)
+	request := v3.ResetInstanceRequest{}
 
 	if c.DiskSize > 0 {
-		opts = append(opts, egoscale.ResetInstanceWithDiskSize(c.DiskSize))
+		request.DiskSize = c.DiskSize
 	}
 
-	var template *egoscale.Template
 	if c.Template != "" {
-		template, err = globalstate.EgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
+
+		var templates *v3.ListTemplatesResponse
+
+		if c.TemplateVisibility != "" {
+			templates, err = client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
+		} else {
+			templates, err = client.ListTemplates(ctx)
+		}
+
+		if err != nil {
+			return err
+		}
+
+		template, err := templates.FindTemplate(c.Template)
 		if err != nil {
 			return fmt.Errorf(
 				"no template %q found with visibility %s in zone %s",
@@ -82,11 +99,17 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				c.Zone,
 			)
 		}
-		opts = append(opts, egoscale.ResetInstanceWithTemplate(template))
+
+		request.Template = &template
+	}
+
+	op, err := client.ResetInstance(ctx, instance.ID, request)
+	if err != nil {
+		return err
 	}
 
 	utils.DecorateAsyncOperation(fmt.Sprintf("Resetting instance %q...", c.Instance), func() {
-		err = globalstate.EgoscaleClient.ResetInstance(ctx, c.Zone, instance, opts...)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -95,7 +118,7 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
-			Instance:           *instance.ID,
+			Instance:           instance.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).CmdRun(nil, nil)
 	}
