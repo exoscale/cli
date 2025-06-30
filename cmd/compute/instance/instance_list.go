@@ -9,12 +9,10 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 const (
@@ -81,36 +79,40 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-		list, err := globalstate.EgoscaleClient.ListInstances(ctx, zone)
+		ctx := exocmd.GContext
+		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 		if err != nil {
-			return fmt.Errorf("unable to list Compute instances in zone %s: %w", zone, err)
+			return err
 		}
 
-		for _, i := range list {
-			var instanceType *egoscale.InstanceType
-			instanceTypeI, cached := instanceTypes.Load(*i.InstanceTypeID)
+		instances, err := client.ListInstances(ctx)
+		if err != nil {
+			return err
+		}
+
+		for _, i := range instances.Instances {
+			var instanceType *v3.InstanceType
+			instanceTypeI, cached := instanceTypes.Load(i.InstanceType.ID)
 			if cached {
-				instanceType = instanceTypeI.(*egoscale.InstanceType)
+				instanceType = instanceTypeI.(*v3.InstanceType)
 			} else {
-				instanceType, err = globalstate.EgoscaleClient.GetInstanceType(ctx, zone, *i.InstanceTypeID)
+				instanceType, err = client.GetInstanceType(ctx, i.InstanceType.ID)
 				if err != nil {
 					return fmt.Errorf(
 						"unable to retrieve Compute instance type %q: %w",
-						*i.InstanceTypeID,
+						i.InstanceType.ID,
 						err)
 				}
-				instanceTypes.Store(*i.InstanceTypeID, instanceType)
+				instanceTypes.Store(i.InstanceType.ID, instanceType)
 			}
 
 			res <- instanceListItemOutput{
-				ID:        *i.ID,
-				Name:      *i.Name,
+				ID:        i.ID.String(),
+				Name:      i.Name,
 				Zone:      zone,
-				Type:      fmt.Sprintf("%s.%s", *instanceType.Family, *instanceType.Size),
-				IPAddress: utils.DefaultIP(i.PublicIPAddress, EmptyIPAddressVisualization),
-				State:     *i.State,
+				Type:      fmt.Sprintf("%s.%s", instanceType.Family, instanceType.Size),
+				IPAddress: utils.DefaultIP(&i.PublicIP, EmptyIPAddressVisualization),
+				State:     string(i.State),
 			}
 		}
 
