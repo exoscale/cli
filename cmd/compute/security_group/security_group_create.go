@@ -11,8 +11,7 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type securityGroupCreateCmd struct {
@@ -43,18 +42,23 @@ func (c *securityGroupCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) er
 }
 
 func (c *securityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	zone := account.CurrentAccount.DefaultZone
-
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-	securityGroup := &egoscale.SecurityGroup{
-		Description: utils.NonEmptyStringPtr(c.Description),
-		Name:        &c.Name,
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
 	}
 
-	var err error
+	securityGroup := v3.CreateSecurityGroupRequest{
+		Description: c.Description,
+		Name:        c.Name,
+	}
+
+	op, err := client.CreateSecurityGroup(ctx, securityGroup)
+	if err != nil {
+		return err
+	}
 	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Security Group %q...", c.Name), func() {
-		securityGroup, err = globalstate.EgoscaleClient.CreateSecurityGroup(ctx, zone, securityGroup)
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -63,7 +67,7 @@ func (c *securityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&securityGroupShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
-			SecurityGroup:      *securityGroup.ID,
+			SecurityGroup:      op.Reference.ID.String(),
 		}).CmdRun(nil, nil)
 	}
 

@@ -1,19 +1,15 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -51,41 +47,61 @@ func (c *instanceSGRemoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if len(c.SecurityGroups) == 0 {
 		exocmd.CmdExitOnUsageError(cmd, "no Security Groups specified")
 	}
-
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	securityGroups := make([]*egoscale.SecurityGroup, len(c.SecurityGroups))
+	instances, err := client.ListInstances(ctx)
+	if err != nil {
+		return err
+	}
+	instance, err := instances.FindListInstancesResponseInstances(c.Instance)
+	if err != nil {
+		return err
+	}
+
+	securityGroupsBuffer := make([]v3.SecurityGroup, len(c.SecurityGroups))
+	securityGroups, err := client.ListSecurityGroups(ctx)
+	if err != nil {
+		return err
+	}
+
 	for i := range c.SecurityGroups {
-		securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
+		securityGroup, err := securityGroups.FindSecurityGroup(c.SecurityGroups[i])
 		if err != nil {
 			return fmt.Errorf("error retrieving Security Group: %w", err)
 		}
-		securityGroups[i] = securityGroup
+		securityGroupsBuffer[i] = securityGroup
 	}
 
-	utils.DecorateAsyncOperation(fmt.Sprintf("Updating instance %q Security Groups...", c.Instance), func() {
-		for _, securityGroup := range securityGroups {
-			if err = globalstate.EgoscaleClient.DetachInstanceFromSecurityGroup(ctx, c.Zone, instance, securityGroup); err != nil {
-				return
-			}
+	for _, sg := range securityGroupsBuffer {
+
+		op, err := client.DetachInstanceFromSecurityGroup(ctx, sg.ID, v3.DetachInstanceFromSecurityGroupRequest{
+			Instance: &v3.Instance{
+				ID: instance.ID,
+			},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to detacg instance %s from security group %s: %s", instance.ID, sg.ID, err)
 		}
-	})
-	if err != nil {
-		return err
+
+		utils.DecorateAsyncOperation(fmt.Sprintf("Detaching instance %s from security group %s", instance.ID, sg.ID),
+			func() {
+				_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+			})
+
+		if err != nil {
+			return err
+		}
+
 	}
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
-			Instance:           *instance.ID,
+			Instance:           instance.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).CmdRun(nil, nil)
 	}

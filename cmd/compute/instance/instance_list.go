@@ -15,10 +15,6 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-const (
-	EmptyIPAddressVisualization = "-"
-)
-
 type instanceListItemOutput struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
@@ -68,7 +64,7 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		if err != nil {
 			return err
 		}
-		zones, err = utils.AllZonesV3(ctx, *client)
+		zones, err = utils.AllZonesV3(ctx, client)
 		if err != nil {
 			return err
 		}
@@ -119,7 +115,7 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				Name:      i.Name,
 				Zone:      string(zone),
 				Type:      fmt.Sprintf("%s.%s", instanceType.Family, instanceType.Size),
-				IPAddress: utils.DefaultIP(&i.PublicIP, EmptyIPAddressVisualization),
+				IPAddress: utils.DefaultIP(&i.PublicIP, utils.EmptyIPAddressVisualization),
 				State:     string(i.State),
 			}
 		}

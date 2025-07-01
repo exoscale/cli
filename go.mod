@@ -9,7 +9,7 @@ require (
 	github.com/aws/smithy-go v1.1.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/exoscale/egoscale v0.102.5-0.20250630120923-800c3fe9884a
-	github.com/exoscale/egoscale/v3 v3.1.20
+	github.com/exoscale/egoscale/v3 v3.1.22
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/hashicorp/go-multierror v1.1.0
@@ -83,7 +83,7 @@ require (
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/gordonklaus/ineffassign v0.0.0-20180909121442-1003c8bd00dc // indirect
-	github.com/gorilla/css v1.0.0 // indirect
+	github.com/gorilla/css v1.0.1 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
@@ -113,7 +113,7 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/microcosm-cc/bluemonday v1.0.25 // indirect
+	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect

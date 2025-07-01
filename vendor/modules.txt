@@ -220,7 +220,7 @@ github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
 github.com/exoscale/egoscale/v2/oapi
 github.com/exoscale/egoscale/version
-# github.com/exoscale/egoscale/v3 v3.1.20
+# github.com/exoscale/egoscale/v3 v3.1.22
 ## explicit; go 1.23.8
 github.com/exoscale/egoscale/v3
 github.com/exoscale/egoscale/v3/credentials
@@ -301,8 +301,8 @@ github.com/google/uuid
 # github.com/gordonklaus/ineffassign v0.0.0-20180909121442-1003c8bd00dc
 ## explicit
 github.com/gordonklaus/ineffassign
-# github.com/gorilla/css v1.0.0
-## explicit
+# github.com/gorilla/css v1.0.1
+## explicit; go 1.20
 github.com/gorilla/css/scanner
 # github.com/hashicorp/errwrap v1.0.0
 ## explicit
@@ -459,7 +459,7 @@ github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.15
 ## explicit; go 1.9
 github.com/mattn/go-runewidth
-# github.com/microcosm-cc/bluemonday v1.0.25
+# github.com/microcosm-cc/bluemonday v1.0.27
 ## explicit; go 1.19
 github.com/microcosm-cc/bluemonday
 github.com/microcosm-cc/bluemonday/css
