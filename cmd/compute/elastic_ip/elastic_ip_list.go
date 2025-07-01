@@ -60,7 +60,7 @@ func (c *elasticIPListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		if err != nil {
 			return err
 		}
-		zones, err = utils.AllZonesV3(ctx, *client)
+		zones, err = utils.AllZonesV3(ctx, client)
 		if err != nil {
 			return err
 		}

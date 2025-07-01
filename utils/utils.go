@@ -33,7 +33,7 @@ var (
 	}
 )
 
-func AllZonesV3(ctx context.Context, client v3.Client) ([]v3.ZoneName, error) {
+func AllZonesV3(ctx context.Context, client *v3.Client) ([]v3.ZoneName, error) {
 	zones, err := client.ListZones(ctx)
 	if err != nil {
 		return nil, err
