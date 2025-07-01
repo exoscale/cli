@@ -78,7 +78,19 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 	if err != nil {
 		return err
 	}
-	updateReq := v3.UpdateInstancePoolRequest{}
+
+	// API bug: leaving these fields empty clear them on update
+	// So while this is fixed, we rebuild populate those fields
+	// with the existing values
+	updateReq := v3.UpdateInstancePoolRequest{
+		AntiAffinityGroups: instancePool.AntiAffinityGroups,
+		ElasticIPS:         instancePool.ElasticIPS,
+		PrivateNetworks:    instancePool.PrivateNetworks,
+		SecurityGroups:     instancePool.SecurityGroups,
+		DeployTarget:       instancePool.DeployTarget,
+		SSHKey:             instancePool.SSHKey,
+		SSHKeys:            instancePool.SSHKeys,
+	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
 		updateReq.AntiAffinityGroups = make([]v3.AntiAffinityGroup, len(c.AntiAffinityGroups))

@@ -1,7 +1,6 @@
 package instance_pool
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -9,12 +8,11 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instancePoolShowOutput struct {
@@ -71,20 +69,24 @@ func (c *instancePoolShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
+		return err
+	}
 
+	instancePools, err := client.ListInstancePools(ctx)
+	if err != nil {
+		return err
+	}
+	instancePool, err := instancePools.FindInstancePool(c.InstancePool)
+	if err != nil {
 		return err
 	}
 
 	if c.ShowUserData {
-		if instancePool.UserData != nil {
-			userData, err := userdata.DecodeUserData(*instancePool.UserData)
+		if instancePool.UserData != "" {
+			userData, err := userdata.DecodeUserData(instancePool.UserData)
 			if err != nil {
 				return fmt.Errorf("error decoding user data: %w", err)
 			}
@@ -97,89 +99,95 @@ func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	out := instancePoolShowOutput{
 		AntiAffinityGroups: make([]string, 0),
-		Description:        utils.DefaultString(instancePool.Description, ""),
-		DiskSize:           humanize.IBytes(uint64(*instancePool.DiskSize << 30)),
+		Description:        instancePool.Description,
+		DiskSize:           humanize.IBytes(uint64(instancePool.DiskSize << 30)),
 		ElasticIPs:         make([]string, 0),
-		ID:                 *instancePool.ID,
-		IPv6:               utils.DefaultBool(instancePool.IPv6Enabled, false),
-		InstancePrefix:     utils.DefaultString(instancePool.InstancePrefix, ""),
+		ID:                 instancePool.ID.String(),
+		IPv6:               utils.DefaultBool(instancePool.Ipv6Enabled, false),
+		InstancePrefix:     instancePool.InstancePrefix,
 		Instances:          make([]string, 0),
 		Labels: func() (v map[string]string) {
 			if instancePool.Labels != nil {
-				v = *instancePool.Labels
+				v = instancePool.Labels
 			}
 			return
 		}(),
-		Name:            *instancePool.Name,
+		Name:            instancePool.Name,
 		PrivateNetworks: make([]string, 0),
-		SSHKey:          utils.DefaultString(instancePool.SSHKey, "-"),
-		SecurityGroups:  make([]string, 0),
-		Size:            *instancePool.Size,
-		State:           *instancePool.State,
-		Zone:            c.Zone,
+		SSHKey: func() string {
+			if instancePool.SSHKey != nil {
+				return instancePool.SSHKey.Name
+			}
+			return "-"
+		}(),
+		SecurityGroups: make([]string, 0),
+		Size:           instancePool.Size,
+		State:          string(instancePool.State),
+		Zone:           c.Zone,
 	}
 
-	if instancePool.AntiAffinityGroupIDs != nil {
-		for _, id := range *instancePool.AntiAffinityGroupIDs {
-			antiAffinityGroup, err := globalstate.EgoscaleClient.GetAntiAffinityGroup(ctx, c.Zone, id)
+	if instancePool.AntiAffinityGroups != nil {
+		for _, aag := range instancePool.AntiAffinityGroups {
+			aag, err := client.GetAntiAffinityGroup(ctx, aag.ID)
 			if err != nil {
-				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
+				return err
 			}
-			out.AntiAffinityGroups = append(out.AntiAffinityGroups, *antiAffinityGroup.Name)
+			out.AntiAffinityGroups = append(out.AntiAffinityGroups, aag.Name)
 		}
 	}
 
-	if instancePool.ElasticIPIDs != nil {
-		for _, id := range *instancePool.ElasticIPIDs {
-			elasticIP, err := globalstate.EgoscaleClient.GetElasticIP(ctx, c.Zone, id)
+	if instancePool.ElasticIPS != nil {
+		for _, ip := range instancePool.ElasticIPS {
+			ip, err := client.GetElasticIP(ctx, ip.ID)
 			if err != nil {
-				return fmt.Errorf("error retrieving Elastic IP: %w", err)
+				return err
 			}
-			out.ElasticIPs = append(out.ElasticIPs, elasticIP.IPAddress.String())
+			out.ElasticIPs = append(out.ElasticIPs, ip.IP)
 		}
 	}
 
-	if instancePool.InstanceIDs != nil {
-		for _, id := range *instancePool.InstanceIDs {
-			instance, err := globalstate.EgoscaleClient.GetInstance(ctx, c.Zone, id)
+	if instancePool.Instances != nil {
+		for _, instance := range instancePool.Instances {
+			instance, err := client.GetInstance(ctx, instance.ID)
 			if err != nil {
-				return fmt.Errorf("error retrieving Compute instance: %w", err)
+				return err
 			}
-			out.Instances = append(out.Instances, *instance.Name)
+			out.Instances = append(out.Instances, instance.Name)
 		}
 	}
 
-	instanceType, err := globalstate.EgoscaleClient.GetInstanceType(ctx, c.Zone, *instancePool.InstanceTypeID)
+	instanceType, err := client.GetInstanceType(ctx, instancePool.InstanceType.ID)
 	if err != nil {
 		return err
 	}
-	out.InstanceType = fmt.Sprintf("%s.%s", *instanceType.Family, *instanceType.Size)
+	out.InstanceType = fmt.Sprintf("%s.%s", instanceType.Family, instanceType.Size)
 
-	if instancePool.PrivateNetworkIDs != nil {
-		for _, id := range *instancePool.PrivateNetworkIDs {
-			privateNetwork, err := globalstate.EgoscaleClient.GetPrivateNetwork(ctx, c.Zone, id)
+	if instancePool.PrivateNetworks != nil {
+		for _, privateNetwork := range instancePool.PrivateNetworks {
+			privateNetwork, err := client.GetPrivateNetwork(ctx, privateNetwork.ID)
 			if err != nil {
-				return fmt.Errorf("error retrieving Private Network: %w", err)
+				return err
 			}
-			out.PrivateNetworks = append(out.PrivateNetworks, *privateNetwork.Name)
+			out.PrivateNetworks = append(out.PrivateNetworks, privateNetwork.Name)
 		}
 	}
 
-	if instancePool.SecurityGroupIDs != nil {
-		for _, id := range *instancePool.SecurityGroupIDs {
-			securityGroup, err := globalstate.EgoscaleClient.GetSecurityGroup(ctx, c.Zone, id)
+	if instancePool.SecurityGroups != nil {
+		for _, securityGroup := range instancePool.SecurityGroups {
+			securityGroup, err := client.GetSecurityGroup(ctx, securityGroup.ID)
 			if err != nil {
-				return fmt.Errorf("error retrieving Security Group: %w", err)
+				return err
 			}
-			out.SecurityGroups = append(out.SecurityGroups, *securityGroup.Name)
+
+			out.SecurityGroups = append(out.SecurityGroups, securityGroup.Name)
 		}
 	}
 
-	template, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, *instancePool.TemplateID)
+	template, err := client.GetTemplate(ctx, instancePool.Template.ID)
 	if err != nil {
 		return fmt.Errorf("error retrieving template: %w", err)
 	}
-	out.Template = *template.Name
+	out.Template = template.Name
 
 	return c.OutputFunc(&out, nil)
 }
