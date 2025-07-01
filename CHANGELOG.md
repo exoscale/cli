@@ -6,6 +6,7 @@
 
 - instance: use egoscale v3 #722
 - security-group: use egoscale v3 #720
+- instancepool: update to egoscale v3 #724
 
 ## 1.85.2
 
