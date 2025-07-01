@@ -1,16 +1,14 @@
 package instance_pool
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instancePoolEvictCmd struct {
@@ -41,10 +39,24 @@ func (c *instancePoolEvictCmd) CmdPreRun(cmd *cobra.Command, args []string) erro
 }
 
 func (c *instancePoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	if len(c.Instances) == 0 {
 		exocmd.CmdExitOnUsageError(cmd, "no instances specified")
+	}
+
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
+
+	instancePools, err := client.ListInstancePools(ctx)
+	if err != nil {
+		return err
+	}
+	instancePool, err := instancePools.FindInstancePool(c.InstancePool)
+	if err != nil {
+		return err
 	}
 
 	if !c.Force {
@@ -59,27 +71,30 @@ func (c *instancePoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	instanceIDs := make([]v3.UUID, len(c.Instances))
+	instances, err := client.ListInstances(ctx)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
-
-	instances := make([]string, len(c.Instances))
 	for i, n := range c.Instances {
-		instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, n)
+		instance, err := instances.FindListInstancesResponseInstances(n)
 		if err != nil {
-			return fmt.Errorf("invalid instance %q: %w", n, err)
+			return err
 		}
-		instances[i] = *instance.ID
+		instanceIDs[i] = instance.ID
 	}
 
+	op, err := client.EvictInstancePoolMembers(ctx, instancePool.ID, v3.EvictInstancePoolMembersRequest{
+		Instances: instanceIDs,
+	})
+	if err != nil {
+		return err
+
+	}
 	utils.DecorateAsyncOperation(
 		fmt.Sprintf("Evicting instances from Instance Pool %q...", c.InstancePool),
 		func() {
-			err = globalstate.EgoscaleClient.EvictInstancePoolMembers(ctx, c.Zone, instancePool, instances)
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		},
 	)
 	if err != nil {
@@ -90,7 +105,7 @@ func (c *instancePoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return (&instancePoolShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
 			Zone:               c.Zone,
-			InstancePool:       *instancePool.ID,
+			InstancePool:       instancePool.ID.String(),
 		}).CmdRun(nil, nil)
 	}
 
