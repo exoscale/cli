@@ -51,12 +51,20 @@ func (c *dbaasServiceListCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *dbaasServiceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var zones []string
+	var zones []v3.ZoneName
+	ctx := exocmd.GContext
 
 	if c.Zone != "" {
-		zones = []string{c.Zone}
+		zones = []v3.ZoneName{v3.ZoneName(c.Zone)}
 	} else {
-		zones = utils.AllZones
+		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+		if err != nil {
+			return err
+		}
+		zones, err = utils.AllZonesV3(ctx, *client)
+		if err != nil {
+			return err
+		}
 	}
 
 	out := make(dbaasServiceListOutput, 0)
@@ -69,7 +77,7 @@ func (c *dbaasServiceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 		done <- struct{}{}
 	}()
-	err := utils.ForEachZone(zones, func(zone string) error {
+	err := utils.ForEachZone(zones, func(zone v3.ZoneName) error {
 		ctx := exocmd.GContext
 		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 		if err != nil {
@@ -86,7 +94,7 @@ func (c *dbaasServiceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				Name: string(dbService.Name),
 				Type: string(dbService.Type),
 				Plan: dbService.Plan,
-				Zone: zone,
+				Zone: string(zone),
 			}
 		}
 

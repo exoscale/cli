@@ -1,18 +1,15 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -21,8 +18,8 @@ type instanceSnapshotRevertCmd struct {
 
 	_ bool `cli-cmd:"revert"`
 
-	SnapshotID string `cli-arg:"#"`
 	Instance   string `cli-arg:"#" cli-usage:"INSTANCE-NAME|ID"`
+	SnapshotID string `cli-arg:"#"`
 
 	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 	Zone  string `cli-short:"z" cli-usage:"snapshot zone"`
@@ -53,19 +50,32 @@ func (c *instanceSnapshotRevertCmd) CmdPreRun(cmd *cobra.Command, args []string)
 }
 
 func (c *instanceSnapshotRevertCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.SnapshotID)
+	instances, err := client.ListInstances(ctx)
 	if err != nil {
 		return err
+	}
+	instance, err := instances.FindListInstancesResponseInstances(c.Instance)
+	if err != nil {
+		return err
+	}
+
+	snapshots, err := client.ListSnapshots(ctx)
+	if err != nil {
+		return err
+	}
+	snapshot, err := snapshots.FindSnapshot(c.SnapshotID)
+	if err != nil {
+		return err
+	}
+
+	if snapshot.Instance.ID != instance.ID {
+		return fmt.Errorf("snapshot %s is not a snapshot of instance %s", snapshot.ID, instance.ID)
 	}
 
 	if !c.Force {
@@ -80,12 +90,19 @@ func (c *instanceSnapshotRevertCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
+	op, err := client.RevertInstanceToSnapshot(ctx, instance.ID, v3.RevertInstanceToSnapshotRequest{
+		ID: snapshot.ID,
+	})
+	if err != nil {
+		return err
+	}
+
 	utils.DecorateAsyncOperation(fmt.Sprintf(
 		"Reverting instance %q to snapshot %s...",
 		c.Instance,
 		c.SnapshotID,
 	), func() {
-		err = globalstate.EgoscaleClient.RevertInstanceToSnapshot(ctx, c.Zone, instance, snapshot)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -94,7 +111,7 @@ func (c *instanceSnapshotRevertCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
-			Instance:           *instance.ID,
+			Instance:           instance.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).CmdRun(nil, nil)
 	}

@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,10 +10,9 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/ssh"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceSCPCmd struct {
@@ -97,34 +95,44 @@ func (c *instanceSCPCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceSCPCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
+	instances, err := client.ListInstances(ctx)
+	if err != nil {
+		return err
+	}
+	instance, err := instances.FindListInstancesResponseInstances(c.Instance)
+	if err != nil {
+		return err
+	}
+
+	// No ssh possible for Private Instances
+	if instance.PublicIP.String() == "" || instance.PublicIP.String() == "none" {
+		return fmt.Errorf("instance %q is a Private Instance (`exo compute instance ssh` is not supported)", c.Instance)
+	}
+
 	if c.Login == "" {
-		instanceTemplate, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, *instance.TemplateID)
+		instanceTemplate, err := client.GetTemplate(ctx, instance.Template.ID)
 		if err != nil {
 			return fmt.Errorf("error retrieving instance template: %w", err)
 		}
-		if instanceTemplate.DefaultUser != nil {
-			c.Login = *instanceTemplate.DefaultUser
+		if instanceTemplate.DefaultUser != "" {
+			c.Login = instanceTemplate.DefaultUser
 		}
 	}
 
-	c.scpInfo.keyFile = ssh.GetInstanceSSHKeyPath(*instance.ID)
+	c.scpInfo.keyFile = ssh.GetInstanceSSHKeyPath(instance.ID.String())
 
-	c.scpInfo.ipAddress = instance.PublicIPAddress.String()
+	c.scpInfo.ipAddress = instance.PublicIP.String()
 	if c.IPv6 {
-		if instance.IPv6Address == nil {
+		if instance.Ipv6Address == "" {
 			return fmt.Errorf("instance %q has no IPv6 address", c.Instance)
 		}
-		c.scpInfo.ipAddress = instance.IPv6Address.String()
+		c.scpInfo.ipAddress = instance.Ipv6Address
 	}
 
 	scpCmd := c.buildSCPCommand()

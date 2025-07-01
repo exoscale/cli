@@ -1,17 +1,13 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -39,13 +35,18 @@ func (c *instanceStartCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceStartCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
+		return err
+	}
+
+	instances, err := client.ListInstances(ctx)
+	if err != nil {
+		return err
+	}
+	instance, err := instances.FindListInstancesResponseInstances(c.Instance)
+	if err != nil {
 		return err
 	}
 
@@ -55,13 +56,17 @@ func (c *instanceStartCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	opts := make([]egoscale.StartInstanceOpt, 0)
+	startrequest := v3.StartInstanceRequest{}
 	if c.RescueProfile != "" {
-		opts = append(opts, egoscale.StartInstanceWithRescueProfile(c.RescueProfile))
+		startrequest.RescueProfile = v3.StartInstanceRequestRescueProfile(c.RescueProfile)
 	}
 
+	op, err := client.StartInstance(ctx, instance.ID, startrequest)
+	if err != nil {
+		return err
+	}
 	utils.DecorateAsyncOperation(fmt.Sprintf("Starting instance %q...", c.Instance), func() {
-		err = globalstate.EgoscaleClient.StartInstance(ctx, c.Zone, instance, opts...)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -70,7 +75,7 @@ func (c *instanceStartCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
-			Instance:           *instance.ID,
+			Instance:           instance.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).CmdRun(nil, nil)
 	}

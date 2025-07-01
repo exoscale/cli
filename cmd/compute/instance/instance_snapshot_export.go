@@ -1,19 +1,16 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceSnapshotExportOutput struct {
@@ -54,20 +51,30 @@ func (c *instanceSnapshotExportCmd) CmdPreRun(cmd *cobra.Command, args []string)
 }
 
 func (c *instanceSnapshotExportCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	var snapshotExport *egoscale.SnapshotExport
+	snapshots, err := client.ListSnapshots(ctx)
+	if err != nil {
+		return err
+	}
+	snapshot, err := snapshots.FindSnapshot(c.ID)
+	if err != nil {
+		return err
+	}
+
+	op, err := client.ExportSnapshot(ctx, snapshot.ID)
 	utils.DecorateAsyncOperation(fmt.Sprintf("Exporting snapshot %s...", c.ID), func() {
-		snapshotExport, err = globalstate.EgoscaleClient.ExportSnapshot(ctx, c.Zone, snapshot)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
+	if err != nil {
+		return err
+	}
+
+	exportedSnapshot, err := client.GetSnapshot(ctx, snapshot.ID)
 	if err != nil {
 		return err
 	}
@@ -75,8 +82,8 @@ func (c *instanceSnapshotExportCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return c.OutputFunc(
 			&instanceSnapshotExportOutput{
-				URL:      *snapshotExport.PresignedURL,
-				Checksum: *snapshotExport.MD5sum,
+				URL:      exportedSnapshot.Export.PresignedURL,
+				Checksum: exportedSnapshot.Export.Md5sum,
 			},
 			nil)
 	}

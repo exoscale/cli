@@ -1,18 +1,15 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -48,29 +45,43 @@ func (c *instanceScaleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
+	instances, err := client.ListInstances(ctx)
+	if err != nil {
+		return err
+	}
+	instance, err := instances.FindListInstancesResponseInstances(c.Instance)
+	if err != nil {
+		return err
+	}
 	if !c.Force {
 		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to scale instance %q?", c.Instance)) {
 			return nil
 		}
 	}
 
-	instanceType, err := globalstate.EgoscaleClient.FindInstanceType(ctx, c.Zone, c.Type)
+	instanceTypes, err := client.ListInstanceTypes(ctx)
 	if err != nil {
 		return fmt.Errorf("error retrieving instance type: %w", err)
 	}
+	instanceType, err := instanceTypes.FindInstanceTypeByIdOrFamilyAndSize(c.Type)
+	if err != nil {
+		return err
+	}
 
+	op, err := client.ScaleInstance(ctx, instance.ID, v3.ScaleInstanceRequest{
+		InstanceType: &instanceType,
+	})
+	if err != nil {
+		return err
+	}
 	utils.DecorateAsyncOperation(fmt.Sprintf("Scaling instance %q...", c.Instance), func() {
-		err = globalstate.EgoscaleClient.ScaleInstance(ctx, c.Zone, instance, instanceType)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -79,7 +90,7 @@ func (c *instanceScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
-			Instance:           *instance.ID,
+			Instance:           instance.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).CmdRun(nil, nil)
 	}

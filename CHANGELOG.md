@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- instance: use egoscale v3 #722
+
 ## 1.85.2
 
 ### Features

@@ -37,6 +37,21 @@ var (
 	}
 )
 
+func AllZonesV3(ctx context.Context, client v3.Client) ([]v3.ZoneName, error) {
+	zones, err := client.ListZones(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	zoneNames := make([]v3.ZoneName, len(zones.Zones))
+
+	for i, z := range zones.Zones {
+		zoneNames[i] = z.Name
+	}
+
+	return zoneNames, nil
+}
+
 // RandStringBytes Generate random string of n bytes
 func RandStringBytes(n int) (string, error) {
 	b := make([]byte, n)
@@ -236,7 +251,7 @@ func VersionsAreEquivalent(a, b string) bool {
 
 // ForEachZone executes the function f for each specified zone, and return a multierror.Error containing all
 // errors that may have occurred during execution.
-func ForEachZone(zones []string, f func(zone string) error) error {
+func ForEachZone[T any](zones []T, f func(zone T) error) error {
 	meg := new(multierror.Group)
 
 	for _, zone := range zones {

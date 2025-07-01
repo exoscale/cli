@@ -1,19 +1,16 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -53,23 +50,34 @@ func (c *instanceUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var updatedInstance, updatedRDNS bool
 
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
+	instances, err := client.ListInstances(ctx)
+	if err != nil {
+		return err
+	}
+	instance, err := instances.FindListInstancesResponseInstances(c.Instance)
+	if err != nil {
+		return err
+	}
+
+	updateRequest := v3.UpdateInstanceRequest{}
+	updateRDNSRequest := v3.UpdateReverseDNSInstanceRequest{}
+
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
-		instance.Labels = &c.Labels
+
+		// To be fixed in the API spec: allow clearing all labels by setting
+		// an empty map[string]string (rightnow being omited)
+		updateRequest.Labels = c.Labels
 		updatedInstance = true
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
-		instance.Name = &c.Name
+		updateRequest.Name = c.Name
 		updatedInstance = true
 	}
 
@@ -78,63 +86,68 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
-		instance.UserData = &userData
+		updateRequest.UserData = userData
 		updatedInstance = true
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ReverseDNS)) {
+		updateRDNSRequest.DomainName = c.ReverseDNS
 		updatedRDNS = true
 	}
 
 	if updatedInstance || updatedRDNS || cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Protection)) {
-		utils.DecorateAsyncOperation(fmt.Sprintf("Updating instance %q...", c.Instance), func() {
-			if updatedInstance {
-				if err = globalstate.EgoscaleClient.UpdateInstance(ctx, c.Zone, instance); err != nil {
-					return
-				}
+
+		if updatedInstance {
+			op, err := client.UpdateInstance(ctx, instance.ID, updateRequest)
+			if err != nil {
+				return err
 			}
-
-			if updatedRDNS {
-				if c.ReverseDNS == "" {
-					err = globalstate.EgoscaleClient.DeleteInstanceReverseDNS(ctx, c.Zone, *instance.ID)
-				} else {
-					err = globalstate.EgoscaleClient.UpdateInstanceReverseDNS(ctx, c.Zone, *instance.ID, c.ReverseDNS)
-				}
-			}
-
-			if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Protection)) {
-				var client *v3.Client
-				client, err = exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
-				if err != nil {
-					return
-				}
-
-				var instanceID v3.UUID
-				var op *v3.Operation
-				instanceID, err = v3.ParseUUID(*instance.ID)
-				if err != nil {
-					return
-				}
-				if c.Protection {
-					op, err = client.AddInstanceProtection(ctx, instanceID)
-				} else {
-					op, err = client.RemoveInstanceProtection(ctx, instanceID)
-				}
-				if err != nil {
-					return
-				}
+			utils.DecorateAsyncOperation(fmt.Sprintf("Updating instance %q...", c.Instance), func() {
 				_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+			})
+			if err != nil {
+				return err
 			}
-		})
-		if err != nil {
-			return err
+		}
+		if updatedRDNS {
+			op, err := client.UpdateReverseDNSInstance(ctx, instance.ID, updateRDNSRequest)
+			if err != nil {
+				return err
+			}
+			utils.DecorateAsyncOperation(fmt.Sprintf("Updating instance reverse DNS %q...", c.Instance), func() {
+				_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Protection)) {
+			var op *v3.Operation
+			var err error
+			if c.Protection {
+				op, err = client.AddInstanceProtection(ctx, instance.ID)
+			} else {
+				op, err = client.RemoveInstanceProtection(ctx, instance.ID)
+			}
+			if err != nil {
+				return err
+			}
+
+			utils.DecorateAsyncOperation(fmt.Sprintf("Updating instance protection %q to %v...", c.Instance, c.Protection), func() {
+				_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+			})
+			if err != nil {
+				return err
+			}
+
 		}
 	}
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
-			Instance:           *instance.ID,
+			Instance:           instance.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).CmdRun(nil, nil)
 	}

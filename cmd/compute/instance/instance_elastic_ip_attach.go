@@ -1,18 +1,15 @@
 package instance
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -47,19 +44,37 @@ func (c *instanceEIPAttachCmd) CmdPreRun(cmd *cobra.Command, args []string) erro
 }
 
 func (c *instanceEIPAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
+	instancesList, err := client.ListInstances(ctx)
+	if err != nil {
+		return err
+	}
+	instance, err := instancesList.FindListInstancesResponseInstances(c.Instance)
+	if err != nil {
+		return fmt.Errorf("error retrieving Instance: %w", err)
+	}
+
+	elasticIPs, err := client.ListElasticIPS(ctx)
+	if err != nil {
+		return err
+	}
+	elasticIP, err := elasticIPs.FindElasticIP(c.ElasticIP)
 	if err != nil {
 		return fmt.Errorf("error retrieving Elastic IP: %w", err)
+	}
+
+	op, err := client.AttachInstanceToElasticIP(ctx, elasticIP.ID, v3.AttachInstanceToElasticIPRequest{
+		Instance: &v3.InstanceTarget{
+			ID: instance.ID,
+		},
+	})
+	if err != nil {
+		return err
 	}
 
 	utils.DecorateAsyncOperation(fmt.Sprintf(
@@ -67,14 +82,7 @@ func (c *instanceEIPAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		c.ElasticIP,
 		c.Instance,
 	), func() {
-		if err = globalstate.EgoscaleClient.AttachInstanceToElasticIP(
-			ctx,
-			c.Zone,
-			instance,
-			elasticIP,
-		); err != nil {
-			return
-		}
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -83,7 +91,7 @@ func (c *instanceEIPAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
-			Instance:           *instance.ID,
+			Instance:           instance.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).CmdRun(nil, nil)
 	}
