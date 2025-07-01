@@ -1,16 +1,14 @@
 package instance_pool
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instancePoolDeleteCmd struct {
@@ -36,20 +34,19 @@ func (c *instancePoolDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *instancePoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	// Ensure the Instance Pool is not attached to an NLB service.
-	nlbs, err := globalstate.EgoscaleClient.ListNetworkLoadBalancers(ctx, c.Zone)
+	instancePools, err := client.ListInstancePools(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to list Network Load Balancers: %v", err)
+		return err
+	}
+	instancePool, err := instancePools.FindInstancePool(c.InstancePool)
+	if err != nil {
+		return err
 	}
 
 	if !c.Force {
@@ -58,27 +55,16 @@ func (c *instancePoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	for _, nlb := range nlbs {
-		for _, svc := range nlb.Services {
-			if svc.InstancePoolID == instancePool.ID {
-				return fmt.Errorf(
-					"instance Pool %q is still referenced by NLB service %s/%s",
-					*instancePool.Name,
-					*nlb.Name,
-					*svc.Name,
-				)
-			}
-		}
-	}
-
-	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting Instance Pool %q...", c.InstancePool), func() {
-		err = globalstate.EgoscaleClient.DeleteInstancePool(ctx, c.Zone, instancePool)
-	})
+	op, err := client.DeleteInstancePool(ctx, instancePool.ID)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting Instance Pool %q...", c.InstancePool), func() {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
+
+	return err
 }
 
 func init() {
