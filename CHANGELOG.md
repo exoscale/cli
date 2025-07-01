@@ -5,6 +5,7 @@
 ### Improvements
 
 - instance: use egoscale v3 #722
+- security-group: use egoscale v3 #720
 
 ## 1.85.2
 
