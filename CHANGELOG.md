@@ -6,6 +6,7 @@
 
 - instance: use egoscale v3 #722
 - security-group: use egoscale v3 #720
+- instance-type: use egoscale v3 #726
 
 ## 1.85.2
 
