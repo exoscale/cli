@@ -7,10 +7,9 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instancePoolScaleCmd struct {
@@ -49,7 +48,20 @@ func (c *instancePoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return errors.New("minimum Instance Pool size is 1")
 	}
 
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
+
+	instancePools, err := client.ListInstancePools(ctx)
+	if err != nil {
+		return err
+	}
+	instancePool, err := instancePools.FindInstancePool(c.InstancePool)
+	if err != nil {
+		return err
+	}
 
 	if !c.Force {
 		if !utils.AskQuestion(
@@ -63,16 +75,14 @@ func (c *instancePoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	op, err := client.ScaleInstancePool(ctx, instancePool.ID, v3.ScaleInstancePoolRequest{
+		Size: c.Size,
+	})
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
-
 	utils.DecorateAsyncOperation(fmt.Sprintf("Scaling Instance Pool %q...", c.InstancePool), func() {
-		err = globalstate.EgoscaleClient.ScaleInstancePool(ctx, c.Zone, instancePool, c.Size)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -82,7 +92,7 @@ func (c *instancePoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return (&instancePoolShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
 			Zone:               c.Zone,
-			InstancePool:       *instancePool.ID,
+			InstancePool:       instancePool.ID.String(),
 		}).CmdRun(nil, nil)
 	}
 
