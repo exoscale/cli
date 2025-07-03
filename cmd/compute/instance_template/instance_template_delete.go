@@ -6,10 +6,9 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceTemplateDeleteCmd struct {
@@ -37,9 +36,18 @@ func (c *instanceTemplateDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string)
 }
 
 func (c *instanceTemplateDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
 
-	template, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, c.TemplateID)
+	templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibilityPrivate))
+	if err != nil {
+		return err
+	}
+
+	template, err := templates.FindTemplate(c.TemplateID)
 	if err != nil {
 		return err
 	}
@@ -50,14 +58,19 @@ func (c *instanceTemplateDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			fmt.Sprintf(
 				"Are you sure you want to delete template %s (%q)?",
 				c.TemplateID,
-				*template.Name,
+				template.Name,
 			)) {
 			return nil
 		}
 	}
 
+	op, err := client.DeleteTemplate(ctx, template.ID)
+	if err != nil {
+		return err
+	}
+
 	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting template %s...", c.TemplateID), func() {
-		err = globalstate.EgoscaleClient.DeleteTemplate(ctx, c.Zone, template)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err

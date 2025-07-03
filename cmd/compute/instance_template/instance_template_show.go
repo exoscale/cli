@@ -9,12 +9,11 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceTemplateShowOutput struct {
@@ -91,38 +90,39 @@ func (c *instanceTemplateShowCmd) CmdPreRun(cmd *cobra.Command, args []string) e
 }
 
 func (c *instanceTemplateShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(
-		exocmd.GContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
-	)
-
-	template, err := globalstate.EgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.Visibility)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		return fmt.Errorf(
-			"no template %q found with visibility %s in zone %s",
-			c.Template,
-			c.Visibility,
-			c.Zone,
-		)
+		return err
+	}
+
+	templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.Visibility)))
+	if err != nil {
+		return err
+	}
+
+	template, err := templates.FindTemplate(c.Template)
+	if err != nil {
+		return err
 	}
 
 	return c.OutputFunc(&instanceTemplateShowOutput{
-		ID:              *template.ID,
+		ID:              template.ID.String(),
 		Zone:            c.Zone,
-		Family:          utils.DefaultString(template.Family, ""),
-		Name:            *template.Name,
-		Description:     utils.DefaultString(template.Description, ""),
-		CreationDate:    template.CreatedAt.String(),
-		Visibility:      *template.Visibility,
-		Size:            *template.Size,
-		Version:         utils.DefaultString(template.Version, ""),
-		Build:           utils.DefaultString(template.Build, ""),
-		Maintainer:      utils.DefaultString(template.Maintainer, ""),
-		Checksum:        *template.Checksum,
-		DefaultUser:     utils.DefaultString(template.DefaultUser, ""),
-		SSHKeyEnabled:   *template.SSHKeyEnabled,
-		PasswordEnabled: *template.PasswordEnabled,
-		BootMode:        *template.BootMode,
+		Family:          template.Family,
+		Name:            template.Name,
+		Description:     template.Description,
+		CreationDate:    template.CreatedAT.String(),
+		Visibility:      string(template.Visibility),
+		Size:            template.Size,
+		Version:         template.Version,
+		Build:           template.Build,
+		Maintainer:      template.Maintainer,
+		Checksum:        template.Checksum,
+		DefaultUser:     template.DefaultUser,
+		SSHKeyEnabled:   utils.DefaultBool(template.SSHKeyEnabled, false),
+		PasswordEnabled: utils.DefaultBool(template.PasswordEnabled, false),
+		BootMode:        string(template.BootMode),
 	}, nil)
 }
 

@@ -8,12 +8,10 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceTemplateRegisterCmd struct {
@@ -73,109 +71,134 @@ func (c *instanceTemplateRegisterCmd) CmdPreRun(cmd *cobra.Command, args []strin
 
 func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var (
-		template *egoscale.Template
-		err      error
+		templateRequest v3.RegisterTemplateRequest
+		err             error
 	)
 
 	globalstate.EgoscaleClient.SetTimeout(time.Duration(c.Timeout) * time.Second)
 
-	ctx := exoapi.WithEndpoint(
-		exocmd.GContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
-	)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
 
 	passwordEnabled := !c.DisablePassword
 	sshKeyEnabled := !c.DisableSSHKey
 
-	template = &egoscale.Template{
-		Checksum:        utils.NonEmptyStringPtr(c.Checksum),
-		DefaultUser:     utils.NonEmptyStringPtr(c.Username),
-		Description:     utils.NonEmptyStringPtr(c.Description),
-		Build:           utils.NonEmptyStringPtr(c.Build),
-		Version:         utils.NonEmptyStringPtr(c.Version),
-		Maintainer:      utils.NonEmptyStringPtr(c.Maintainer),
-		Name:            &c.Name,
+	templateRequest = v3.RegisterTemplateRequest{
+		Checksum:        c.Checksum,
+		DefaultUser:     c.Username,
+		Description:     c.Description,
+		Build:           c.Build,
+		Version:         c.Version,
+		Maintainer:      c.Maintainer,
+		Name:            c.Name,
 		PasswordEnabled: &passwordEnabled,
 		SSHKeyEnabled:   &sshKeyEnabled,
-		URL:             utils.NonEmptyStringPtr(c.URL),
+		URL:             c.URL,
 	}
 
 	if c.FromSnapshot != "" {
-		snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.FromSnapshot)
+
+		snapshots, err := client.ListSnapshots(ctx)
 		if err != nil {
-			return fmt.Errorf("error retrieving snapshot: %w", err)
+			return err
+		}
+		snapshot, err := snapshots.FindSnapshot(c.FromSnapshot)
+		if err != nil {
+			return err
 		}
 
-		snapshotExport, err := globalstate.EgoscaleClient.ExportSnapshot(ctx, c.Zone, snapshot)
+		op, err := client.ExportSnapshot(ctx, snapshot.ID)
+		utils.DecorateAsyncOperation("exporting snapshot...", func() {
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		})
 		if err != nil {
 			return fmt.Errorf("error retrieving snapshot export information: %w", err)
 		}
 
-		template.URL = snapshotExport.PresignedURL
-		template.Checksum = snapshotExport.MD5sum
+		snapshotExport, err := client.GetSnapshot(ctx, snapshot.ID)
+		if err != nil {
+			return err
+		}
+
+		templateRequest.URL = snapshotExport.Export.PresignedURL
+		templateRequest.Checksum = snapshotExport.Export.Md5sum
 
 		// Pre-setting the new template properties from the source template.
-		instance, err := globalstate.EgoscaleClient.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
+		instance, err := client.GetInstance(ctx, snapshot.Instance.ID)
 		if err != nil {
 			return fmt.Errorf("error retrieving Compute instance from snapshot: %w", err)
 		}
 
-		srcTemplate, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, *instance.TemplateID)
+		srcTemplate, err := client.GetTemplate(ctx, instance.Template.ID)
 		if err != nil {
 			return fmt.Errorf("error retrieving Compute instance template from snapshot: %w", err)
 		}
 
-		template.BootMode = srcTemplate.BootMode
+		templateRequest.BootMode = v3.RegisterTemplateRequestBootMode(srcTemplate.BootMode)
 
 		// Above properties are inherited from snapshot source template, unless otherwise specified
 		// by the user from the command line
 		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DisablePassword)) {
-			template.PasswordEnabled = &passwordEnabled
+			templateRequest.PasswordEnabled = &passwordEnabled
 		} else {
-			template.PasswordEnabled = srcTemplate.PasswordEnabled
+			templateRequest.PasswordEnabled = srcTemplate.PasswordEnabled
 		}
 
 		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DisableSSHKey)) {
-			template.SSHKeyEnabled = &sshKeyEnabled
+			templateRequest.SSHKeyEnabled = &sshKeyEnabled
 		} else {
-			template.SSHKeyEnabled = srcTemplate.SSHKeyEnabled
+			templateRequest.SSHKeyEnabled = srcTemplate.SSHKeyEnabled
 		}
 
 		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Username)) {
-			template.DefaultUser = utils.NonEmptyStringPtr(c.Username)
+			templateRequest.DefaultUser = c.Username
 		} else {
-			template.DefaultUser = srcTemplate.DefaultUser
+			templateRequest.DefaultUser = srcTemplate.DefaultUser
 		}
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.BootMode)) {
-		template.BootMode = &c.BootMode
+		templateRequest.BootMode = v3.RegisterTemplateRequestBootMode(c.BootMode)
+	}
+
+	op, err := client.RegisterTemplate(ctx, templateRequest)
+	if err != nil {
+		return err
 	}
 
 	utils.DecorateAsyncOperation(fmt.Sprintf("Registering template %q...", c.Name), func() {
-		template, err = globalstate.EgoscaleClient.RegisterTemplate(ctx, c.Zone, template)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
 	}
 
+	template, err := client.GetTemplate(ctx, op.Reference.ID)
+	if err != nil {
+		return fmt.Errorf("error retrieving newly registered template: %w", err)
+	}
+
 	if !globalstate.Quiet {
 		return c.OutputFunc(&instanceTemplateShowOutput{
-			ID:              *template.ID,
-			Family:          utils.DefaultString(template.Family, ""),
-			Name:            *template.Name,
-			Description:     utils.DefaultString(template.Description, ""),
-			CreationDate:    template.CreatedAt.String(),
-			Visibility:      *template.Visibility,
-			Size:            *template.Size,
-			Version:         utils.DefaultString(template.Version, ""),
-			Build:           utils.DefaultString(template.Build, ""),
-			Maintainer:      utils.DefaultString(template.Maintainer, ""),
-			Checksum:        *template.Checksum,
-			DefaultUser:     utils.DefaultString(template.DefaultUser, ""),
-			SSHKeyEnabled:   *template.SSHKeyEnabled,
-			PasswordEnabled: *template.PasswordEnabled,
-			BootMode:        *template.BootMode,
+			ID:              template.ID.String(),
+			Zone:            c.Zone,
+			Family:          template.Family,
+			Name:            template.Name,
+			Description:     template.Description,
+			CreationDate:    template.CreatedAT.String(),
+			Visibility:      string(template.Visibility),
+			Size:            template.Size,
+			Version:         template.Version,
+			Build:           template.Build,
+			Maintainer:      template.Maintainer,
+			Checksum:        template.Checksum,
+			DefaultUser:     template.DefaultUser,
+			SSHKeyEnabled:   utils.DefaultBool(template.SSHKeyEnabled, false),
+			PasswordEnabled: utils.DefaultBool(template.PasswordEnabled, false),
+			BootMode:        string(template.BootMode),
 		}, nil)
 	}
 
