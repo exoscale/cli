@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	egoscale "github.com/exoscale/egoscale/v2"
+	v3 "github.com/exoscale/egoscale/v3"
 
 	"github.com/exoscale/cli/cmd/internal/x"
 	"github.com/exoscale/cli/pkg/account"
@@ -55,7 +55,7 @@ input parameters can be supplied either via stdin or using Shorthands[2].
 			"Exoscale-CLI-X/%s (%s) %s",
 			GVersion,
 			GCommit,
-			egoscale.UserAgent,
+			v3.UserAgent,
 		))
 
 		return x.SetClientCredentials(account.CurrentAccount.Key, account.CurrentAccount.Secret)
