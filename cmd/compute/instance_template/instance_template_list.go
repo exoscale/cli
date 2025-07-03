@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -11,8 +11,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceTemplateListItemOutput struct {
@@ -58,16 +57,19 @@ func (c *instanceTemplateListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		c.Zone = account.CurrentAccount.DefaultZone
 	}
 
-	ctx := exoapi.WithEndpoint(
-		exocmd.GContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone),
-	)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
 
-	templates, err := globalstate.EgoscaleClient.ListTemplates(
+	opts := []v3.ListTemplatesOpt{v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.Visibility))}
+	if c.Family != "" {
+		opts = append(opts, v3.ListTemplatesWithFamily(c.Family))
+	}
+	templates, err := client.ListTemplates(
 		ctx,
-		c.Zone,
-		egoscale.ListTemplatesWithVisibility(c.Visibility),
-		egoscale.ListTemplatesWithFamily(c.Family),
+		opts...,
 	)
 	if err != nil {
 		return err
@@ -76,17 +78,25 @@ func (c *instanceTemplateListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	// Sort private templates by name for better visibility
 	// Public templates are sorted by Family
 	if c.Visibility == "private" {
-		sort.Sort(egoscale.ByName{Templates: templates})
+		slices.SortFunc(templates.Templates, func(i, j v3.Template) int {
+			return strings.Compare(i.Name, j.Name)
+
+		})
+	} else {
+		slices.SortFunc(templates.Templates, func(i, j v3.Template) int {
+			return strings.Compare(i.Family, j.Family)
+
+		})
 	}
 
 	out := make(instanceTemplateListOutput, 0)
 
-	for _, t := range templates {
+	for _, t := range templates.Templates {
 		out = append(out, instanceTemplateListItemOutput{
-			ID:           *t.ID,
-			Name:         *t.Name,
-			Family:       *t.Family,
-			CreationDate: t.CreatedAt.String(),
+			ID:           t.ID.String(),
+			Name:         t.Name,
+			Family:       t.Family,
+			CreationDate: t.CreatedAT.String(),
 		})
 	}
 
