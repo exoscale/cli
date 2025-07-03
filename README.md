@@ -59,4 +59,4 @@ exo integrations generate-fig-spec
 
 
 [releases]: https://github.com/exoscale/cli/releases
-[communitydoc]: https://community.exoscale.com/documentation/tools/exoscale-command-line-interface/
+[communitydoc]: https://community.exoscale.com/tools/command-line-interface/#configuration
