@@ -80,7 +80,7 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 	}
 
 	// API bug: leaving these fields empty clear them on update
-	// So while this is fixed, we rebuild populate those fields
+	// So while this is fixed, we populate those fields
 	// with the existing values
 	updateReq := v3.UpdateInstancePoolRequest{
 		AntiAffinityGroups: instancePool.AntiAffinityGroups,
