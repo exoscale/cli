@@ -7,6 +7,7 @@
 - instance: use egoscale v3 #722
 - security-group: use egoscale v3 #720
 - template: egoscale v3 #725
+- config: Fix incorrect link for IAM keys #728
 
 ## 1.85.2
 

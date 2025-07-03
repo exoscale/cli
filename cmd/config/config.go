@@ -70,7 +70,7 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 In order to set up your configuration profile, you will need to retrieve
 Exoscale API credentials from your organization's IAM:
 
-    https://portal.exoscale.com/iam/api-keys
+    https://portal.exoscale.com/iam/keys
 
 `)
 	return addConfigAccount(true)

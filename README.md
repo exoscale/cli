@@ -14,7 +14,7 @@ Follow the steps for your platform on our [community docs](https://community.exo
 
 Running the `exo config` command will guide you through the initial configuration.
 
-You can create and find API credentials in the *IAM* section of the [Exoscale Console](https://portal.exoscale.com/iam/api-keys).
+You can create and find API credentials in the *IAM* section of the [Exoscale Console](https://portal.exoscale.com/iam/keys).
 
 The configuration file and all assets created during `exo` operations will be saved in the following location:
 
