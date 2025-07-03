@@ -9,11 +9,10 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceTypeListItemOutput struct {
@@ -82,12 +81,12 @@ func (c *instanceTypeListCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *instanceTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(
-		exocmd.GContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
-	)
-
-	instanceTypes, err := globalstate.EgoscaleClient.ListInstanceTypes(ctx, account.CurrentAccount.DefaultZone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(exocmd.DefaultZone))
+	if err != nil {
+		return err
+	}
+	instanceTypes, err := client.ListInstanceTypes(ctx)
 	if err != nil {
 		return err
 	}
@@ -97,13 +96,13 @@ func (c *instanceTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		verbose: c.Verbose,
 	}
 
-	for _, t := range instanceTypes {
+	for _, t := range instanceTypes.InstanceTypes {
 		out.data = append(out.data, instanceTypeListItemOutput{
-			ID:         *t.ID,
-			Family:     *t.Family,
-			Size:       *t.Size,
-			Memory:     *t.Memory,
-			CPUs:       *t.CPUs,
+			ID:         t.ID.String(),
+			Family:     string(t.Family),
+			Size:       string(t.Size),
+			Memory:     t.Memory,
+			CPUs:       t.Cpus,
 			Authorized: *t.Authorized,
 		})
 	}
