@@ -10,6 +10,7 @@
 - instance-type: use egoscale v3 #726
 - template: egoscale v3 #725
 - config: Fix incorrect link for IAM keys #728
+- Update exo x #733
 
 ## 1.85.2
 
