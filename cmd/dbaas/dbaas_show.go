@@ -73,7 +73,6 @@ type dbServiceShowOutput struct {
 	Kafka      *dbServiceKafkaShowOutput      `json:"kafka,omitempty"`
 	Mysql      *dbServiceMysqlShowOutput      `json:"mysql,omitempty"`
 	PG         *dbServicePGShowOutput         `json:"pg,omitempty"`
-	Redis      *dbServiceRedisShowOutput      `json:"redis,omitempty"`
 	Valkey     *dbServiceValkeyShowOutput     `json:"valkey,omitempty"`
 	Opensearch *dbServiceOpensearchShowOutput `json:"opensearch,omitempty"`
 }
@@ -116,8 +115,6 @@ func (o *dbServiceShowOutput) ToTable() {
 		formatDatabaseServiceMysqlTable(t, o.Mysql)
 	case o.PG != nil:
 		formatDatabaseServicePGTable(t, o.PG)
-	case o.Redis != nil:
-		formatDatabaseServiceRedisTable(t, o.Redis)
 	case o.Valkey != nil:
 		formatDatabaseServiceValkeyTable(t, o.Valkey)
 	}
@@ -161,9 +158,6 @@ Supported output template annotations:
     - .PG.Components[]: %s
     - .PG.ConnectionPools: %s
     - .PG.Users[]: %s
-  - .Redis: %s
-    - .Redis.Components[]: %s
-    - .Redis.Users[]: %s
 
 * When showing a Database Service backups: %s
 
@@ -183,9 +177,6 @@ Supported output template annotations:
 		strings.Join(output.TemplateAnnotations(&dbServicePGComponentShowOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&dbServicePGConnectionPool{}), ", "),
 		strings.Join(output.TemplateAnnotations(&dbServicePGUserShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbServiceRedisShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbServiceRedisComponentShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbServiceRedisUserShowOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&dbServiceBackupListItemOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&dbServiceNotificationListItemOutput{}), ", "))
 }
@@ -215,8 +206,6 @@ func (c *dbaasServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return c.OutputFunc(c.showDatabaseServiceMysql(ctx))
 	case "pg":
 		return c.OutputFunc(c.showDatabaseServicePG(ctx))
-	case "redis":
-		return c.OutputFunc(c.showDatabaseServiceRedis(ctx))
 	case "valkey":
 		return c.OutputFunc(c.showDatabaseServiceValkey(ctx))
 	default:

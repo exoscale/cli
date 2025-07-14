@@ -106,7 +106,6 @@ var (
 		"pgbouncer",
 		"pglookout",
 	}
-	redisSettings  = []string{"redis"}
 	valkeySettings = []string{"valkey"}
 )
 
@@ -137,7 +136,6 @@ Supported Database Service type settings:
 * %s
 * %s
 * %s
-* %s
 
 Supported output template annotations:
 
@@ -149,7 +147,6 @@ Supported output template annotations:
 		strings.Join(kafkaSettings, ", "),
 		strings.Join(mysqlSettings, ", "),
 		strings.Join(pgSettings, ", "),
-		strings.Join(redisSettings, ", "),
 		strings.Join(valkeySettings, ", "),
 		strings.Join(output.TemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
@@ -299,26 +296,6 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 				settings = res.Settings.Pgbouncer.Properties
 			case "pglookout":
 				settings = res.Settings.Pglookout.Properties
-			}
-
-			dbaasShowSettings(settings)
-
-		case "redis":
-			if !utils.IsInList(redisSettings, c.ShowSettings) {
-				return fmt.Errorf(
-					"invalid settings value %q, expected one of: %s",
-					c.ShowSettings,
-					strings.Join(redisSettings, ", "),
-				)
-			}
-
-			res, err := client.GetDBAASSettingsRedis(ctx)
-			if err != nil {
-				return err
-			}
-
-			if c.ShowSettings == "redis" {
-				settings = res.Settings.Redis.Properties
 			}
 
 			dbaasShowSettings(settings)
