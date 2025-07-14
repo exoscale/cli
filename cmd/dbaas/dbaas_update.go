@@ -23,7 +23,6 @@ type dbaasServiceUpdateCmd struct {
 	HelpOpensearch        bool   `cli-usage:"show usage for flags specific to the opensearch type"`
 	HelpMysql             bool   `cli-usage:"show usage for flags specific to the mysql type"`
 	HelpPg                bool   `cli-usage:"show usage for flags specific to the pg type"`
-	HelpRedis             bool   `cli-usage:"show usage for flags specific to the redis type"`
 	HelpValkey            bool   `cli-usage:"show usage for flags specific to the valkey type"`
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
@@ -88,18 +87,6 @@ type dbaasServiceUpdateCmd struct {
 	PGMigrationMethod    string   `cli-flag:"pg-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
 	PGMigrationIgnoreDbs []string `cli-flag:"pg-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
 
-	// "redis" type specific flags
-	RedisIPFilter           []string `cli-flag:"redis-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
-	RedisSettings           string   `cli-flag:"redis-settings" cli-usage:"Redis configuration settings (JSON format)" cli-hidden:""`
-	RedisMigrationHost      string   `cli-flag:"redis-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
-	RedisMigrationPort      int64    `cli-flag:"redis-migration-port" cli-usage:"port number of the source server where to migrate data from" cli-hidden:""`
-	RedisMigrationPassword  string   `cli-flag:"redis-migration-password" cli-usage:"password for authenticating to the source server" cli-hidden:""`
-	RedisMigrationSSL       bool     `cli-flag:"redis-migration-ssl" cli-usage:"connect to the source server using SSL" cli-hidden:""`
-	RedisMigrationUsername  string   `cli-flag:"redis-migration-username" cli-usage:"username for authenticating to the source server" cli-hidden:""`
-	RedisMigrationDBName    string   `cli-flag:"redis-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
-	RedisMigrationMethod    string   `cli-flag:"redis-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
-	RedisMigrationIgnoreDbs []string `cli-flag:"redis-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
-
 	// "valkey" type specific flags
 	ValkeyIPFilter           []string `cli-flag:"valkey-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
 	ValkeySettings           string   `cli-flag:"valkey-settings" cli-usage:"Valkey configuration settings (JSON format)" cli-hidden:""`
@@ -148,9 +135,6 @@ func (c *dbaasServiceUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 	case cmd.Flags().Changed("help-valkey"):
 		exocmd.CmdShowHelpFlags(cmd.Flags(), "valkey-")
 		os.Exit(0)
-	case cmd.Flags().Changed("help-redis"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "redis-")
-		os.Exit(0)
 	}
 
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
@@ -189,8 +173,6 @@ func (c *dbaasServiceUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 		return c.updatePG(cmd, args)
 	case "valkey":
 		return c.updateValkey(cmd, args)
-	case "redis":
-		return c.updateRedis(cmd, args)
 	}
 
 	return nil

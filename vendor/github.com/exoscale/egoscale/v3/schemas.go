@@ -696,7 +696,7 @@ type DBAASKafkaTopicAclEntry struct {
 }
 
 type DBAASMigrationStatusDetails struct {
-	// Migrated db name (PG) or number (Redis)
+	// Migrated db name (PG) or number (Valkey)
 	Dbname string `json:"dbname,omitempty"`
 	// Error message in case that migration has failed
 	Error string `json:"error,omitempty"`
@@ -710,9 +710,6 @@ type DBAASMigrationStatus struct {
 	Details []DBAASMigrationStatusDetails `json:"details,omitempty"`
 	// Error message in case that migration has failed
 	Error string `json:"error,omitempty"`
-	// Redis only: how many seconds since last I/O with redis master
-	MasterLastIoSecondsAgo int64                `json:"master-last-io-seconds-ago,omitempty"`
-	MasterLinkStatus       EnumMasterLinkStatus `json:"master-link-status,omitempty"`
 	// Migration method. Empty in case of multiple methods or error
 	Method string `json:"method,omitempty"`
 	// Migration status
@@ -1533,100 +1530,6 @@ type DBAASServicePG struct {
 	Zone string `json:"zone,omitempty"`
 }
 
-type DBAASServiceRedisComponents struct {
-	// Service component name
-	Component string `json:"component" validate:"required"`
-	// DNS name for connecting to the service component
-	Host string `json:"host" validate:"required"`
-	// Port number for connecting to the service component
-	Port  int64              `json:"port" validate:"required,gte=0,lte=65535"`
-	Route EnumComponentRoute `json:"route" validate:"required"`
-	// Whether the endpoint is encrypted or accepts plaintext.
-	// By default endpoints are always encrypted and
-	// this property is only included for service components that may disable encryption.
-	SSL   *bool              `json:"ssl,omitempty"`
-	Usage EnumComponentUsage `json:"usage" validate:"required"`
-}
-
-// Redis connection information properties
-type DBAASServiceRedisConnectionInfo struct {
-	Password string   `json:"password,omitempty"`
-	Slave    []string `json:"slave,omitempty"`
-	URI      []string `json:"uri,omitempty"`
-}
-
-// Prometheus integration URI
-type DBAASServiceRedisPrometheusURI struct {
-	Host string `json:"host,omitempty"`
-	Port int64  `json:"port,omitempty" validate:"omitempty,gte=0,lte=65535"`
-}
-
-type DBAASServiceRedisUsersAccessControl struct {
-	Categories []string `json:"categories,omitempty"`
-	Channels   []string `json:"channels,omitempty"`
-	Commands   []string `json:"commands,omitempty"`
-	Keys       []string `json:"keys,omitempty"`
-}
-
-type DBAASServiceRedisUsers struct {
-	AccessControl *DBAASServiceRedisUsersAccessControl `json:"access-control,omitempty"`
-	Password      string                               `json:"password,omitempty"`
-	Type          string                               `json:"type,omitempty"`
-	Username      string                               `json:"username,omitempty"`
-}
-
-type DBAASServiceRedis struct {
-	// List of backups for the service
-	Backups []DBAASServiceBackup `json:"backups,omitempty"`
-	// Service component information objects
-	Components []DBAASServiceRedisComponents `json:"components,omitempty"`
-	// Redis connection information properties
-	ConnectionInfo *DBAASServiceRedisConnectionInfo `json:"connection-info,omitempty"`
-	// Service creation timestamp (ISO 8601)
-	CreatedAT time.Time `json:"created-at,omitempty"`
-	// TODO UNIT disk space for data storage
-	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
-	// Service integrations
-	Integrations []DBAASIntegration `json:"integrations,omitempty"`
-	// Allowed CIDR address blocks for incoming connections
-	IPFilter []string `json:"ip-filter,omitempty"`
-	// Automatic maintenance settings
-	Maintenance *DBAASServiceMaintenance `json:"maintenance,omitempty"`
-	Name        DBAASServiceName         `json:"name" validate:"required,gte=0,lte=63"`
-	// Number of service nodes in the active plan
-	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
-	// Number of CPUs for each node
-	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
-	// TODO UNIT of memory for each node
-	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
-	// State of individual service nodes
-	NodeStates []DBAASNodeState `json:"node-states,omitempty"`
-	// Service notifications
-	Notifications []DBAASServiceNotification `json:"notifications,omitempty"`
-	// Subscription plan
-	Plan string `json:"plan" validate:"required"`
-	// Prometheus integration URI
-	PrometheusURI *DBAASServiceRedisPrometheusURI `json:"prometheus-uri" validate:"required"`
-	// Redis settings
-	RedisSettings *JSONSchemaRedis `json:"redis-settings,omitempty"`
-	State         EnumServiceState `json:"state,omitempty"`
-	// Service is protected against termination and powering off
-	TerminationProtection *bool                `json:"termination-protection,omitempty"`
-	Type                  DBAASServiceTypeName `json:"type" validate:"required,gte=0,lte=64"`
-	// Service last update timestamp (ISO 8601)
-	UpdatedAT time.Time `json:"updated-at,omitempty"`
-	// URI for connecting to the service (may be absent)
-	URI string `json:"uri,omitempty"`
-	// service_uri parameterized into key-value pairs
-	URIParams map[string]any `json:"uri-params,omitempty"`
-	// List of service users
-	Users []DBAASServiceRedisUsers `json:"users,omitempty"`
-	// Redis version
-	Version string `json:"version,omitempty"`
-	// The zone where the service is running
-	Zone string `json:"zone,omitempty"`
-}
-
 // DBaaS service
 type DBAASServiceType struct {
 	// DbaaS service available versions
@@ -1814,14 +1717,6 @@ type DBAASUserPostgresSecrets struct {
 	// Postgres password
 	Password string `json:"password,omitempty"`
 	// Postgres username
-	Username string `json:"username,omitempty"`
-}
-
-// Redis User secrets
-type DBAASUserRedisSecrets struct {
-	// Redis password
-	Password string `json:"password,omitempty"`
-	// Redis username
 	Username string `json:"username,omitempty"`
 }
 
@@ -3441,59 +3336,6 @@ type JSONSchemaPglookout struct {
 	MaxFailoverReplicationTimeLag int `json:"max_failover_replication_time_lag,omitempty" validate:"omitempty,gte=10,lte=9.223372036854776e+18"`
 }
 
-type JSONSchemaRedisAclChannelsDefault string
-
-const (
-	JSONSchemaRedisAclChannelsDefaultAllchannels   JSONSchemaRedisAclChannelsDefault = "allchannels"
-	JSONSchemaRedisAclChannelsDefaultResetchannels JSONSchemaRedisAclChannelsDefault = "resetchannels"
-)
-
-type JSONSchemaRedisMaxmemoryPolicy string
-
-const (
-	JSONSchemaRedisMaxmemoryPolicyNoeviction     JSONSchemaRedisMaxmemoryPolicy = "noeviction"
-	JSONSchemaRedisMaxmemoryPolicyAllkeysLru     JSONSchemaRedisMaxmemoryPolicy = "allkeys-lru"
-	JSONSchemaRedisMaxmemoryPolicyVolatileLru    JSONSchemaRedisMaxmemoryPolicy = "volatile-lru"
-	JSONSchemaRedisMaxmemoryPolicyAllkeysRandom  JSONSchemaRedisMaxmemoryPolicy = "allkeys-random"
-	JSONSchemaRedisMaxmemoryPolicyVolatileRandom JSONSchemaRedisMaxmemoryPolicy = "volatile-random"
-	JSONSchemaRedisMaxmemoryPolicyVolatileTtl    JSONSchemaRedisMaxmemoryPolicy = "volatile-ttl"
-	JSONSchemaRedisMaxmemoryPolicyVolatileLfu    JSONSchemaRedisMaxmemoryPolicy = "volatile-lfu"
-	JSONSchemaRedisMaxmemoryPolicyAllkeysLfu     JSONSchemaRedisMaxmemoryPolicy = "allkeys-lfu"
-)
-
-type JSONSchemaRedisPersistence string
-
-const (
-	JSONSchemaRedisPersistenceOff JSONSchemaRedisPersistence = "off"
-	JSONSchemaRedisPersistenceRdb JSONSchemaRedisPersistence = "rdb"
-)
-
-// Redis settings
-type JSONSchemaRedis struct {
-	// Determines default pub/sub channels' ACL for new users if ACL is not supplied. When this option is not defined, all_channels is assumed to keep backward compatibility. This option doesn't affect Redis configuration acl-pubsub-default.
-	AclChannelsDefault JSONSchemaRedisAclChannelsDefault `json:"acl_channels_default,omitempty"`
-	// Set Redis IO thread count. Changing this will cause a restart of the Redis service.
-	IoThreads int `json:"io_threads,omitempty" validate:"omitempty,gte=1,lte=32"`
-	// LFU maxmemory-policy counter decay time in minutes
-	LfuDecayTime int `json:"lfu_decay_time,omitempty" validate:"omitempty,gte=1,lte=120"`
-	// Counter logarithm factor for volatile-lfu and allkeys-lfu maxmemory-policies
-	LfuLogFactor int `json:"lfu_log_factor,omitempty" validate:"omitempty,gte=0,lte=100"`
-	// Redis maxmemory-policy
-	MaxmemoryPolicy JSONSchemaRedisMaxmemoryPolicy `json:"maxmemory_policy,omitempty"`
-	// Set notify-keyspace-events option
-	NotifyKeyspaceEvents string `json:"notify_keyspace_events,omitempty" validate:"omitempty,lte=32"`
-	// Set number of Redis databases. Changing this will cause a restart of the Redis service.
-	NumberOfDatabases int `json:"number_of_databases,omitempty" validate:"omitempty,gte=1,lte=128"`
-	// When persistence is 'rdb', Redis does RDB dumps each 10 minutes if any key is changed. Also RDB dumps are done according to backup schedule for backup purposes. When persistence is 'off', no RDB dumps and backups are done, so data can be lost at any moment if service is restarted for any reason, or if service is powered off. Also service can't be forked.
-	Persistence JSONSchemaRedisPersistence `json:"persistence,omitempty"`
-	// Set output buffer limit for pub / sub clients in MB. The value is the hard limit, the soft limit is 1/4 of the hard limit. When setting the limit, be mindful of the available memory in the selected service plan.
-	PubsubClientOutputBufferLimit int `json:"pubsub_client_output_buffer_limit,omitempty" validate:"omitempty,gte=32,lte=512"`
-	// Require SSL to access Redis
-	SSL *bool `json:"ssl,omitempty"`
-	// Redis idle connection timeout in seconds
-	Timeout int `json:"timeout,omitempty" validate:"omitempty,gte=0,lte=3.1536e+07"`
-}
-
 // Schema Registry configuration
 type JSONSchemaSchemaRegistry struct {
 	// If true, Karapace / Schema Registry on the service nodes can participate in leader election. It might be needed to disable this when the schemas topic is replicated to a secondary cluster and Karapace / Schema Registry there must not participate in leader election. Defaults to `true`.
@@ -3969,6 +3811,7 @@ const (
 	SKSClusterStateSuspending             SKSClusterState = "suspending"
 	SKSClusterStateUpdating               SKSClusterState = "updating"
 	SKSClusterStateError                  SKSClusterState = "error"
+	SKSClusterStateResuming               SKSClusterState = "resuming"
 )
 
 // SKS Cluster
@@ -4006,7 +3849,13 @@ type SKSCluster struct {
 	Version string `json:"version,omitempty"`
 }
 
-type SKSClusterDeprecatedResource map[string]string
+type SKSClusterDeprecatedResource struct {
+	Group          string `json:"group,omitempty"`
+	RemovedRelease string `json:"removed-release,omitempty"`
+	Resource       string `json:"resource,omitempty"`
+	Subresource    string `json:"subresource,omitempty"`
+	Version        string `json:"version,omitempty"`
+}
 
 type SKSClusterLabels map[string]string
 

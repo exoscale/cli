@@ -11,6 +11,7 @@
 - template: egoscale v3 #725
 - config: Fix incorrect link for IAM keys #728
 - Update exo x #733
+- database: remove all redis resources #735
 
 ## 1.85.2
 

@@ -55,7 +55,6 @@ func (c *dbaasMigrationStopCmd) CmdRun(cmd *cobra.Command, args []string) error 
 	var stopMigrationFuncs = map[v3.DBAASServiceTypeName]func(context.Context, string) (*v3.Operation, error){
 		"mysql":  client.StopDBAASMysqlMigration,
 		"pg":     client.StopDBAASPGMigration,
-		"redis":  client.StopDBAASRedisMigration,
 		"valkey": client.StopDBAASValkeyMigration,
 	}
 
