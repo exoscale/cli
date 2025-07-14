@@ -14,7 +14,7 @@ import (
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/pkg/storage/sos/object"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var storageListCmd = &cobra.Command{
@@ -126,24 +126,27 @@ func listStorageBuckets(zone string) (output.Outputter, error) {
 	out := make(sos.ListBucketsOutput, 0)
 
 	// ListSosBucketsUsageWithResponse is a global command, use default zone
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+	ctx := exocmd.GContext
 
-	res, err := globalstate.EgoscaleClient.ListSosBucketsUsageWithResponse(ctx)
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return nil, err
 	}
-	for _, b := range *res.JSON200.SosBucketsUsage {
-		created := *b.CreatedAt
-		if err != nil {
-			return nil, err
-		}
+
+	bucketsList, err := client.ListSOSBucketsUsage(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, b := range bucketsList.SOSBucketsUsage {
+		created := b.CreatedAT
 
 		// Filter the zone if set as flag
-		if zone == "" || zone == string(*b.ZoneName) {
+		if zone == "" || zone == string(b.ZoneName) {
 			out = append(out, sos.ListBucketsItemOutput{
-				Name:    *b.Name,
-				Zone:    string(*b.ZoneName),
-				Size:    *b.Size,
+				Name:    b.Name,
+				Zone:    string(b.ZoneName),
+				Size:    b.Size,
 				Created: created.Format(object.TimestampFormat),
 			})
 		}

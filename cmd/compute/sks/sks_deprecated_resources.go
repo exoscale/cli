@@ -1,17 +1,16 @@
 package sks
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 // TODO: full v3 migration is blocked by
@@ -30,6 +29,20 @@ type sksListDeprecatedResourcesOutput []sksListDeprecatedResourcesItemOutput
 func (o *sksListDeprecatedResourcesOutput) ToJSON()  { output.JSON(o) }
 func (o *sksListDeprecatedResourcesOutput) ToText()  { output.Text(o) }
 func (o *sksListDeprecatedResourcesOutput) ToTable() { output.Table(o) }
+
+func loadSKSDeprecatedResourcesFromMap(m []v3.SKSClusterDeprecatedResource) (sksListDeprecatedResourcesOutput, error) {
+	deprecatedResourcesBytes, err := json.Marshal(m)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read deprecated resources: %s", string(deprecatedResourcesBytes))
+	}
+	deprecatedResources := &sksListDeprecatedResourcesOutput{}
+	err = json.Unmarshal(deprecatedResourcesBytes, deprecatedResources)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read deprecated resources: %s", string(deprecatedResourcesBytes))
+	}
+
+	return *deprecatedResources, nil
+}
 
 type sksDeprecatedResourcesCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -53,48 +66,48 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&sksListDeprecatedResourcesItemOutput{}), ", "))
 }
 
-func emptyIfNil(inp *string) string {
-	if inp == nil {
-		return ""
-	}
-
-	return *inp
-}
-
 func (c *sksDeprecatedResourcesCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksDeprecatedResourcesCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	deprecatedResources, err := globalstate.EgoscaleClient.ListSKSClusterDeprecatedResources(
-		ctx,
-		c.Zone,
-		cluster,
-	)
+	clusters, err := client.ListSKSClusters(ctx)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := clusters.FindSKSCluster(c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	deprecatedResourcesResp, err := client.ListSKSClusterDeprecatedResources(ctx, cluster.ID)
 	if err != nil {
 		return fmt.Errorf("error retrieving deprecated resources: %w", err)
 	}
 
+	deprecatedResources, err := loadSKSDeprecatedResourcesFromMap(deprecatedResourcesResp)
+	if err != nil {
+		return err
+	}
+
+	// deprecatedResources.
 	out := make(sksListDeprecatedResourcesOutput, 0)
 
 	for _, t := range deprecatedResources {
 		out = append(out, sksListDeprecatedResourcesItemOutput{
-			Group:          emptyIfNil(t.Group),
-			RemovedRelease: emptyIfNil(t.RemovedRelease),
-			Resource:       emptyIfNil(t.Resource),
-			SubResource:    emptyIfNil(t.SubResource),
-			Version:        emptyIfNil(t.Version),
+			Group:          t.Group,
+			RemovedRelease: t.RemovedRelease,
+			Resource:       t.Resource,
+			SubResource:    t.SubResource,
+			Version:        t.Version,
 		})
 	}
 

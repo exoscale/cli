@@ -1,18 +1,14 @@
 package sks
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
-	v2 "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -43,30 +39,37 @@ func (c *sksUpgradeCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksUpgradeCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exocmd.GContext
 
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
+		return err
+	}
+
+	clusters, err := client.ListSKSClusters(ctx)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := clusters.FindSKSCluster(c.Cluster)
+	if err != nil {
 		return err
 	}
 
 	if !c.Force {
-		if utils.VersionIsNewer(c.Version, *cluster.Version) {
-			deprecatedResources, err := globalstate.EgoscaleClient.ListSKSClusterDeprecatedResources(
-				ctx,
-				c.Zone,
-				cluster,
-			)
+		if utils.VersionIsNewer(c.Version, cluster.Version) {
+			deprecatedResourcesResp, err := client.ListSKSClusterDeprecatedResources(ctx, cluster.ID)
 			if err != nil {
 				return fmt.Errorf("error retrieving deprecated resources: %w", err)
 			}
+			deprecatedResources, err := loadSKSDeprecatedResourcesFromMap(deprecatedResourcesResp)
+			if err != nil {
+				return err
+			}
 
-			removedDeprecatedResources := []*v2.SKSClusterDeprecatedResource{}
+			removedDeprecatedResources := []sksListDeprecatedResourcesItemOutput{}
 			for _, resource := range deprecatedResources {
-				if utils.VersionsAreEquivalent(*resource.RemovedRelease, *cluster.Version) {
+				if utils.VersionsAreEquivalent(resource.RemovedRelease, cluster.Version) {
 					removedDeprecatedResources = append(removedDeprecatedResources, resource)
 				}
 			}
@@ -91,8 +94,11 @@ func (c *sksUpgradeCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
+	op, err := client.UpgradeSKSCluster(ctx, cluster.ID, v3.UpgradeSKSClusterRequest{
+		Version: c.Version,
+	})
 	utils.DecorateAsyncOperation(fmt.Sprintf("Upgrading SKS cluster %q...", c.Cluster), func() {
-		err = globalstate.EgoscaleClient.UpgradeSKSCluster(ctx, c.Zone, cluster, c.Version)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -101,7 +107,7 @@ func (c *sksUpgradeCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&sksShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
-			Cluster:            *cluster.ID,
+			Cluster:            cluster.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).CmdRun(nil, nil)
 	}
@@ -109,26 +115,26 @@ func (c *sksUpgradeCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
-func formatDeprecatedResource(deprecatedResource *v2.SKSClusterDeprecatedResource) string {
+func formatDeprecatedResource(deprecatedResource sksListDeprecatedResourcesItemOutput) string {
 	var version string
 	var resource string
 
-	if !utils.IsEmptyStringPtr(deprecatedResource.Group) && !utils.IsEmptyStringPtr(deprecatedResource.Version) {
-		version = *deprecatedResource.Group + "/" + *deprecatedResource.Version
+	if deprecatedResource.Group != "" && deprecatedResource.Version != "" {
+		version = deprecatedResource.Group + "/" + deprecatedResource.Version
 	}
 
-	if !utils.IsEmptyStringPtr(deprecatedResource.Resource) {
-		resource = *deprecatedResource.Resource
+	if deprecatedResource.Resource != "" {
+		resource = deprecatedResource.Resource
 
-		if !utils.IsEmptyStringPtr(deprecatedResource.SubResource) {
-			resource += " (" + *deprecatedResource.SubResource + " subresource)"
+		if deprecatedResource.SubResource != "" {
+			resource += " (" + deprecatedResource.SubResource + " subresource)"
 		}
 	}
 
 	deprecationNotice := strings.Join([]string{version, resource}, " ")
 
-	if !utils.IsEmptyStringPtr(deprecatedResource.RemovedRelease) {
-		return "Removed in Kubernetes v" + *deprecatedResource.RemovedRelease + ": " + deprecationNotice
+	if deprecatedResource.RemovedRelease != "" {
+		return "Removed in Kubernetes v" + deprecatedResource.RemovedRelease + ": " + deprecationNotice
 	}
 
 	return deprecationNotice

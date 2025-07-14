@@ -17,7 +17,7 @@ func buildClient() {
 		return
 	}
 
-	if globalstate.EgoscaleClient != nil {
+	if globalstate.EgoscaleV3Client != nil {
 		return
 	}
 

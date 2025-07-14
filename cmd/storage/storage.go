@@ -12,7 +12,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/storage/sos"
-	egoscale "github.com/exoscale/egoscale/v2"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var (
@@ -34,7 +34,7 @@ func init() {
 			// Custom HTTP client User-Agent
 			awsconfig.WithAPIOptions([]func(*middleware.Stack) error{
 				awsmiddleware.AddUserAgentKeyValue("Exoscale-CLI",
-					fmt.Sprintf("%s (%s) %s", exocmd.GVersion, exocmd.GCommit, egoscale.UserAgent)),
+					fmt.Sprintf("%s (%s) %s", exocmd.GVersion, exocmd.GCommit, v3.UserAgent)),
 			}),
 
 			// Conditional HTTP client request tracing
