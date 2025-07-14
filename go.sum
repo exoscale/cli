@@ -163,8 +163,6 @@ github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7
 github.com/envoyproxy/protoc-gen-validate v0.6.2/go.mod h1:2t7qjJNvHPx8IjnBOzl9E9/baC+qXE/TeeyBRzgJDws=
 github.com/exoscale/egoscale v0.102.5-0.20250630120923-800c3fe9884a h1:Ahr+mBCHqDyVnaZ+HKhwIxeL8WLMMxHPi0Vf0y/yaNM=
 github.com/exoscale/egoscale v0.102.5-0.20250630120923-800c3fe9884a/go.mod h1:28QIfS/+XfbLNJFdEwqxgS7D1lyjtekLXYgvMg1P2AU=
-github.com/exoscale/egoscale/v3 v3.1.23 h1:OYVM9nDA4YmJnukEd1bzHE0xuX7HMdHH84jH4TRUERw=
-github.com/exoscale/egoscale/v3 v3.1.23/go.mod h1:A53enXfm8nhVMpIYw0QxiwQ2P6AdCF4F/nVYChNEzdE=
 github.com/exoscale/openapi-cli-generator v1.1.0 h1:fYjmPqHR5vxlOBrbvde7eo7bISNQIFxsGn4A5/acwKA=
 github.com/exoscale/openapi-cli-generator v1.1.0/go.mod h1:TZBnbT7f3hJ5ImyUphJwRM+X5xF/zCQZ6o8a42gQeTs=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
