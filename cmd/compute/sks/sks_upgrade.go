@@ -58,16 +58,12 @@ func (c *sksUpgradeCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	if !c.Force {
 		if utils.VersionIsNewer(c.Version, cluster.Version) {
-			deprecatedResourcesResp, err := client.ListSKSClusterDeprecatedResources(ctx, cluster.ID)
+			deprecatedResources, err := client.ListSKSClusterDeprecatedResources(ctx, cluster.ID)
 			if err != nil {
 				return fmt.Errorf("error retrieving deprecated resources: %w", err)
 			}
-			deprecatedResources, err := loadSKSDeprecatedResourcesFromMap(deprecatedResourcesResp)
-			if err != nil {
-				return err
-			}
 
-			removedDeprecatedResources := []sksListDeprecatedResourcesItemOutput{}
+			removedDeprecatedResources := []v3.SKSClusterDeprecatedResource{}
 			for _, resource := range deprecatedResources {
 				if utils.VersionsAreEquivalent(resource.RemovedRelease, cluster.Version) {
 					removedDeprecatedResources = append(removedDeprecatedResources, resource)
@@ -115,7 +111,7 @@ func (c *sksUpgradeCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
-func formatDeprecatedResource(deprecatedResource sksListDeprecatedResourcesItemOutput) string {
+func formatDeprecatedResource(deprecatedResource v3.SKSClusterDeprecatedResource) string {
 	var version string
 	var resource string
 
@@ -126,8 +122,8 @@ func formatDeprecatedResource(deprecatedResource sksListDeprecatedResourcesItemO
 	if deprecatedResource.Resource != "" {
 		resource = deprecatedResource.Resource
 
-		if deprecatedResource.SubResource != "" {
-			resource += " (" + deprecatedResource.SubResource + " subresource)"
+		if deprecatedResource.Subresource != "" {
+			resource += " (" + deprecatedResource.Subresource + " subresource)"
 		}
 	}
 

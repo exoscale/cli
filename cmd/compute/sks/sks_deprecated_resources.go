@@ -1,7 +1,6 @@
 package sks
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -16,33 +15,11 @@ import (
 // TODO: full v3 migration is blocked by
 // https://app.shortcut.com/exoscale/story/122943/bug-in-egoscale-v3-listsksclusterdeprecatedresources
 
-type sksListDeprecatedResourcesItemOutput struct {
-	Group          string `json:"group"`
-	Version        string `json:"version"`
-	Resource       string `json:"resource"`
-	SubResource    string `json:"subresource"`
-	RemovedRelease string `json:"removed_release"`
-}
-
-type sksListDeprecatedResourcesOutput []sksListDeprecatedResourcesItemOutput
+type sksListDeprecatedResourcesOutput []v3.SKSClusterDeprecatedResource
 
 func (o *sksListDeprecatedResourcesOutput) ToJSON()  { output.JSON(o) }
 func (o *sksListDeprecatedResourcesOutput) ToText()  { output.Text(o) }
 func (o *sksListDeprecatedResourcesOutput) ToTable() { output.Table(o) }
-
-func loadSKSDeprecatedResourcesFromMap(m []v3.SKSClusterDeprecatedResource) (sksListDeprecatedResourcesOutput, error) {
-	deprecatedResourcesBytes, err := json.Marshal(m)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read deprecated resources: %s", string(deprecatedResourcesBytes))
-	}
-	deprecatedResources := &sksListDeprecatedResourcesOutput{}
-	err = json.Unmarshal(deprecatedResourcesBytes, deprecatedResources)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read deprecated resources: %s", string(deprecatedResourcesBytes))
-	}
-
-	return *deprecatedResources, nil
-}
 
 type sksDeprecatedResourcesCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -63,7 +40,7 @@ func (c *sksDeprecatedResourcesCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists SKS cluster Nodepools.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&sksListDeprecatedResourcesItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksListDeprecatedResourcesOutput{}), ", "))
 }
 
 func (c *sksDeprecatedResourcesCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -88,27 +65,16 @@ func (c *sksDeprecatedResourcesCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	deprecatedResourcesResp, err := client.ListSKSClusterDeprecatedResources(ctx, cluster.ID)
+	deprecatedResources, err := client.ListSKSClusterDeprecatedResources(ctx, cluster.ID)
 	if err != nil {
 		return fmt.Errorf("error retrieving deprecated resources: %w", err)
-	}
-
-	deprecatedResources, err := loadSKSDeprecatedResourcesFromMap(deprecatedResourcesResp)
-	if err != nil {
-		return err
 	}
 
 	// deprecatedResources.
 	out := make(sksListDeprecatedResourcesOutput, 0)
 
 	for _, t := range deprecatedResources {
-		out = append(out, sksListDeprecatedResourcesItemOutput{
-			Group:          t.Group,
-			RemovedRelease: t.RemovedRelease,
-			Resource:       t.Resource,
-			SubResource:    t.SubResource,
-			Version:        t.Version,
-		})
+		out = append(out, t)
 	}
 
 	return c.OutputFunc(&out, nil)
