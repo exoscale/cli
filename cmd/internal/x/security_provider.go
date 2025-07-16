@@ -1,4 +1,4 @@
-package api
+package x
 
 import (
 	"bytes"
@@ -15,9 +15,9 @@ import (
 	"time"
 )
 
-// SecurityProviderExoscale represents an Exoscale public API security
+// securityProviderExoscale represents an Exoscale public API security
 // provider.
-type SecurityProviderExoscale struct {
+type securityProviderExoscale struct {
 	// ReqExpire represents the request expiration duration.
 	ReqExpire time.Duration
 
@@ -25,9 +25,9 @@ type SecurityProviderExoscale struct {
 	apiSecret string
 }
 
-// NewSecurityProvider returns a new Exoscale public API security
+// newSecurityProvider returns a new Exoscale public API security
 // provider to sign API requests using the specified API key/secret.
-func NewSecurityProvider(apiKey, apiSecret string) (*SecurityProviderExoscale, error) {
+func newSecurityProvider(apiKey, apiSecret string) (*securityProviderExoscale, error) {
 	if apiKey == "" {
 		return nil, errors.New("missing API key")
 	}
@@ -36,7 +36,7 @@ func NewSecurityProvider(apiKey, apiSecret string) (*SecurityProviderExoscale, e
 		return nil, errors.New("missing API secret")
 	}
 
-	return &SecurityProviderExoscale{
+	return &securityProviderExoscale{
 		ReqExpire: 10 * time.Minute,
 		apiKey:    apiKey,
 		apiSecret: apiSecret,
@@ -45,11 +45,11 @@ func NewSecurityProvider(apiKey, apiSecret string) (*SecurityProviderExoscale, e
 
 // Intercept is an HTTP middleware that intercepts and signs client requests
 // before sending them to the API endpoint.
-func (s *SecurityProviderExoscale) Intercept(_ context.Context, req *http.Request) error {
+func (s *securityProviderExoscale) Intercept(_ context.Context, req *http.Request) error {
 	return s.signRequest(req, time.Now().UTC().Add(s.ReqExpire))
 }
 
-func (s *SecurityProviderExoscale) signRequest(req *http.Request, expiration time.Time) error {
+func (s *securityProviderExoscale) signRequest(req *http.Request, expiration time.Time) error {
 	var (
 		sigParts    []string
 		headerParts []string

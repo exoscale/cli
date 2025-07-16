@@ -8,7 +8,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/aws/smithy-go v1.1.0
 	github.com/dustin/go-humanize v1.0.1
-	github.com/exoscale/egoscale v0.102.5-0.20250630120923-800c3fe9884a
 	github.com/exoscale/egoscale/v3 v3.1.24
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
