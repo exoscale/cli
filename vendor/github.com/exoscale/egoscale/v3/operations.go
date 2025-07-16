@@ -9430,7 +9430,7 @@ func (c Client) ListEvents(ctx context.Context, opts ...ListEventsOpt) ([]Event,
 	}
 
 	bodyresp := []Event{}
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
+	if err := prepareJSONResponse(response, &bodyresp); err != nil {
 		return nil, fmt.Errorf("ListEvents: prepare Json response: %w", err)
 	}
 
@@ -14024,7 +14024,7 @@ func (c Client) ListSKSClusterDeprecatedResources(ctx context.Context, id UUID) 
 	}
 
 	bodyresp := []SKSClusterDeprecatedResource{}
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
+	if err := prepareJSONResponse(response, &bodyresp); err != nil {
 		return nil, fmt.Errorf("ListSKSClusterDeprecatedResources: prepare Json response: %w", err)
 	}
 
