@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -40,6 +41,7 @@ func buildClient() {
 
 			return nil
 		}),
+		v3.ClientOptWithWaitTimeout(time.Duration(clientTimeout)),
 	)
 	if err != nil {
 		panic(fmt.Sprintf("unable to initialize Exoscale API V3 client: %v", err))
