@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
@@ -11,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -25,16 +27,25 @@ var (
 	}
 )
 
+// v3.UserAgent is deprecated, so we use a bit of reflection to
+// retrieve the user agent of the default client
+func getUserAgent(c *v3.Client) string {
+	r := reflect.ValueOf(*c)
+	userAgent := r.FieldByName("userAgent")
+	return userAgent.String()
+}
+
 func init() {
 	storageCmd.PersistentPreRunE = func(cmd *cobra.Command, _ []string) error {
 		// We have to wait until the actual command execution to assign a value to this variable
 		// because some of the global variables used are not initialized before Cobra executes
 		// the command.
+
 		sos.CommonConfigOptFns = []func(*awsconfig.LoadOptions) error{
 			// Custom HTTP client User-Agent
 			awsconfig.WithAPIOptions([]func(*middleware.Stack) error{
 				awsmiddleware.AddUserAgentKeyValue("Exoscale-CLI",
-					fmt.Sprintf("%s (%s) %s", exocmd.GVersion, exocmd.GCommit, v3.UserAgent)),
+					fmt.Sprintf("%s (%s) %s", exocmd.GVersion, exocmd.GCommit, getUserAgent(globalstate.EgoscaleV3Client))),
 			}),
 
 			// Conditional HTTP client request tracing
