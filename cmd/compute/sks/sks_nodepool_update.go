@@ -177,7 +177,7 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Taints)) {
-		if nodepool.Taints == nil {
+		if updateReq.Taints == nil {
 			updateReq.Taints = v3.SKSNodepoolTaints{}
 		}
 		for _, t := range c.Taints {
