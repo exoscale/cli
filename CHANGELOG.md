@@ -7,6 +7,10 @@
 - database: get (logs) crashed upon decoding first line #739
 - database: remove all redis resources #735
 
+### Bug fixes
+
+- Fix panic in sks nodepool update #738
+
 ## 1.85.3
 
 ### Improvements
