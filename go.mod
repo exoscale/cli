@@ -107,5 +107,3 @@ require (
 go 1.24
 
 toolchain go1.24.4
-
-replace github.com/exoscale/egoscale/v3 => /home/tgrondier/exo/egoscale/v3
