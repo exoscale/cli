@@ -123,7 +123,7 @@ func (c *dbaasServiceLogsCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	for i, log := range res.Logs {
-		ts, err := time.Parse("2006-01-02T15:04:05.000000", log.Time)
+		ts, err := time.Parse("2006-01-02T15:04:05.999999Z", log.Time)
 		if err != nil {
 			return fmt.Errorf("unable to parse log timestamp: %w", err)
 		}

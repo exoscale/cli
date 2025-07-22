@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- database: get (logs) crashed upon decoding first line #739
+- database: remove all redis resources #735
+
 ## 1.85.3
 
 ### Improvements
@@ -11,7 +18,6 @@
 - template: egoscale v3 #725
 - config: Fix incorrect link for IAM keys #728
 - Update exo x #733
-- database: remove all redis resources #735
 
 ## 1.85.2
 
