@@ -1,15 +1,15 @@
 # Changelog
 
-## Unreleased
+## 1.85.4
 
 ### Improvements
 
-- database: get (logs) crashed upon decoding first line #739
 - database: remove all redis resources #735
 
 ### Bug fixes
 
 - Fix panic in sks nodepool update #738
+- database: get (logs) crashed upon decoding first line #739
 
 ## 1.85.3
 
