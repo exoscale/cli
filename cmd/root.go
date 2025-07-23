@@ -18,7 +18,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/egoscale/version"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var GContext context.Context
@@ -50,7 +50,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version of exo",
 	Run: func(cmd *cobra.Command, _ []string) {
-		fmt.Printf("%s %s %s (egoscale %s)\n", cmd.Parent().Name(), GVersion, GCommit, version.Version)
+		fmt.Printf("%s %s %s (egoscale %s)\n", cmd.Parent().Name(), GVersion, GCommit, v3.Version)
 	},
 }
 
