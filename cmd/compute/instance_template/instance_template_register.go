@@ -75,13 +75,12 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 		err             error
 	)
 
-	globalstate.EgoscaleClient.SetTimeout(time.Duration(c.Timeout) * time.Second)
-
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
+	client = client.WithWaitTimeout(time.Duration(c.Timeout) * time.Second)
 
 	passwordEnabled := !c.DisablePassword
 	sshKeyEnabled := !c.DisableSSHKey
