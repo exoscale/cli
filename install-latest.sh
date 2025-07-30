@@ -181,7 +181,7 @@ verify_pkg() {
 
 if command -v gpg >/dev/null 2>&1 && [ "$PACKAGETYPE" != "yum" ]; then
     if ! gpg --list-keys | grep -q $TOOLING_KEY_FINGERPRINT; then
-        gpg --keyserver keys.openpgp.org --recv-keys "$TOOLING_KEY_FINGERPRINT"
+        gpg --keyserver hkps://keys.openpgp.org:443 --recv-keys "$TOOLING_KEY_FINGERPRINT"
     fi
 
     GPG_AVAILABLE=yes
@@ -223,7 +223,7 @@ case "$PACKAGETYPE" in
     apt)
         $SUDO mkdir -p /etc/apt/keyrings
         gpg --export $TOOLING_KEY_FINGERPRINT | $SUDO tee /etc/apt/keyrings/exoscale.gpg >/dev/null
-        echo "deb [signed-by=/etc/apt/keyrings/exoscale.gpg] https://sos-ch-gva-2.exo.io/exoscale-packages/deb/cli stable main" | $SUDO tee /etc/apt/sources.list.d/exoscale.list >/dev/null
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/exoscale.gpg] https://sos-ch-gva-2.exo.io/exoscale-packages/deb/cli stable main" | $SUDO tee /etc/apt/sources.list.d/exoscale.list >/dev/null
         $SUDO apt-get update
         $SUDO apt-get install -y exoscale-cli
         ;;
