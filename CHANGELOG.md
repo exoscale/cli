@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug fixes
+
+- Fix EIPv6 address family #740
+
 ## 1.85.4
 
 ### Improvements
