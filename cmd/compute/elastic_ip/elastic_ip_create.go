@@ -86,7 +86,7 @@ func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.IPv6 {
-		elasticIP.Addressfamily = "inetv6"
+		elasticIP.Addressfamily = "inet6"
 	}
 
 	op, err := client.CreateElasticIP(ctx, elasticIP)
