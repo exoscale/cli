@@ -137,7 +137,6 @@ func (c *nlbServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	var svc *v3.LoadBalancerService
 	for _, s := range n.Services {
-		fmt.Println(c.Service, s.ID.String(), s.Name)
 		if c.Service == s.ID.String() || c.Service == s.Name {
 			svc = &s
 		}
