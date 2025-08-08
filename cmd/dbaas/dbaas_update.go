@@ -9,6 +9,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 )
 
 type dbaasServiceUpdateCmd struct {
@@ -29,6 +30,7 @@ type dbaasServiceUpdateCmd struct {
 	Plan                  string `cli-usage:"Database Service plan"`
 	TerminationProtection bool   `cli-usage:"enable Database Service termination protection; set --termination-protection=false to disable"`
 	Zone                  string `cli-short:"z" cli-usage:"Database Service zone"`
+	Force                 bool   `cli-short:"f" cli-usage:"don't prompt for confirmation before updating"`
 
 	// "grafana" type specific flags
 	GrafanaIPFilter []string `cli-flag:"grafana-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
@@ -153,6 +155,12 @@ func (c *dbaasServiceUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 	}
 
 	ctx := exocmd.GContext
+
+	if !c.Force {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Updating Database Service %q can trigger a service restart. Do you want to continue?", c.Name)) {
+			return nil
+		}
+	}
 
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
