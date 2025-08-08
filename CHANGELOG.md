@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- dbaas: add confirmation prompt for update command to warn about potential service restart
+
 ### Bug fixes
 
 - Fix EIPv6 address family #740
