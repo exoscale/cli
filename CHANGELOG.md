@@ -5,6 +5,7 @@
 ### Features
 
 - dbaas: add confirmation prompt for update command to warn about potential service restart
+- Bump egoscale v3.1.25 (retryable HTTP client) #743
 
 ### Bug fixes
 
