@@ -52,6 +52,7 @@ func (c *Client) DeleteObjectVersions(ctx context.Context, bucket, prefix string
 			list, err := c.S3Client.ListObjectVersions(ctx, &s3.ListObjectVersionsInput{
 				Bucket:  &bucket,
 				MaxKeys: batchSize,
+				Prefix:  &prefix,
 			})
 			if err != nil {
 				errChan <- err
