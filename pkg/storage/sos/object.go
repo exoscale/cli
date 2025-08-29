@@ -32,6 +32,69 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
+func (c *Client) DeleteObjectVersions(ctx context.Context, bucket, prefix string) (<-chan types.DeletedObject, <-chan error) {
+	deletedChan := make(chan types.DeletedObject)
+	errChan := make(chan error)
+
+	// The "/" value can be used at command-level to mean that we want to
+	// list from the root of the bucket, but the actual bucket root is an
+	// empty prefix.
+	if prefix == "/" {
+		prefix = ""
+	}
+
+	go func() {
+		defer close(deletedChan)
+		defer close(errChan)
+
+		batchSize := int32(1000)
+		for {
+			list, err := c.S3Client.ListObjectVersions(ctx, &s3.ListObjectVersionsInput{
+				Bucket:  &bucket,
+				MaxKeys: batchSize,
+				Prefix:  &prefix,
+			})
+			if err != nil {
+				errChan <- err
+				return
+			}
+			if len(list.Versions) == 0 && len(list.DeleteMarkers) == 0 {
+				return
+			}
+			objects := make([]types.ObjectIdentifier, 0, len(list.Versions))
+			for _, element := range list.Versions {
+				objects = append(objects, types.ObjectIdentifier{
+					Key:       element.Key,
+					VersionId: element.VersionId,
+				})
+			}
+			for _, element := range list.DeleteMarkers {
+				objects = append(objects, types.ObjectIdentifier{
+					Key:       element.Key,
+					VersionId: element.VersionId,
+				})
+			}
+
+			deleteResult, err := c.S3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+				Bucket: &bucket,
+				Delete: &types.Delete{Objects: objects},
+			})
+			if err != nil {
+				errChan <- err
+				return
+			}
+			for _, deleted := range deleteResult.Deleted {
+				deletedChan <- deleted
+			}
+			for _, derror := range deleteResult.Errors {
+				errChan <- fmt.Errorf("delete error: %v", derror)
+			}
+		}
+	}()
+
+	return deletedChan, errChan
+}
+
 func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool) ([]types.DeletedObject, error) {
 	deleteList := make([]types.ObjectIdentifier, 0)
 	err := c.ForEachObject(ctx, bucket, prefix, recursive, func(o *types.Object) error {
