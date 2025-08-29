@@ -86,11 +86,11 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
-		db.IndexTemplate.MappingNestedObjectsLimit = c.OpensearchIndexTemplateMappingNestedObjectsLimit
+		db.IndexTemplate.MappingNestedObjectsLimit = &c.OpensearchIndexTemplateMappingNestedObjectsLimit
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
-		db.IndexTemplate.NumberOfReplicas = c.OpensearchIndexTemplateNumberOfReplicas
+		db.IndexTemplate.NumberOfReplicas = &c.OpensearchIndexTemplateNumberOfReplicas
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {

@@ -1302,7 +1302,7 @@ const (
 
 type DBAASServiceOpensearchIndexPatterns struct {
 	// Maximum number of indexes to keep
-	MaxIndexCount int64 `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
+	MaxIndexCount *int64 `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
 	// fnmatch pattern
 	Pattern string `json:"pattern,omitempty" validate:"omitempty,lte=1024"`
 	// Deletion sorting algorithm
@@ -1367,7 +1367,7 @@ type DBAASServiceOpensearch struct {
 	// Automatic maintenance settings
 	Maintenance *DBAASServiceMaintenance `json:"maintenance,omitempty"`
 	// Maximum number of indexes to keep before deleting the oldest one
-	MaxIndexCount int64            `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
+	MaxIndexCount *int64           `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
 	Name          DBAASServiceName `json:"name" validate:"required,gte=0,lte=63"`
 	// Number of service nodes in the active plan
 	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
@@ -1526,6 +1526,81 @@ type DBAASServicePG struct {
 	Version string `json:"version,omitempty"`
 	// Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).
 	WorkMem int64 `json:"work-mem,omitempty" validate:"omitempty,gte=1,lte=1024"`
+	// The zone where the service is running
+	Zone string `json:"zone,omitempty"`
+}
+
+type DBAASServiceThanosComponents struct {
+	// Service component name
+	Component string `json:"component" validate:"required"`
+	// DNS name for connecting to the service component
+	Host string `json:"host" validate:"required"`
+	// Port number for connecting to the service component
+	Port  int64              `json:"port" validate:"required,gte=0,lte=65535"`
+	Route EnumComponentRoute `json:"route" validate:"required"`
+	// Whether the endpoint is encrypted or accepts plaintext.
+	// By default endpoints are always encrypted and
+	// this property is only included for service components that may disable encryption.
+	SSL   *bool              `json:"ssl,omitempty"`
+	Usage EnumComponentUsage `json:"usage" validate:"required"`
+}
+
+// Thanos connection information properties
+type DBAASServiceThanosConnectionInfo struct {
+	QueryFrontendURI       string `json:"query-frontend-uri,omitempty"`
+	QueryURI               string `json:"query-uri,omitempty"`
+	ReceiverRemoteWriteURI string `json:"receiver-remote-write-uri,omitempty"`
+	RulerURI               string `json:"ruler-uri,omitempty"`
+}
+
+// Prometheus integration URI
+type DBAASServiceThanosPrometheusURI struct {
+	Host string `json:"host,omitempty"`
+	Port int64  `json:"port,omitempty" validate:"omitempty,gte=0,lte=65535"`
+}
+
+type DBAASServiceThanos struct {
+	// List of backups for the service
+	Backups []DBAASServiceBackup `json:"backups,omitempty"`
+	// Service component information objects
+	Components []DBAASServiceThanosComponents `json:"components,omitempty"`
+	// Thanos connection information properties
+	ConnectionInfo *DBAASServiceThanosConnectionInfo `json:"connection-info,omitempty"`
+	// Service creation timestamp (ISO 8601)
+	CreatedAT time.Time `json:"created-at,omitempty"`
+	// TODO UNIT disk space for data storage
+	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
+	// Service integrations
+	Integrations []DBAASIntegration `json:"integrations,omitempty"`
+	// Automatic maintenance settings
+	Maintenance *DBAASServiceMaintenance `json:"maintenance,omitempty"`
+	Name        DBAASServiceName         `json:"name" validate:"required,gte=0,lte=63"`
+	// Number of service nodes in the active plan
+	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
+	// Number of CPUs for each node
+	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
+	// TODO UNIT of memory for each node
+	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
+	// State of individual service nodes
+	NodeStates []DBAASNodeState `json:"node-states,omitempty"`
+	// Service notifications
+	Notifications []DBAASServiceNotification `json:"notifications,omitempty"`
+	// Subscription plan
+	Plan string `json:"plan" validate:"required"`
+	// Prometheus integration URI
+	PrometheusURI *DBAASServiceThanosPrometheusURI `json:"prometheus-uri" validate:"required"`
+	State         EnumServiceState                 `json:"state,omitempty"`
+	// Service is protected against termination and powering off
+	TerminationProtection *bool `json:"termination-protection,omitempty"`
+	// Thanos settings
+	ThanosSettings *JSONSchemaThanos    `json:"thanos-settings,omitempty"`
+	Type           DBAASServiceTypeName `json:"type" validate:"required,gte=0,lte=64"`
+	// Service last update timestamp (ISO 8601)
+	UpdatedAT time.Time `json:"updated-at,omitempty"`
+	// URI for connecting to the service (may be absent)
+	URI string `json:"uri,omitempty"`
+	// service_uri parameterized into key-value pairs
+	URIParams map[string]any `json:"uri-params,omitempty"`
 	// The zone where the service is running
 	Zone string `json:"zone,omitempty"`
 }
@@ -3344,6 +3419,44 @@ type JSONSchemaSchemaRegistry struct {
 	TopicName string `json:"topic_name,omitempty" validate:"omitempty,gte=1,lte=249"`
 }
 
+// Configuration options for Thanos Compactor.
+type JSONSchemaThanosCompactor struct {
+	// Retention time for data in days for each resolution (5m, 1h, raw)
+	RetentionDays int `json:"retention.days,omitempty" validate:"omitempty,gte=0"`
+}
+
+// Configuration options for Thanos Query.
+type JSONSchemaThanosQuery struct {
+	// Set the default evaluation interval for subqueries.
+	QueryDefaultEvaluationInterval string `json:"query.default-evaluation-interval,omitempty" validate:"omitempty,lte=20"`
+	// The maximum lookback duration for retrieving metrics during expression evaluations in PromQL. PromQL always evaluates the query for a certain timestamp, and it looks back for the given amount of time to get the latest sample. If it exceeds the maximum lookback delta, it assumes the series is stale and returns none (a gap). The lookback delta should be set to at least 2 times the slowest scrape interval. If unset, it will use the promql default of 5m.
+	QueryLookbackDelta string `json:"query.lookback-delta,omitempty" validate:"omitempty,lte=20"`
+	// The default metadata time range duration for retrieving labels through Labels and Series API when the range parameters are not specified. The zero value means the range covers the time since the beginning.
+	QueryMetadataDefaultTimeRange string `json:"query.metadata.default-time-range,omitempty" validate:"omitempty,lte=20"`
+	// Maximum time to process a query by the query node.
+	QueryTimeout string `json:"query.timeout,omitempty" validate:"omitempty,lte=20"`
+	// The maximum samples allowed for a single Series request. The Series call fails if this limit is exceeded. Set to 0 for no limit. NOTE: For efficiency, the limit is internally implemented as 'chunks limit' considering each chunk contains a maximum of 120 samples. The default value is 100 * store.limits.request-series.
+	StoreLimitsRequestSamples int `json:"store.limits.request-samples,omitempty" validate:"omitempty,gte=0,lte=1e+08"`
+	// The maximum series allowed for a single Series request. The Series call fails if this limit is exceeded. Set to 0 for no limit. The default value is 1000 * cpu_count.
+	StoreLimitsRequestSeries int `json:"store.limits.request-series,omitempty" validate:"omitempty,gte=0,lte=1e+08"`
+}
+
+// Configuration options for Thanos Query Frontend.
+type JSONSchemaThanosQueryFrontend struct {
+	// Whether to align the query range boundaries with the step. If enabled, the query range boundaries will be aligned to the step, providing more accurate results for queries with high-resolution data.
+	QueryRangeAlignRangeWithStep *bool `json:"query-range.align-range-with-step,omitempty"`
+}
+
+// Thanos settings
+type JSONSchemaThanos struct {
+	// Configuration options for Thanos Compactor.
+	Compactor *JSONSchemaThanosCompactor `json:"compactor,omitempty"`
+	// Configuration options for Thanos Query.
+	Query *JSONSchemaThanosQuery `json:"query,omitempty"`
+	// Configuration options for Thanos Query Frontend.
+	QueryFrontend *JSONSchemaThanosQueryFrontend `json:"query_frontend,omitempty"`
+}
+
 // System-wide settings for the timescaledb extension
 type JSONSchemaTimescaledb struct {
 	// The number of background workers for timescaledb operations. You should configure this setting to the sum of your number of databases and the total number of concurrent background workers you want running at any given point in time.
@@ -3785,6 +3898,36 @@ type SecurityGroupRule struct {
 	StartPort int64 `json:"start-port,omitempty" validate:"omitempty,gte=1,lte=65535"`
 }
 
+// Kubernetes Audit parameters
+type SKSAudit struct {
+	// Enabled
+	Enabled        *bool                  `json:"enabled,omitempty"`
+	Endpoint       SKSAuditEndpoint       `json:"endpoint,omitempty" validate:"omitempty,gte=1,lte=2000"`
+	InitialBackoff SKSAuditInitialBackoff `json:"initial-backoff,omitempty" validate:"omitempty,gte=1,lte=10"`
+}
+
+type SKSAuditBearerToken string
+
+// Kubernetes Audit parameters
+type SKSAuditCreate struct {
+	BearerToken    SKSAuditBearerToken    `json:"bearer-token" validate:"required,gte=1,lte=2000"`
+	Endpoint       SKSAuditEndpoint       `json:"endpoint" validate:"required,gte=1,lte=2000"`
+	InitialBackoff SKSAuditInitialBackoff `json:"initial-backoff,omitempty" validate:"omitempty,gte=1,lte=10"`
+}
+
+type SKSAuditEndpoint string
+
+type SKSAuditInitialBackoff string
+
+// Kubernetes Audit parameters
+type SKSAuditUpdate struct {
+	BearerToken SKSAuditBearerToken `json:"bearer-token,omitempty" validate:"omitempty,gte=1,lte=2000"`
+	// Enable or Disable Kubernetes Audit
+	Enabled        *bool                  `json:"enabled,omitempty"`
+	Endpoint       SKSAuditEndpoint       `json:"endpoint,omitempty" validate:"omitempty,gte=1,lte=2000"`
+	InitialBackoff SKSAuditInitialBackoff `json:"initial-backoff,omitempty" validate:"omitempty,gte=1,lte=10"`
+}
+
 type SKSClusterCni string
 
 const (
@@ -3818,6 +3961,8 @@ const (
 type SKSCluster struct {
 	// Cluster addons
 	Addons []string `json:"addons,omitempty"`
+	// Kubernetes Audit parameters
+	Audit *SKSAudit `json:"audit"`
 	// Enable auto upgrade of the control plane to the latest patch version available
 	AutoUpgrade *bool `json:"auto-upgrade,omitempty"`
 	// Cluster CNI

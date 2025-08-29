@@ -28,6 +28,7 @@ const (
 	ATVie1 Endpoint = "https://api-at-vie-1.exoscale.com/v2"
 	ATVie2 Endpoint = "https://api-at-vie-2.exoscale.com/v2"
 	BGSof1 Endpoint = "https://api-bg-sof-1.exoscale.com/v2"
+	HrZag1 Endpoint = "https://api-hr-zag-1.exoscale.com/v2"
 )
 
 // defaultHTTPClient is HTTP client with retry logic.
