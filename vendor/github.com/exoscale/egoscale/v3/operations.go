@@ -1102,7 +1102,7 @@ type ResizeBlockStorageVolumeRequest struct {
 	Size int64 `json:"size" validate:"required,gt=0"`
 }
 
-// This operation resizes a Block storage volume. Note: the volume can only grow, cannot be shrunk.
+// This operation resizes a Block storage volume. Note: the volume can only grow, cannot be shrunk. Only detached volumes or volumes attached to stopped instances can be resized.
 func (c Client) ResizeBlockStorageVolume(ctx context.Context, id UUID, req ResizeBlockStorageVolumeRequest) (*BlockStorageVolume, error) {
 	path := fmt.Sprintf("/block-storage/%v:resize-volume", id)
 
@@ -4300,9 +4300,9 @@ func (c Client) GetDBAASServiceMysql(ctx context.Context, name string) (*DBAASSe
 
 type CreateDBAASServiceMysqlRequestBackupSchedule struct {
 	// The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.
-	BackupHour int64 `json:"backup-hour,omitempty" validate:"omitempty,gte=0,lte=23"`
+	BackupHour *int64 `json:"backup-hour,omitempty" validate:"omitempty,gte=0,lte=23"`
 	// The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.
-	BackupMinute int64 `json:"backup-minute,omitempty" validate:"omitempty,gte=0,lte=59"`
+	BackupMinute *int64 `json:"backup-minute,omitempty" validate:"omitempty,gte=0,lte=59"`
 }
 
 type CreateDBAASServiceMysqlRequestIntegrationsType string
@@ -4442,9 +4442,9 @@ func (c Client) CreateDBAASServiceMysql(ctx context.Context, name string, req Cr
 
 type UpdateDBAASServiceMysqlRequestBackupSchedule struct {
 	// The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.
-	BackupHour int64 `json:"backup-hour,omitempty" validate:"omitempty,gte=0,lte=23"`
+	BackupHour *int64 `json:"backup-hour,omitempty" validate:"omitempty,gte=0,lte=23"`
 	// The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.
-	BackupMinute int64 `json:"backup-minute,omitempty" validate:"omitempty,gte=0,lte=59"`
+	BackupMinute *int64 `json:"backup-minute,omitempty" validate:"omitempty,gte=0,lte=59"`
 }
 
 type UpdateDBAASServiceMysqlRequestMaintenanceDow string
@@ -5084,7 +5084,7 @@ const (
 
 type CreateDBAASServiceOpensearchRequestIndexPatterns struct {
 	// Maximum number of indexes to keep
-	MaxIndexCount int64 `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
+	MaxIndexCount *int64 `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
 	// fnmatch pattern
 	Pattern string `json:"pattern,omitempty" validate:"omitempty,lte=1024"`
 	// Deletion sorting algorithm
@@ -5094,9 +5094,9 @@ type CreateDBAASServiceOpensearchRequestIndexPatterns struct {
 // Template settings for all new indexes
 type CreateDBAASServiceOpensearchRequestIndexTemplate struct {
 	// The maximum number of nested JSON objects that a single document can contain across all nested types. This limit helps to prevent out of memory errors when a document contains too many nested objects. Default is 10000.
-	MappingNestedObjectsLimit int64 `json:"mapping-nested-objects-limit,omitempty" validate:"omitempty,gte=0,lte=100000"`
+	MappingNestedObjectsLimit *int64 `json:"mapping-nested-objects-limit,omitempty" validate:"omitempty,gte=0,lte=100000"`
 	// The number of replicas each primary shard has.
-	NumberOfReplicas int64 `json:"number-of-replicas,omitempty" validate:"omitempty,gte=0,lte=29"`
+	NumberOfReplicas *int64 `json:"number-of-replicas,omitempty" validate:"omitempty,gte=0,lte=29"`
 	// The number of primary shards that an index should have.
 	NumberOfShards int64 `json:"number-of-shards,omitempty" validate:"omitempty,gte=1,lte=1024"`
 }
@@ -5145,7 +5145,7 @@ type CreateDBAASServiceOpensearchRequest struct {
 	// Automatic maintenance settings
 	Maintenance *CreateDBAASServiceOpensearchRequestMaintenance `json:"maintenance,omitempty"`
 	// Maximum number of indexes to keep before deleting the oldest one
-	MaxIndexCount int64 `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
+	MaxIndexCount *int64 `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
 	// OpenSearch Dashboards settings
 	OpensearchDashboards *CreateDBAASServiceOpensearchRequestOpensearchDashboards `json:"opensearch-dashboards,omitempty"`
 	// OpenSearch settings
@@ -5220,7 +5220,7 @@ const (
 
 type UpdateDBAASServiceOpensearchRequestIndexPatterns struct {
 	// Maximum number of indexes to keep
-	MaxIndexCount int64 `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
+	MaxIndexCount *int64 `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
 	// fnmatch pattern
 	Pattern string `json:"pattern,omitempty" validate:"omitempty,lte=1024"`
 	// Deletion sorting algorithm
@@ -5230,9 +5230,9 @@ type UpdateDBAASServiceOpensearchRequestIndexPatterns struct {
 // Template settings for all new indexes
 type UpdateDBAASServiceOpensearchRequestIndexTemplate struct {
 	// The maximum number of nested JSON objects that a single document can contain across all nested types. This limit helps to prevent out of memory errors when a document contains too many nested objects. Default is 10000.
-	MappingNestedObjectsLimit int64 `json:"mapping-nested-objects-limit,omitempty" validate:"omitempty,gte=0,lte=100000"`
+	MappingNestedObjectsLimit *int64 `json:"mapping-nested-objects-limit,omitempty" validate:"omitempty,gte=0,lte=100000"`
 	// The number of replicas each primary shard has.
-	NumberOfReplicas int64 `json:"number-of-replicas,omitempty" validate:"omitempty,gte=0,lte=29"`
+	NumberOfReplicas *int64 `json:"number-of-replicas,omitempty" validate:"omitempty,gte=0,lte=29"`
 	// The number of primary shards that an index should have.
 	NumberOfShards int64 `json:"number-of-shards,omitempty" validate:"omitempty,gte=1,lte=1024"`
 }
@@ -5280,7 +5280,7 @@ type UpdateDBAASServiceOpensearchRequest struct {
 	// Automatic maintenance settings
 	Maintenance *UpdateDBAASServiceOpensearchRequestMaintenance `json:"maintenance,omitempty"`
 	// Maximum number of indexes to keep before deleting the oldest one
-	MaxIndexCount int64 `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
+	MaxIndexCount *int64 `json:"max-index-count,omitempty" validate:"omitempty,gte=0"`
 	// OpenSearch Dashboards settings
 	OpensearchDashboards *UpdateDBAASServiceOpensearchRequestOpensearchDashboards `json:"opensearch-dashboards,omitempty"`
 	// OpenSearch settings
@@ -5771,9 +5771,9 @@ func (c Client) GetDBAASServicePG(ctx context.Context, name string) (*DBAASServi
 
 type CreateDBAASServicePGRequestBackupSchedule struct {
 	// The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.
-	BackupHour int64 `json:"backup-hour,omitempty" validate:"omitempty,gte=0,lte=23"`
+	BackupHour *int64 `json:"backup-hour,omitempty" validate:"omitempty,gte=0,lte=23"`
 	// The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.
-	BackupMinute int64 `json:"backup-minute,omitempty" validate:"omitempty,gte=0,lte=59"`
+	BackupMinute *int64 `json:"backup-minute,omitempty" validate:"omitempty,gte=0,lte=59"`
 }
 
 type CreateDBAASServicePGRequestIntegrationsType string
@@ -5922,9 +5922,9 @@ func (c Client) CreateDBAASServicePG(ctx context.Context, name string, req Creat
 
 type UpdateDBAASServicePGRequestBackupSchedule struct {
 	// The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.
-	BackupHour int64 `json:"backup-hour,omitempty" validate:"omitempty,gte=0,lte=23"`
+	BackupHour *int64 `json:"backup-hour,omitempty" validate:"omitempty,gte=0,lte=23"`
 	// The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.
-	BackupMinute int64 `json:"backup-minute,omitempty" validate:"omitempty,gte=0,lte=59"`
+	BackupMinute *int64 `json:"backup-minute,omitempty" validate:"omitempty,gte=0,lte=59"`
 }
 
 type UpdateDBAASServicePGRequestMaintenanceDow string
@@ -8497,7 +8497,6 @@ const (
 	CreateDNSDomainRecordRequestTypeTXT   CreateDNSDomainRecordRequestType = "TXT"
 	CreateDNSDomainRecordRequestTypeALIAS CreateDNSDomainRecordRequestType = "ALIAS"
 	CreateDNSDomainRecordRequestTypeURL   CreateDNSDomainRecordRequestType = "URL"
-	CreateDNSDomainRecordRequestTypeSPF   CreateDNSDomainRecordRequestType = "SPF"
 )
 
 type CreateDNSDomainRecordRequest struct {
@@ -13911,6 +13910,8 @@ const (
 type CreateSKSClusterRequest struct {
 	// Cluster addons
 	Addons []string `json:"addons,omitempty"`
+	// Kubernetes Audit parameters
+	Audit *SKSAuditCreate `json:"audit,omitempty"`
 	// Enable auto upgrade of the control plane to the latest patch version available
 	AutoUpgrade *bool `json:"auto-upgrade,omitempty"`
 	// Cluster CNI
@@ -14241,6 +14242,8 @@ func (c Client) GetSKSCluster(ctx context.Context, id UUID) (*SKSCluster, error)
 type UpdateSKSClusterRequest struct {
 	// Cluster addons
 	Addons []string `json:"addons,omitempty"`
+	// Kubernetes Audit parameters
+	Audit *SKSAuditUpdate `json:"audit,omitempty"`
 	// Enable auto upgrade of the control plane to the latest patch version available
 	AutoUpgrade *bool `json:"auto-upgrade,omitempty"`
 	// Cluster description

@@ -252,7 +252,7 @@ func opensearchShowDatabase(db *v3.DBAASServiceOpensearch, zone string) (output.
 	if db.IndexPatterns != nil {
 		for _, i := range db.IndexPatterns {
 			indexPatterns = append(indexPatterns, dbServiceOpensearchIndexPatternShowOutput{
-				MaxIndexCount:    i.MaxIndexCount,
+				MaxIndexCount:    utils.DefaultInt64(i.MaxIndexCount, 0),
 				Pattern:          i.Pattern,
 				SortingAlgorithm: string(i.SortingAlgorithm),
 			})
