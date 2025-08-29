@@ -37,8 +37,8 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		}
 
 		databaseService.BackupSchedule = &v3.UpdateDBAASServicePGRequestBackupSchedule{
-			BackupHour:   bh,
-			BackupMinute: bm,
+			BackupHour:   *bh,
+			BackupMinute: *bm,
 		}
 
 		updated = true

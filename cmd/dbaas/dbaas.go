@@ -43,23 +43,23 @@ func init() {
 // parseDtabaseBackupSchedule parses a Database Service backup schedule value
 // expressed in HH:MM format and returns the discrete values for hour and
 // minute, or an error if the parsing failed.
-func parseDatabaseBackupSchedule(v string) (int64, int64, error) {
+func parseDatabaseBackupSchedule(v string) (*int64, *int64, error) {
 	parts := strings.Split(v, ":")
 	if len(parts) != 2 {
-		return 0, 0, fmt.Errorf("invalid value %q for backup schedule, expecting HH:MM", v)
+		return nil, nil, fmt.Errorf("invalid value %q for backup schedule, expecting HH:MM", v)
 	}
 
 	backupHour, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return 0, 0, fmt.Errorf("invalid value %q for backup schedule hour, must be between 0 and 23", v)
+		return nil, nil, fmt.Errorf("invalid value %q for backup schedule hour, must be between 0 and 23", v)
 	}
 
 	backupMinute, err := strconv.Atoi(parts[1])
 	if err != nil {
-		return 0, 0, fmt.Errorf("invalid value %q for backup schedule minute, must be between 0 and 59", v)
+		return nil, nil, fmt.Errorf("invalid value %q for backup schedule minute, must be between 0 and 59", v)
 	}
-
-	return int64(backupHour), int64(backupMinute), nil
+	h, m := int64(backupHour), int64(backupMinute)
+	return &h, &m, nil
 }
 
 // validateDatabaseServiceSettings validates user-provided JSON-formatted

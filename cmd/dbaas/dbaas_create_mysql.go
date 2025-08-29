@@ -59,8 +59,8 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 		}
 
 		databaseService.BackupSchedule = &v3.CreateDBAASServiceMysqlRequestBackupSchedule{
-			BackupHour:   bh,
-			BackupMinute: bm,
+			BackupHour:   *bh,
+			BackupMinute: *bm,
 		}
 	}
 

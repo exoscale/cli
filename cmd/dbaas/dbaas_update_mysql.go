@@ -38,8 +38,8 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 		}
 
 		databaseService.BackupSchedule = &v3.UpdateDBAASServiceMysqlRequestBackupSchedule{
-			BackupHour:   bh,
-			BackupMinute: bm,
+			BackupHour:   *bh,
+			BackupMinute: *bm,
 		}
 
 		updated = true

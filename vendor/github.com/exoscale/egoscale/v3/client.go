@@ -6,12 +6,15 @@ package v3
 import (
 	"context"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"runtime"
 	"time"
 
 	"github.com/exoscale/egoscale/v3/credentials"
 	"github.com/go-playground/validator/v10"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 // Endpoint represents a zone endpoint.
@@ -26,6 +29,15 @@ const (
 	ATVie2 Endpoint = "https://api-at-vie-2.exoscale.com/v2"
 	BGSof1 Endpoint = "https://api-bg-sof-1.exoscale.com/v2"
 )
+
+// defaultHTTPClient is HTTP client with retry logic.
+// Default retry configuration can be found in go-retryablehttp repo.
+var defaultHTTPClient = func() *http.Client {
+	rc := retryablehttp.NewClient()
+	// silence client by default
+	rc.Logger = log.New(io.Discard, "", 0)
+	return rc.StandardClient()
+}()
 
 func (c Client) GetZoneName(ctx context.Context, endpoint Endpoint) (ZoneName, error) {
 	resp, err := c.ListZones(ctx)
@@ -162,7 +174,7 @@ func NewClient(credentials *credentials.Credentials, opts ...ClientOpt) (*Client
 		apiKey:         values.APIKey,
 		apiSecret:      values.APISecret,
 		serverEndpoint: string(CHGva2),
-		httpClient:     http.DefaultClient,
+		httpClient:     defaultHTTPClient,
 		validate:       validator.New(),
 		userAgent:      getDefaultUserAgent(),
 	}
