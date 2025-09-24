@@ -1,3 +1,4 @@
+version: 2
 project_name: exoscale-cli
 
 before:
@@ -44,7 +45,7 @@ archives:
   - id: windows
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [ 'zip' ]
     files:
       - LICENSE
       - contrib/completion/**/*
@@ -84,7 +85,7 @@ brews:
       owner: exoscale
       name: homebrew-tap
     directory: Formula
-    homepage: "https://exoscale.github.io/cli/"
+    homepage: "https://community.exoscale.com/tools/command-line-interface/"
     description: Manage easily your Exoscale infrastructure from the command-line.
     install: |
       bin.install "exo"
