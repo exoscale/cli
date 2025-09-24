@@ -12,6 +12,7 @@
 
 - Fix EIPv6 address family #740
 - Remove debug log line #741
+- Bump go.mk & goreleaser #747
 
 ## 1.85.4
 
