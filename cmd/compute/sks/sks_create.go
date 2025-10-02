@@ -128,8 +128,8 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 		clusterReq.Cni = ""
 	}
 
-	clusterReq.Addons = func() (v []string) {
-		addOns := make([]string, 0)
+	clusterReq.Addons = func() (v *v3.SKSClusterAddons) {
+		addOns := make(v3.SKSClusterAddons, 0)
 
 		if !c.NoExoscaleCCM {
 			addOns = append(addOns, sksClusterAddonExoscaleCCM)
@@ -144,7 +144,7 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 		}
 
 		if len(addOns) > 0 {
-			v = addOns
+			v = &addOns
 		}
 		return
 	}()
