@@ -156,7 +156,7 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 	// Configure Kubernetes Audit if endpoint is provided
 	if c.AuditEndpoint != "" {
 		if c.AuditBearerToken == "" {
-			return errors.New("audit bearer token is required when audit endpoint is specified")
+			return errors.New("audit bearer token is required when an audit endpoint is specified")
 		}
 		clusterReq.Audit = &v3.SKSAuditCreate{
 			Endpoint:       v3.SKSAuditEndpoint(c.AuditEndpoint),
