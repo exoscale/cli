@@ -13908,8 +13908,7 @@ const (
 )
 
 type CreateSKSClusterRequest struct {
-	// Cluster addons
-	Addons []string `json:"addons,omitempty"`
+	Addons *SKSClusterAddons `json:"addons,omitempty"`
 	// Kubernetes Audit parameters
 	Audit *SKSAuditCreate `json:"audit,omitempty"`
 	// Enable auto upgrade of the control plane to the latest patch version available
@@ -14240,8 +14239,7 @@ func (c Client) GetSKSCluster(ctx context.Context, id UUID) (*SKSCluster, error)
 }
 
 type UpdateSKSClusterRequest struct {
-	// Cluster addons
-	Addons []string `json:"addons,omitempty"`
+	Addons *SKSClusterAddons `json:"addons,omitempty"`
 	// Kubernetes Audit parameters
 	Audit *SKSAuditUpdate `json:"audit,omitempty"`
 	// Enable auto upgrade of the control plane to the latest patch version available
@@ -14930,6 +14928,50 @@ func (c Client) RotateSKSCsiCredentials(ctx context.Context, id UUID) (*Operatio
 	return bodyresp, nil
 }
 
+// Rotate Exoscale Karpenter credentials
+func (c Client) RotateSKSKarpenterCredentials(ctx context.Context, id UUID) (*Operation, error) {
+	path := fmt.Sprintf("/sks-cluster/%v/rotate-karpenter-credentials", id)
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("RotateSKSKarpenterCredentials: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("RotateSKSKarpenterCredentials: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("RotateSKSKarpenterCredentials: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "rotate-sks-karpenter-credentials")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("RotateSKSKarpenterCredentials: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("RotateSKSKarpenterCredentials: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("RotateSKSKarpenterCredentials: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 // Rotate operators certificate authority
 func (c Client) RotateSKSOperatorsCA(ctx context.Context, id UUID) (*Operation, error) {
 	path := fmt.Sprintf("/sks-cluster/%v/rotate-operators-ca", id)
@@ -15120,6 +15162,61 @@ func (c Client) ResetSKSClusterField(ctx context.Context, id UUID, field ResetSK
 	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetSKSClusterField: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type GetActiveNodepoolTemplateResponse struct {
+	ActiveTemplate UUID `json:"active-template,omitempty"`
+}
+
+type GetActiveNodepoolTemplateVariant string
+
+const (
+	GetActiveNodepoolTemplateVariantStandard GetActiveNodepoolTemplateVariant = "standard"
+	GetActiveNodepoolTemplateVariantNvidia   GetActiveNodepoolTemplateVariant = "nvidia"
+)
+
+// Get the active template for a given kube version and variant (standard | nvidia)
+func (c Client) GetActiveNodepoolTemplate(ctx context.Context, kubeVersion string, variant GetActiveNodepoolTemplateVariant) (*GetActiveNodepoolTemplateResponse, error) {
+	path := fmt.Sprintf("/sks-template/%v/%v", kubeVersion, variant)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetActiveNodepoolTemplate: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetActiveNodepoolTemplate: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetActiveNodepoolTemplate: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-active-nodepool-template")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetActiveNodepoolTemplate: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetActiveNodepoolTemplate: http response: %w", err)
+	}
+
+	bodyresp := &GetActiveNodepoolTemplateResponse{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetActiveNodepoolTemplate: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil

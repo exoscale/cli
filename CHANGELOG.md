@@ -7,12 +7,19 @@
 - dbaas: add confirmation prompt for update command to warn about potential service restart
 - Bump egoscale v3.1.25 (retryable HTTP client) #743
 - Bump egoscale and fix breaking change #745
+- Bump golang/x/crypto v0.42.0
+- Bump egoscale v3.1.27 (sks audit logging)
+- sks: add audit log support
 
 ### Bug fixes
 
 - Fix EIPv6 address family #740
 - Remove debug log line #741
 - Bump go.mk & goreleaser #747
+- Bump golang/x/term v0.29.0
+- Bump golang/x/term v0.35.0
+- Bump hashicorp/go/multierror v1.1.1
+- Bump golang/toolchain v1.24.6
 
 ## 1.85.4
 

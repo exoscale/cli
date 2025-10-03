@@ -3945,24 +3945,24 @@ const (
 type SKSClusterState string
 
 const (
-	SKSClusterStateRotatingCsiCredentials SKSClusterState = "rotating-csi-credentials"
-	SKSClusterStateRotatingCcmCredentials SKSClusterState = "rotating-ccm-credentials"
-	SKSClusterStateCreating               SKSClusterState = "creating"
-	SKSClusterStateUpgrading              SKSClusterState = "upgrading"
-	SKSClusterStateDeleting               SKSClusterState = "deleting"
-	SKSClusterStateRunning                SKSClusterState = "running"
-	SKSClusterStateSuspending             SKSClusterState = "suspending"
-	SKSClusterStateUpdating               SKSClusterState = "updating"
-	SKSClusterStateError                  SKSClusterState = "error"
-	SKSClusterStateResuming               SKSClusterState = "resuming"
+	SKSClusterStateRotatingCsiCredentials       SKSClusterState = "rotating-csi-credentials"
+	SKSClusterStateRotatingCcmCredentials       SKSClusterState = "rotating-ccm-credentials"
+	SKSClusterStateCreating                     SKSClusterState = "creating"
+	SKSClusterStateUpgrading                    SKSClusterState = "upgrading"
+	SKSClusterStateDeleting                     SKSClusterState = "deleting"
+	SKSClusterStateRunning                      SKSClusterState = "running"
+	SKSClusterStateSuspending                   SKSClusterState = "suspending"
+	SKSClusterStateUpdating                     SKSClusterState = "updating"
+	SKSClusterStateError                        SKSClusterState = "error"
+	SKSClusterStateRotatingKarpenterCredentials SKSClusterState = "rotating-karpenter-credentials"
+	SKSClusterStateResuming                     SKSClusterState = "resuming"
 )
 
 // SKS Cluster
 type SKSCluster struct {
-	// Cluster addons
-	Addons []string `json:"addons,omitempty"`
+	Addons *SKSClusterAddons `json:"addons,omitempty"`
 	// Kubernetes Audit parameters
-	Audit *SKSAudit `json:"audit"`
+	Audit *SKSAudit `json:"audit,omitempty"`
 	// Enable auto upgrade of the control plane to the latest patch version available
 	AutoUpgrade *bool `json:"auto-upgrade,omitempty"`
 	// Cluster CNI
@@ -3993,6 +3993,8 @@ type SKSCluster struct {
 	// Control plane Kubernetes version
 	Version string `json:"version,omitempty"`
 }
+
+type SKSClusterAddons []string
 
 type SKSClusterDeprecatedResource struct {
 	Group          string `json:"group,omitempty"`

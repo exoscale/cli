@@ -15,9 +15,10 @@ import (
 )
 
 type sksClusterListItemOutput struct {
-	ID   v3.UUID     `json:"id"`
-	Name string      `json:"name"`
-	Zone v3.ZoneName `json:"zone"`
+	ID           v3.UUID     `json:"id"`
+	Name         string      `json:"name"`
+	Zone         v3.ZoneName `json:"zone"`
+	AuditEnabled bool        `json:"audit_enabled"`
 }
 
 type sksClusterListOutput []sksClusterListItemOutput
@@ -89,6 +90,9 @@ func (c *sksListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				ID:   cluster.ID,
 				Name: cluster.Name,
 				Zone: zone.Name,
+				AuditEnabled: func() bool {
+					return cluster.Audit != nil && cluster.Audit.Enabled != nil && *cluster.Audit.Enabled
+				}(),
 			}
 		}
 

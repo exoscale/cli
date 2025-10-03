@@ -17,6 +17,7 @@ import (
 var (
 	defaultSKSClusterCNI          = "calico"
 	defaultSKSClusterServiceLevel = "pro"
+	defaultSKSAuditInitialBackoff = "10s"
 	sksClusterAddonExoscaleCCM    = "exoscale-cloud-controller"
 	sksClusterAddonExoscaleCSI    = "exoscale-container-storage-interface"
 	sksClusterAddonMetricsServer  = "metrics-server"
@@ -62,6 +63,9 @@ type sksCreateCmd struct {
 	OIDCRequiredClaim            map[string]string `cli-flag:"oidc-required-claim" cli-usage:"OpenID token required claim (format: key=value)"`
 	OIDCUsernameClaim            string            `cli-flag:"oidc-username-claim" cli-usage:"OpenID JWT claim to use as the user name"`
 	OIDCUsernamePrefix           string            `cli-flag:"oidc-username-prefix" cli-usage:"OpenID prefix prepended to username claims"`
+	AuditEndpoint                string            `cli-flag:"audit-endpoint" cli-usage:"Kubernetes Audit endpoint URL (enables audit logging when set)"`
+	AuditBearerToken             string            `cli-flag:"audit-bearer-token" cli-usage:"Bearer token for Kubernetes Audit endpoint authentication"`
+	AuditInitialBackoff          string            `cli-flag:"audit-initial-backoff" cli-usage:"Initial backoff for Kubernetes Audit endpoint retry (default: 10s)"`
 	ServiceLevel                 string            `cli-usage:"SKS cluster control plane service level (starter|pro)"`
 	Zone                         string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
@@ -128,8 +132,8 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 		clusterReq.Cni = ""
 	}
 
-	clusterReq.Addons = func() (v []string) {
-		addOns := make([]string, 0)
+	clusterReq.Addons = func() (v *v3.SKSClusterAddons) {
+		addOns := make(v3.SKSClusterAddons, 0)
 
 		if !c.NoExoscaleCCM {
 			addOns = append(addOns, sksClusterAddonExoscaleCCM)
@@ -144,10 +148,22 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 		}
 
 		if len(addOns) > 0 {
-			v = addOns
+			v = &addOns
 		}
 		return
 	}()
+
+	// Configure Kubernetes Audit if endpoint is provided
+	if c.AuditEndpoint != "" {
+		if c.AuditBearerToken == "" {
+			return errors.New("audit bearer token is required when an audit endpoint is specified")
+		}
+		clusterReq.Audit = &v3.SKSAuditCreate{
+			Endpoint:       v3.SKSAuditEndpoint(c.AuditEndpoint),
+			BearerToken:    v3.SKSAuditBearerToken(c.AuditBearerToken),
+			InitialBackoff: v3.SKSAuditInitialBackoff(c.AuditInitialBackoff),
+		}
+	}
 
 	if clusterReq.Version == "latest" {
 		versions, err := client.ListSKSClusterVersions(ctx)
@@ -259,6 +275,7 @@ func init() {
 		NodepoolImageGcLowThreshold:  kubeletImageGcLowThreshold,
 		NodepoolImageGcHighThreshold: kubeletImageGcHighThreshold,
 		NodepoolImageGcMinAge:        kubeletImageGcMinAge,
+		AuditInitialBackoff:          defaultSKSAuditInitialBackoff,
 		ServiceLevel:                 defaultSKSClusterServiceLevel,
 	}))
 
