@@ -178,7 +178,7 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 				Nodes:      dt.Plans[i].NodeCount,
 				NodeCPUs:   dt.Plans[i].NodeCPUCount,
 				NodeMemory: dt.Plans[i].NodeMemory,
-				DiskSpace:  dt.Plans[i].NodeMemory,
+				DiskSpace:  dt.Plans[i].DiskSpace,
 				Authorized: utils.DefaultBool(dt.Plans[i].Authorized, false),
 			}
 		}
