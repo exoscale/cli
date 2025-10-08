@@ -149,19 +149,19 @@ func (c *instancePoolCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("error retrieving instance type %s: not found", c.InstanceType)
 	}
 
-	privateNetworks := make([]v3.PrivateNetwork, len(c.PrivateNetworks))
 	if l := len(c.PrivateNetworks); l > 0 {
 		pNetworks, err := client.ListPrivateNetworks(ctx)
 		if err != nil {
 			return fmt.Errorf("error listing Private Network: %w", err)
 		}
+		instancePoolReq.PrivateNetworks = make([]v3.PrivateNetwork, l)
 
 		for i := range c.PrivateNetworks {
 			privateNetwork, err := pNetworks.FindPrivateNetwork(c.PrivateNetworks[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
-			privateNetworks[i] = privateNetwork
+			instancePoolReq.PrivateNetworks[i] = v3.PrivateNetwork{ID: privateNetwork.ID}
 		}
 	}
 
