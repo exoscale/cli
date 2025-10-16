@@ -20,6 +20,7 @@ var (
 	defaultSKSAuditInitialBackoff = "10s"
 	sksClusterAddonExoscaleCCM    = "exoscale-cloud-controller"
 	sksClusterAddonExoscaleCSI    = "exoscale-container-storage-interface"
+	sksClusterAddonKarpenter      = "karpenter"
 	sksClusterAddonMetricsServer  = "metrics-server"
 )
 
@@ -40,6 +41,7 @@ type sksCreateCmd struct {
 	NoExoscaleCCM                bool              `cli-usage:"do not deploy the Exoscale Cloud Controller Manager in the cluster control plane"`
 	NoMetricsServer              bool              `cli-usage:"do not deploy the Kubernetes Metrics Server in the cluster control plane"`
 	ExoscaleCSI                  bool              `cli-usage:"deploy the Exoscale Container Storage Interface on worker nodes"`
+	EnableKarpenterAddon         bool              `cli-usage:"deploy Karpenter node provisioner"`
 	FeatureGates                 []string          `cli-flag:"feature-gates" cli-usage:"SKS cluster feature gates to enable"`
 	NodepoolAntiAffinityGroups   []string          `cli-flag:"nodepool-anti-affinity-group" cli-usage:"default Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
 	NodepoolDeployTarget         string            `cli-usage:"default Nodepool Deploy Target NAME|ID"`
@@ -132,6 +134,10 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 		clusterReq.Cni = ""
 	}
 
+	if c.EnableKarpenterAddon && c.NoExoscaleCCM {
+		return errors.New("karpenter requires Exoscale CCM, please remove the --no-exoscale-ccm option")
+	}
+
 	clusterReq.Addons = func() (v []string) {
 		addOns := make([]string, 0)
 
@@ -145,6 +151,10 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 
 		if c.ExoscaleCSI {
 			addOns = append(addOns, sksClusterAddonExoscaleCSI)
+		}
+
+		if c.EnableKarpenterAddon {
+			addOns = append(addOns, sksClusterAddonKarpenter)
 		}
 
 		if len(addOns) > 0 {

@@ -11,3 +11,4 @@ contrib
 go.work
 .aptlydata
 .idea/
+.vscode/
