@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.86.0
 
 ### Features
 
