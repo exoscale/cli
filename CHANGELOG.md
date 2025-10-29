@@ -20,6 +20,7 @@
 - Bump golang/x/term v0.35.0
 - Bump hashicorp/go/multierror v1.1.1
 - Bump golang/toolchain v1.24.6
+- Fix opensearch version flag #752
 
 ## 1.85.4
 

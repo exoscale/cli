@@ -35,7 +35,7 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 	if c.OpensearchRecoveryBackupName != "" {
 		db.RecoveryBackupName = c.OpensearchRecoveryBackupName
 	}
-	if db.Version != "" {
+	if c.OpensearchVersion != "" {
 		db.Version = c.OpensearchVersion
 	}
 
