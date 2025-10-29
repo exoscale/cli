@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -31,10 +30,8 @@ func createDomain(domainName string) error {
 	var err error
 
 	ctx := exocmd.GContext
-	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
-	if err != nil {
-		return err
-	}
+	client := globalstate.EgoscaleV3Client
+
 	utils.DecorateAsyncOperation(fmt.Sprintf("Creating DNS domain %q...", domainName), func() {
 		_, err = client.CreateDNSDomain(ctx, v3.CreateDNSDomainRequest{
 			UnicodeName: domainName,

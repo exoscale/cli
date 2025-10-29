@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -25,10 +24,7 @@ func init() {
 func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priority *int64) error {
 
 	ctx := exocmd.GContext
-	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
-	if err != nil {
-		return err
-	}
+	client := globalstate.EgoscaleV3Client
 
 	domainsList, err := client.ListDNSDomains(ctx)
 	if err != nil {
