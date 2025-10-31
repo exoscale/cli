@@ -11,24 +11,51 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceListItemOutput struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Zone      string `json:"zone"`
-	Type      string `json:"type"`
-	IPAddress string `json:"ip_address"`
-	State     string `json:"state"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Zone        string `json:"zone"`
+	Type        string `json:"type"`
+	IPAddress   string `json:"ip_address"`
+	IPv6Address string `json:"ipv6_address"`
+	State       string `json:"state"`
 }
 
 type instanceListOutput []instanceListItemOutput
 
-func (o *instanceListOutput) ToJSON()  { output.JSON(o) }
-func (o *instanceListOutput) ToText()  { output.Text(o) }
-func (o *instanceListOutput) ToTable() { output.Table(o) }
+func (o *instanceListOutput) ToJSON() { output.JSON(o) }
+func (o *instanceListOutput) ToText() { output.Text(o) }
+func (o *instanceListOutput) ToTable() {
+	t := table.NewTable(os.Stdout)
+	defer t.Render()
+
+	t.SetHeader([]string{
+		"ID",
+		"NAME",
+		"ZONE",
+		"TYPE",
+		"IP ADDRESS",
+		"IPV6 ADDRESS",
+		"STATE",
+	})
+
+	for _, instance := range *o {
+		t.Append([]string{
+			instance.ID,
+			instance.Name,
+			instance.Zone,
+			instance.Type,
+			instance.IPAddress,
+			instance.IPv6Address,
+			instance.State,
+		})
+	}
+}
 
 type instanceListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -111,12 +138,13 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			}
 
 			res <- instanceListItemOutput{
-				ID:        i.ID.String(),
-				Name:      i.Name,
-				Zone:      string(zone),
-				Type:      fmt.Sprintf("%s.%s", instanceType.Family, instanceType.Size),
-				IPAddress: utils.DefaultIP(&i.PublicIP, utils.EmptyIPAddressVisualization),
-				State:     string(i.State),
+				ID:          i.ID.String(),
+				Name:        i.Name,
+				Zone:        string(zone),
+				Type:        fmt.Sprintf("%s.%s", instanceType.Family, instanceType.Size),
+				IPAddress:   utils.DefaultIP(&i.PublicIP, utils.EmptyIPAddressVisualization),
+				IPv6Address: utils.DefaultIP(i.Ipv6Address, utils.EmptyIPAddressVisualization),
+				State:       string(i.State),
 			}
 		}
 
