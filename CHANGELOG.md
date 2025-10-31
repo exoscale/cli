@@ -1,5 +1,9 @@
 # Changelog
 
+### Features
+
+- instance: display ipv6 while listing #754
+
 ## 1.86.0
 
 ### Features

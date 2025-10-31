@@ -113,9 +113,21 @@ func DefaultBool(b *bool, def bool) bool {
 }
 
 // DefaultIP returns the IP as string if not nil, otherwise the default value specified.
-func DefaultIP(i *net.IP, def string) string {
-	if i != nil {
-		return i.String()
+// Accepts either *net.IP, net.IP, or string.
+func DefaultIP(i any, def string) string {
+	switch v := i.(type) {
+	case *net.IP:
+		if v != nil {
+			return v.String()
+		}
+	case net.IP:
+		if v != nil {
+			return v.String()
+		}
+	case string:
+		if v != "" {
+			return v
+		}
 	}
 
 	return def
