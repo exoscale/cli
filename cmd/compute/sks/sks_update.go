@@ -32,6 +32,13 @@ type sksUpdateCmd struct {
 	AuditEndpoint       string            `cli-flag:"audit-endpoint" cli-usage:"Kubernetes Audit endpoint URL"`
 	AuditBearerToken    string            `cli-flag:"audit-bearer-token" cli-usage:"Bearer token for Kubernetes Audit endpoint authentication"`
 	AuditInitialBackoff string            `cli-flag:"audit-initial-backoff" cli-usage:"Initial backoff for Kubernetes Audit endpoint retry (default: 10s)"`
+	OIDCClientID        string            `cli-flag:"oidc-client-id" cli-usage:"OpenID client ID"`
+	OIDCGroupsClaim     string            `cli-flag:"oidc-groups-claim" cli-usage:"OpenID JWT claim to use as the user's group"`
+	OIDCGroupsPrefix    string            `cli-flag:"oidc-groups-prefix" cli-usage:"OpenID prefix prepended to group claims"`
+	OIDCIssuerURL       string            `cli-flag:"oidc-issuer-url" cli-usage:"OpenID provider URL"`
+	OIDCRequiredClaim   map[string]string `cli-flag:"oidc-required-claim" cli-usage:"OpenID token required claim (format: key=value)"`
+	OIDCUsernameClaim   string            `cli-flag:"oidc-username-claim" cli-usage:"OpenID JWT claim to use as the user name"`
+	OIDCUsernamePrefix  string            `cli-flag:"oidc-username-prefix" cli-usage:"OpenID prefix prepended to username claims"`
 	Zone                v3.ZoneName       `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
@@ -134,6 +141,49 @@ func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		}
 		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AuditInitialBackoff)) {
 			updateReq.Audit.InitialBackoff = v3.SKSAuditInitialBackoff(c.AuditInitialBackoff)
+		}
+
+		updated = true
+	}
+
+	// Configure OIDC update if any audit flag is changed
+	OIDCChanged := cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCClientID)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCGroupsClaim)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCGroupsPrefix)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCIssuerURL)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCRequiredClaim)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCUsernameClaim)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCUsernamePrefix))
+
+	if OIDCChanged {
+		updateReq.Oidc = &v3.SKSOidc{}
+
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCClientID)) {
+			updateReq.Oidc.ClientID = c.OIDCClientID
+		}
+
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCGroupsClaim)) {
+			updateReq.Oidc.GroupsClaim = c.OIDCGroupsClaim
+		}
+
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCGroupsPrefix)) {
+			updateReq.Oidc.GroupsPrefix = c.OIDCGroupsPrefix
+		}
+
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCIssuerURL)) {
+			updateReq.Oidc.IssuerURL = c.OIDCIssuerURL
+		}
+
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCRequiredClaim)) {
+			updateReq.Oidc.RequiredClaim = c.OIDCRequiredClaim
+		}
+
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCUsernameClaim)) {
+			updateReq.Oidc.UsernameClaim = c.OIDCUsernameClaim
+		}
+
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCUsernamePrefix)) {
+			updateReq.Oidc.UsernamePrefix = c.OIDCUsernamePrefix
 		}
 
 		updated = true

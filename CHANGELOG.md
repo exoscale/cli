@@ -6,6 +6,7 @@
 
 - Bump openapi-cli-generator #757
 - instance: display ipv6 while listing #754
+- sks: support for OIDC update #755
 
 ## 1.86.0
 
