@@ -10,7 +10,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/exoscale/egoscale v0.102.5-0.20250630120923-800c3fe9884a
 	github.com/exoscale/egoscale/v3 v3.1.27
-	github.com/exoscale/openapi-cli-generator v1.1.0
+	github.com/exoscale/openapi-cli-generator v1.2.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/iancoleman/strcase v0.2.0
