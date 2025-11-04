@@ -9293,32 +9293,9 @@ func (c Client) DetachInstanceFromElasticIP(ctx context.Context, id UUID, req De
 	return bodyresp, nil
 }
 
-type GetEnvImpactResponseEnvImpactTotal struct {
-	// Impact Amount
-	Amount float64 `json:"amount,omitempty"`
-	// Impact Unit
-	Unit string `json:"unit,omitempty"`
-}
-
-type GetEnvImpactResponseEnvImpact struct {
-	Total *GetEnvImpactResponseEnvImpactTotal `json:"total,omitempty"`
-}
-
-type GetEnvImpactResponse struct {
-	EnvImpact map[string]GetEnvImpactResponseEnvImpact `json:"env_impact,omitempty"`
-}
-
-type GetEnvImpactOpt func(url.Values)
-
-func GetEnvImpactWithPeriod(period string) GetEnvImpactOpt {
-	return func(q url.Values) {
-		q.Add("period", fmt.Sprint(period))
-	}
-}
-
 // [BETA] Returns environmental impact reports for an organization
-func (c Client) GetEnvImpact(ctx context.Context, opts ...GetEnvImpactOpt) (*GetEnvImpactResponse, error) {
-	path := "/env-impact"
+func (c Client) GetEnvImpact(ctx context.Context, period string) (*EnvImpactReport, error) {
+	path := fmt.Sprintf("/env-impact/%v", period)
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -9326,14 +9303,6 @@ func (c Client) GetEnvImpact(ctx context.Context, opts ...GetEnvImpactOpt) (*Get
 	}
 
 	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if len(opts) > 0 {
-		q := request.URL.Query()
-		for _, opt := range opts {
-			opt(q)
-		}
-		request.URL.RawQuery = q.Encode()
-	}
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
 		return nil, fmt.Errorf("GetEnvImpact: execute request editors: %w", err)
@@ -9360,7 +9329,7 @@ func (c Client) GetEnvImpact(ctx context.Context, opts ...GetEnvImpactOpt) (*Get
 		return nil, fmt.Errorf("GetEnvImpact: http response: %w", err)
 	}
 
-	bodyresp := &GetEnvImpactResponse{}
+	bodyresp := &EnvImpactReport{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetEnvImpact: prepare Json response: %w", err)
 	}
@@ -9372,13 +9341,13 @@ type ListEventsOpt func(url.Values)
 
 func ListEventsWithFrom(from time.Time) ListEventsOpt {
 	return func(q url.Values) {
-		q.Add("from", fmt.Sprint(from))
+		q.Add("from", from.Format(time.RFC3339))
 	}
 }
 
 func ListEventsWithTo(to time.Time) ListEventsOpt {
 	return func(q url.Values) {
-		q.Add("to", fmt.Sprint(to))
+		q.Add("to", to.Format(time.RFC3339))
 	}
 }
 
@@ -10243,7 +10212,7 @@ type CreateInstancePoolRequest struct {
 	// Instance template
 	Template *Template `json:"template" validate:"required"`
 	// Instances Cloud-init user-data
-	UserData string `json:"user-data,omitempty" validate:"omitempty,gte=1"`
+	UserData string `json:"user-data,omitempty" validate:"omitempty,gte=1,lte=32768"`
 }
 
 // Create an Instance Pool
@@ -13908,7 +13877,8 @@ const (
 )
 
 type CreateSKSClusterRequest struct {
-	Addons *SKSClusterAddons `json:"addons,omitempty"`
+	// Cluster addons
+	Addons []string `json:"addons,omitempty"`
 	// Kubernetes Audit parameters
 	Audit *SKSAuditCreate `json:"audit,omitempty"`
 	// Enable auto upgrade of the control plane to the latest patch version available
@@ -14239,7 +14209,8 @@ func (c Client) GetSKSCluster(ctx context.Context, id UUID) (*SKSCluster, error)
 }
 
 type UpdateSKSClusterRequest struct {
-	Addons *SKSClusterAddons `json:"addons,omitempty"`
+	// Cluster addons
+	Addons []string `json:"addons,omitempty"`
 	// Kubernetes Audit parameters
 	Audit *SKSAuditUpdate `json:"audit,omitempty"`
 	// Enable auto upgrade of the control plane to the latest patch version available
@@ -14674,61 +14645,6 @@ func (c Client) UpdateSKSNodepool(ctx context.Context, id UUID, sksNodepoolID UU
 	return bodyresp, nil
 }
 
-type ResetSKSNodepoolFieldField string
-
-const (
-	ResetSKSNodepoolFieldFieldAntiAffinityGroups ResetSKSNodepoolFieldField = "anti-affinity-groups"
-	ResetSKSNodepoolFieldFieldDescription        ResetSKSNodepoolFieldField = "description"
-	ResetSKSNodepoolFieldFieldLabels             ResetSKSNodepoolFieldField = "labels"
-	ResetSKSNodepoolFieldFieldSecurityGroups     ResetSKSNodepoolFieldField = "security-groups"
-	ResetSKSNodepoolFieldFieldPrivateNetworks    ResetSKSNodepoolFieldField = "private-networks"
-	ResetSKSNodepoolFieldFieldDeployTarget       ResetSKSNodepoolFieldField = "deploy-target"
-)
-
-// Reset an SKS Nodepool field to its default value
-func (c Client) ResetSKSNodepoolField(ctx context.Context, id UUID, sksNodepoolID UUID, field ResetSKSNodepoolFieldField) (*Operation, error) {
-	path := fmt.Sprintf("/sks-cluster/%v/nodepool/%v/%v", id, sksNodepoolID, field)
-
-	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("ResetSKSNodepoolField: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("ResetSKSNodepoolField: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("ResetSKSNodepoolField: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "reset-sks-nodepool-field")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("ResetSKSNodepoolField: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("ResetSKSNodepoolField: http response: %w", err)
-	}
-
-	bodyresp := &Operation{}
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("ResetSKSNodepoolField: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
 type EvictSKSNodepoolMembersRequest struct {
 	Instances []UUID `json:"instances,omitempty"`
 }
@@ -15111,57 +15027,6 @@ func (c Client) UpgradeSKSClusterServiceLevel(ctx context.Context, id UUID) (*Op
 	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpgradeSKSClusterServiceLevel: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-type ResetSKSClusterFieldField string
-
-const (
-	ResetSKSClusterFieldFieldDescription ResetSKSClusterFieldField = "description"
-	ResetSKSClusterFieldFieldLabels      ResetSKSClusterFieldField = "labels"
-)
-
-// Reset an SKS cluster field to its default value
-func (c Client) ResetSKSClusterField(ctx context.Context, id UUID, field ResetSKSClusterFieldField) (*Operation, error) {
-	path := fmt.Sprintf("/sks-cluster/%v/%v", id, field)
-
-	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("ResetSKSClusterField: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("ResetSKSClusterField: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("ResetSKSClusterField: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "reset-sks-cluster-field")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("ResetSKSClusterField: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("ResetSKSClusterField: http response: %w", err)
-	}
-
-	bodyresp := &Operation{}
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("ResetSKSClusterField: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
