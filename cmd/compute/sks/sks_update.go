@@ -106,11 +106,11 @@ func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Always ensure we have CSI addon enabled when updating them
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.EnableCSIAddon)) && (cluster.Addons == nil || !slices.Contains(*cluster.Addons, sksClusterAddonExoscaleCSI)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.EnableCSIAddon)) && (cluster.Addons == nil || !slices.Contains(cluster.Addons, sksClusterAddonExoscaleCSI)) {
 		if cluster.Addons == nil {
-			updateReq.Addons = &v3.SKSClusterAddons{sksClusterAddonExoscaleCSI}
+			updateReq.Addons = []string{sksClusterAddonExoscaleCSI}
 		} else {
-			*updateReq.Addons = append(*cluster.Addons, sksClusterAddonExoscaleCSI) //nolint:gocritic
+			updateReq.Addons = append(cluster.Addons, sksClusterAddonExoscaleCSI) //nolint:gocritic
 		}
 
 		updated = true

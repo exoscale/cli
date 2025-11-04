@@ -149,8 +149,8 @@ func (c *sksShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	return c.OutputFunc(
 		&sksShowOutput{
 			AddOns: func() (v []string) {
-				if cluster.Addons != nil {
-					v = *cluster.Addons
+				if len(cluster.Addons) > 0 {
+					v = cluster.Addons
 				}
 				return
 			}(),
