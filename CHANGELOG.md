@@ -7,6 +7,11 @@
 - Bump openapi-cli-generator #757
 - instance: display ipv6 while listing #754
 - sks: support for OIDC update #755
+- Bump egoscale & fix breaking change #756
+
+### Bug fixes
+
+- Fix opensearch version flag #752
 
 ## 1.86.0
 
@@ -28,7 +33,6 @@
 - Bump golang/x/term v0.35.0
 - Bump hashicorp/go/multierror v1.1.1
 - Bump golang/toolchain v1.24.6
-- Fix opensearch version flag #752
 
 ## 1.85.4
 
