@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+-  Bump openapi-cli-generator #757
+
+
 ## 1.86.0
 
 ### Features
