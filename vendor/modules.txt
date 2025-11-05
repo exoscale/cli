@@ -224,7 +224,7 @@ github.com/exoscale/egoscale/version
 ## explicit; go 1.23.8
 github.com/exoscale/egoscale/v3
 github.com/exoscale/egoscale/v3/credentials
-# github.com/exoscale/openapi-cli-generator v1.1.0
+# github.com/exoscale/openapi-cli-generator v1.2.0
 ## explicit; go 1.12
 github.com/exoscale/openapi-cli-generator/cli
 github.com/exoscale/openapi-cli-generator/shorthand
