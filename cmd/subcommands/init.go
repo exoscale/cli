@@ -24,4 +24,5 @@ import (
 	_ "github.com/exoscale/cli/cmd/dns"
 	_ "github.com/exoscale/cli/cmd/iam"
 	_ "github.com/exoscale/cli/cmd/storage"
+	_ "github.com/exoscale/cli/cmd/dedicated_inference"
 )
