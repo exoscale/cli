@@ -23,6 +23,7 @@
 - Bump golang/x/crypto v0.42.0
 - Bump egoscale v3.1.27 (sks audit logging)
 - sks: add audit log support
+- sks: add karpenter support
 
 ### Bug fixes
 
