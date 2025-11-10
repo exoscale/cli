@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.87.0
 
 ### Features
 
