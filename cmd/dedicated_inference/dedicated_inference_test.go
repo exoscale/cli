@@ -33,7 +33,7 @@ func newTestServer(t *testing.T) *testServer {
 
 	mux := http.NewServeMux()
 
-	// Models endpoints
+ // Models endpoints
 	mux.HandleFunc("/ai/model", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
@@ -47,15 +47,35 @@ func newTestServer(t *testing.T) *testServer {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
-	// DELETE /ai/model/{id}
+	// GET/DELETE /ai/model/{id}
 	mux.HandleFunc("/ai/model/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodDelete {
-			w.WriteHeader(http.StatusMethodNotAllowed)
+		id := path.Base(r.URL.Path)
+		if r.Method == http.MethodGet {
+			// find in fixtures
+			for _, m := range ts.models {
+				if string(m.ID) == id {
+					resp := v3.GetModelResponse{
+						ID:        m.ID,
+						Name:      m.Name,
+						Status:    v3.GetModelResponseStatus(m.Status),
+						ModelSize: m.ModelSize,
+						CreatedAT: m.CreatedAT,
+						UpdatedAT: m.UpdatedAT,
+					}
+					writeJSON(t, w, http.StatusOK, resp)
+					return
+				}
+			}
+			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		// Accept any UUID-like tail
-		op := v3.Operation{ID: v3.UUID("op-model-delete"), State: v3.OperationStatePending}
-		writeJSON(t, w, http.StatusOK, op)
+		if r.Method == http.MethodDelete {
+			// Accept any UUID-like tail
+			op := v3.Operation{ID: v3.UUID("op-model-delete"), State: v3.OperationStatePending}
+			writeJSON(t, w, http.StatusOK, op)
+			return
+		}
+		w.WriteHeader(http.StatusMethodNotAllowed)
 	})
 
 	// Deployments endpoints
@@ -71,8 +91,9 @@ func newTestServer(t *testing.T) *testServer {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
-	mux.HandleFunc("/ai/deployment/", func(w http.ResponseWriter, r *http.Request) {
+ mux.HandleFunc("/ai/deployment/", func(w http.ResponseWriter, r *http.Request) {
 		// patterns:
+		// GET    /ai/deployment/{id}
 		// DELETE /ai/deployment/{id}
 		// POST   /ai/deployment/{id}/scale
 		// GET    /ai/deployment/{id}/api-key
@@ -81,6 +102,29 @@ func newTestServer(t *testing.T) *testServer {
 		parts := strings.Split(p, "/")
 		id := parts[0]
 		if id == "" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		if len(parts) == 1 && r.Method == http.MethodGet {
+			for _, d := range ts.deployments {
+				if string(d.ID) == id {
+					resp := v3.GetDeploymentResponse{
+						ID:            d.ID,
+						Name:          d.Name,
+						Status:        v3.GetDeploymentResponseStatus(d.Status),
+						GpuType:       d.GpuType,
+						GpuCount:      d.GpuCount,
+						Replicas:      d.Replicas,
+						ServiceLevel:  d.ServiceLevel,
+						DeploymentURL: d.DeploymentURL,
+						Model:         d.Model,
+						CreatedAT:     d.CreatedAT,
+						UpdatedAT:     d.UpdatedAT,
+					}
+					writeJSON(t, w, http.StatusOK, resp)
+					return
+				}
+			}
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -161,6 +205,29 @@ func setup(t *testing.T, ts *testServer) func() {
 }
 
 // -------- Model tests --------
+
+func TestModelShow(t *testing.T) {
+	ts := newTestServer(t)
+	defer setup(t, ts)()
+	now := time.Now()
+	ts.models = []v3.ListModelsResponseEntry{
+		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", Status: v3.ListModelsResponseEntryStatusReady, ModelSize: 123, CreatedAT: now, UpdatedAT: now},
+	}
+	// run show
+	cmd := &modelShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), ID: "11111111-1111-1111-1111-111111111111"}
+	var got modelShowOutput
+	cmd.OutputFunc = func(o output.Outputter, err error) error {
+		if err != nil { return err }
+		got = *(o.(*modelShowOutput))
+		return nil
+	}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("model show: %v", err)
+	}
+	if string(got.ID) != "11111111-1111-1111-1111-111111111111" || got.Name != "m1" || got.Status != v3.GetModelResponseStatusReady {
+		t.Fatalf("unexpected model show output: %+v", got)
+	}
+}
 
 func TestModelList(t *testing.T) {
 	ts := newTestServer(t)
@@ -277,6 +344,34 @@ func TestResolveDeploymentIDByIDAndName(t *testing.T) {
 	_, err = resolveDeploymentID(ctx, client, "missing")
 	if err == nil || !strings.Contains(err.Error(), "deployment \"missing\" not found") {
 		t.Fatalf("expected not found error, got %v", err)
+	}
+}
+
+func TestDeploymentShowByIDAndName(t *testing.T) {
+	ts := newTestServer(t)
+	defer setup(t, ts)()
+	now := time.Now()
+	ts.deployments = []v3.ListDeploymentsResponseEntry{
+		{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", Status: v3.ListDeploymentsResponseEntryStatusReady, GpuType: "gpua5000", GpuCount: 1, Replicas: 1, ServiceLevel: "pro", DeploymentURL: "https://u", Model: &v3.ModelRef{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1"}, CreatedAT: now, UpdatedAT: now},
+	}
+	// by ID
+	cmd := &deploymentShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}
+	var got deploymentShowOutput
+	cmd.OutputFunc = func(o output.Outputter, err error) error {
+		if err != nil { return err }
+		got = *(o.(*deploymentShowOutput))
+		return nil
+	}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("deployment show by id: %v", err)
+	}
+	if got.Name != "alpha" || got.GPUType != "gpua5000" || got.Status != v3.GetDeploymentResponseStatusReady {
+		t.Fatalf("unexpected show output: %+v", got)
+	}
+	// by name
+	cmd = &deploymentShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha"}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("deployment show by name: %v", err)
 	}
 }
 
