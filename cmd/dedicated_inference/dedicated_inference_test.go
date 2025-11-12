@@ -26,6 +26,7 @@ type testServer struct {
 	models       []v3.ListModelsResponseEntry
 	deployments  []v3.ListDeploymentsResponseEntry
 	opPollCount  atomic.Int32
+	zoneListCount atomic.Int32
 }
 
 func newTestServer(t *testing.T) *testServer {
@@ -165,9 +166,24 @@ func newTestServer(t *testing.T) *testServer {
 		writeJSON(t, w, http.StatusOK, op)
 	})
 
-	// Generic 200 for zones endpoint used in other areas (not used here but may be called by SDK)
+ // Zones endpoint to support zone switching in client
+	mux.HandleFunc("/zone", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		// Increment counter to assert zone lookup happened
+		ts.zoneListCount.Add(1)
+		resp := v3.ListZonesResponse{
+			Zones: []v3.Zone{
+				{APIEndpoint: v3.Endpoint(ts.server.URL), Name: v3.ZoneName("test-zone")},
+			},
+		}
+		writeJSON(t, w, http.StatusOK, resp)
+	})
+
+	// Fallback: Unknown endpoints default 404 to expose unexpected calls
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// Unknown endpoints default 404 to expose unexpected calls
 		w.WriteHeader(http.StatusNotFound)
 	})
 
@@ -413,5 +429,32 @@ func TestDeploymentDeleteScaleRevealLogs(t *testing.T) {
 	logs := &deploymentLogsCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha"}
 	if err := logs.CmdRun(nil, nil); err != nil {
 		t.Fatalf("logs: %v", err)
+	}
+}
+
+// ---- Zone-related tests ----
+
+func TestModelListUsesZone(t *testing.T) {
+	ts := newTestServer(t)
+	defer setup(t, ts)()
+	// Run with explicit zone which triggers SwitchClientZoneV3 -> GetZoneAPIEndpoint -> /zone
+	cmd := &modelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Zone: v3.ZoneName("test-zone")}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("model list: %v", err)
+	}
+	if ts.zoneListCount.Load() == 0 {
+		t.Fatalf("expected zone list endpoint to be called")
+	}
+}
+
+func TestDeploymentListUsesZone(t *testing.T) {
+	ts := newTestServer(t)
+	defer setup(t, ts)()
+	cmd := &deploymentListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Zone: v3.ZoneName("test-zone")}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("deployment list: %v", err)
+	}
+	if ts.zoneListCount.Load() == 0 {
+		t.Fatalf("expected zone list endpoint to be called")
 	}
 }

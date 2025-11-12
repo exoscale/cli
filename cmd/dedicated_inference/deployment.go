@@ -67,6 +67,8 @@ type deploymentListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
+
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *deploymentListCmd) CmdAliases() []string { return exocmd.GListAlias }
@@ -78,11 +80,15 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&deploymentListOutput{}), ", "))
 }
 func (c *deploymentListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *deploymentListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	resp, err := client.ListDeployments(ctx)
 	if err != nil {
@@ -116,13 +122,14 @@ type deploymentCreateCmd struct {
 
 	_ bool `cli-cmd:"create"`
 
-	Name     string `cli-flag:"name" cli-usage:"Deployment name"`
-	GPUType  string `cli-flag:"gpu-type" cli-usage:"GPU type family (e.g., gpua5000, gpu3080ti)"`
-	GPUCount int64  `cli-flag:"gpu-count" cli-usage:"Number of GPUs (1-8)"`
-	Replicas int64  `cli-flag:"replicas" cli-usage:"Number of replicas (>=1)"`
+	Name     string      `cli-flag:"name" cli-usage:"Deployment name"`
+	GPUType  string      `cli-flag:"gpu-type" cli-usage:"GPU type family (e.g., gpua5000, gpu3080ti)"`
+	GPUCount int64       `cli-flag:"gpu-count" cli-usage:"Number of GPUs (1-8)"`
+	Replicas int64       `cli-flag:"replicas" cli-usage:"Number of replicas (>=1)"`
 
-	ModelID   string `cli-flag:"model-id" cli-usage:"Model ID (UUID)"`
-	ModelName string `cli-flag:"model-name" cli-usage:"Model name (as created)"`
+	ModelID   string      `cli-flag:"model-id" cli-usage:"Model ID (UUID)"`
+	ModelName string      `cli-flag:"model-name" cli-usage:"Model name (as created)"`
+	Zone      v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *deploymentCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
@@ -131,11 +138,15 @@ func (c *deploymentCreateCmd) CmdLong() string {
 	return "This command creates an AI deployment on dedicated inference servers."
 }
 func (c *deploymentCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *deploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	if c.GPUType == "" || c.GPUCount == 0 {
 		return fmt.Errorf("--gpu-type and --gpu-count are required")
@@ -164,8 +175,7 @@ func (c *deploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	var op *v3.Operation
-	var err error
+ var op *v3.Operation
 	utils.DecorateAsyncOperation(fmt.Sprintf("Creating deployment %q...", c.Name), func() {
 		op, err = client.CreateDeployment(ctx, req)
 		if err != nil {
@@ -189,7 +199,8 @@ type deploymentDeleteCmd struct {
 
 	_ bool `cli-cmd:"delete"`
 
-	Deployment string `cli-arg:"#" cli-usage:"ID or NAME"`
+	Deployment string      `cli-arg:"#" cli-usage:"ID or NAME"`
+	Zone       v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *deploymentDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
@@ -198,11 +209,15 @@ func (c *deploymentDeleteCmd) CmdLong() string {
 	return "This command deletes an AI deployment by ID or name."
 }
 func (c *deploymentDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *deploymentDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	id, err := resolveDeploymentID(ctx, client, c.Deployment)
 	if err != nil {
@@ -233,8 +248,9 @@ type deploymentScaleCmd struct {
 
 	_ bool `cli-cmd:"scale"`
 
-	Deployment string `cli-arg:"#" cli-usage:"ID or NAME"`
-	Size       int64  `cli-arg:"#" cli-usage:"SIZE (replicas)"`
+	Deployment string      `cli-arg:"#" cli-usage:"ID or NAME"`
+	Size       int64       `cli-arg:"#" cli-usage:"SIZE (replicas)"`
+	Zone       v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *deploymentScaleCmd) CmdAliases() []string { return nil }
@@ -243,11 +259,15 @@ func (c *deploymentScaleCmd) CmdLong() string {
 	return "This command scales an AI deployment to the specified number of replicas."
 }
 func (c *deploymentScaleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *deploymentScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	id, err := resolveDeploymentID(ctx, client, c.Deployment)
 	if err != nil {
@@ -287,7 +307,8 @@ type deploymentRevealAPIKeyCmd struct {
 
 	_ bool `cli-cmd:"reveal-api-key"`
 
-	Deployment string `cli-arg:"#" cli-usage:"ID or NAME"`
+	Deployment string      `cli-arg:"#" cli-usage:"ID or NAME"`
+	Zone       v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *deploymentRevealAPIKeyCmd) CmdAliases() []string { return nil }
@@ -296,11 +317,15 @@ func (c *deploymentRevealAPIKeyCmd) CmdLong() string {
 	return "This command reveals the inference endpoint API key for the deployment."
 }
 func (c *deploymentRevealAPIKeyCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *deploymentRevealAPIKeyCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	id, err := resolveDeploymentID(ctx, client, c.Deployment)
 	if err != nil {
@@ -323,7 +348,8 @@ type deploymentLogsCmd struct {
 
 	_ bool `cli-cmd:"logs"`
 
-	Deployment string `cli-arg:"#" cli-usage:"ID or NAME"`
+	Deployment string      `cli-arg:"#" cli-usage:"ID or NAME"`
+	Zone       v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 // show
@@ -352,7 +378,8 @@ type deploymentShowCmd struct {
 
 	_ bool `cli-cmd:"show"`
 
-	Deployment string `cli-arg:"#" cli-usage:"ID or NAME"`
+	Deployment string      `cli-arg:"#" cli-usage:"ID or NAME"`
+	Zone       v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *deploymentShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
@@ -361,11 +388,15 @@ func (c *deploymentShowCmd) CmdLong() string {
 	return "This command shows details of an AI deployment by ID or name."
 }
 func (c *deploymentShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *deploymentShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	id, err := resolveDeploymentID(ctx, client, c.Deployment)
 	if err != nil {
@@ -410,11 +441,15 @@ func (c *deploymentLogsCmd) CmdLong() string {
 	return "This command retrieves logs for the deployment's vLLM component."
 }
 func (c *deploymentLogsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *deploymentLogsCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	id, err := resolveDeploymentID(ctx, client, c.Deployment)
 	if err != nil {
