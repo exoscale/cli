@@ -1,6 +1,7 @@
 package dedicated_inference
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -9,7 +10,6 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
@@ -62,7 +62,9 @@ type modelShowCmd struct {
 
 func (c *modelShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 func (c *modelShowCmd) CmdShort() string     { return "Show AI model" }
-func (c *modelShowCmd) CmdLong() string      { return "This command shows details of an AI model by its ID." }
+func (c *modelShowCmd) CmdLong() string {
+	return "This command shows details of an AI model by its ID."
+}
 func (c *modelShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
@@ -82,11 +84,7 @@ func (c *modelShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	var sizePtr *int64
-	if resp.ModelSize != 0 {
-		v := resp.ModelSize
-		sizePtr = &v
-	}
+	sizePtr := int64PtrIfNonZero(resp.ModelSize)
 	out := &modelShowOutput{
 		ID:        resp.ID,
 		Name:      resp.Name,
@@ -132,11 +130,7 @@ func (c *modelListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	out := make(modelListOutput, 0, len(resp.Models))
 	for _, m := range resp.Models {
-		var sizePtr *int64
-		if m.ModelSize != 0 {
-			v := m.ModelSize
-			sizePtr = &v
-		}
+		sizePtr := int64PtrIfNonZero(m.ModelSize)
 		out = append(out, modelListItemOutput{
 			ID:        m.ID,
 			Name:      m.Name,
@@ -185,15 +179,9 @@ func (c *modelCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		HuggingfaceToken: c.HuggingfaceToken,
 	}
 
- var op *v3.Operation
-	utils.DecorateAsyncOperation(fmt.Sprintf("Creating model %q...", c.Name), func() {
-		op, err = client.CreateModel(ctx, req)
-		if err != nil {
-			return
-		}
-		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-	})
-	if err != nil {
+	if err := runAsync(ctx, client, fmt.Sprintf("Creating model %q...", c.Name), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
+		return c.CreateModel(ctx, req)
+	}); err != nil {
 		return err
 	}
 	if !globalstate.Quiet {
@@ -232,15 +220,9 @@ func (c *modelDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("invalid model ID: %w", err)
 	}
 
-	var op *v3.Operation
-	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting model %s...", c.ID), func() {
-		op, err = client.DeleteModel(ctx, id)
-		if err != nil {
-			return
-		}
-		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-	})
-	if err != nil {
+	if err := runAsync(ctx, client, fmt.Sprintf("Deleting model %s...", c.ID), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
+		return c.DeleteModel(ctx, id)
+	}); err != nil {
 		return err
 	}
 	if !globalstate.Quiet {
