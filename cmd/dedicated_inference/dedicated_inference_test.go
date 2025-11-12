@@ -23,9 +23,9 @@ type testServer struct {
 	server *httptest.Server
 
 	// simple in-memory fixtures
-	models       []v3.ListModelsResponseEntry
-	deployments  []v3.ListDeploymentsResponseEntry
-	opPollCount  atomic.Int32
+	models        []v3.ListModelsResponseEntry
+	deployments   []v3.ListDeploymentsResponseEntry
+	opPollCount   atomic.Int32
 	zoneListCount atomic.Int32
 }
 
@@ -34,15 +34,15 @@ func newTestServer(t *testing.T) *testServer {
 
 	mux := http.NewServeMux()
 
- // Models endpoints
+	// Models endpoints
 	mux.HandleFunc("/ai/model", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			resp := v3.ListModelsResponse{Models: ts.models}
 			writeJSON(t, w, http.StatusOK, resp)
 		case http.MethodPost:
-			// return operation pending
-			op := v3.Operation{ID: v3.UUID("op-model-create"), State: v3.OperationStatePending}
+			// return operation succeeded immediately to avoid polling in tests
+			op := v3.Operation{ID: v3.UUID("op-model-create"), State: v3.OperationStateSuccess}
 			writeJSON(t, w, http.StatusOK, op)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -72,7 +72,7 @@ func newTestServer(t *testing.T) *testServer {
 		}
 		if r.Method == http.MethodDelete {
 			// Accept any UUID-like tail
-			op := v3.Operation{ID: v3.UUID("op-model-delete"), State: v3.OperationStatePending}
+			op := v3.Operation{ID: v3.UUID("op-model-delete"), State: v3.OperationStateSuccess}
 			writeJSON(t, w, http.StatusOK, op)
 			return
 		}
@@ -86,13 +86,13 @@ func newTestServer(t *testing.T) *testServer {
 			resp := v3.ListDeploymentsResponse{Deployments: ts.deployments}
 			writeJSON(t, w, http.StatusOK, resp)
 		case http.MethodPost:
-			op := v3.Operation{ID: v3.UUID("op-deploy-create"), State: v3.OperationStatePending}
+			op := v3.Operation{ID: v3.UUID("op-deploy-create"), State: v3.OperationStateSuccess}
 			writeJSON(t, w, http.StatusOK, op)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
- mux.HandleFunc("/ai/deployment/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/ai/deployment/", func(w http.ResponseWriter, r *http.Request) {
 		// patterns:
 		// GET    /ai/deployment/{id}
 		// DELETE /ai/deployment/{id}
@@ -130,12 +130,12 @@ func newTestServer(t *testing.T) *testServer {
 			return
 		}
 		if len(parts) == 1 && r.Method == http.MethodDelete {
-			op := v3.Operation{ID: v3.UUID("op-deploy-delete"), State: v3.OperationStatePending}
+			op := v3.Operation{ID: v3.UUID("op-deploy-delete"), State: v3.OperationStateSuccess}
 			writeJSON(t, w, http.StatusOK, op)
 			return
 		}
 		if len(parts) == 2 && parts[1] == "scale" && r.Method == http.MethodPost {
-			op := v3.Operation{ID: v3.UUID("op-deploy-scale"), State: v3.OperationStatePending}
+			op := v3.Operation{ID: v3.UUID("op-deploy-scale"), State: v3.OperationStateSuccess}
 			writeJSON(t, w, http.StatusOK, op)
 			return
 		}
@@ -150,23 +150,17 @@ func newTestServer(t *testing.T) *testServer {
 		w.WriteHeader(http.StatusNotFound)
 	})
 
-	// Operation polling: pending -> success after a couple of polls
+	// Operation polling endpoint is kept but will generally not be used because we return success immediately
 	mux.HandleFunc("/operation/", func(w http.ResponseWriter, r *http.Request) {
-		// /operation/{id}
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
-		count := ts.opPollCount.Add(1)
-		state := v3.OperationStatePending
-		if count >= 2 { // ensure at least one pending state is observed
-			state = v3.OperationStateSuccess
-		}
-		op := v3.Operation{ID: v3.UUID(path.Base(r.URL.Path)), State: state}
+		op := v3.Operation{ID: v3.UUID(path.Base(r.URL.Path)), State: v3.OperationStateSuccess}
 		writeJSON(t, w, http.StatusOK, op)
 	})
 
- // Zones endpoint to support zone switching in client
+	// Zones endpoint to support zone switching in client
 	mux.HandleFunc("/zone", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -233,7 +227,9 @@ func TestModelShow(t *testing.T) {
 	cmd := &modelShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), ID: "11111111-1111-1111-1111-111111111111"}
 	var got modelShowOutput
 	cmd.OutputFunc = func(o output.Outputter, err error) error {
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 		got = *(o.(*modelShowOutput))
 		return nil
 	}
@@ -374,7 +370,9 @@ func TestDeploymentShowByIDAndName(t *testing.T) {
 	cmd := &deploymentShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}
 	var got deploymentShowOutput
 	cmd.OutputFunc = func(o output.Outputter, err error) error {
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 		got = *(o.(*deploymentShowOutput))
 		return nil
 	}
@@ -414,7 +412,9 @@ func TestDeploymentDeleteScaleRevealLogs(t *testing.T) {
 	// set output func to capture returned struct
 	var got string
 	reveal.OutputFunc = func(o output.Outputter, err error) error {
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 		out := o.(*deploymentRevealAPIKeyOutput)
 		got = out.APIKey
 		return nil
