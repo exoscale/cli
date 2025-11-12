@@ -10,7 +10,7 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 const (
@@ -69,22 +69,25 @@ Supported output template annotations: %s`,
 
 		out := LimitsOutput{}
 
-		ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-
-		quotas, err := globalstate.EgoscaleClient.ListQuotas(ctx, account.CurrentAccount.DefaultZone)
+		ctx := GContext
+		client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 		if err != nil {
 			return err
 		}
 
-		for _, quota := range quotas {
-			if _, ok := resourceLimitLabels[*quota.Resource]; !ok {
+		quotas, err := client.ListQuotas(ctx)
+		if err != nil {
+			return err
+		}
+		for _, quota := range quotas.Quotas {
+			if _, ok := resourceLimitLabels[quota.Resource]; !ok {
 				continue
 			}
 
 			out = append(out, LimitsItemOutput{
-				Resource: resourceLimitLabels[*quota.Resource],
-				Used:     *quota.Usage,
-				Max:      *quota.Limit,
+				Resource: resourceLimitLabels[quota.Resource],
+				Used:     quota.Usage,
+				Max:      quota.Limit,
 			})
 		}
 

@@ -11,7 +11,8 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
-	exo "github.com/exoscale/egoscale/v2"
+	v3 "github.com/exoscale/egoscale/v3"
+	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 func init() {
@@ -67,7 +68,7 @@ func addConfigAccount(firstRun bool) error {
 }
 
 func promptAccountInformation() (*account.Account, error) {
-	var client *exo.Client
+	var client *v3.Client
 
 	ctx := exocmd.GContext
 
@@ -117,14 +118,16 @@ func promptAccountInformation() (*account.Account, error) {
 		account.Name = name
 	}
 
-	client, err = exo.NewClient(account.Key, account.APISecret())
+	client, err = v3.NewClient(credentials.NewStaticCredentials(
+		account.Key, account.APISecret(),
+	))
 	if err != nil {
 		return nil, err
 	}
-	account.DefaultZone, err = chooseZone(client, nil)
+	account.DefaultZone, err = chooseZone(*client, nil)
 	if err != nil {
 		for {
-			defaultZone, err := chooseZone(globalstate.EgoscaleClient, utils.AllZones)
+			defaultZone, err := chooseZone(*globalstate.EgoscaleV3Client, utils.AllZones)
 			if err != nil {
 				return nil, err
 			}

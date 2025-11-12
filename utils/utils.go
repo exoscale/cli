@@ -15,21 +15,19 @@ import (
 	"github.com/hashicorp/go-multierror"
 
 	v3 "github.com/exoscale/egoscale/v3"
-
-	"github.com/exoscale/egoscale/v2/oapi"
 )
 
 var (
 	// utils.AllZones represents the list of known Exoscale zones, in case we need it without performing API lookup.
 	AllZones = []string{
-		string(oapi.ZoneNameAtVie1),
-		string(oapi.ZoneNameAtVie2),
-		string(oapi.ZoneNameBgSof1),
-		string(oapi.ZoneNameChDk2),
-		string(oapi.ZoneNameChGva2),
-		string(oapi.ZoneNameDeFra1),
-		string(oapi.ZoneNameDeMuc1),
-		string(oapi.ZoneNameHrZag1),
+		string(v3.ZoneNameATVie1),
+		string(v3.ZoneNameATVie2),
+		string(v3.ZoneNameBGSof1),
+		string(v3.ZoneNameCHDk2),
+		string(v3.ZoneNameCHGva2),
+		string(v3.ZoneNameDEFra1),
+		string(v3.ZoneNameDEMuc1),
+		string(v3.ZoneNameHrZag1),
 	}
 )
 
