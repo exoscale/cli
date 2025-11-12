@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- getting rid of egoscale v2 #761
+
 ## 1.87.0
 
 ### Features
