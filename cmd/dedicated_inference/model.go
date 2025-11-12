@@ -28,8 +28,6 @@ type modelListItemOutput struct {
 	Name      string                           `json:"name"`
 	Status    v3.ListModelsResponseEntryStatus `json:"status"`
 	ModelSize *int64                           `json:"model_size"`
-	CreatedAt string                           `json:"created_at"`
-	UpdatedAt string                           `json:"updated_at"`
 }
 
 type modelListOutput []modelListItemOutput
@@ -133,8 +131,6 @@ func (c *modelListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			Name:      m.Name,
 			Status:    m.Status,
 			ModelSize: sizePtr,
-			CreatedAt: m.CreatedAT.Format(time.RFC3339),
-			UpdatedAt: m.UpdatedAT.Format(time.RFC3339),
 		})
 	}
 

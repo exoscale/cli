@@ -48,18 +48,13 @@ func resolveDeploymentID(ctx context.Context, client *v3.Client, nameOrID string
 // list
 
 type deploymentListItemOutput struct {
-	ID            v3.UUID                               `json:"id"`
-	Name          string                                `json:"name"`
-	Status        v3.ListDeploymentsResponseEntryStatus `json:"status"`
-	GPUType       string                                `json:"gpu_type"`
-	GPUCount      int64                                 `json:"gpu_count"`
-	Replicas      int64                                 `json:"replicas"`
-	ServiceLevel  string                                `json:"service_level"`
-	DeploymentURL string                                `json:"deployment_url"`
-	ModelID       *v3.UUID                              `json:"model_id"`
-	ModelName     string                                `json:"model_name"`
-	CreatedAt     string                                `json:"created_at"`
-	UpdatedAt     string                                `json:"updated_at"`
+	ID        v3.UUID                               `json:"id"`
+	Name      string                                `json:"name"`
+	Status    v3.ListDeploymentsResponseEntryStatus `json:"status"`
+	GPUType   string                                `json:"gpu_type"`
+	GPUCount  int64                                 `json:"gpu_count"`
+	Replicas  int64                                 `json:"replicas"`
+	ModelName string                                `json:"model_name"`
 }
 
 type deploymentListOutput []deploymentListItemOutput
@@ -96,28 +91,18 @@ func (c *deploymentListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	out := make(deploymentListOutput, 0, len(resp.Deployments))
 	for _, d := range resp.Deployments {
-		var modelIDPtr *v3.UUID
 		var modelName string
 		if d.Model != nil {
-			if d.Model.ID.String() != "00000000-0000-0000-0000-000000000000" {
-				id := d.Model.ID
-				modelIDPtr = &id
-			}
 			modelName = d.Model.Name
 		}
 		out = append(out, deploymentListItemOutput{
-			ID:            d.ID,
-			Name:          d.Name,
-			Status:        d.Status,
-			GPUType:       d.GpuType,
-			GPUCount:      d.GpuCount,
-			Replicas:      d.Replicas,
-			ServiceLevel:  d.ServiceLevel,
-			DeploymentURL: d.DeploymentURL,
-			ModelID:       modelIDPtr,
-			ModelName:     modelName,
-			CreatedAt:     d.CreatedAT.Format(time.RFC3339),
-			UpdatedAt:     d.UpdatedAT.Format(time.RFC3339),
+			ID:       d.ID,
+			Name:     d.Name,
+			Status:   d.Status,
+			GPUType:  d.GpuType,
+			GPUCount: d.GpuCount,
+			Replicas: d.Replicas,
+			ModelName: modelName,
 		})
 	}
 
