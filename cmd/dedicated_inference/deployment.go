@@ -10,7 +10,6 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
@@ -22,27 +21,6 @@ var deploymentCmd = &cobra.Command{
 
 func init() {
 	DedicatedInferenceCmd.AddCommand(deploymentCmd)
-}
-
-// Common helpers
-func resolveDeploymentID(ctx context.Context, client *v3.Client, nameOrID string) (v3.UUID, error) {
-	// Try UUID first
-	if id, err := v3.ParseUUID(nameOrID); err == nil {
-		return id, nil
-	}
-	// Fallback to lookup by name
-	resp, err := client.ListDeployments(ctx)
-	if err != nil {
-		var zero v3.UUID
-		return zero, err
-	}
-	for _, d := range resp.Deployments {
-		if d.Name == nameOrID {
-			return d.ID, nil
-		}
-	}
-	var zero v3.UUID
-	return zero, fmt.Errorf("deployment %q not found", nameOrID)
 }
 
 // list
@@ -102,12 +80,12 @@ func (c *deploymentListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			modelName = d.Model.Name
 		}
 		out = append(out, deploymentListItemOutput{
-			ID:       d.ID,
-			Name:     d.Name,
-			Status:   d.Status,
-			GPUType:  d.GpuType,
-			GPUCount: d.GpuCount,
-			Replicas: d.Replicas,
+			ID:        d.ID,
+			Name:      d.Name,
+			Status:    d.Status,
+			GPUType:   d.GpuType,
+			GPUCount:  d.GpuCount,
+			Replicas:  d.Replicas,
 			ModelName: modelName,
 		})
 	}
@@ -122,10 +100,10 @@ type deploymentCreateCmd struct {
 
 	_ bool `cli-cmd:"create"`
 
-	Name     string      `cli-flag:"name" cli-usage:"Deployment name"`
-	GPUType  string      `cli-flag:"gpu-type" cli-usage:"GPU type family (e.g., gpua5000, gpu3080ti)"`
-	GPUCount int64       `cli-flag:"gpu-count" cli-usage:"Number of GPUs (1-8)"`
-	Replicas int64       `cli-flag:"replicas" cli-usage:"Number of replicas (>=1)"`
+	Name     string `cli-flag:"name" cli-usage:"Deployment name"`
+	GPUType  string `cli-flag:"gpu-type" cli-usage:"GPU type family (e.g., gpua5000, gpu3080ti)"`
+	GPUCount int64  `cli-flag:"gpu-count" cli-usage:"Number of GPUs (1-8)"`
+	Replicas int64  `cli-flag:"replicas" cli-usage:"Number of replicas (>=1)"`
 
 	ModelID   string      `cli-flag:"model-id" cli-usage:"Model ID (UUID)"`
 	ModelName string      `cli-flag:"model-name" cli-usage:"Model name (as created)"`
@@ -175,15 +153,9 @@ func (c *deploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
- var op *v3.Operation
-	utils.DecorateAsyncOperation(fmt.Sprintf("Creating deployment %q...", c.Name), func() {
-		op, err = client.CreateDeployment(ctx, req)
-		if err != nil {
-			return
-		}
-		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-	})
-	if err != nil {
+	if err := runAsync(ctx, client, fmt.Sprintf("Creating deployment %q...", c.Name), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
+		return c.CreateDeployment(ctx, req)
+	}); err != nil {
 		return err
 	}
 	if !globalstate.Quiet {
@@ -224,15 +196,9 @@ func (c *deploymentDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	var op *v3.Operation
-	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting deployment %s...", c.Deployment), func() {
-		op, err = client.DeleteDeployment(ctx, id)
-		if err != nil {
-			return
-		}
-		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-	})
-	if err != nil {
+	if err := runAsync(ctx, client, fmt.Sprintf("Deleting deployment %s...", c.Deployment), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
+		return c.DeleteDeployment(ctx, id)
+	}); err != nil {
 		return err
 	}
 	if !globalstate.Quiet {
@@ -275,15 +241,9 @@ func (c *deploymentScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	req := v3.ScaleDeploymentRequest{Replicas: c.Size}
-	var op *v3.Operation
-	utils.DecorateAsyncOperation(fmt.Sprintf("Scaling deployment %s to %d...", c.Deployment, c.Size), func() {
-		op, err = client.ScaleDeployment(ctx, id, req)
-		if err != nil {
-			return
-		}
-		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-	})
-	if err != nil {
+	if err := runAsync(ctx, client, fmt.Sprintf("Scaling deployment %s to %d...", c.Deployment, c.Size), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
+		return c.ScaleDeployment(ctx, id, req)
+	}); err != nil {
 		return err
 	}
 	if !globalstate.Quiet {
