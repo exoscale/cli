@@ -56,18 +56,23 @@ type modelShowCmd struct {
 
 	_ bool `cli-cmd:"show"`
 
-	ID string `cli-arg:"#" cli-usage:"MODEL-ID (UUID)"`
+	ID   string      `cli-arg:"#" cli-usage:"MODEL-ID (UUID)"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *modelShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 func (c *modelShowCmd) CmdShort() string     { return "Show AI model" }
 func (c *modelShowCmd) CmdLong() string      { return "This command shows details of an AI model by its ID." }
 func (c *modelShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *modelShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	id, err := v3.ParseUUID(c.ID)
 	if err != nil {
@@ -97,6 +102,8 @@ type modelListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
+
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *modelListCmd) CmdAliases() []string { return exocmd.GListAlias }
@@ -108,11 +115,15 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&modelListOutput{}), ", "))
 }
 func (c *modelListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *modelListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	resp, err := client.ListModels(ctx)
 	if err != nil {
@@ -144,8 +155,9 @@ type modelCreateCmd struct {
 
 	_ bool `cli-cmd:"create"`
 
-	Name             string `cli-flag:"name" cli-usage:"Model name (e.g. openai/gpt-oss-120b)"`
-	HuggingfaceToken string `cli-flag:"huggingface-token" cli-usage:"Huggingface token if required by the model"`
+	Name             string      `cli-flag:"name" cli-usage:"Model name (e.g. openai/gpt-oss-120b)"`
+	HuggingfaceToken string      `cli-flag:"huggingface-token" cli-usage:"Huggingface token if required by the model"`
+	Zone             v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *modelCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
@@ -154,11 +166,15 @@ func (c *modelCreateCmd) CmdLong() string {
 	return "This command creates an AI model by downloading it from Huggingface."
 }
 func (c *modelCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *modelCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	if c.Name == "" {
 		return fmt.Errorf("--name is required")
@@ -169,8 +185,7 @@ func (c *modelCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		HuggingfaceToken: c.HuggingfaceToken,
 	}
 
-	var op *v3.Operation
-	var err error
+ var op *v3.Operation
 	utils.DecorateAsyncOperation(fmt.Sprintf("Creating model %q...", c.Name), func() {
 		op, err = client.CreateModel(ctx, req)
 		if err != nil {
@@ -194,18 +209,23 @@ type modelDeleteCmd struct {
 
 	_ bool `cli-cmd:"delete"`
 
-	ID string `cli-arg:"#" cli-usage:"MODEL-ID (UUID)"`
+	ID   string      `cli-arg:"#" cli-usage:"MODEL-ID (UUID)"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *modelDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
 func (c *modelDeleteCmd) CmdShort() string     { return "Delete AI model" }
 func (c *modelDeleteCmd) CmdLong() string      { return "This command deletes an AI model by its ID." }
 func (c *modelDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *modelDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	id, err := v3.ParseUUID(c.ID)
 	if err != nil {
