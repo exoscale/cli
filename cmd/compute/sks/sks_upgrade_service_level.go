@@ -46,7 +46,7 @@ func (c *sksUpgradeServiceLevelCmd) confirmUpgrade(ctx context.Context, cluster 
 		ctx,
 		fmt.Sprintf(
 			"Are you sure you want to upgrade the cluster %q to service level pro?",
-			c.Cluster,
+			cluster,
 		))
 }
 
