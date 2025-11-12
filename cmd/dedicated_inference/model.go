@@ -38,6 +38,63 @@ func (o *modelListOutput) ToJSON()  { output.JSON(o) }
 func (o *modelListOutput) ToText()  { output.Text(o) }
 func (o *modelListOutput) ToTable() { output.Table(o) }
 
+// show
+
+type modelShowOutput struct {
+	ID        v3.UUID                   `json:"id"`
+	Name      string                    `json:"name"`
+	Status    v3.GetModelResponseStatus `json:"status"`
+	ModelSize *int64                    `json:"model_size"`
+	CreatedAt string                    `json:"created_at"`
+	UpdatedAt string                    `json:"updated_at"`
+}
+
+func (o *modelShowOutput) ToJSON()  { output.JSON(o) }
+func (o *modelShowOutput) ToText()  { output.Text(o) }
+func (o *modelShowOutput) ToTable() { output.Table(o) }
+
+type modelShowCmd struct {
+	exocmd.CliCommandSettings `cli-cmd:"-"`
+
+	_ bool `cli-cmd:"show"`
+
+	ID string `cli-arg:"#" cli-usage:"MODEL-ID (UUID)"`
+}
+
+func (c *modelShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *modelShowCmd) CmdShort() string     { return "Show AI model" }
+func (c *modelShowCmd) CmdLong() string      { return "This command shows details of an AI model by its ID." }
+func (c *modelShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+}
+func (c *modelShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	client := globalstate.EgoscaleV3Client
+	ctx := exocmd.GContext
+
+	id, err := v3.ParseUUID(c.ID)
+	if err != nil {
+		return fmt.Errorf("invalid model ID: %w", err)
+	}
+	resp, err := client.GetModel(ctx, id)
+	if err != nil {
+		return err
+	}
+	var sizePtr *int64
+	if resp.ModelSize != 0 {
+		v := resp.ModelSize
+		sizePtr = &v
+	}
+	out := &modelShowOutput{
+		ID:        resp.ID,
+		Name:      resp.Name,
+		Status:    resp.Status,
+		ModelSize: sizePtr,
+		CreatedAt: resp.CreatedAT.Format(time.RFC3339),
+		UpdatedAt: resp.UpdatedAT.Format(time.RFC3339),
+	}
+	return c.OutputFunc(out, nil)
+}
+
 type modelListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
 
@@ -96,7 +153,7 @@ type modelCreateCmd struct {
 }
 
 func (c *modelCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
-func (c *modelCreateCmd) CmdShort() string { return "Create AI model (download from Huggingface)" }
+func (c *modelCreateCmd) CmdShort() string     { return "Create AI model (download from Huggingface)" }
 func (c *modelCreateCmd) CmdLong() string {
 	return "This command creates an AI model by downloading it from Huggingface."
 }
@@ -129,7 +186,7 @@ func (c *modelCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Model creation initiated.")
+		fmt.Fprintln(os.Stdout, "Model created.")
 	}
 	return nil
 }
@@ -171,7 +228,7 @@ func (c *modelDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Model deletion initiated.")
+		fmt.Fprintln(os.Stdout, "Model deleted.")
 	}
 	return nil
 }
@@ -180,4 +237,5 @@ func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(modelCmd, &modelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
 	cobra.CheckErr(exocmd.RegisterCLICommand(modelCmd, &modelCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
 	cobra.CheckErr(exocmd.RegisterCLICommand(modelCmd, &modelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(exocmd.RegisterCLICommand(modelCmd, &modelShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
 }

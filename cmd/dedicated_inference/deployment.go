@@ -192,7 +192,7 @@ func (c *deploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Deployment creation initiated.")
+		fmt.Fprintln(os.Stdout, "Deployment created.")
 	}
 	return nil
 }
@@ -236,7 +236,7 @@ func (c *deploymentDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Deployment deletion initiated.")
+		fmt.Fprintln(os.Stdout, "Deployment deleted.")
 	}
 	return nil
 }
@@ -282,7 +282,7 @@ func (c *deploymentScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Deployment scaling initiated.")
+		fmt.Fprintln(os.Stdout, "Deployment scaled.")
 	}
 	return nil
 }
@@ -341,6 +341,84 @@ type deploymentLogsCmd struct {
 	Deployment string `cli-arg:"#" cli-usage:"ID or NAME"`
 }
 
+// show
+
+type deploymentShowOutput struct {
+	ID            v3.UUID                        `json:"id"`
+	Name          string                         `json:"name"`
+	Status        v3.GetDeploymentResponseStatus `json:"status"`
+	GPUType       string                         `json:"gpu_type"`
+	GPUCount      int64                          `json:"gpu_count"`
+	Replicas      int64                          `json:"replicas"`
+	ServiceLevel  string                         `json:"service_level"`
+	DeploymentURL string                         `json:"deployment_url"`
+	ModelID       *v3.UUID                       `json:"model_id"`
+	ModelName     string                         `json:"model_name"`
+	CreatedAt     string                         `json:"created_at"`
+	UpdatedAt     string                         `json:"updated_at"`
+}
+
+func (o *deploymentShowOutput) ToJSON()  { output.JSON(o) }
+func (o *deploymentShowOutput) ToText()  { output.Text(o) }
+func (o *deploymentShowOutput) ToTable() { output.Table(o) }
+
+type deploymentShowCmd struct {
+	exocmd.CliCommandSettings `cli-cmd:"-"`
+
+	_ bool `cli-cmd:"show"`
+
+	Deployment string `cli-arg:"#" cli-usage:"ID or NAME"`
+}
+
+func (c *deploymentShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *deploymentShowCmd) CmdShort() string     { return "Show AI deployment" }
+func (c *deploymentShowCmd) CmdLong() string {
+	return "This command shows details of an AI deployment by ID or name."
+}
+func (c *deploymentShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+}
+func (c *deploymentShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	client := globalstate.EgoscaleV3Client
+	ctx := exocmd.GContext
+
+	id, err := resolveDeploymentID(ctx, client, c.Deployment)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.GetDeployment(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	var modelIDPtr *v3.UUID
+	var modelName string
+	if resp.Model != nil {
+		if resp.Model.ID.String() != "00000000-0000-0000-0000-000000000000" {
+			id := resp.Model.ID
+			modelIDPtr = &id
+		}
+		modelName = resp.Model.Name
+	}
+
+	out := &deploymentShowOutput{
+		ID:            resp.ID,
+		Name:          resp.Name,
+		Status:        resp.Status,
+		GPUType:       resp.GpuType,
+		GPUCount:      resp.GpuCount,
+		Replicas:      resp.Replicas,
+		ServiceLevel:  resp.ServiceLevel,
+		DeploymentURL: resp.DeploymentURL,
+		ModelID:       modelIDPtr,
+		ModelName:     modelName,
+		CreatedAt:     resp.CreatedAT.Format(time.RFC3339),
+		UpdatedAt:     resp.UpdatedAT.Format(time.RFC3339),
+	}
+	return c.OutputFunc(out, nil)
+}
+
 func (c *deploymentLogsCmd) CmdAliases() []string { return nil }
 func (c *deploymentLogsCmd) CmdShort() string     { return "Get deployment logs" }
 func (c *deploymentLogsCmd) CmdLong() string {
@@ -378,4 +456,5 @@ func init() {
 	cobra.CheckErr(exocmd.RegisterCLICommand(deploymentCmd, &deploymentScaleCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
 	cobra.CheckErr(exocmd.RegisterCLICommand(deploymentCmd, &deploymentRevealAPIKeyCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
 	cobra.CheckErr(exocmd.RegisterCLICommand(deploymentCmd, &deploymentLogsCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(exocmd.RegisterCLICommand(deploymentCmd, &deploymentShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
 }
