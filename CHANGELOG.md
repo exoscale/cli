@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Integration of the upcoming dedicated-inference service (in beta). 
+
 ## 1.87.0
 
 ### Features
