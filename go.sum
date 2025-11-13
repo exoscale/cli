@@ -199,6 +199,12 @@ github.com/exoscale/egoscale v0.102.5-0.20251015082714-42c25324e3dd h1:AwaZInPqe
 github.com/exoscale/egoscale v0.102.5-0.20251015082714-42c25324e3dd/go.mod h1:28QIfS/+XfbLNJFdEwqxgS7D1lyjtekLXYgvMg1P2AU=
 github.com/exoscale/egoscale/v3 v3.1.28 h1:m4sPeZSXc1P3D/6ZZFzqqgA8y+jQXTit/zDEY0Kts8U=
 github.com/exoscale/egoscale/v3 v3.1.28/go.mod h1:0iY8OxgHJCS5TKqDNhwOW95JBKCnBZl3YGU4Yt+NqkU=
+github.com/exoscale/egoscale/v3 v3.1.29-0.20251112070739-56e4ad82d115 h1:OE5HkbPFLhGKoYYAGbTFIVPYaVlcHkvLIrifhrWWT9g=
+github.com/exoscale/egoscale/v3 v3.1.29-0.20251112070739-56e4ad82d115/go.mod h1:0iY8OxgHJCS5TKqDNhwOW95JBKCnBZl3YGU4Yt+NqkU=
+github.com/exoscale/egoscale/v3 v3.1.29 h1:PT+bRQ8OFINMxRX+dPcP4ERLyybEK+Cupy1PY+3KDis=
+github.com/exoscale/egoscale/v3 v3.1.29/go.mod h1:0iY8OxgHJCS5TKqDNhwOW95JBKCnBZl3YGU4Yt+NqkU=
+github.com/exoscale/egoscale/v3 v3.1.30 h1:44Vz2tpBsmdeG2nnhbXIehcHIlOLpiiVdWiq/qOmvPI=
+github.com/exoscale/egoscale/v3 v3.1.30/go.mod h1:0iY8OxgHJCS5TKqDNhwOW95JBKCnBZl3YGU4Yt+NqkU=
 github.com/exoscale/openapi-cli-generator v1.2.0 h1:xgTff1bInBP+JZCauD7Jq9GNBFoKK31Cnv5FIAcxtrk=
 github.com/exoscale/openapi-cli-generator v1.2.0/go.mod h1:TZBnbT7f3hJ5ImyUphJwRM+X5xF/zCQZ6o8a42gQeTs=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=

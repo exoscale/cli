@@ -9,7 +9,7 @@ require (
 	github.com/aws/smithy-go v1.1.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/exoscale/egoscale v0.102.5-0.20251015082714-42c25324e3dd
-	github.com/exoscale/egoscale/v3 v3.1.28
+	github.com/exoscale/egoscale/v3 v3.1.30
 	github.com/exoscale/openapi-cli-generator v1.2.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/hashicorp/go-multierror v1.1.1
