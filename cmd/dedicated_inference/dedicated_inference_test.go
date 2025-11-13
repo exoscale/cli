@@ -25,7 +25,6 @@ type testServer struct {
 	// simple in-memory fixtures
 	models        []v3.ListModelsResponseEntry
 	deployments   []v3.ListDeploymentsResponseEntry
-	opPollCount   atomic.Int32
 	zoneListCount atomic.Int32
 }
 
