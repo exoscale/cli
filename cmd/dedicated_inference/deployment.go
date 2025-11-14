@@ -120,7 +120,7 @@ type deploymentCreateCmd struct {
 
 	_ bool `cli-cmd:"create"`
 
-	Name     string `cli-flag:"name" cli-usage:"Deployment name"`
+	Name     string `cli-arg:"#" cli-usage:"NAME"`
 	GPUType  string `cli-flag:"gpu-type" cli-usage:"GPU type family (e.g., gpua5000, gpu3080ti)"`
 	GPUCount int64  `cli-flag:"gpu-count" cli-usage:"Number of GPUs (1-8)"`
 	Replicas int64  `cli-flag:"replicas" cli-usage:"Number of replicas (>=1)"`
