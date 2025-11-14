@@ -158,7 +158,7 @@ type modelCreateCmd struct {
 
 	_ bool `cli-cmd:"create"`
 
-	Name             string      `cli-flag:"name" cli-usage:"Model name (e.g. openai/gpt-oss-120b)"`
+	Name             string      `cli-arg:"#" cli-usage:"NAME (e.g. openai/gpt-oss-120b)"`
 	HuggingfaceToken string      `cli-flag:"huggingface-token" cli-usage:"Huggingface token if required by the model"`
 	Zone             v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
@@ -166,7 +166,8 @@ type modelCreateCmd struct {
 func (c *modelCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 func (c *modelCreateCmd) CmdShort() string     { return "Create AI model (download from Huggingface)" }
 func (c *modelCreateCmd) CmdLong() string {
-	return "This command creates an AI model by downloading it from Huggingface."
+	return "This command creates an AI model by downloading it from Huggingface.\n\n" +
+		"The name parameter must be a valid Huggingface model name (e.g. mistralai/Mixtral-8x7B-Instruct-v0.1)."
 }
 func (c *modelCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
@@ -180,7 +181,7 @@ func (c *modelCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.Name == "" {
-		return fmt.Errorf("--name is required")
+		return fmt.Errorf("NAME is required")
 	}
 
 	req := v3.CreateModelRequest{

@@ -260,7 +260,7 @@ func TestModelCreateSuccessAndMissingName(t *testing.T) {
 	defer setup(t, ts)()
 	// missing name
 	cmd := &modelCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	if err := cmd.CmdRun(nil, nil); err == nil || !strings.Contains(err.Error(), "--name is required") {
+	if err := cmd.CmdRun(nil, nil); err == nil || !strings.Contains(err.Error(), "NAME is required") {
 		t.Fatalf("expected name required error, got %v", err)
 	}
 	// success
