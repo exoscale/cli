@@ -10,6 +10,7 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
@@ -21,6 +22,14 @@ var modelCmd = &cobra.Command{
 
 func init() {
 	DedicatedInferenceCmd.AddCommand(modelCmd)
+}
+
+// int64PtrIfNonZero returns a pointer to v if it's non-zero, otherwise nil.
+func int64PtrIfNonZero(v int64) *int64 {
+	if v == 0 {
+		return nil
+	}
+	return &v
 }
 
 type modelListItemOutput struct {
@@ -179,7 +188,7 @@ func (c *modelCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		HuggingfaceToken: c.HuggingfaceToken,
 	}
 
-	if err := runAsync(ctx, client, fmt.Sprintf("Creating model %q...", c.Name), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
+	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Creating model %q...", c.Name), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
 		return c.CreateModel(ctx, req)
 	}); err != nil {
 		return err
@@ -220,7 +229,7 @@ func (c *modelDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("invalid model ID: %w", err)
 	}
 
-	if err := runAsync(ctx, client, fmt.Sprintf("Deleting model %s...", c.ID), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
+	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Deleting model %s...", c.ID), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
 		return c.DeleteModel(ctx, id)
 	}); err != nil {
 		return err
