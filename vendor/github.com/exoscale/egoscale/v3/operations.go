@@ -12,513 +12,6 @@ import (
 	"time"
 )
 
-// [BETA] List Deployments
-func (c Client) ListDeployments(ctx context.Context) (*ListDeploymentsResponse, error) {
-	path := "/ai/deployment"
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("ListDeployments: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("ListDeployments: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("ListDeployments: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "list-deployments")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("ListDeployments: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("ListDeployments: http response: %w", err)
-	}
-
-	bodyresp := new(ListDeploymentsResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("ListDeployments: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// Deploy a model on an inference server
-func (c Client) CreateDeployment(ctx context.Context, req CreateDeploymentRequest) (*Operation, error) {
-	path := "/ai/deployment"
-
-	body, err := prepareJSONBody(req)
-	if err != nil {
-		return nil, fmt.Errorf("CreateDeployment: prepare Json body: %w", err)
-	}
-
-	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
-	if err != nil {
-		return nil, fmt.Errorf("CreateDeployment: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	request.Header.Add("Content-Type", "application/json")
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("CreateDeployment: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("CreateDeployment: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "create-deployment")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("CreateDeployment: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("CreateDeployment: http response: %w", err)
-	}
-
-	bodyresp := new(Operation)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("CreateDeployment: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// [BETA] Delete Deployment
-func (c Client) DeleteDeployment(ctx context.Context, id UUID) (*Operation, error) {
-	path := fmt.Sprintf("/ai/deployment/%v", id)
-
-	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("DeleteDeployment: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("DeleteDeployment: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("DeleteDeployment: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "delete-deployment")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("DeleteDeployment: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("DeleteDeployment: http response: %w", err)
-	}
-
-	bodyresp := new(Operation)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("DeleteDeployment: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// [BETA] Get Deployment
-func (c Client) GetDeployment(ctx context.Context, id UUID) (*GetDeploymentResponse, error) {
-	path := fmt.Sprintf("/ai/deployment/%v", id)
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("GetDeployment: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("GetDeployment: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("GetDeployment: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "get-deployment")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("GetDeployment: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("GetDeployment: http response: %w", err)
-	}
-
-	bodyresp := new(GetDeploymentResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("GetDeployment: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// [BETA] Reveal Deployment API Key
-func (c Client) RevealDeploymentAPIKey(ctx context.Context, id UUID) (*RevealDeploymentAPIKeyResponse, error) {
-	path := fmt.Sprintf("/ai/deployment/%v/api-key", id)
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "reveal-deployment-api-key")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: http response: %w", err)
-	}
-
-	bodyresp := new(RevealDeploymentAPIKeyResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// Return logs for the vLLM deployment (deploy/<release-name>--deployment-vllm). Optional ?stream=true to request streaming (may not be supported).
-func (c Client) GetDeploymentLogs(ctx context.Context, id UUID) (*GetDeploymentLogsResponse, error) {
-	path := fmt.Sprintf("/ai/deployment/%v/logs", id)
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("GetDeploymentLogs: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("GetDeploymentLogs: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("GetDeploymentLogs: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "get-deployment-logs")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("GetDeploymentLogs: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("GetDeploymentLogs: http response: %w", err)
-	}
-
-	bodyresp := new(GetDeploymentLogsResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("GetDeploymentLogs: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// [BETA] Scale Deployment
-func (c Client) ScaleDeployment(ctx context.Context, id UUID, req ScaleDeploymentRequest) (*Operation, error) {
-	path := fmt.Sprintf("/ai/deployment/%v/scale", id)
-
-	body, err := prepareJSONBody(req)
-	if err != nil {
-		return nil, fmt.Errorf("ScaleDeployment: prepare Json body: %w", err)
-	}
-
-	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
-	if err != nil {
-		return nil, fmt.Errorf("ScaleDeployment: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	request.Header.Add("Content-Type", "application/json")
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("ScaleDeployment: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("ScaleDeployment: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "scale-deployment")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("ScaleDeployment: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("ScaleDeployment: http response: %w", err)
-	}
-
-	bodyresp := new(Operation)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("ScaleDeployment: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// [BETA] List Models
-func (c Client) ListModels(ctx context.Context) (*ListModelsResponse, error) {
-	path := "/ai/model"
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("ListModels: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("ListModels: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("ListModels: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "list-models")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("ListModels: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("ListModels: http response: %w", err)
-	}
-
-	bodyresp := new(ListModelsResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("ListModels: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// Model files will be downloaded from Huggingface.
-// If the model is under a license then you must provide a Huggingface access token for an account that signed the license agreement
-// If the model is under a license then you must provide a Huggingface access token for an account that signed the license agreement
-func (c Client) CreateModel(ctx context.Context, req CreateModelRequest) (*Operation, error) {
-	path := "/ai/model"
-
-	body, err := prepareJSONBody(req)
-	if err != nil {
-		return nil, fmt.Errorf("CreateModel: prepare Json body: %w", err)
-	}
-
-	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
-	if err != nil {
-		return nil, fmt.Errorf("CreateModel: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	request.Header.Add("Content-Type", "application/json")
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("CreateModel: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("CreateModel: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "create-model")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("CreateModel: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("CreateModel: http response: %w", err)
-	}
-
-	bodyresp := new(Operation)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("CreateModel: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// [BETA] Delete Model
-func (c Client) DeleteModel(ctx context.Context, id UUID) (*Operation, error) {
-	path := fmt.Sprintf("/ai/model/%v", id)
-
-	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("DeleteModel: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("DeleteModel: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("DeleteModel: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "delete-model")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("DeleteModel: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("DeleteModel: http response: %w", err)
-	}
-
-	bodyresp := new(Operation)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("DeleteModel: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// [BETA] Get Model
-func (c Client) GetModel(ctx context.Context, id UUID) (*GetModelResponse, error) {
-	path := fmt.Sprintf("/ai/model/%v", id)
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("GetModel: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("GetModel: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("GetModel: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "get-model")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("GetModel: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("GetModel: http response: %w", err)
-	}
-
-	bodyresp := new(GetModelResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("GetModel: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
 type ListAntiAffinityGroupsResponse struct {
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 }
@@ -578,7 +71,7 @@ func (c Client) ListAntiAffinityGroups(ctx context.Context) (*ListAntiAffinityGr
 		return nil, fmt.Errorf("ListAntiAffinityGroups: http response: %w", err)
 	}
 
-	bodyresp := new(ListAntiAffinityGroupsResponse)
+	bodyresp := &ListAntiAffinityGroupsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListAntiAffinityGroups: prepare Json response: %w", err)
 	}
@@ -636,7 +129,7 @@ func (c Client) CreateAntiAffinityGroup(ctx context.Context, req CreateAntiAffin
 		return nil, fmt.Errorf("CreateAntiAffinityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateAntiAffinityGroup: prepare Json response: %w", err)
 	}
@@ -680,7 +173,7 @@ func (c Client) DeleteAntiAffinityGroup(ctx context.Context, id UUID) (*Operatio
 		return nil, fmt.Errorf("DeleteAntiAffinityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteAntiAffinityGroup: prepare Json response: %w", err)
 	}
@@ -724,7 +217,7 @@ func (c Client) GetAntiAffinityGroup(ctx context.Context, id UUID) (*AntiAffinit
 		return nil, fmt.Errorf("GetAntiAffinityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(AntiAffinityGroup)
+	bodyresp := &AntiAffinityGroup{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetAntiAffinityGroup: prepare Json response: %w", err)
 	}
@@ -791,7 +284,7 @@ func (c Client) ListAPIKeys(ctx context.Context) (*ListAPIKeysResponse, error) {
 		return nil, fmt.Errorf("ListAPIKeys: http response: %w", err)
 	}
 
-	bodyresp := new(ListAPIKeysResponse)
+	bodyresp := &ListAPIKeysResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListAPIKeys: prepare Json response: %w", err)
 	}
@@ -849,7 +342,7 @@ func (c Client) CreateAPIKey(ctx context.Context, req CreateAPIKeyRequest) (*IAM
 		return nil, fmt.Errorf("CreateAPIKey: http response: %w", err)
 	}
 
-	bodyresp := new(IAMAPIKeyCreated)
+	bodyresp := &IAMAPIKeyCreated{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateAPIKey: prepare Json response: %w", err)
 	}
@@ -893,7 +386,7 @@ func (c Client) DeleteAPIKey(ctx context.Context, id string) (*Operation, error)
 		return nil, fmt.Errorf("DeleteAPIKey: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteAPIKey: prepare Json response: %w", err)
 	}
@@ -937,7 +430,7 @@ func (c Client) GetAPIKey(ctx context.Context, id string) (*IAMAPIKey, error) {
 		return nil, fmt.Errorf("GetAPIKey: http response: %w", err)
 	}
 
-	bodyresp := new(IAMAPIKey)
+	bodyresp := &IAMAPIKey{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetAPIKey: prepare Json response: %w", err)
 	}
@@ -1020,7 +513,7 @@ func (c Client) ListBlockStorageVolumes(ctx context.Context, opts ...ListBlockSt
 		return nil, fmt.Errorf("ListBlockStorageVolumes: http response: %w", err)
 	}
 
-	bodyresp := new(ListBlockStorageVolumesResponse)
+	bodyresp := &ListBlockStorageVolumesResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListBlockStorageVolumes: prepare Json response: %w", err)
 	}
@@ -1082,7 +575,7 @@ func (c Client) CreateBlockStorageVolume(ctx context.Context, req CreateBlockSto
 		return nil, fmt.Errorf("CreateBlockStorageVolume: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateBlockStorageVolume: prepare Json response: %w", err)
 	}
@@ -1149,7 +642,7 @@ func (c Client) ListBlockStorageSnapshots(ctx context.Context) (*ListBlockStorag
 		return nil, fmt.Errorf("ListBlockStorageSnapshots: http response: %w", err)
 	}
 
-	bodyresp := new(ListBlockStorageSnapshotsResponse)
+	bodyresp := &ListBlockStorageSnapshotsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListBlockStorageSnapshots: prepare Json response: %w", err)
 	}
@@ -1193,7 +686,7 @@ func (c Client) DeleteBlockStorageSnapshot(ctx context.Context, id UUID) (*Opera
 		return nil, fmt.Errorf("DeleteBlockStorageSnapshot: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteBlockStorageSnapshot: prepare Json response: %w", err)
 	}
@@ -1237,7 +730,7 @@ func (c Client) GetBlockStorageSnapshot(ctx context.Context, id UUID) (*BlockSto
 		return nil, fmt.Errorf("GetBlockStorageSnapshot: http response: %w", err)
 	}
 
-	bodyresp := new(BlockStorageSnapshot)
+	bodyresp := &BlockStorageSnapshot{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetBlockStorageSnapshot: prepare Json response: %w", err)
 	}
@@ -1294,7 +787,7 @@ func (c Client) UpdateBlockStorageSnapshot(ctx context.Context, id UUID, req Upd
 		return nil, fmt.Errorf("UpdateBlockStorageSnapshot: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateBlockStorageSnapshot: prepare Json response: %w", err)
 	}
@@ -1338,7 +831,7 @@ func (c Client) DeleteBlockStorageVolume(ctx context.Context, id UUID) (*Operati
 		return nil, fmt.Errorf("DeleteBlockStorageVolume: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteBlockStorageVolume: prepare Json response: %w", err)
 	}
@@ -1382,7 +875,7 @@ func (c Client) GetBlockStorageVolume(ctx context.Context, id UUID) (*BlockStora
 		return nil, fmt.Errorf("GetBlockStorageVolume: http response: %w", err)
 	}
 
-	bodyresp := new(BlockStorageVolume)
+	bodyresp := &BlockStorageVolume{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetBlockStorageVolume: prepare Json response: %w", err)
 	}
@@ -1439,7 +932,7 @@ func (c Client) UpdateBlockStorageVolume(ctx context.Context, id UUID, req Updat
 		return nil, fmt.Errorf("UpdateBlockStorageVolume: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateBlockStorageVolume: prepare Json response: %w", err)
 	}
@@ -1495,7 +988,7 @@ func (c Client) AttachBlockStorageVolumeToInstance(ctx context.Context, id UUID,
 		return nil, fmt.Errorf("AttachBlockStorageVolumeToInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("AttachBlockStorageVolumeToInstance: prepare Json response: %w", err)
 	}
@@ -1552,7 +1045,7 @@ func (c Client) CreateBlockStorageSnapshot(ctx context.Context, id UUID, req Cre
 		return nil, fmt.Errorf("CreateBlockStorageSnapshot: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateBlockStorageSnapshot: prepare Json response: %w", err)
 	}
@@ -1596,7 +1089,7 @@ func (c Client) DetachBlockStorageVolume(ctx context.Context, id UUID) (*Operati
 		return nil, fmt.Errorf("DetachBlockStorageVolume: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DetachBlockStorageVolume: prepare Json response: %w", err)
 	}
@@ -1652,7 +1145,7 @@ func (c Client) ResizeBlockStorageVolume(ctx context.Context, id UUID, req Resiz
 		return nil, fmt.Errorf("ResizeBlockStorageVolume: http response: %w", err)
 	}
 
-	bodyresp := new(BlockStorageVolume)
+	bodyresp := &BlockStorageVolume{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResizeBlockStorageVolume: prepare Json response: %w", err)
 	}
@@ -1702,7 +1195,7 @@ func (c Client) GetConsoleProxyURL(ctx context.Context, id UUID) (*GetConsolePro
 		return nil, fmt.Errorf("GetConsoleProxyURL: http response: %w", err)
 	}
 
-	bodyresp := new(GetConsoleProxyURLResponse)
+	bodyresp := &GetConsoleProxyURLResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetConsoleProxyURL: prepare Json response: %w", err)
 	}
@@ -1750,7 +1243,7 @@ func (c Client) GetDBAASCACertificate(ctx context.Context) (*GetDBAASCACertifica
 		return nil, fmt.Errorf("GetDBAASCACertificate: http response: %w", err)
 	}
 
-	bodyresp := new(GetDBAASCACertificateResponse)
+	bodyresp := &GetDBAASCACertificateResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASCACertificate: prepare Json response: %w", err)
 	}
@@ -1794,7 +1287,7 @@ func (c Client) DeleteDBAASExternalEndpointDatadog(ctx context.Context, endpoint
 		return nil, fmt.Errorf("DeleteDBAASExternalEndpointDatadog: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASExternalEndpointDatadog: prepare Json response: %w", err)
 	}
@@ -1838,7 +1331,7 @@ func (c Client) GetDBAASExternalEndpointDatadog(ctx context.Context, endpointID 
 		return nil, fmt.Errorf("GetDBAASExternalEndpointDatadog: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASExternalEndpointDatadogOutput)
+	bodyresp := &DBAASExternalEndpointDatadogOutput{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASExternalEndpointDatadog: prepare Json response: %w", err)
 	}
@@ -1889,7 +1382,7 @@ func (c Client) UpdateDBAASExternalEndpointDatadog(ctx context.Context, endpoint
 		return nil, fmt.Errorf("UpdateDBAASExternalEndpointDatadog: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASExternalEndpointDatadog: prepare Json response: %w", err)
 	}
@@ -1940,7 +1433,7 @@ func (c Client) CreateDBAASExternalEndpointDatadog(ctx context.Context, name str
 		return nil, fmt.Errorf("CreateDBAASExternalEndpointDatadog: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASExternalEndpointDatadog: prepare Json response: %w", err)
 	}
@@ -1984,7 +1477,7 @@ func (c Client) DeleteDBAASExternalEndpointElasticsearch(ctx context.Context, en
 		return nil, fmt.Errorf("DeleteDBAASExternalEndpointElasticsearch: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASExternalEndpointElasticsearch: prepare Json response: %w", err)
 	}
@@ -2028,7 +1521,7 @@ func (c Client) GetDBAASExternalEndpointElasticsearch(ctx context.Context, endpo
 		return nil, fmt.Errorf("GetDBAASExternalEndpointElasticsearch: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASEndpointElasticsearchOutput)
+	bodyresp := &DBAASEndpointElasticsearchOutput{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASExternalEndpointElasticsearch: prepare Json response: %w", err)
 	}
@@ -2079,7 +1572,7 @@ func (c Client) UpdateDBAASExternalEndpointElasticsearch(ctx context.Context, en
 		return nil, fmt.Errorf("UpdateDBAASExternalEndpointElasticsearch: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASExternalEndpointElasticsearch: prepare Json response: %w", err)
 	}
@@ -2130,7 +1623,7 @@ func (c Client) CreateDBAASExternalEndpointElasticsearch(ctx context.Context, na
 		return nil, fmt.Errorf("CreateDBAASExternalEndpointElasticsearch: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASExternalEndpointElasticsearch: prepare Json response: %w", err)
 	}
@@ -2174,7 +1667,7 @@ func (c Client) DeleteDBAASExternalEndpointOpensearch(ctx context.Context, endpo
 		return nil, fmt.Errorf("DeleteDBAASExternalEndpointOpensearch: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASExternalEndpointOpensearch: prepare Json response: %w", err)
 	}
@@ -2218,7 +1711,7 @@ func (c Client) GetDBAASExternalEndpointOpensearch(ctx context.Context, endpoint
 		return nil, fmt.Errorf("GetDBAASExternalEndpointOpensearch: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASEndpointOpensearchOutput)
+	bodyresp := &DBAASEndpointOpensearchOutput{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASExternalEndpointOpensearch: prepare Json response: %w", err)
 	}
@@ -2269,7 +1762,7 @@ func (c Client) UpdateDBAASExternalEndpointOpensearch(ctx context.Context, endpo
 		return nil, fmt.Errorf("UpdateDBAASExternalEndpointOpensearch: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASExternalEndpointOpensearch: prepare Json response: %w", err)
 	}
@@ -2320,7 +1813,7 @@ func (c Client) CreateDBAASExternalEndpointOpensearch(ctx context.Context, name 
 		return nil, fmt.Errorf("CreateDBAASExternalEndpointOpensearch: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASExternalEndpointOpensearch: prepare Json response: %w", err)
 	}
@@ -2364,7 +1857,7 @@ func (c Client) DeleteDBAASExternalEndpointPrometheus(ctx context.Context, endpo
 		return nil, fmt.Errorf("DeleteDBAASExternalEndpointPrometheus: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASExternalEndpointPrometheus: prepare Json response: %w", err)
 	}
@@ -2408,7 +1901,7 @@ func (c Client) GetDBAASExternalEndpointPrometheus(ctx context.Context, endpoint
 		return nil, fmt.Errorf("GetDBAASExternalEndpointPrometheus: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASEndpointExternalPrometheusOutput)
+	bodyresp := &DBAASEndpointExternalPrometheusOutput{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASExternalEndpointPrometheus: prepare Json response: %w", err)
 	}
@@ -2459,7 +1952,7 @@ func (c Client) UpdateDBAASExternalEndpointPrometheus(ctx context.Context, endpo
 		return nil, fmt.Errorf("UpdateDBAASExternalEndpointPrometheus: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASExternalEndpointPrometheus: prepare Json response: %w", err)
 	}
@@ -2510,7 +2003,7 @@ func (c Client) CreateDBAASExternalEndpointPrometheus(ctx context.Context, name 
 		return nil, fmt.Errorf("CreateDBAASExternalEndpointPrometheus: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASExternalEndpointPrometheus: prepare Json response: %w", err)
 	}
@@ -2554,7 +2047,7 @@ func (c Client) DeleteDBAASExternalEndpointRsyslog(ctx context.Context, endpoint
 		return nil, fmt.Errorf("DeleteDBAASExternalEndpointRsyslog: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASExternalEndpointRsyslog: prepare Json response: %w", err)
 	}
@@ -2598,7 +2091,7 @@ func (c Client) GetDBAASExternalEndpointRsyslog(ctx context.Context, endpointID 
 		return nil, fmt.Errorf("GetDBAASExternalEndpointRsyslog: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASExternalEndpointRsyslogOutput)
+	bodyresp := &DBAASExternalEndpointRsyslogOutput{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASExternalEndpointRsyslog: prepare Json response: %w", err)
 	}
@@ -2649,7 +2142,7 @@ func (c Client) UpdateDBAASExternalEndpointRsyslog(ctx context.Context, endpoint
 		return nil, fmt.Errorf("UpdateDBAASExternalEndpointRsyslog: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASExternalEndpointRsyslog: prepare Json response: %w", err)
 	}
@@ -2700,7 +2193,7 @@ func (c Client) CreateDBAASExternalEndpointRsyslog(ctx context.Context, name str
 		return nil, fmt.Errorf("CreateDBAASExternalEndpointRsyslog: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASExternalEndpointRsyslog: prepare Json response: %w", err)
 	}
@@ -2754,7 +2247,7 @@ func (c Client) ListDBAASExternalEndpointTypes(ctx context.Context) (*ListDBAASE
 		return nil, fmt.Errorf("ListDBAASExternalEndpointTypes: http response: %w", err)
 	}
 
-	bodyresp := new(ListDBAASExternalEndpointTypesResponse)
+	bodyresp := &ListDBAASExternalEndpointTypesResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListDBAASExternalEndpointTypes: prepare Json response: %w", err)
 	}
@@ -2811,7 +2304,7 @@ func (c Client) AttachDBAASServiceToEndpoint(ctx context.Context, sourceServiceN
 		return nil, fmt.Errorf("AttachDBAASServiceToEndpoint: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("AttachDBAASServiceToEndpoint: prepare Json response: %w", err)
 	}
@@ -2867,7 +2360,7 @@ func (c Client) DetachDBAASServiceFromEndpoint(ctx context.Context, sourceServic
 		return nil, fmt.Errorf("DetachDBAASServiceFromEndpoint: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DetachDBAASServiceFromEndpoint: prepare Json response: %w", err)
 	}
@@ -2934,7 +2427,7 @@ func (c Client) ListDBAASExternalEndpoints(ctx context.Context) (*ListDBAASExter
 		return nil, fmt.Errorf("ListDBAASExternalEndpoints: http response: %w", err)
 	}
 
-	bodyresp := new(ListDBAASExternalEndpointsResponse)
+	bodyresp := &ListDBAASExternalEndpointsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListDBAASExternalEndpoints: prepare Json response: %w", err)
 	}
@@ -2982,7 +2475,7 @@ func (c Client) GetDBAASExternalIntegrationSettingsDatadog(ctx context.Context, 
 		return nil, fmt.Errorf("GetDBAASExternalIntegrationSettingsDatadog: http response: %w", err)
 	}
 
-	bodyresp := new(GetDBAASExternalIntegrationSettingsDatadogResponse)
+	bodyresp := &GetDBAASExternalIntegrationSettingsDatadogResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASExternalIntegrationSettingsDatadog: prepare Json response: %w", err)
 	}
@@ -3037,7 +2530,7 @@ func (c Client) UpdateDBAASExternalIntegrationSettingsDatadog(ctx context.Contex
 		return nil, fmt.Errorf("UpdateDBAASExternalIntegrationSettingsDatadog: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASExternalIntegrationSettingsDatadog: prepare Json response: %w", err)
 	}
@@ -3081,7 +2574,7 @@ func (c Client) GetDBAASExternalIntegration(ctx context.Context, integrationID U
 		return nil, fmt.Errorf("GetDBAASExternalIntegration: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASExternalIntegration)
+	bodyresp := &DBAASExternalIntegration{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASExternalIntegration: prepare Json response: %w", err)
 	}
@@ -3129,7 +2622,7 @@ func (c Client) ListDBAASExternalIntegrations(ctx context.Context, serviceName s
 		return nil, fmt.Errorf("ListDBAASExternalIntegrations: http response: %w", err)
 	}
 
-	bodyresp := new(ListDBAASExternalIntegrationsResponse)
+	bodyresp := &ListDBAASExternalIntegrationsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListDBAASExternalIntegrations: prepare Json response: %w", err)
 	}
@@ -3173,7 +2666,7 @@ func (c Client) DeleteDBAASServiceGrafana(ctx context.Context, name string) (*Op
 		return nil, fmt.Errorf("DeleteDBAASServiceGrafana: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASServiceGrafana: prepare Json response: %w", err)
 	}
@@ -3217,7 +2710,7 @@ func (c Client) GetDBAASServiceGrafana(ctx context.Context, name string) (*DBAAS
 		return nil, fmt.Errorf("GetDBAASServiceGrafana: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASServiceGrafana)
+	bodyresp := &DBAASServiceGrafana{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASServiceGrafana: prepare Json response: %w", err)
 	}
@@ -3303,7 +2796,7 @@ func (c Client) CreateDBAASServiceGrafana(ctx context.Context, name string, req 
 		return nil, fmt.Errorf("CreateDBAASServiceGrafana: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASServiceGrafana: prepare Json response: %w", err)
 	}
@@ -3388,7 +2881,7 @@ func (c Client) UpdateDBAASServiceGrafana(ctx context.Context, name string, req 
 		return nil, fmt.Errorf("UpdateDBAASServiceGrafana: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASServiceGrafana: prepare Json response: %w", err)
 	}
@@ -3432,7 +2925,7 @@ func (c Client) StartDBAASGrafanaMaintenance(ctx context.Context, name string) (
 		return nil, fmt.Errorf("StartDBAASGrafanaMaintenance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StartDBAASGrafanaMaintenance: prepare Json response: %w", err)
 	}
@@ -3487,7 +2980,7 @@ func (c Client) ResetDBAASGrafanaUserPassword(ctx context.Context, serviceName s
 		return nil, fmt.Errorf("ResetDBAASGrafanaUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetDBAASGrafanaUserPassword: prepare Json response: %w", err)
 	}
@@ -3531,7 +3024,7 @@ func (c Client) RevealDBAASGrafanaUserPassword(ctx context.Context, serviceName 
 		return nil, fmt.Errorf("RevealDBAASGrafanaUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASUserGrafanaSecrets)
+	bodyresp := &DBAASUserGrafanaSecrets{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RevealDBAASGrafanaUserPassword: prepare Json response: %w", err)
 	}
@@ -3590,7 +3083,7 @@ func (c Client) CreateDBAASIntegration(ctx context.Context, req CreateDBAASInteg
 		return nil, fmt.Errorf("CreateDBAASIntegration: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASIntegration: prepare Json response: %w", err)
 	}
@@ -3647,7 +3140,7 @@ func (c Client) ListDBAASIntegrationSettings(ctx context.Context, integrationTyp
 		return nil, fmt.Errorf("ListDBAASIntegrationSettings: http response: %w", err)
 	}
 
-	bodyresp := new(ListDBAASIntegrationSettingsResponse)
+	bodyresp := &ListDBAASIntegrationSettingsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListDBAASIntegrationSettings: prepare Json response: %w", err)
 	}
@@ -3695,7 +3188,7 @@ func (c Client) ListDBAASIntegrationTypes(ctx context.Context) (*ListDBAASIntegr
 		return nil, fmt.Errorf("ListDBAASIntegrationTypes: http response: %w", err)
 	}
 
-	bodyresp := new(ListDBAASIntegrationTypesResponse)
+	bodyresp := &ListDBAASIntegrationTypesResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListDBAASIntegrationTypes: prepare Json response: %w", err)
 	}
@@ -3739,7 +3232,7 @@ func (c Client) DeleteDBAASIntegration(ctx context.Context, id UUID) (*Operation
 		return nil, fmt.Errorf("DeleteDBAASIntegration: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASIntegration: prepare Json response: %w", err)
 	}
@@ -3783,7 +3276,7 @@ func (c Client) GetDBAASIntegration(ctx context.Context, id UUID) (*DBAASIntegra
 		return nil, fmt.Errorf("GetDBAASIntegration: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASIntegration)
+	bodyresp := &DBAASIntegration{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASIntegration: prepare Json response: %w", err)
 	}
@@ -3839,7 +3332,7 @@ func (c Client) UpdateDBAASIntegration(ctx context.Context, id UUID, req UpdateD
 		return nil, fmt.Errorf("UpdateDBAASIntegration: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASIntegration: prepare Json response: %w", err)
 	}
@@ -3883,7 +3376,7 @@ func (c Client) DeleteDBAASServiceKafka(ctx context.Context, name string) (*Oper
 		return nil, fmt.Errorf("DeleteDBAASServiceKafka: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASServiceKafka: prepare Json response: %w", err)
 	}
@@ -3927,7 +3420,7 @@ func (c Client) GetDBAASServiceKafka(ctx context.Context, name string) (*DBAASSe
 		return nil, fmt.Errorf("GetDBAASServiceKafka: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASServiceKafka)
+	bodyresp := &DBAASServiceKafka{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASServiceKafka: prepare Json response: %w", err)
 	}
@@ -4036,7 +3529,7 @@ func (c Client) CreateDBAASServiceKafka(ctx context.Context, name string, req Cr
 		return nil, fmt.Errorf("CreateDBAASServiceKafka: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASServiceKafka: prepare Json response: %w", err)
 	}
@@ -4145,7 +3638,7 @@ func (c Client) UpdateDBAASServiceKafka(ctx context.Context, name string, req Up
 		return nil, fmt.Errorf("UpdateDBAASServiceKafka: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASServiceKafka: prepare Json response: %w", err)
 	}
@@ -4189,7 +3682,7 @@ func (c Client) GetDBAASKafkaAclConfig(ctx context.Context, name string) (*DBAAS
 		return nil, fmt.Errorf("GetDBAASKafkaAclConfig: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASKafkaAcls)
+	bodyresp := &DBAASKafkaAcls{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASKafkaAclConfig: prepare Json response: %w", err)
 	}
@@ -4233,7 +3726,7 @@ func (c Client) StartDBAASKafkaMaintenance(ctx context.Context, name string) (*O
 		return nil, fmt.Errorf("StartDBAASKafkaMaintenance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StartDBAASKafkaMaintenance: prepare Json response: %w", err)
 	}
@@ -4284,7 +3777,7 @@ func (c Client) CreateDBAASKafkaSchemaRegistryAclConfig(ctx context.Context, nam
 		return nil, fmt.Errorf("CreateDBAASKafkaSchemaRegistryAclConfig: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASKafkaSchemaRegistryAclConfig: prepare Json response: %w", err)
 	}
@@ -4328,7 +3821,7 @@ func (c Client) DeleteDBAASKafkaSchemaRegistryAclConfig(ctx context.Context, nam
 		return nil, fmt.Errorf("DeleteDBAASKafkaSchemaRegistryAclConfig: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASKafkaSchemaRegistryAclConfig: prepare Json response: %w", err)
 	}
@@ -4379,7 +3872,7 @@ func (c Client) CreateDBAASKafkaTopicAclConfig(ctx context.Context, name string,
 		return nil, fmt.Errorf("CreateDBAASKafkaTopicAclConfig: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASKafkaTopicAclConfig: prepare Json response: %w", err)
 	}
@@ -4423,7 +3916,7 @@ func (c Client) DeleteDBAASKafkaTopicAclConfig(ctx context.Context, name string,
 		return nil, fmt.Errorf("DeleteDBAASKafkaTopicAclConfig: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASKafkaTopicAclConfig: prepare Json response: %w", err)
 	}
@@ -4467,7 +3960,7 @@ func (c Client) RevealDBAASKafkaConnectPassword(ctx context.Context, serviceName
 		return nil, fmt.Errorf("RevealDBAASKafkaConnectPassword: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASUserKafkaConnectSecrets)
+	bodyresp := &DBAASUserKafkaConnectSecrets{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RevealDBAASKafkaConnectPassword: prepare Json response: %w", err)
 	}
@@ -4522,7 +4015,7 @@ func (c Client) CreateDBAASKafkaUser(ctx context.Context, serviceName string, re
 		return nil, fmt.Errorf("CreateDBAASKafkaUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASKafkaUser: prepare Json response: %w", err)
 	}
@@ -4566,7 +4059,7 @@ func (c Client) DeleteDBAASKafkaUser(ctx context.Context, serviceName string, us
 		return nil, fmt.Errorf("DeleteDBAASKafkaUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASKafkaUser: prepare Json response: %w", err)
 	}
@@ -4621,7 +4114,7 @@ func (c Client) ResetDBAASKafkaUserPassword(ctx context.Context, serviceName str
 		return nil, fmt.Errorf("ResetDBAASKafkaUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetDBAASKafkaUserPassword: prepare Json response: %w", err)
 	}
@@ -4665,7 +4158,7 @@ func (c Client) RevealDBAASKafkaUserPassword(ctx context.Context, serviceName st
 		return nil, fmt.Errorf("RevealDBAASKafkaUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASUserKafkaSecrets)
+	bodyresp := &DBAASUserKafkaSecrets{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RevealDBAASKafkaUserPassword: prepare Json response: %w", err)
 	}
@@ -4709,7 +4202,7 @@ func (c Client) GetDBAASMigrationStatus(ctx context.Context, name string) (*DBAA
 		return nil, fmt.Errorf("GetDBAASMigrationStatus: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASMigrationStatus)
+	bodyresp := &DBAASMigrationStatus{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASMigrationStatus: prepare Json response: %w", err)
 	}
@@ -4753,7 +4246,7 @@ func (c Client) DeleteDBAASServiceMysql(ctx context.Context, name string) (*Oper
 		return nil, fmt.Errorf("DeleteDBAASServiceMysql: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASServiceMysql: prepare Json response: %w", err)
 	}
@@ -4797,7 +4290,7 @@ func (c Client) GetDBAASServiceMysql(ctx context.Context, name string) (*DBAASSe
 		return nil, fmt.Errorf("GetDBAASServiceMysql: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASServiceMysql)
+	bodyresp := &DBAASServiceMysql{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASServiceMysql: prepare Json response: %w", err)
 	}
@@ -4939,7 +4432,7 @@ func (c Client) CreateDBAASServiceMysql(ctx context.Context, name string, req Cr
 		return nil, fmt.Errorf("CreateDBAASServiceMysql: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASServiceMysql: prepare Json response: %w", err)
 	}
@@ -5055,7 +4548,7 @@ func (c Client) UpdateDBAASServiceMysql(ctx context.Context, name string, req Up
 		return nil, fmt.Errorf("UpdateDBAASServiceMysql: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASServiceMysql: prepare Json response: %w", err)
 	}
@@ -5099,7 +4592,7 @@ func (c Client) EnableDBAASMysqlWrites(ctx context.Context, name string) (*Opera
 		return nil, fmt.Errorf("EnableDBAASMysqlWrites: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("EnableDBAASMysqlWrites: prepare Json response: %w", err)
 	}
@@ -5143,7 +4636,7 @@ func (c Client) StartDBAASMysqlMaintenance(ctx context.Context, name string) (*O
 		return nil, fmt.Errorf("StartDBAASMysqlMaintenance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StartDBAASMysqlMaintenance: prepare Json response: %w", err)
 	}
@@ -5187,7 +4680,7 @@ func (c Client) StopDBAASMysqlMigration(ctx context.Context, name string) (*Oper
 		return nil, fmt.Errorf("StopDBAASMysqlMigration: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StopDBAASMysqlMigration: prepare Json response: %w", err)
 	}
@@ -5242,7 +4735,7 @@ func (c Client) CreateDBAASMysqlDatabase(ctx context.Context, serviceName string
 		return nil, fmt.Errorf("CreateDBAASMysqlDatabase: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASMysqlDatabase: prepare Json response: %w", err)
 	}
@@ -5286,7 +4779,7 @@ func (c Client) DeleteDBAASMysqlDatabase(ctx context.Context, serviceName string
 		return nil, fmt.Errorf("DeleteDBAASMysqlDatabase: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASMysqlDatabase: prepare Json response: %w", err)
 	}
@@ -5342,7 +4835,7 @@ func (c Client) CreateDBAASMysqlUser(ctx context.Context, serviceName string, re
 		return nil, fmt.Errorf("CreateDBAASMysqlUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASMysqlUser: prepare Json response: %w", err)
 	}
@@ -5386,7 +4879,7 @@ func (c Client) DeleteDBAASMysqlUser(ctx context.Context, serviceName string, us
 		return nil, fmt.Errorf("DeleteDBAASMysqlUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASMysqlUser: prepare Json response: %w", err)
 	}
@@ -5442,7 +4935,7 @@ func (c Client) ResetDBAASMysqlUserPassword(ctx context.Context, serviceName str
 		return nil, fmt.Errorf("ResetDBAASMysqlUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetDBAASMysqlUserPassword: prepare Json response: %w", err)
 	}
@@ -5486,7 +4979,7 @@ func (c Client) RevealDBAASMysqlUserPassword(ctx context.Context, serviceName st
 		return nil, fmt.Errorf("RevealDBAASMysqlUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASUserMysqlSecrets)
+	bodyresp := &DBAASUserMysqlSecrets{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RevealDBAASMysqlUserPassword: prepare Json response: %w", err)
 	}
@@ -5530,7 +5023,7 @@ func (c Client) DeleteDBAASServiceOpensearch(ctx context.Context, name string) (
 		return nil, fmt.Errorf("DeleteDBAASServiceOpensearch: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASServiceOpensearch: prepare Json response: %w", err)
 	}
@@ -5574,7 +5067,7 @@ func (c Client) GetDBAASServiceOpensearch(ctx context.Context, name string) (*DB
 		return nil, fmt.Errorf("GetDBAASServiceOpensearch: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASServiceOpensearch)
+	bodyresp := &DBAASServiceOpensearch{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASServiceOpensearch: prepare Json response: %w", err)
 	}
@@ -5710,7 +5203,7 @@ func (c Client) CreateDBAASServiceOpensearch(ctx context.Context, name string, r
 		return nil, fmt.Errorf("CreateDBAASServiceOpensearch: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASServiceOpensearch: prepare Json response: %w", err)
 	}
@@ -5843,7 +5336,7 @@ func (c Client) UpdateDBAASServiceOpensearch(ctx context.Context, name string, r
 		return nil, fmt.Errorf("UpdateDBAASServiceOpensearch: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASServiceOpensearch: prepare Json response: %w", err)
 	}
@@ -5887,7 +5380,7 @@ func (c Client) GetDBAASOpensearchAclConfig(ctx context.Context, name string) (*
 		return nil, fmt.Errorf("GetDBAASOpensearchAclConfig: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASOpensearchAclConfig)
+	bodyresp := &DBAASOpensearchAclConfig{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASOpensearchAclConfig: prepare Json response: %w", err)
 	}
@@ -5938,7 +5431,7 @@ func (c Client) UpdateDBAASOpensearchAclConfig(ctx context.Context, name string,
 		return nil, fmt.Errorf("UpdateDBAASOpensearchAclConfig: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASOpensearchAclConfig: prepare Json response: %w", err)
 	}
@@ -5982,7 +5475,7 @@ func (c Client) StartDBAASOpensearchMaintenance(ctx context.Context, name string
 		return nil, fmt.Errorf("StartDBAASOpensearchMaintenance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StartDBAASOpensearchMaintenance: prepare Json response: %w", err)
 	}
@@ -6037,7 +5530,7 @@ func (c Client) CreateDBAASOpensearchUser(ctx context.Context, serviceName strin
 		return nil, fmt.Errorf("CreateDBAASOpensearchUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASOpensearchUser: prepare Json response: %w", err)
 	}
@@ -6081,7 +5574,7 @@ func (c Client) DeleteDBAASOpensearchUser(ctx context.Context, serviceName strin
 		return nil, fmt.Errorf("DeleteDBAASOpensearchUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASOpensearchUser: prepare Json response: %w", err)
 	}
@@ -6136,7 +5629,7 @@ func (c Client) ResetDBAASOpensearchUserPassword(ctx context.Context, serviceNam
 		return nil, fmt.Errorf("ResetDBAASOpensearchUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetDBAASOpensearchUserPassword: prepare Json response: %w", err)
 	}
@@ -6180,7 +5673,7 @@ func (c Client) RevealDBAASOpensearchUserPassword(ctx context.Context, serviceNa
 		return nil, fmt.Errorf("RevealDBAASOpensearchUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASUserOpensearchSecrets)
+	bodyresp := &DBAASUserOpensearchSecrets{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RevealDBAASOpensearchUserPassword: prepare Json response: %w", err)
 	}
@@ -6224,7 +5717,7 @@ func (c Client) DeleteDBAASServicePG(ctx context.Context, name string) (*Operati
 		return nil, fmt.Errorf("DeleteDBAASServicePG: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASServicePG: prepare Json response: %w", err)
 	}
@@ -6268,7 +5761,7 @@ func (c Client) GetDBAASServicePG(ctx context.Context, name string) (*DBAASServi
 		return nil, fmt.Errorf("GetDBAASServicePG: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASServicePG)
+	bodyresp := &DBAASServicePG{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASServicePG: prepare Json response: %w", err)
 	}
@@ -6419,7 +5912,7 @@ func (c Client) CreateDBAASServicePG(ctx context.Context, name string, req Creat
 		return nil, fmt.Errorf("CreateDBAASServicePG: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASServicePG: prepare Json response: %w", err)
 	}
@@ -6547,7 +6040,7 @@ func (c Client) UpdateDBAASServicePG(ctx context.Context, name string, req Updat
 		return nil, fmt.Errorf("UpdateDBAASServicePG: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASServicePG: prepare Json response: %w", err)
 	}
@@ -6591,7 +6084,7 @@ func (c Client) StartDBAASPGMaintenance(ctx context.Context, name string) (*Oper
 		return nil, fmt.Errorf("StartDBAASPGMaintenance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StartDBAASPGMaintenance: prepare Json response: %w", err)
 	}
@@ -6635,7 +6128,7 @@ func (c Client) StopDBAASPGMigration(ctx context.Context, name string) (*Operati
 		return nil, fmt.Errorf("StopDBAASPGMigration: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StopDBAASPGMigration: prepare Json response: %w", err)
 	}
@@ -6694,7 +6187,7 @@ func (c Client) CreateDBAASPGConnectionPool(ctx context.Context, serviceName str
 		return nil, fmt.Errorf("CreateDBAASPGConnectionPool: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASPGConnectionPool: prepare Json response: %w", err)
 	}
@@ -6738,7 +6231,7 @@ func (c Client) DeleteDBAASPGConnectionPool(ctx context.Context, serviceName str
 		return nil, fmt.Errorf("DeleteDBAASPGConnectionPool: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASPGConnectionPool: prepare Json response: %w", err)
 	}
@@ -6796,7 +6289,7 @@ func (c Client) UpdateDBAASPGConnectionPool(ctx context.Context, serviceName str
 		return nil, fmt.Errorf("UpdateDBAASPGConnectionPool: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASPGConnectionPool: prepare Json response: %w", err)
 	}
@@ -6855,7 +6348,7 @@ func (c Client) CreateDBAASPGDatabase(ctx context.Context, serviceName string, r
 		return nil, fmt.Errorf("CreateDBAASPGDatabase: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASPGDatabase: prepare Json response: %w", err)
 	}
@@ -6899,7 +6392,7 @@ func (c Client) DeleteDBAASPGDatabase(ctx context.Context, serviceName string, d
 		return nil, fmt.Errorf("DeleteDBAASPGDatabase: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASPGDatabase: prepare Json response: %w", err)
 	}
@@ -6955,7 +6448,7 @@ func (c Client) CreateDBAASPostgresUser(ctx context.Context, serviceName string,
 		return nil, fmt.Errorf("CreateDBAASPostgresUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASPostgresUser: prepare Json response: %w", err)
 	}
@@ -6999,7 +6492,7 @@ func (c Client) DeleteDBAASPostgresUser(ctx context.Context, serviceName string,
 		return nil, fmt.Errorf("DeleteDBAASPostgresUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASPostgresUser: prepare Json response: %w", err)
 	}
@@ -7054,7 +6547,7 @@ func (c Client) UpdateDBAASPostgresAllowReplication(ctx context.Context, service
 		return nil, fmt.Errorf("UpdateDBAASPostgresAllowReplication: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASPostgresUsers)
+	bodyresp := &DBAASPostgresUsers{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASPostgresAllowReplication: prepare Json response: %w", err)
 	}
@@ -7109,7 +6602,7 @@ func (c Client) ResetDBAASPostgresUserPassword(ctx context.Context, serviceName 
 		return nil, fmt.Errorf("ResetDBAASPostgresUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetDBAASPostgresUserPassword: prepare Json response: %w", err)
 	}
@@ -7153,7 +6646,7 @@ func (c Client) RevealDBAASPostgresUserPassword(ctx context.Context, serviceName
 		return nil, fmt.Errorf("RevealDBAASPostgresUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASUserPostgresSecrets)
+	bodyresp := &DBAASUserPostgresSecrets{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RevealDBAASPostgresUserPassword: prepare Json response: %w", err)
 	}
@@ -7208,7 +6701,7 @@ func (c Client) CreateDBAASPGUpgradeCheck(ctx context.Context, service string, r
 		return nil, fmt.Errorf("CreateDBAASPGUpgradeCheck: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASTask)
+	bodyresp := &DBAASTask{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASPGUpgradeCheck: prepare Json response: %w", err)
 	}
@@ -7275,7 +6768,7 @@ func (c Client) ListDBAASServices(ctx context.Context) (*ListDBAASServicesRespon
 		return nil, fmt.Errorf("ListDBAASServices: http response: %w", err)
 	}
 
-	bodyresp := new(ListDBAASServicesResponse)
+	bodyresp := &ListDBAASServicesResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListDBAASServices: prepare Json response: %w", err)
 	}
@@ -7334,7 +6827,7 @@ func (c Client) GetDBAASServiceLogs(ctx context.Context, serviceName string, req
 		return nil, fmt.Errorf("GetDBAASServiceLogs: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASServiceLogs)
+	bodyresp := &DBAASServiceLogs{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASServiceLogs: prepare Json response: %w", err)
 	}
@@ -7404,7 +6897,7 @@ func (c Client) GetDBAASServiceMetrics(ctx context.Context, serviceName string, 
 		return nil, fmt.Errorf("GetDBAASServiceMetrics: http response: %w", err)
 	}
 
-	bodyresp := new(GetDBAASServiceMetricsResponse)
+	bodyresp := &GetDBAASServiceMetricsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASServiceMetrics: prepare Json response: %w", err)
 	}
@@ -7471,7 +6964,7 @@ func (c Client) ListDBAASServiceTypes(ctx context.Context) (*ListDBAASServiceTyp
 		return nil, fmt.Errorf("ListDBAASServiceTypes: http response: %w", err)
 	}
 
-	bodyresp := new(ListDBAASServiceTypesResponse)
+	bodyresp := &ListDBAASServiceTypesResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListDBAASServiceTypes: prepare Json response: %w", err)
 	}
@@ -7515,7 +7008,7 @@ func (c Client) GetDBAASServiceType(ctx context.Context, serviceTypeName string)
 		return nil, fmt.Errorf("GetDBAASServiceType: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASServiceType)
+	bodyresp := &DBAASServiceType{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASServiceType: prepare Json response: %w", err)
 	}
@@ -7559,7 +7052,7 @@ func (c Client) DeleteDBAASService(ctx context.Context, name string) (*Operation
 		return nil, fmt.Errorf("DeleteDBAASService: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASService: prepare Json response: %w", err)
 	}
@@ -7620,7 +7113,7 @@ func (c Client) GetDBAASSettingsGrafana(ctx context.Context) (*GetDBAASSettingsG
 		return nil, fmt.Errorf("GetDBAASSettingsGrafana: http response: %w", err)
 	}
 
-	bodyresp := new(GetDBAASSettingsGrafanaResponse)
+	bodyresp := &GetDBAASSettingsGrafanaResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASSettingsGrafana: prepare Json response: %w", err)
 	}
@@ -7711,7 +7204,7 @@ func (c Client) GetDBAASSettingsKafka(ctx context.Context) (*GetDBAASSettingsKaf
 		return nil, fmt.Errorf("GetDBAASSettingsKafka: http response: %w", err)
 	}
 
-	bodyresp := new(GetDBAASSettingsKafkaResponse)
+	bodyresp := &GetDBAASSettingsKafkaResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASSettingsKafka: prepare Json response: %w", err)
 	}
@@ -7772,7 +7265,7 @@ func (c Client) GetDBAASSettingsMysql(ctx context.Context) (*GetDBAASSettingsMys
 		return nil, fmt.Errorf("GetDBAASSettingsMysql: http response: %w", err)
 	}
 
-	bodyresp := new(GetDBAASSettingsMysqlResponse)
+	bodyresp := &GetDBAASSettingsMysqlResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASSettingsMysql: prepare Json response: %w", err)
 	}
@@ -7833,7 +7326,7 @@ func (c Client) GetDBAASSettingsOpensearch(ctx context.Context) (*GetDBAASSettin
 		return nil, fmt.Errorf("GetDBAASSettingsOpensearch: http response: %w", err)
 	}
 
-	bodyresp := new(GetDBAASSettingsOpensearchResponse)
+	bodyresp := &GetDBAASSettingsOpensearchResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASSettingsOpensearch: prepare Json response: %w", err)
 	}
@@ -7924,7 +7417,7 @@ func (c Client) GetDBAASSettingsPG(ctx context.Context) (*GetDBAASSettingsPGResp
 		return nil, fmt.Errorf("GetDBAASSettingsPG: http response: %w", err)
 	}
 
-	bodyresp := new(GetDBAASSettingsPGResponse)
+	bodyresp := &GetDBAASSettingsPGResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASSettingsPG: prepare Json response: %w", err)
 	}
@@ -7985,7 +7478,7 @@ func (c Client) GetDBAASSettingsValkey(ctx context.Context) (*GetDBAASSettingsVa
 		return nil, fmt.Errorf("GetDBAASSettingsValkey: http response: %w", err)
 	}
 
-	bodyresp := new(GetDBAASSettingsValkeyResponse)
+	bodyresp := &GetDBAASSettingsValkeyResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASSettingsValkey: prepare Json response: %w", err)
 	}
@@ -8044,7 +7537,7 @@ func (c Client) CreateDBAASTaskMigrationCheck(ctx context.Context, service strin
 		return nil, fmt.Errorf("CreateDBAASTaskMigrationCheck: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASTaskMigrationCheck: prepare Json response: %w", err)
 	}
@@ -8088,7 +7581,7 @@ func (c Client) GetDBAASTask(ctx context.Context, service string, id UUID) (*DBA
 		return nil, fmt.Errorf("GetDBAASTask: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASTask)
+	bodyresp := &DBAASTask{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASTask: prepare Json response: %w", err)
 	}
@@ -8132,7 +7625,7 @@ func (c Client) DeleteDBAASServiceValkey(ctx context.Context, name string) (*Ope
 		return nil, fmt.Errorf("DeleteDBAASServiceValkey: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASServiceValkey: prepare Json response: %w", err)
 	}
@@ -8176,7 +7669,7 @@ func (c Client) GetDBAASServiceValkey(ctx context.Context, name string) (*DBAASS
 		return nil, fmt.Errorf("GetDBAASServiceValkey: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASServiceValkey)
+	bodyresp := &DBAASServiceValkey{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASServiceValkey: prepare Json response: %w", err)
 	}
@@ -8285,7 +7778,7 @@ func (c Client) CreateDBAASServiceValkey(ctx context.Context, name string, req C
 		return nil, fmt.Errorf("CreateDBAASServiceValkey: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASServiceValkey: prepare Json response: %w", err)
 	}
@@ -8391,7 +7884,7 @@ func (c Client) UpdateDBAASServiceValkey(ctx context.Context, name string, req U
 		return nil, fmt.Errorf("UpdateDBAASServiceValkey: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDBAASServiceValkey: prepare Json response: %w", err)
 	}
@@ -8435,7 +7928,7 @@ func (c Client) StartDBAASValkeyMaintenance(ctx context.Context, name string) (*
 		return nil, fmt.Errorf("StartDBAASValkeyMaintenance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StartDBAASValkeyMaintenance: prepare Json response: %w", err)
 	}
@@ -8479,7 +7972,7 @@ func (c Client) StopDBAASValkeyMigration(ctx context.Context, name string) (*Ope
 		return nil, fmt.Errorf("StopDBAASValkeyMigration: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StopDBAASValkeyMigration: prepare Json response: %w", err)
 	}
@@ -8534,7 +8027,7 @@ func (c Client) CreateDBAASValkeyUser(ctx context.Context, serviceName string, r
 		return nil, fmt.Errorf("CreateDBAASValkeyUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASValkeyUser: prepare Json response: %w", err)
 	}
@@ -8578,7 +8071,7 @@ func (c Client) DeleteDBAASValkeyUser(ctx context.Context, serviceName string, u
 		return nil, fmt.Errorf("DeleteDBAASValkeyUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASValkeyUser: prepare Json response: %w", err)
 	}
@@ -8633,7 +8126,7 @@ func (c Client) ResetDBAASValkeyUserPassword(ctx context.Context, serviceName st
 		return nil, fmt.Errorf("ResetDBAASValkeyUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetDBAASValkeyUserPassword: prepare Json response: %w", err)
 	}
@@ -8677,7 +8170,7 @@ func (c Client) RevealDBAASValkeyUserPassword(ctx context.Context, serviceName s
 		return nil, fmt.Errorf("RevealDBAASValkeyUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(DBAASUserValkeySecrets)
+	bodyresp := &DBAASUserValkeySecrets{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RevealDBAASValkeyUserPassword: prepare Json response: %w", err)
 	}
@@ -8744,7 +8237,7 @@ func (c Client) ListDeployTargets(ctx context.Context) (*ListDeployTargetsRespon
 		return nil, fmt.Errorf("ListDeployTargets: http response: %w", err)
 	}
 
-	bodyresp := new(ListDeployTargetsResponse)
+	bodyresp := &ListDeployTargetsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListDeployTargets: prepare Json response: %w", err)
 	}
@@ -8788,7 +8281,7 @@ func (c Client) GetDeployTarget(ctx context.Context, id UUID) (*DeployTarget, er
 		return nil, fmt.Errorf("GetDeployTarget: http response: %w", err)
 	}
 
-	bodyresp := new(DeployTarget)
+	bodyresp := &DeployTarget{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDeployTarget: prepare Json response: %w", err)
 	}
@@ -8855,7 +8348,7 @@ func (c Client) ListDNSDomains(ctx context.Context) (*ListDNSDomainsResponse, er
 		return nil, fmt.Errorf("ListDNSDomains: http response: %w", err)
 	}
 
-	bodyresp := new(ListDNSDomainsResponse)
+	bodyresp := &ListDNSDomainsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListDNSDomains: prepare Json response: %w", err)
 	}
@@ -8912,7 +8405,7 @@ func (c Client) CreateDNSDomain(ctx context.Context, req CreateDNSDomainRequest)
 		return nil, fmt.Errorf("CreateDNSDomain: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDNSDomain: prepare Json response: %w", err)
 	}
@@ -8979,7 +8472,7 @@ func (c Client) ListDNSDomainRecords(ctx context.Context, domainID UUID) (*ListD
 		return nil, fmt.Errorf("ListDNSDomainRecords: http response: %w", err)
 	}
 
-	bodyresp := new(ListDNSDomainRecordsResponse)
+	bodyresp := &ListDNSDomainRecordsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListDNSDomainRecords: prepare Json response: %w", err)
 	}
@@ -9062,7 +8555,7 @@ func (c Client) CreateDNSDomainRecord(ctx context.Context, domainID UUID, req Cr
 		return nil, fmt.Errorf("CreateDNSDomainRecord: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDNSDomainRecord: prepare Json response: %w", err)
 	}
@@ -9106,7 +8599,7 @@ func (c Client) DeleteDNSDomainRecord(ctx context.Context, domainID UUID, record
 		return nil, fmt.Errorf("DeleteDNSDomainRecord: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDNSDomainRecord: prepare Json response: %w", err)
 	}
@@ -9150,7 +8643,7 @@ func (c Client) GetDNSDomainRecord(ctx context.Context, domainID UUID, recordID 
 		return nil, fmt.Errorf("GetDNSDomainRecord: http response: %w", err)
 	}
 
-	bodyresp := new(DNSDomainRecord)
+	bodyresp := &DNSDomainRecord{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDNSDomainRecord: prepare Json response: %w", err)
 	}
@@ -9212,7 +8705,7 @@ func (c Client) UpdateDNSDomainRecord(ctx context.Context, domainID UUID, record
 		return nil, fmt.Errorf("UpdateDNSDomainRecord: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateDNSDomainRecord: prepare Json response: %w", err)
 	}
@@ -9256,7 +8749,7 @@ func (c Client) DeleteDNSDomain(ctx context.Context, id UUID) (*Operation, error
 		return nil, fmt.Errorf("DeleteDNSDomain: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDNSDomain: prepare Json response: %w", err)
 	}
@@ -9300,7 +8793,7 @@ func (c Client) GetDNSDomain(ctx context.Context, id UUID) (*DNSDomain, error) {
 		return nil, fmt.Errorf("GetDNSDomain: http response: %w", err)
 	}
 
-	bodyresp := new(DNSDomain)
+	bodyresp := &DNSDomain{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDNSDomain: prepare Json response: %w", err)
 	}
@@ -9348,7 +8841,7 @@ func (c Client) GetDNSDomainZoneFile(ctx context.Context, id UUID) (*GetDNSDomai
 		return nil, fmt.Errorf("GetDNSDomainZoneFile: http response: %w", err)
 	}
 
-	bodyresp := new(GetDNSDomainZoneFileResponse)
+	bodyresp := &GetDNSDomainZoneFileResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDNSDomainZoneFile: prepare Json response: %w", err)
 	}
@@ -9415,7 +8908,7 @@ func (c Client) ListElasticIPS(ctx context.Context) (*ListElasticIPSResponse, er
 		return nil, fmt.Errorf("ListElasticIPS: http response: %w", err)
 	}
 
-	bodyresp := new(ListElasticIPSResponse)
+	bodyresp := &ListElasticIPSResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListElasticIPS: prepare Json response: %w", err)
 	}
@@ -9483,7 +8976,7 @@ func (c Client) CreateElasticIP(ctx context.Context, req CreateElasticIPRequest)
 		return nil, fmt.Errorf("CreateElasticIP: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateElasticIP: prepare Json response: %w", err)
 	}
@@ -9527,7 +9020,7 @@ func (c Client) DeleteElasticIP(ctx context.Context, id UUID) (*Operation, error
 		return nil, fmt.Errorf("DeleteElasticIP: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteElasticIP: prepare Json response: %w", err)
 	}
@@ -9571,7 +9064,7 @@ func (c Client) GetElasticIP(ctx context.Context, id UUID) (*ElasticIP, error) {
 		return nil, fmt.Errorf("GetElasticIP: http response: %w", err)
 	}
 
-	bodyresp := new(ElasticIP)
+	bodyresp := &ElasticIP{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetElasticIP: prepare Json response: %w", err)
 	}
@@ -9630,7 +9123,7 @@ func (c Client) UpdateElasticIP(ctx context.Context, id UUID, req UpdateElasticI
 		return nil, fmt.Errorf("UpdateElasticIP: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateElasticIP: prepare Json response: %w", err)
 	}
@@ -9680,7 +9173,7 @@ func (c Client) ResetElasticIPField(ctx context.Context, id UUID, field ResetEla
 		return nil, fmt.Errorf("ResetElasticIPField: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetElasticIPField: prepare Json response: %w", err)
 	}
@@ -9736,7 +9229,7 @@ func (c Client) AttachInstanceToElasticIP(ctx context.Context, id UUID, req Atta
 		return nil, fmt.Errorf("AttachInstanceToElasticIP: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("AttachInstanceToElasticIP: prepare Json response: %w", err)
 	}
@@ -9792,7 +9285,7 @@ func (c Client) DetachInstanceFromElasticIP(ctx context.Context, id UUID, req De
 		return nil, fmt.Errorf("DetachInstanceFromElasticIP: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DetachInstanceFromElasticIP: prepare Json response: %w", err)
 	}
@@ -9836,7 +9329,7 @@ func (c Client) GetEnvImpact(ctx context.Context, period string) (*EnvImpactRepo
 		return nil, fmt.Errorf("GetEnvImpact: http response: %w", err)
 	}
 
-	bodyresp := new(EnvImpactReport)
+	bodyresp := &EnvImpactReport{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetEnvImpact: prepare Json response: %w", err)
 	}
@@ -9948,7 +9441,7 @@ func (c Client) GetIAMOrganizationPolicy(ctx context.Context) (*IAMPolicy, error
 		return nil, fmt.Errorf("GetIAMOrganizationPolicy: http response: %w", err)
 	}
 
-	bodyresp := new(IAMPolicy)
+	bodyresp := &IAMPolicy{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetIAMOrganizationPolicy: prepare Json response: %w", err)
 	}
@@ -9999,7 +9492,7 @@ func (c Client) UpdateIAMOrganizationPolicy(ctx context.Context, req IAMPolicy) 
 		return nil, fmt.Errorf("UpdateIAMOrganizationPolicy: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateIAMOrganizationPolicy: prepare Json response: %w", err)
 	}
@@ -10043,7 +9536,7 @@ func (c Client) ResetIAMOrganizationPolicy(ctx context.Context) (*Operation, err
 		return nil, fmt.Errorf("ResetIAMOrganizationPolicy: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetIAMOrganizationPolicy: prepare Json response: %w", err)
 	}
@@ -10110,7 +9603,7 @@ func (c Client) ListIAMRoles(ctx context.Context) (*ListIAMRolesResponse, error)
 		return nil, fmt.Errorf("ListIAMRoles: http response: %w", err)
 	}
 
-	bodyresp := new(ListIAMRolesResponse)
+	bodyresp := &ListIAMRolesResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListIAMRoles: prepare Json response: %w", err)
 	}
@@ -10175,7 +9668,7 @@ func (c Client) CreateIAMRole(ctx context.Context, req CreateIAMRoleRequest) (*O
 		return nil, fmt.Errorf("CreateIAMRole: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateIAMRole: prepare Json response: %w", err)
 	}
@@ -10219,7 +9712,7 @@ func (c Client) DeleteIAMRole(ctx context.Context, id UUID) (*Operation, error) 
 		return nil, fmt.Errorf("DeleteIAMRole: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteIAMRole: prepare Json response: %w", err)
 	}
@@ -10263,7 +9756,7 @@ func (c Client) GetIAMRole(ctx context.Context, id UUID) (*IAMRole, error) {
 		return nil, fmt.Errorf("GetIAMRole: http response: %w", err)
 	}
 
-	bodyresp := new(IAMRole)
+	bodyresp := &IAMRole{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetIAMRole: prepare Json response: %w", err)
 	}
@@ -10322,7 +9815,7 @@ func (c Client) UpdateIAMRole(ctx context.Context, id UUID, req UpdateIAMRoleReq
 		return nil, fmt.Errorf("UpdateIAMRole: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateIAMRole: prepare Json response: %w", err)
 	}
@@ -10373,7 +9866,7 @@ func (c Client) UpdateIAMRolePolicy(ctx context.Context, id UUID, req IAMPolicy)
 		return nil, fmt.Errorf("UpdateIAMRolePolicy: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateIAMRolePolicy: prepare Json response: %w", err)
 	}
@@ -10515,7 +10008,7 @@ func (c Client) ListInstances(ctx context.Context, opts ...ListInstancesOpt) (*L
 		return nil, fmt.Errorf("ListInstances: http response: %w", err)
 	}
 
-	bodyresp := new(ListInstancesResponse)
+	bodyresp := &ListInstancesResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListInstances: prepare Json response: %w", err)
 	}
@@ -10599,7 +10092,7 @@ func (c Client) CreateInstance(ctx context.Context, req CreateInstanceRequest) (
 		return nil, fmt.Errorf("CreateInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateInstance: prepare Json response: %w", err)
 	}
@@ -10666,7 +10159,7 @@ func (c Client) ListInstancePools(ctx context.Context) (*ListInstancePoolsRespon
 		return nil, fmt.Errorf("ListInstancePools: http response: %w", err)
 	}
 
-	bodyresp := new(ListInstancePoolsResponse)
+	bodyresp := &ListInstancePoolsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListInstancePools: prepare Json response: %w", err)
 	}
@@ -10765,7 +10258,7 @@ func (c Client) CreateInstancePool(ctx context.Context, req CreateInstancePoolRe
 		return nil, fmt.Errorf("CreateInstancePool: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateInstancePool: prepare Json response: %w", err)
 	}
@@ -10809,7 +10302,7 @@ func (c Client) DeleteInstancePool(ctx context.Context, id UUID) (*Operation, er
 		return nil, fmt.Errorf("DeleteInstancePool: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteInstancePool: prepare Json response: %w", err)
 	}
@@ -10853,7 +10346,7 @@ func (c Client) GetInstancePool(ctx context.Context, id UUID) (*InstancePool, er
 		return nil, fmt.Errorf("GetInstancePool: http response: %w", err)
 	}
 
-	bodyresp := new(InstancePool)
+	bodyresp := &InstancePool{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetInstancePool: prepare Json response: %w", err)
 	}
@@ -10949,7 +10442,7 @@ func (c Client) UpdateInstancePool(ctx context.Context, id UUID, req UpdateInsta
 		return nil, fmt.Errorf("UpdateInstancePool: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateInstancePool: prepare Json response: %w", err)
 	}
@@ -11008,7 +10501,7 @@ func (c Client) ResetInstancePoolField(ctx context.Context, id UUID, field Reset
 		return nil, fmt.Errorf("ResetInstancePoolField: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetInstancePoolField: prepare Json response: %w", err)
 	}
@@ -11063,7 +10556,7 @@ func (c Client) EvictInstancePoolMembers(ctx context.Context, id UUID, req Evict
 		return nil, fmt.Errorf("EvictInstancePoolMembers: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("EvictInstancePoolMembers: prepare Json response: %w", err)
 	}
@@ -11119,7 +10612,7 @@ func (c Client) ScaleInstancePool(ctx context.Context, id UUID, req ScaleInstanc
 		return nil, fmt.Errorf("ScaleInstancePool: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ScaleInstancePool: prepare Json response: %w", err)
 	}
@@ -11186,7 +10679,7 @@ func (c Client) ListInstanceTypes(ctx context.Context) (*ListInstanceTypesRespon
 		return nil, fmt.Errorf("ListInstanceTypes: http response: %w", err)
 	}
 
-	bodyresp := new(ListInstanceTypesResponse)
+	bodyresp := &ListInstanceTypesResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListInstanceTypes: prepare Json response: %w", err)
 	}
@@ -11230,7 +10723,7 @@ func (c Client) GetInstanceType(ctx context.Context, id UUID) (*InstanceType, er
 		return nil, fmt.Errorf("GetInstanceType: http response: %w", err)
 	}
 
-	bodyresp := new(InstanceType)
+	bodyresp := &InstanceType{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetInstanceType: prepare Json response: %w", err)
 	}
@@ -11274,7 +10767,7 @@ func (c Client) DeleteInstance(ctx context.Context, id UUID) (*Operation, error)
 		return nil, fmt.Errorf("DeleteInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteInstance: prepare Json response: %w", err)
 	}
@@ -11318,7 +10811,7 @@ func (c Client) GetInstance(ctx context.Context, id UUID) (*Instance, error) {
 		return nil, fmt.Errorf("GetInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Instance)
+	bodyresp := &Instance{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetInstance: prepare Json response: %w", err)
 	}
@@ -11378,7 +10871,7 @@ func (c Client) UpdateInstance(ctx context.Context, id UUID, req UpdateInstanceR
 		return nil, fmt.Errorf("UpdateInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateInstance: prepare Json response: %w", err)
 	}
@@ -11428,7 +10921,7 @@ func (c Client) ResetInstanceField(ctx context.Context, id UUID, field ResetInst
 		return nil, fmt.Errorf("ResetInstanceField: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetInstanceField: prepare Json response: %w", err)
 	}
@@ -11472,7 +10965,7 @@ func (c Client) AddInstanceProtection(ctx context.Context, id UUID) (*Operation,
 		return nil, fmt.Errorf("AddInstanceProtection: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("AddInstanceProtection: prepare Json response: %w", err)
 	}
@@ -11516,7 +11009,7 @@ func (c Client) CreateSnapshot(ctx context.Context, id UUID) (*Operation, error)
 		return nil, fmt.Errorf("CreateSnapshot: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateSnapshot: prepare Json response: %w", err)
 	}
@@ -11560,7 +11053,7 @@ func (c Client) EnableTpm(ctx context.Context, id UUID) (*Operation, error) {
 		return nil, fmt.Errorf("EnableTpm: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("EnableTpm: prepare Json response: %w", err)
 	}
@@ -11608,7 +11101,7 @@ func (c Client) RevealInstancePassword(ctx context.Context, id UUID) (*InstanceP
 		return nil, fmt.Errorf("RevealInstancePassword: http response: %w", err)
 	}
 
-	bodyresp := new(InstancePassword)
+	bodyresp := &InstancePassword{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RevealInstancePassword: prepare Json response: %w", err)
 	}
@@ -11652,7 +11145,7 @@ func (c Client) RebootInstance(ctx context.Context, id UUID) (*Operation, error)
 		return nil, fmt.Errorf("RebootInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RebootInstance: prepare Json response: %w", err)
 	}
@@ -11696,7 +11189,7 @@ func (c Client) RemoveInstanceProtection(ctx context.Context, id UUID) (*Operati
 		return nil, fmt.Errorf("RemoveInstanceProtection: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RemoveInstanceProtection: prepare Json response: %w", err)
 	}
@@ -11754,7 +11247,7 @@ func (c Client) ResetInstance(ctx context.Context, id UUID, req ResetInstanceReq
 		return nil, fmt.Errorf("ResetInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetInstance: prepare Json response: %w", err)
 	}
@@ -11798,7 +11291,7 @@ func (c Client) ResetInstancePassword(ctx context.Context, id UUID) (*Operation,
 		return nil, fmt.Errorf("ResetInstancePassword: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetInstancePassword: prepare Json response: %w", err)
 	}
@@ -11854,7 +11347,7 @@ func (c Client) ResizeInstanceDisk(ctx context.Context, id UUID, req ResizeInsta
 		return nil, fmt.Errorf("ResizeInstanceDisk: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResizeInstanceDisk: prepare Json response: %w", err)
 	}
@@ -11910,7 +11403,7 @@ func (c Client) ScaleInstance(ctx context.Context, id UUID, req ScaleInstanceReq
 		return nil, fmt.Errorf("ScaleInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ScaleInstance: prepare Json response: %w", err)
 	}
@@ -11973,7 +11466,7 @@ func (c Client) StartInstance(ctx context.Context, id UUID, req StartInstanceReq
 		return nil, fmt.Errorf("StartInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StartInstance: prepare Json response: %w", err)
 	}
@@ -12017,7 +11510,7 @@ func (c Client) StopInstance(ctx context.Context, id UUID) (*Operation, error) {
 		return nil, fmt.Errorf("StopInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StopInstance: prepare Json response: %w", err)
 	}
@@ -12074,7 +11567,7 @@ func (c Client) RevertInstanceToSnapshot(ctx context.Context, instanceID UUID, r
 		return nil, fmt.Errorf("RevertInstanceToSnapshot: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RevertInstanceToSnapshot: prepare Json response: %w", err)
 	}
@@ -12141,7 +11634,7 @@ func (c Client) ListLoadBalancers(ctx context.Context) (*ListLoadBalancersRespon
 		return nil, fmt.Errorf("ListLoadBalancers: http response: %w", err)
 	}
 
-	bodyresp := new(ListLoadBalancersResponse)
+	bodyresp := &ListLoadBalancersResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListLoadBalancers: prepare Json response: %w", err)
 	}
@@ -12200,7 +11693,7 @@ func (c Client) CreateLoadBalancer(ctx context.Context, req CreateLoadBalancerRe
 		return nil, fmt.Errorf("CreateLoadBalancer: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateLoadBalancer: prepare Json response: %w", err)
 	}
@@ -12244,7 +11737,7 @@ func (c Client) DeleteLoadBalancer(ctx context.Context, id UUID) (*Operation, er
 		return nil, fmt.Errorf("DeleteLoadBalancer: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteLoadBalancer: prepare Json response: %w", err)
 	}
@@ -12288,7 +11781,7 @@ func (c Client) GetLoadBalancer(ctx context.Context, id UUID) (*LoadBalancer, er
 		return nil, fmt.Errorf("GetLoadBalancer: http response: %w", err)
 	}
 
-	bodyresp := new(LoadBalancer)
+	bodyresp := &LoadBalancer{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetLoadBalancer: prepare Json response: %w", err)
 	}
@@ -12347,7 +11840,7 @@ func (c Client) UpdateLoadBalancer(ctx context.Context, id UUID, req UpdateLoadB
 		return nil, fmt.Errorf("UpdateLoadBalancer: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateLoadBalancer: prepare Json response: %w", err)
 	}
@@ -12432,7 +11925,7 @@ func (c Client) AddServiceToLoadBalancer(ctx context.Context, id UUID, req AddSe
 		return nil, fmt.Errorf("AddServiceToLoadBalancer: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("AddServiceToLoadBalancer: prepare Json response: %w", err)
 	}
@@ -12476,7 +11969,7 @@ func (c Client) DeleteLoadBalancerService(ctx context.Context, id UUID, serviceI
 		return nil, fmt.Errorf("DeleteLoadBalancerService: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteLoadBalancerService: prepare Json response: %w", err)
 	}
@@ -12520,7 +12013,7 @@ func (c Client) GetLoadBalancerService(ctx context.Context, id UUID, serviceID U
 		return nil, fmt.Errorf("GetLoadBalancerService: http response: %w", err)
 	}
 
-	bodyresp := new(LoadBalancerService)
+	bodyresp := &LoadBalancerService{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetLoadBalancerService: prepare Json response: %w", err)
 	}
@@ -12603,7 +12096,7 @@ func (c Client) UpdateLoadBalancerService(ctx context.Context, id UUID, serviceI
 		return nil, fmt.Errorf("UpdateLoadBalancerService: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateLoadBalancerService: prepare Json response: %w", err)
 	}
@@ -12653,7 +12146,7 @@ func (c Client) ResetLoadBalancerServiceField(ctx context.Context, id UUID, serv
 		return nil, fmt.Errorf("ResetLoadBalancerServiceField: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetLoadBalancerServiceField: prepare Json response: %w", err)
 	}
@@ -12704,7 +12197,7 @@ func (c Client) ResetLoadBalancerField(ctx context.Context, id UUID, field Reset
 		return nil, fmt.Errorf("ResetLoadBalancerField: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetLoadBalancerField: prepare Json response: %w", err)
 	}
@@ -12748,7 +12241,7 @@ func (c Client) GetOperation(ctx context.Context, id UUID) (*Operation, error) {
 		return nil, fmt.Errorf("GetOperation: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetOperation: prepare Json response: %w", err)
 	}
@@ -12792,7 +12285,7 @@ func (c Client) GetOrganization(ctx context.Context) (*Organization, error) {
 		return nil, fmt.Errorf("GetOrganization: http response: %w", err)
 	}
 
-	bodyresp := new(Organization)
+	bodyresp := &Organization{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetOrganization: prepare Json response: %w", err)
 	}
@@ -12859,7 +12352,7 @@ func (c Client) ListPrivateNetworks(ctx context.Context) (*ListPrivateNetworksRe
 		return nil, fmt.Errorf("ListPrivateNetworks: http response: %w", err)
 	}
 
-	bodyresp := new(ListPrivateNetworksResponse)
+	bodyresp := &ListPrivateNetworksResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListPrivateNetworks: prepare Json response: %w", err)
 	}
@@ -12926,7 +12419,7 @@ func (c Client) CreatePrivateNetwork(ctx context.Context, req CreatePrivateNetwo
 		return nil, fmt.Errorf("CreatePrivateNetwork: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreatePrivateNetwork: prepare Json response: %w", err)
 	}
@@ -12970,7 +12463,7 @@ func (c Client) DeletePrivateNetwork(ctx context.Context, id UUID) (*Operation, 
 		return nil, fmt.Errorf("DeletePrivateNetwork: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeletePrivateNetwork: prepare Json response: %w", err)
 	}
@@ -13014,7 +12507,7 @@ func (c Client) GetPrivateNetwork(ctx context.Context, id UUID) (*PrivateNetwork
 		return nil, fmt.Errorf("GetPrivateNetwork: http response: %w", err)
 	}
 
-	bodyresp := new(PrivateNetwork)
+	bodyresp := &PrivateNetwork{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetPrivateNetwork: prepare Json response: %w", err)
 	}
@@ -13081,7 +12574,7 @@ func (c Client) UpdatePrivateNetwork(ctx context.Context, id UUID, req UpdatePri
 		return nil, fmt.Errorf("UpdatePrivateNetwork: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdatePrivateNetwork: prepare Json response: %w", err)
 	}
@@ -13131,7 +12624,7 @@ func (c Client) ResetPrivateNetworkField(ctx context.Context, id UUID, field Res
 		return nil, fmt.Errorf("ResetPrivateNetworkField: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetPrivateNetworkField: prepare Json response: %w", err)
 	}
@@ -13195,7 +12688,7 @@ func (c Client) AttachInstanceToPrivateNetwork(ctx context.Context, id UUID, req
 		return nil, fmt.Errorf("AttachInstanceToPrivateNetwork: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("AttachInstanceToPrivateNetwork: prepare Json response: %w", err)
 	}
@@ -13251,7 +12744,7 @@ func (c Client) DetachInstanceFromPrivateNetwork(ctx context.Context, id UUID, r
 		return nil, fmt.Errorf("DetachInstanceFromPrivateNetwork: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DetachInstanceFromPrivateNetwork: prepare Json response: %w", err)
 	}
@@ -13313,7 +12806,7 @@ func (c Client) UpdatePrivateNetworkInstanceIP(ctx context.Context, id UUID, req
 		return nil, fmt.Errorf("UpdatePrivateNetworkInstanceIP: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdatePrivateNetworkInstanceIP: prepare Json response: %w", err)
 	}
@@ -13361,7 +12854,7 @@ func (c Client) ListQuotas(ctx context.Context) (*ListQuotasResponse, error) {
 		return nil, fmt.Errorf("ListQuotas: http response: %w", err)
 	}
 
-	bodyresp := new(ListQuotasResponse)
+	bodyresp := &ListQuotasResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListQuotas: prepare Json response: %w", err)
 	}
@@ -13405,7 +12898,7 @@ func (c Client) GetQuota(ctx context.Context, entity string) (*Quota, error) {
 		return nil, fmt.Errorf("GetQuota: http response: %w", err)
 	}
 
-	bodyresp := new(Quota)
+	bodyresp := &Quota{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetQuota: prepare Json response: %w", err)
 	}
@@ -13449,7 +12942,7 @@ func (c Client) DeleteReverseDNSElasticIP(ctx context.Context, id UUID) (*Operat
 		return nil, fmt.Errorf("DeleteReverseDNSElasticIP: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteReverseDNSElasticIP: prepare Json response: %w", err)
 	}
@@ -13493,7 +12986,7 @@ func (c Client) GetReverseDNSElasticIP(ctx context.Context, id UUID) (*ReverseDN
 		return nil, fmt.Errorf("GetReverseDNSElasticIP: http response: %w", err)
 	}
 
-	bodyresp := new(ReverseDNSRecord)
+	bodyresp := &ReverseDNSRecord{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetReverseDNSElasticIP: prepare Json response: %w", err)
 	}
@@ -13548,7 +13041,7 @@ func (c Client) UpdateReverseDNSElasticIP(ctx context.Context, id UUID, req Upda
 		return nil, fmt.Errorf("UpdateReverseDNSElasticIP: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateReverseDNSElasticIP: prepare Json response: %w", err)
 	}
@@ -13592,7 +13085,7 @@ func (c Client) DeleteReverseDNSInstance(ctx context.Context, id UUID) (*Operati
 		return nil, fmt.Errorf("DeleteReverseDNSInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteReverseDNSInstance: prepare Json response: %w", err)
 	}
@@ -13636,7 +13129,7 @@ func (c Client) GetReverseDNSInstance(ctx context.Context, id UUID) (*ReverseDNS
 		return nil, fmt.Errorf("GetReverseDNSInstance: http response: %w", err)
 	}
 
-	bodyresp := new(ReverseDNSRecord)
+	bodyresp := &ReverseDNSRecord{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetReverseDNSInstance: prepare Json response: %w", err)
 	}
@@ -13691,7 +13184,7 @@ func (c Client) UpdateReverseDNSInstance(ctx context.Context, id UUID, req Updat
 		return nil, fmt.Errorf("UpdateReverseDNSInstance: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateReverseDNSInstance: prepare Json response: %w", err)
 	}
@@ -13784,7 +13277,7 @@ func (c Client) ListSecurityGroups(ctx context.Context, opts ...ListSecurityGrou
 		return nil, fmt.Errorf("ListSecurityGroups: http response: %w", err)
 	}
 
-	bodyresp := new(ListSecurityGroupsResponse)
+	bodyresp := &ListSecurityGroupsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListSecurityGroups: prepare Json response: %w", err)
 	}
@@ -13842,7 +13335,7 @@ func (c Client) CreateSecurityGroup(ctx context.Context, req CreateSecurityGroup
 		return nil, fmt.Errorf("CreateSecurityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateSecurityGroup: prepare Json response: %w", err)
 	}
@@ -13886,7 +13379,7 @@ func (c Client) DeleteSecurityGroup(ctx context.Context, id UUID) (*Operation, e
 		return nil, fmt.Errorf("DeleteSecurityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteSecurityGroup: prepare Json response: %w", err)
 	}
@@ -13930,7 +13423,7 @@ func (c Client) GetSecurityGroup(ctx context.Context, id UUID) (*SecurityGroup, 
 		return nil, fmt.Errorf("GetSecurityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(SecurityGroup)
+	bodyresp := &SecurityGroup{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetSecurityGroup: prepare Json response: %w", err)
 	}
@@ -14026,7 +13519,7 @@ func (c Client) AddRuleToSecurityGroup(ctx context.Context, id UUID, req AddRule
 		return nil, fmt.Errorf("AddRuleToSecurityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("AddRuleToSecurityGroup: prepare Json response: %w", err)
 	}
@@ -14070,7 +13563,7 @@ func (c Client) DeleteRuleFromSecurityGroup(ctx context.Context, id UUID, ruleID
 		return nil, fmt.Errorf("DeleteRuleFromSecurityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteRuleFromSecurityGroup: prepare Json response: %w", err)
 	}
@@ -14126,7 +13619,7 @@ func (c Client) AddExternalSourceToSecurityGroup(ctx context.Context, id UUID, r
 		return nil, fmt.Errorf("AddExternalSourceToSecurityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("AddExternalSourceToSecurityGroup: prepare Json response: %w", err)
 	}
@@ -14182,7 +13675,7 @@ func (c Client) AttachInstanceToSecurityGroup(ctx context.Context, id UUID, req 
 		return nil, fmt.Errorf("AttachInstanceToSecurityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("AttachInstanceToSecurityGroup: prepare Json response: %w", err)
 	}
@@ -14238,7 +13731,7 @@ func (c Client) DetachInstanceFromSecurityGroup(ctx context.Context, id UUID, re
 		return nil, fmt.Errorf("DetachInstanceFromSecurityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DetachInstanceFromSecurityGroup: prepare Json response: %w", err)
 	}
@@ -14294,7 +13787,7 @@ func (c Client) RemoveExternalSourceFromSecurityGroup(ctx context.Context, id UU
 		return nil, fmt.Errorf("RemoveExternalSourceFromSecurityGroup: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RemoveExternalSourceFromSecurityGroup: prepare Json response: %w", err)
 	}
@@ -14361,7 +13854,7 @@ func (c Client) ListSKSClusters(ctx context.Context) (*ListSKSClustersResponse, 
 		return nil, fmt.Errorf("ListSKSClusters: http response: %w", err)
 	}
 
-	bodyresp := new(ListSKSClustersResponse)
+	bodyresp := &ListSKSClustersResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListSKSClusters: prepare Json response: %w", err)
 	}
@@ -14456,7 +13949,7 @@ func (c Client) CreateSKSCluster(ctx context.Context, req CreateSKSClusterReques
 		return nil, fmt.Errorf("CreateSKSCluster: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateSKSCluster: prepare Json response: %w", err)
 	}
@@ -14555,7 +14048,7 @@ func (c Client) GenerateSKSClusterKubeconfig(ctx context.Context, id UUID, req S
 		return nil, fmt.Errorf("GenerateSKSClusterKubeconfig: http response: %w", err)
 	}
 
-	bodyresp := new(GenerateSKSClusterKubeconfigResponse)
+	bodyresp := &GenerateSKSClusterKubeconfigResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GenerateSKSClusterKubeconfig: prepare Json response: %w", err)
 	}
@@ -14619,7 +14112,7 @@ func (c Client) ListSKSClusterVersions(ctx context.Context, opts ...ListSKSClust
 		return nil, fmt.Errorf("ListSKSClusterVersions: http response: %w", err)
 	}
 
-	bodyresp := new(ListSKSClusterVersionsResponse)
+	bodyresp := &ListSKSClusterVersionsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListSKSClusterVersions: prepare Json response: %w", err)
 	}
@@ -14663,7 +14156,7 @@ func (c Client) DeleteSKSCluster(ctx context.Context, id UUID) (*Operation, erro
 		return nil, fmt.Errorf("DeleteSKSCluster: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteSKSCluster: prepare Json response: %w", err)
 	}
@@ -14707,7 +14200,7 @@ func (c Client) GetSKSCluster(ctx context.Context, id UUID) (*SKSCluster, error)
 		return nil, fmt.Errorf("GetSKSCluster: http response: %w", err)
 	}
 
-	bodyresp := new(SKSCluster)
+	bodyresp := &SKSCluster{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetSKSCluster: prepare Json response: %w", err)
 	}
@@ -14778,7 +14271,7 @@ func (c Client) UpdateSKSCluster(ctx context.Context, id UUID, req UpdateSKSClus
 		return nil, fmt.Errorf("UpdateSKSCluster: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateSKSCluster: prepare Json response: %w", err)
 	}
@@ -14834,7 +14327,7 @@ func (c Client) GetSKSClusterAuthorityCert(ctx context.Context, id UUID, authori
 		return nil, fmt.Errorf("GetSKSClusterAuthorityCert: http response: %w", err)
 	}
 
-	bodyresp := new(GetSKSClusterAuthorityCertResponse)
+	bodyresp := &GetSKSClusterAuthorityCertResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetSKSClusterAuthorityCert: prepare Json response: %w", err)
 	}
@@ -14880,7 +14373,7 @@ func (c Client) GetSKSClusterInspection(ctx context.Context, id UUID) (*GetSKSCl
 		return nil, fmt.Errorf("GetSKSClusterInspection: http response: %w", err)
 	}
 
-	bodyresp := new(GetSKSClusterInspectionResponse)
+	bodyresp := &GetSKSClusterInspectionResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetSKSClusterInspection: prepare Json response: %w", err)
 	}
@@ -14971,7 +14464,7 @@ func (c Client) CreateSKSNodepool(ctx context.Context, id UUID, req CreateSKSNod
 		return nil, fmt.Errorf("CreateSKSNodepool: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateSKSNodepool: prepare Json response: %w", err)
 	}
@@ -15015,7 +14508,7 @@ func (c Client) DeleteSKSNodepool(ctx context.Context, id UUID, sksNodepoolID UU
 		return nil, fmt.Errorf("DeleteSKSNodepool: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteSKSNodepool: prepare Json response: %w", err)
 	}
@@ -15059,7 +14552,7 @@ func (c Client) GetSKSNodepool(ctx context.Context, id UUID, sksNodepoolID UUID)
 		return nil, fmt.Errorf("GetSKSNodepool: http response: %w", err)
 	}
 
-	bodyresp := new(SKSNodepool)
+	bodyresp := &SKSNodepool{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetSKSNodepool: prepare Json response: %w", err)
 	}
@@ -15144,7 +14637,7 @@ func (c Client) UpdateSKSNodepool(ctx context.Context, id UUID, sksNodepoolID UU
 		return nil, fmt.Errorf("UpdateSKSNodepool: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateSKSNodepool: prepare Json response: %w", err)
 	}
@@ -15199,7 +14692,7 @@ func (c Client) EvictSKSNodepoolMembers(ctx context.Context, id UUID, sksNodepoo
 		return nil, fmt.Errorf("EvictSKSNodepoolMembers: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("EvictSKSNodepoolMembers: prepare Json response: %w", err)
 	}
@@ -15255,7 +14748,7 @@ func (c Client) ScaleSKSNodepool(ctx context.Context, id UUID, sksNodepoolID UUI
 		return nil, fmt.Errorf("ScaleSKSNodepool: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ScaleSKSNodepool: prepare Json response: %w", err)
 	}
@@ -15299,7 +14792,7 @@ func (c Client) RotateSKSCcmCredentials(ctx context.Context, id UUID) (*Operatio
 		return nil, fmt.Errorf("RotateSKSCcmCredentials: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RotateSKSCcmCredentials: prepare Json response: %w", err)
 	}
@@ -15343,7 +14836,7 @@ func (c Client) RotateSKSCsiCredentials(ctx context.Context, id UUID) (*Operatio
 		return nil, fmt.Errorf("RotateSKSCsiCredentials: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RotateSKSCsiCredentials: prepare Json response: %w", err)
 	}
@@ -15387,7 +14880,7 @@ func (c Client) RotateSKSKarpenterCredentials(ctx context.Context, id UUID) (*Op
 		return nil, fmt.Errorf("RotateSKSKarpenterCredentials: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RotateSKSKarpenterCredentials: prepare Json response: %w", err)
 	}
@@ -15431,7 +14924,7 @@ func (c Client) RotateSKSOperatorsCA(ctx context.Context, id UUID) (*Operation, 
 		return nil, fmt.Errorf("RotateSKSOperatorsCA: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RotateSKSOperatorsCA: prepare Json response: %w", err)
 	}
@@ -15487,7 +14980,7 @@ func (c Client) UpgradeSKSCluster(ctx context.Context, id UUID, req UpgradeSKSCl
 		return nil, fmt.Errorf("UpgradeSKSCluster: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpgradeSKSCluster: prepare Json response: %w", err)
 	}
@@ -15531,7 +15024,7 @@ func (c Client) UpgradeSKSClusterServiceLevel(ctx context.Context, id UUID) (*Op
 		return nil, fmt.Errorf("UpgradeSKSClusterServiceLevel: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpgradeSKSClusterServiceLevel: prepare Json response: %w", err)
 	}
@@ -15586,7 +15079,7 @@ func (c Client) GetActiveNodepoolTemplate(ctx context.Context, kubeVersion strin
 		return nil, fmt.Errorf("GetActiveNodepoolTemplate: http response: %w", err)
 	}
 
-	bodyresp := new(GetActiveNodepoolTemplateResponse)
+	bodyresp := &GetActiveNodepoolTemplateResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetActiveNodepoolTemplate: prepare Json response: %w", err)
 	}
@@ -15653,7 +15146,7 @@ func (c Client) ListSnapshots(ctx context.Context) (*ListSnapshotsResponse, erro
 		return nil, fmt.Errorf("ListSnapshots: http response: %w", err)
 	}
 
-	bodyresp := new(ListSnapshotsResponse)
+	bodyresp := &ListSnapshotsResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListSnapshots: prepare Json response: %w", err)
 	}
@@ -15697,7 +15190,7 @@ func (c Client) DeleteSnapshot(ctx context.Context, id UUID) (*Operation, error)
 		return nil, fmt.Errorf("DeleteSnapshot: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteSnapshot: prepare Json response: %w", err)
 	}
@@ -15741,7 +15234,7 @@ func (c Client) GetSnapshot(ctx context.Context, id UUID) (*Snapshot, error) {
 		return nil, fmt.Errorf("GetSnapshot: http response: %w", err)
 	}
 
-	bodyresp := new(Snapshot)
+	bodyresp := &Snapshot{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetSnapshot: prepare Json response: %w", err)
 	}
@@ -15785,7 +15278,7 @@ func (c Client) ExportSnapshot(ctx context.Context, id UUID) (*Operation, error)
 		return nil, fmt.Errorf("ExportSnapshot: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ExportSnapshot: prepare Json response: %w", err)
 	}
@@ -15849,7 +15342,7 @@ func (c Client) PromoteSnapshotToTemplate(ctx context.Context, id UUID, req Prom
 		return nil, fmt.Errorf("PromoteSnapshotToTemplate: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("PromoteSnapshotToTemplate: prepare Json response: %w", err)
 	}
@@ -15916,7 +15409,7 @@ func (c Client) ListSOSBucketsUsage(ctx context.Context) (*ListSOSBucketsUsageRe
 		return nil, fmt.Errorf("ListSOSBucketsUsage: http response: %w", err)
 	}
 
-	bodyresp := new(ListSOSBucketsUsageResponse)
+	bodyresp := &ListSOSBucketsUsageResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListSOSBucketsUsage: prepare Json response: %w", err)
 	}
@@ -15980,7 +15473,7 @@ func (c Client) GetSOSPresignedURL(ctx context.Context, bucket string, opts ...G
 		return nil, fmt.Errorf("GetSOSPresignedURL: http response: %w", err)
 	}
 
-	bodyresp := new(GetSOSPresignedURLResponse)
+	bodyresp := &GetSOSPresignedURLResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetSOSPresignedURL: prepare Json response: %w", err)
 	}
@@ -16047,7 +15540,7 @@ func (c Client) ListSSHKeys(ctx context.Context) (*ListSSHKeysResponse, error) {
 		return nil, fmt.Errorf("ListSSHKeys: http response: %w", err)
 	}
 
-	bodyresp := new(ListSSHKeysResponse)
+	bodyresp := &ListSSHKeysResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListSSHKeys: prepare Json response: %w", err)
 	}
@@ -16105,7 +15598,7 @@ func (c Client) RegisterSSHKey(ctx context.Context, req RegisterSSHKeyRequest) (
 		return nil, fmt.Errorf("RegisterSSHKey: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RegisterSSHKey: prepare Json response: %w", err)
 	}
@@ -16149,7 +15642,7 @@ func (c Client) DeleteSSHKey(ctx context.Context, name string) (*Operation, erro
 		return nil, fmt.Errorf("DeleteSSHKey: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteSSHKey: prepare Json response: %w", err)
 	}
@@ -16193,7 +15686,7 @@ func (c Client) GetSSHKey(ctx context.Context, name string) (*SSHKey, error) {
 		return nil, fmt.Errorf("GetSSHKey: http response: %w", err)
 	}
 
-	bodyresp := new(SSHKey)
+	bodyresp := &SSHKey{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetSSHKey: prepare Json response: %w", err)
 	}
@@ -16289,7 +15782,7 @@ func (c Client) ListTemplates(ctx context.Context, opts ...ListTemplatesOpt) (*L
 		return nil, fmt.Errorf("ListTemplates: http response: %w", err)
 	}
 
-	bodyresp := new(ListTemplatesResponse)
+	bodyresp := &ListTemplatesResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListTemplates: prepare Json response: %w", err)
 	}
@@ -16374,7 +15867,7 @@ func (c Client) RegisterTemplate(ctx context.Context, req RegisterTemplateReques
 		return nil, fmt.Errorf("RegisterTemplate: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RegisterTemplate: prepare Json response: %w", err)
 	}
@@ -16418,7 +15911,7 @@ func (c Client) DeleteTemplate(ctx context.Context, id UUID) (*Operation, error)
 		return nil, fmt.Errorf("DeleteTemplate: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteTemplate: prepare Json response: %w", err)
 	}
@@ -16462,7 +15955,7 @@ func (c Client) GetTemplate(ctx context.Context, id UUID) (*Template, error) {
 		return nil, fmt.Errorf("GetTemplate: http response: %w", err)
 	}
 
-	bodyresp := new(Template)
+	bodyresp := &Template{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetTemplate: prepare Json response: %w", err)
 	}
@@ -16518,7 +16011,7 @@ func (c Client) CopyTemplate(ctx context.Context, id UUID, req CopyTemplateReque
 		return nil, fmt.Errorf("CopyTemplate: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CopyTemplate: prepare Json response: %w", err)
 	}
@@ -16576,7 +16069,7 @@ func (c Client) UpdateTemplate(ctx context.Context, id UUID, req UpdateTemplateR
 		return nil, fmt.Errorf("UpdateTemplate: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateTemplate: prepare Json response: %w", err)
 	}
@@ -16658,7 +16151,7 @@ func (c Client) GetUsageReport(ctx context.Context, opts ...GetUsageReportOpt) (
 		return nil, fmt.Errorf("GetUsageReport: http response: %w", err)
 	}
 
-	bodyresp := new(GetUsageReportResponse)
+	bodyresp := &GetUsageReportResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetUsageReport: prepare Json response: %w", err)
 	}
@@ -16725,7 +16218,7 @@ func (c Client) ListUsers(ctx context.Context) (*ListUsersResponse, error) {
 		return nil, fmt.Errorf("ListUsers: http response: %w", err)
 	}
 
-	bodyresp := new(ListUsersResponse)
+	bodyresp := &ListUsersResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListUsers: prepare Json response: %w", err)
 	}
@@ -16783,7 +16276,7 @@ func (c Client) CreateUser(ctx context.Context, req CreateUserRequest) (*Operati
 		return nil, fmt.Errorf("CreateUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateUser: prepare Json response: %w", err)
 	}
@@ -16827,7 +16320,7 @@ func (c Client) DeleteUser(ctx context.Context, id UUID) (*Operation, error) {
 		return nil, fmt.Errorf("DeleteUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteUser: prepare Json response: %w", err)
 	}
@@ -16883,7 +16376,7 @@ func (c Client) UpdateUserRole(ctx context.Context, id UUID, req UpdateUserRoleR
 		return nil, fmt.Errorf("UpdateUserRole: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateUserRole: prepare Json response: %w", err)
 	}
@@ -16950,7 +16443,7 @@ func (c Client) ListZones(ctx context.Context) (*ListZonesResponse, error) {
 		return nil, fmt.Errorf("ListZones: http response: %w", err)
 	}
 
-	bodyresp := new(ListZonesResponse)
+	bodyresp := &ListZonesResponse{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ListZones: prepare Json response: %w", err)
 	}

@@ -74,6 +74,52 @@ type AccessKeyResource struct {
 	ResourceType AccessKeyResourceResourceType `json:"resource-type,omitempty"`
 }
 
+// AI deployment
+type Aideployment struct {
+	// Creation time
+	CreatedAT time.Time `json:"created-at,omitempty"`
+	// Deployment size (>=1)
+	DeploymentSize int64 `json:"deployment-size,omitempty" validate:"omitempty,gt=0"`
+	// Deployment URL (nullable)
+	DeploymentURL string `json:"deployment-url,omitempty"`
+	// Endpoint URL (nullable)
+	EndpointURL string `json:"endpoint-url,omitempty"`
+	// Deployment ID
+	ID UUID `json:"id,omitempty"`
+	// Instance type
+	InstanceType string `json:"instance-type,omitempty" validate:"omitempty,gte=1"`
+	// Associated model ID
+	ModelID UUID `json:"model-id,omitempty"`
+	// Deployment name
+	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
+	// Organization ID
+	OrganizationID UUID `json:"organization-id,omitempty"`
+	// Service level
+	ServiceLevel string `json:"service-level,omitempty" validate:"omitempty,gte=1"`
+	// Deployment status
+	Status string `json:"status,omitempty"`
+	// Update time
+	UpdatedAT time.Time `json:"updated-at,omitempty"`
+}
+
+// AI model
+type Aimodel struct {
+	// Creation time
+	CreatedAT time.Time `json:"created-at,omitempty"`
+	// Model ID
+	ID UUID `json:"id,omitempty"`
+	// Model size (nullable)
+	ModelSize int64 `json:"model-size,omitempty" validate:"omitempty,gte=0"`
+	// Model name
+	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
+	// Organization ID
+	OrganizationID UUID `json:"organization-id,omitempty"`
+	// Model status
+	Status string `json:"status,omitempty"`
+	// Update time
+	UpdatedAT time.Time `json:"updated-at,omitempty"`
+}
+
 // Anti-affinity Group
 type AntiAffinityGroup struct {
 	// Anti-affinity Group description
@@ -163,27 +209,6 @@ type BlockStorageVolume struct {
 type BlockStorageVolumeTarget struct {
 	// Block storage volume ID
 	ID UUID `json:"id,omitempty"`
-}
-
-// Deployment an AI model onto a set of GPUs
-type CreateDeploymentRequest struct {
-	// Number of GPUs (1-8)
-	GpuCount int64 `json:"gpu-count" validate:"required,gt=0"`
-	// GPU type family (e.g., gpua5000, gpu3080ti)
-	GpuType string    `json:"gpu-type" validate:"required"`
-	Model   *ModelRef `json:"model,omitempty"`
-	// Deployment name
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
-	// Number of replicas (>=1)
-	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gt=0"`
-}
-
-// AI model
-type CreateModelRequest struct {
-	// Huggingface Token
-	HuggingfaceToken string `json:"huggingface-token,omitempty"`
-	// Model name
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
 }
 
 // DBaaS plan backup config
@@ -1827,12 +1852,6 @@ type DBAASUserValkeySecrets struct {
 	Username string `json:"username,omitempty"`
 }
 
-// Model is in use: deletion forbidden
-type DeleteModelConflictResponse struct {
-	// Deployments using models
-	Deployments []string `json:"deployments,omitempty"`
-}
-
 type DeployTargetType string
 
 const (
@@ -2144,12 +2163,6 @@ type EnvProduct struct {
 	Value string `json:"value,omitempty"`
 }
 
-// Error
-type ErrorResponse struct {
-	// Error description
-	Error string `json:"error,omitempty"`
-}
-
 // A notable Mutation Event which happened on the infrastructure
 type Event struct {
 	// Body parameters (free form map)
@@ -2182,67 +2195,6 @@ type Event struct {
 	URI string `json:"uri,omitempty"`
 	// Operation targeted zone
 	Zone string `json:"zone,omitempty"`
-}
-
-type GetDeploymentLogsResponse string
-
-type GetDeploymentResponseStatus string
-
-const (
-	GetDeploymentResponseStatusReady     GetDeploymentResponseStatus = "ready"
-	GetDeploymentResponseStatusCreating  GetDeploymentResponseStatus = "creating"
-	GetDeploymentResponseStatusError     GetDeploymentResponseStatus = "error"
-	GetDeploymentResponseStatusDeploying GetDeploymentResponseStatus = "deploying"
-)
-
-// AI deployment
-type GetDeploymentResponse struct {
-	// Creation time
-	CreatedAT time.Time `json:"created-at,omitempty"`
-	// Deployment URL (nullable)
-	DeploymentURL string `json:"deployment-url,omitempty"`
-	// Number of GPUs
-	GpuCount int64 `json:"gpu-count,omitempty" validate:"omitempty,gt=0"`
-	// GPU type family
-	GpuType string `json:"gpu-type,omitempty" validate:"omitempty,gte=1"`
-	// Deployment ID
-	ID    UUID      `json:"id,omitempty"`
-	Model *ModelRef `json:"model,omitempty"`
-	// Deployment name
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
-	// Number of replicas (>=0)
-	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gte=0"`
-	// Service level
-	ServiceLevel string `json:"service-level,omitempty" validate:"omitempty,gte=1"`
-	// Deployment status
-	Status GetDeploymentResponseStatus `json:"status,omitempty"`
-	// Update time
-	UpdatedAT time.Time `json:"updated-at,omitempty"`
-}
-
-type GetModelResponseStatus string
-
-const (
-	GetModelResponseStatusReady       GetModelResponseStatus = "ready"
-	GetModelResponseStatusCreating    GetModelResponseStatus = "creating"
-	GetModelResponseStatusDownloading GetModelResponseStatus = "downloading"
-	GetModelResponseStatusError       GetModelResponseStatus = "error"
-)
-
-// AI model
-type GetModelResponse struct {
-	// Creation time
-	CreatedAT time.Time `json:"created-at,omitempty"`
-	// Model ID
-	ID UUID `json:"id,omitempty"`
-	// Model size (nullable)
-	ModelSize int64 `json:"model-size,omitempty" validate:"omitempty,gte=0"`
-	// Model name
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
-	// Model status
-	Status GetModelResponseStatus `json:"status,omitempty"`
-	// Update time
-	UpdatedAT time.Time `json:"updated-at,omitempty"`
 }
 
 // IAM API Key
@@ -3351,37 +3303,37 @@ type JSONSchemaOpensearch struct {
 
 // Autovacuum settings
 type JSONSchemaPGAutovacuum struct {
-	// Specifies a fraction of the table size to add to autovacuum_analyze_threshold when deciding whether to trigger an ANALYZE (e.g. `0.2` for 20% of the table size). The default is `0.2`.
+	// Specifies a fraction of the table size to add to autovacuum_analyze_threshold when deciding whether to trigger an ANALYZE. The default is 0.2 (20% of table size)
 	AutovacuumAnalyzeScaleFactor float64 `json:"autovacuum_analyze_scale_factor,omitempty" validate:"omitempty,gte=0,lte=1"`
-	// Specifies the minimum number of inserted, updated or deleted tuples needed to trigger an ANALYZE in any one table. The default is `50`.
+	// Specifies the minimum number of inserted, updated or deleted tuples needed to trigger an ANALYZE in any one table. The default is 50 tuples.
 	AutovacuumAnalyzeThreshold int `json:"autovacuum_analyze_threshold,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
-	// Specifies the maximum age (in transactions) that a table's pg_class.relfrozenxid field can attain before a VACUUM operation is forced to prevent transaction ID wraparound within the table. The system launches autovacuum processes to prevent wraparound even when autovacuum is otherwise disabled. Changing this parameter causes a service restart.
+	// Specifies the maximum age (in transactions) that a table's pg_class.relfrozenxid field can attain before a VACUUM operation is forced to prevent transaction ID wraparound within the table. Note that the system will launch autovacuum processes to prevent wraparound even when autovacuum is otherwise disabled. This parameter will cause the server to be restarted.
 	AutovacuumFreezeMaxAge int `json:"autovacuum_freeze_max_age,omitempty" validate:"omitempty,gte=2e+08,lte=1.5e+09"`
-	// Specifies the maximum number of autovacuum processes (other than the autovacuum launcher) that may be running at any one time. The default is `3`. Changing this parameter causes a service restart.
+	// Specifies the maximum number of autovacuum processes (other than the autovacuum launcher) that may be running at any one time. The default is three. This parameter can only be set at server start.
 	AutovacuumMaxWorkers int `json:"autovacuum_max_workers,omitempty" validate:"omitempty,gte=1,lte=20"`
-	// Specifies the minimum delay between autovacuum runs on any given database. The delay is measured in seconds. The default is `60`.
+	// Specifies the minimum delay between autovacuum runs on any given database. The delay is measured in seconds, and the default is one minute
 	AutovacuumNaptime int `json:"autovacuum_naptime,omitempty" validate:"omitempty,gte=1,lte=86400"`
-	// Specifies the cost delay value that will be used in automatic VACUUM operations. If `-1` is specified, the regular vacuum_cost_delay value will be used. The default is `2` (upstream default).
+	// Specifies the cost delay value that will be used in automatic VACUUM operations. If -1 is specified, the regular vacuum_cost_delay value will be used. The default value is 20 milliseconds
 	AutovacuumVacuumCostDelay int `json:"autovacuum_vacuum_cost_delay,omitempty" validate:"omitempty,gte=-1,lte=100"`
-	// Specifies the cost limit value that will be used in automatic VACUUM operations. If `-1` is specified, the regular vacuum_cost_limit value will be used. The default is `-1` (upstream default).
+	// Specifies the cost limit value that will be used in automatic VACUUM operations. If -1 is specified (which is the default), the regular vacuum_cost_limit value will be used.
 	AutovacuumVacuumCostLimit int `json:"autovacuum_vacuum_cost_limit,omitempty" validate:"omitempty,gte=-1,lte=10000"`
-	// Specifies a fraction of the table size to add to autovacuum_vacuum_threshold when deciding whether to trigger a VACUUM (e.g. `0.2` for 20% of the table size). The default is `0.2`.
+	// Specifies a fraction of the table size to add to autovacuum_vacuum_threshold when deciding whether to trigger a VACUUM. The default is 0.2 (20% of table size)
 	AutovacuumVacuumScaleFactor float64 `json:"autovacuum_vacuum_scale_factor,omitempty" validate:"omitempty,gte=0,lte=1"`
-	// Specifies the minimum number of updated or deleted tuples needed to trigger a VACUUM in any one table. The default is `50`.
+	// Specifies the minimum number of updated or deleted tuples needed to trigger a VACUUM in any one table. The default is 50 tuples
 	AutovacuumVacuumThreshold int `json:"autovacuum_vacuum_threshold,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
-	// Causes each action executed by autovacuum to be logged if it ran for at least the specified number of milliseconds. Setting this to zero logs all autovacuum actions. Minus-one disables logging autovacuum actions. The default is `1000`.
+	// Causes each action executed by autovacuum to be logged if it ran for at least the specified number of milliseconds. Setting this to zero logs all autovacuum actions. Minus-one (the default) disables logging autovacuum actions.
 	LogAutovacuumMinDuration int `json:"log_autovacuum_min_duration,omitempty" validate:"omitempty,gte=-1,lte=2.147483647e+09"`
 }
 
 // Background (BG) writer settings
 type JSONSchemaPGBGWriter struct {
-	// Specifies the delay between activity rounds for the background writer in milliseconds. The default is `200`.
+	// Specifies the delay between activity rounds for the background writer in milliseconds. Default is 200.
 	BgwriterDelay int `json:"bgwriter_delay,omitempty" validate:"omitempty,gte=10,lte=10000"`
-	// Whenever more than bgwriter_flush_after bytes have been written by the background writer, attempt to force the OS to issue these writes to the underlying storage. Specified in kilobytes. Setting of 0 disables forced writeback. The default is `512`.
+	// Whenever more than bgwriter_flush_after bytes have been written by the background writer, attempt to force the OS to issue these writes to the underlying storage. Specified in kilobytes, default is 512. Setting of 0 disables forced writeback.
 	BgwriterFlushAfter int `json:"bgwriter_flush_after,omitempty" validate:"omitempty,gte=0,lte=2048"`
-	// In each round, no more than this many buffers will be written by the background writer. Setting this to zero disables background writing. The default is `100`.
+	// In each round, no more than this many buffers will be written by the background writer. Setting this to zero disables background writing. Default is 100.
 	BgwriterLruMaxpages int `json:"bgwriter_lru_maxpages,omitempty" validate:"omitempty,gte=0,lte=1.073741823e+09"`
-	// The average recent need for new buffers is multiplied by bgwriter_lru_multiplier to arrive at an estimate of the number that will be needed during the next round, (up to bgwriter_lru_maxpages). 1.0 represents a “just in time” policy of writing exactly the number of buffers predicted to be needed. Larger values provide some cushion against spikes in demand, while smaller values intentionally leave writes to be done by server processes. The default is `2.0`.
+	// The average recent need for new buffers is multiplied by bgwriter_lru_multiplier to arrive at an estimate of the number that will be needed during the next round, (up to bgwriter_lru_maxpages). 1.0 represents a “just in time” policy of writing exactly the number of buffers predicted to be needed. Larger values provide some cushion against spikes in demand, while smaller values intentionally leave writes to be done by server processes. The default is 2.0.
 	BgwriterLruMultiplier float64 `json:"bgwriter_lru_multiplier,omitempty" validate:"omitempty,gte=0,lte=10"`
 }
 
@@ -3392,27 +3344,12 @@ const (
 	JSONSchemaPGDefaultToastCompressionPglz JSONSchemaPGDefaultToastCompression = "pglz"
 )
 
-type JSONSchemaPGIoMethod string
-
-const (
-	JSONSchemaPGIoMethodWorker  JSONSchemaPGIoMethod = "worker"
-	JSONSchemaPGIoMethodSync    JSONSchemaPGIoMethod = "sync"
-	JSONSchemaPGIoMethodIoUring JSONSchemaPGIoMethod = "io_uring"
-)
-
 type JSONSchemaPGLogErrorVerbosity string
 
 const (
 	JSONSchemaPGLogErrorVerbosityTERSE   JSONSchemaPGLogErrorVerbosity = "TERSE"
 	JSONSchemaPGLogErrorVerbosityDEFAULT JSONSchemaPGLogErrorVerbosity = "DEFAULT"
 	JSONSchemaPGLogErrorVerbosityVERBOSE JSONSchemaPGLogErrorVerbosity = "VERBOSE"
-)
-
-type JSONSchemaPGPasswordEncryption string
-
-const (
-	JSONSchemaPGPasswordEncryptionMd5         JSONSchemaPGPasswordEncryption = "md5"
-	JSONSchemaPGPasswordEncryptionScramSha256 JSONSchemaPGPasswordEncryption = "scram-sha-256"
 )
 
 type JSONSchemaPGPGStatStatementsTrack string
@@ -3447,13 +3384,13 @@ const (
 
 // Write-ahead log (WAL) settings
 type JSONSchemaPGWal struct {
-	// PostgreSQL maximum WAL size (MB) reserved for replication slots. If `-1` is specified, replication slots may retain an unlimited amount of WAL files. The default is `-1` (upstream default). wal_keep_size minimum WAL size setting takes precedence over this.
+	// PostgreSQL maximum WAL size (MB) reserved for replication slots. Default is -1 (unlimited). wal_keep_size minimum WAL size setting takes precedence over this.
 	MaxSlotWalKeepSize int `json:"max_slot_wal_keep_size,omitempty" validate:"omitempty,gte=-1,lte=2.147483647e+09"`
-	// PostgreSQL maximum WAL senders. The default is `20`. Changing this parameter causes a service restart.
-	MaxWalSenders int `json:"max_wal_senders,omitempty" validate:"omitempty,gte=20,lte=256"`
+	// PostgreSQL maximum WAL senders
+	MaxWalSenders int `json:"max_wal_senders,omitempty" validate:"omitempty,gte=20,lte=64"`
 	// Terminate replication connections that are inactive for longer than this amount of time, in milliseconds.
 	WalSenderTimeout int `json:"wal_sender_timeout,omitempty" validate:"omitempty,gte=0,lte=1.08e+07"`
-	// WAL flush interval in milliseconds. The default is `200`. Setting this parameter to a lower value may negatively impact performance.
+	// WAL flush interval in milliseconds. Note that setting this value to lower than the default 200ms may negatively impact performance
 	WalWriterDelay int `json:"wal_writer_delay,omitempty" validate:"omitempty,gte=10,lte=200"`
 }
 
@@ -3463,81 +3400,67 @@ type JSONSchemaPG struct {
 	Autovacuum *JSONSchemaPGAutovacuum `json:"autovacuum,omitempty"`
 	// Background (BG) writer settings
 	BGWriter *JSONSchemaPGBGWriter `json:"bg-writer,omitempty"`
-	// This is the amount of time, in milliseconds, to wait on a lock before checking to see if there is a deadlock condition. The default is `1000` (upstream default).
+	// This is the amount of time, in milliseconds, to wait on a lock before checking to see if there is a deadlock condition.
 	DeadlockTimeout int `json:"deadlock_timeout,omitempty" validate:"omitempty,gte=500,lte=1.8e+06"`
-	// Specifies the default TOAST compression method for values of compressible columns. The default is `lz4`. Only available for PostgreSQL 14+.
+	// Specifies the default TOAST compression method for values of compressible columns (the default is lz4).
 	DefaultToastCompression JSONSchemaPGDefaultToastCompression `json:"default_toast_compression,omitempty"`
 	// Time out sessions with open transactions after this number of milliseconds
 	IdleInTransactionSessionTimeout int `json:"idle_in_transaction_session_timeout,omitempty" validate:"omitempty,gte=0,lte=6.048e+08"`
-	// EXPERIMENTAL: Controls the largest I/O size in operations that combine I/O in 8kB units. Version 17 and up only.
-	IoCombineLimit int `json:"io_combine_limit,omitempty" validate:"omitempty,gte=1,lte=32"`
-	// EXPERIMENTAL: Controls the largest I/O size in operations that combine I/O in 8kB units, and silently limits the user-settable parameter io_combine_limit. Version 18 and up only. Changing this parameter causes a service restart.
-	IoMaxCombineLimit int `json:"io_max_combine_limit,omitempty" validate:"omitempty,gte=1,lte=128"`
-	// EXPERIMENTAL: Controls the maximum number of I/O operations that one process can execute simultaneously. Version 18 and up only. Changing this parameter causes a service restart.
-	IoMaxConcurrency int `json:"io_max_concurrency,omitempty" validate:"omitempty,gte=-1,lte=1024"`
-	// EXPERIMENTAL: Controls the maximum number of I/O operations that one process can execute simultaneously. Version 18 and up only. Changing this parameter causes a service restart.
-	IoMethod JSONSchemaPGIoMethod `json:"io_method,omitempty"`
-	// EXPERIMENTAL: Number of IO worker processes, for io_method=worker. Version 18 and up only. Changing this parameter causes a service restart.
-	IoWorkers int `json:"io_workers,omitempty" validate:"omitempty,gte=1,lte=32"`
 	// Controls system-wide use of Just-in-Time Compilation (JIT).
 	Jit *bool `json:"jit,omitempty"`
 	// Controls the amount of detail written in the server log for each message that is logged.
 	LogErrorVerbosity JSONSchemaPGLogErrorVerbosity `json:"log_error_verbosity,omitempty"`
-	// Choose from one of the available log formats.
+	// Choose from one of the available log-formats. These can support popular log analyzers like pgbadger, pganalyze etc.
 	LogLinePrefix string `json:"log_line_prefix,omitempty"`
 	// Log statements that take more than this number of milliseconds to run, -1 disables
 	LogMinDurationStatement int `json:"log_min_duration_statement,omitempty" validate:"omitempty,gte=-1,lte=8.64e+07"`
 	// Log statements for each temporary file created larger than this number of kilobytes, -1 disables
 	LogTempFiles int `json:"log_temp_files,omitempty" validate:"omitempty,gte=-1,lte=2.147483647e+09"`
-	// PostgreSQL maximum number of files that can be open per process. The default is `1000` (upstream default). Changing this parameter causes a service restart.
+	// PostgreSQL maximum number of files that can be open per process
 	MaxFilesPerProcess int `json:"max_files_per_process,omitempty" validate:"omitempty,gte=1000,lte=4096"`
-	// PostgreSQL maximum locks per transaction. Changing this parameter causes a service restart.
+	// PostgreSQL maximum locks per transaction
 	MaxLocksPerTransaction int `json:"max_locks_per_transaction,omitempty" validate:"omitempty,gte=64,lte=6400"`
-	// PostgreSQL maximum logical replication workers (taken from the pool of max_parallel_workers). The default is `4` (upstream default). Changing this parameter causes a service restart.
-	MaxLogicalReplicationWorkers int `json:"max_logical_replication_workers,omitempty" validate:"omitempty,gte=4,lte=256"`
-	// Sets the maximum number of workers that the system can support for parallel queries. The default is `8` (upstream default).
+	// PostgreSQL maximum logical replication workers (taken from the pool of max_parallel_workers)
+	MaxLogicalReplicationWorkers int `json:"max_logical_replication_workers,omitempty" validate:"omitempty,gte=4,lte=64"`
+	// Sets the maximum number of workers that the system can support for parallel queries
 	MaxParallelWorkers int `json:"max_parallel_workers,omitempty" validate:"omitempty,gte=0,lte=96"`
-	// Sets the maximum number of workers that can be started by a single Gather or Gather Merge node. The default is `2` (upstream default).
+	// Sets the maximum number of workers that can be started by a single Gather or Gather Merge node
 	MaxParallelWorkersPerGather int `json:"max_parallel_workers_per_gather,omitempty" validate:"omitempty,gte=0,lte=96"`
-	// PostgreSQL maximum predicate locks per transaction. The default is `64` (upstream default). Changing this parameter causes a service restart.
+	// PostgreSQL maximum predicate locks per transaction
 	MaxPredLocksPerTransaction int `json:"max_pred_locks_per_transaction,omitempty" validate:"omitempty,gte=64,lte=5120"`
-	// PostgreSQL maximum prepared transactions. The default is `0`. Changing this parameter causes a service restart.
+	// PostgreSQL maximum prepared transactions
 	MaxPreparedTransactions int `json:"max_prepared_transactions,omitempty" validate:"omitempty,gte=0,lte=10000"`
-	// PostgreSQL maximum replication slots. The default is `20`. Changing this parameter causes a service restart.
-	MaxReplicationSlots int `json:"max_replication_slots,omitempty" validate:"omitempty,gte=8,lte=256"`
-	// Maximum depth of the stack in bytes. The default is `2097152` (upstream default).
+	// PostgreSQL maximum replication slots
+	MaxReplicationSlots int `json:"max_replication_slots,omitempty" validate:"omitempty,gte=8,lte=64"`
+	// Maximum depth of the stack in bytes
 	MaxStackDepth int `json:"max_stack_depth,omitempty" validate:"omitempty,gte=2.097152e+06,lte=6.291456e+06"`
-	// Max standby archive delay in milliseconds. The default is `30000` (upstream default).
+	// Max standby archive delay in milliseconds
 	MaxStandbyArchiveDelay int `json:"max_standby_archive_delay,omitempty" validate:"omitempty,gte=1,lte=4.32e+07"`
-	// Max standby streaming delay in milliseconds. The default is `30000` (upstream default).
+	// Max standby streaming delay in milliseconds
 	MaxStandbyStreamingDelay int `json:"max_standby_streaming_delay,omitempty" validate:"omitempty,gte=1,lte=4.32e+07"`
-	// Maximum number of synchronization workers per subscription. The default is `2`.
-	MaxSyncWorkersPerSubscription int `json:"max_sync_workers_per_subscription,omitempty" validate:"omitempty,gte=2,lte=8"`
-	// Sets the maximum number of background processes that the system can support. The default is `8`. Changing this parameter causes a service restart.
-	MaxWorkerProcesses int `json:"max_worker_processes,omitempty" validate:"omitempty,gte=8,lte=288"`
-	// Chooses the algorithm for encrypting passwords.
-	PasswordEncryption JSONSchemaPGPasswordEncryption `json:"password_encryption,omitempty"`
-	// Sets the time interval in seconds to run pg_partman's scheduled tasks. The default is `3600`.
+	// Sets the maximum number of background processes that the system can support
+	MaxWorkerProcesses int `json:"max_worker_processes,omitempty" validate:"omitempty,gte=8,lte=96"`
+	// Sets the time interval to run pg_partman's scheduled tasks
 	PGPartmanBgwInterval int `json:"pg_partman_bgw.interval,omitempty" validate:"omitempty,gte=3600,lte=604800"`
 	// Controls which role to use for pg_partman's scheduled background tasks.
 	PGPartmanBgwRole string `json:"pg_partman_bgw.role,omitempty" validate:"omitempty,lte=64"`
-	// Enables or disables query plan monitoring. Changing this parameter causes a service restart. Only available for PostgreSQL 13+.
+	// Enables or disables query plan monitoring
 	PGStatMonitorPgsmEnableQueryPlan *bool `json:"pg_stat_monitor.pgsm_enable_query_plan,omitempty"`
-	// Sets the maximum number of buckets. Changing this parameter causes a service restart. Only available for PostgreSQL 13+.
+	// Sets the maximum number of buckets
 	PGStatMonitorPgsmMaxBuckets int `json:"pg_stat_monitor.pgsm_max_buckets,omitempty" validate:"omitempty,gte=1,lte=10"`
-	// Controls which statements are counted. Specify top to track top-level statements (those issued directly by clients), all to also track nested statements (such as statements invoked within functions), or none to disable statement statistics collection. The default is `top`.
+	// Controls which statements are counted. Specify top to track top-level statements (those issued directly by clients), all to also track nested statements (such as statements invoked within functions), or none to disable statement statistics collection. The default value is top.
 	PGStatStatementsTrack JSONSchemaPGPGStatStatementsTrack `json:"pg_stat_statements.track,omitempty"`
 	// PostgreSQL temporary file limit in KiB, -1 for unlimited
 	TempFileLimit int `json:"temp_file_limit,omitempty" validate:"omitempty,gte=-1,lte=2.147483647e+09"`
 	// PostgreSQL service timezone
 	Timezone string `json:"timezone,omitempty" validate:"omitempty,lte=64"`
-	// Specifies the number of bytes reserved to track the currently executing command for each active session. Changing this parameter causes a service restart.
+	// Specifies the number of bytes reserved to track the currently executing command for each active session.
 	TrackActivityQuerySize int `json:"track_activity_query_size,omitempty" validate:"omitempty,gte=1024,lte=10240"`
-	// Record commit time of transactions. Changing this parameter causes a service restart.
+	// Record commit time of transactions.
 	TrackCommitTimestamp JSONSchemaPGTrackCommitTimestamp `json:"track_commit_timestamp,omitempty"`
 	// Enables tracking of function call counts and time used.
 	TrackFunctions JSONSchemaPGTrackFunctions `json:"track_functions,omitempty"`
-	// Enables timing of database I/O calls. The default is `off`. When on, it will repeatedly query the operating system for the current time, which may cause significant overhead on some platforms.
+	// Enables timing of database I/O calls. This parameter is off by default, because it will repeatedly query the operating system for the current time, which may cause significant overhead on some platforms.
 	TrackIoTiming JSONSchemaPGTrackIoTiming `json:"track_io_timing,omitempty"`
 	// Write-ahead log (WAL) settings
 	Wal *JSONSchemaPGWal `json:"wal,omitempty"`
@@ -3624,12 +3547,12 @@ type JSONSchemaThanos struct {
 	// Configuration options for Thanos Query.
 	Query *JSONSchemaThanosQuery `json:"query,omitempty"`
 	// Configuration options for Thanos Query Frontend.
-	QueryFrontend *JSONSchemaThanosQueryFrontend `json:"query-frontend,omitempty"`
+	QueryFrontend *JSONSchemaThanosQueryFrontend `json:"query_frontend,omitempty"`
 }
 
 // System-wide settings for the timescaledb extension
 type JSONSchemaTimescaledb struct {
-	// The number of background workers for timescaledb operations. You should configure this setting to the sum of your number of databases and the total number of concurrent background workers you want running at any given point in time. Changing this parameter causes a service restart.
+	// The number of background workers for timescaledb operations. You should configure this setting to the sum of your number of databases and the total number of concurrent background workers you want running at any given point in time.
 	MaxBackgroundWorkers int `json:"max_background_workers,omitempty" validate:"omitempty,gte=1,lte=4096"`
 }
 
@@ -3694,75 +3617,6 @@ type KubeletImageGC struct {
 }
 
 type Labels map[string]string
-
-// AI model list
-type ListDeploymentsResponse struct {
-	Deployments []ListDeploymentsResponseEntry `json:"deployments,omitempty"`
-}
-
-type ListDeploymentsResponseEntryStatus string
-
-const (
-	ListDeploymentsResponseEntryStatusReady     ListDeploymentsResponseEntryStatus = "ready"
-	ListDeploymentsResponseEntryStatusCreating  ListDeploymentsResponseEntryStatus = "creating"
-	ListDeploymentsResponseEntryStatusError     ListDeploymentsResponseEntryStatus = "error"
-	ListDeploymentsResponseEntryStatusDeploying ListDeploymentsResponseEntryStatus = "deploying"
-)
-
-// AI deployment
-type ListDeploymentsResponseEntry struct {
-	// Creation time
-	CreatedAT time.Time `json:"created-at,omitempty"`
-	// Deployment URL (nullable)
-	DeploymentURL string `json:"deployment-url,omitempty"`
-	// Number of GPUs
-	GpuCount int64 `json:"gpu-count,omitempty" validate:"omitempty,gt=0"`
-	// GPU type family
-	GpuType string `json:"gpu-type,omitempty" validate:"omitempty,gte=1"`
-	// Deployment ID
-	ID    UUID      `json:"id,omitempty"`
-	Model *ModelRef `json:"model,omitempty"`
-	// Deployment name
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
-	// Number of replicas (>=0)
-	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gte=0"`
-	// Service level
-	ServiceLevel string `json:"service-level,omitempty" validate:"omitempty,gte=1"`
-	// Deployment status
-	Status ListDeploymentsResponseEntryStatus `json:"status,omitempty"`
-	// Update time
-	UpdatedAT time.Time `json:"updated-at,omitempty"`
-}
-
-// AI model list
-type ListModelsResponse struct {
-	Models []ListModelsResponseEntry `json:"models,omitempty"`
-}
-
-type ListModelsResponseEntryStatus string
-
-const (
-	ListModelsResponseEntryStatusReady       ListModelsResponseEntryStatus = "ready"
-	ListModelsResponseEntryStatusCreating    ListModelsResponseEntryStatus = "creating"
-	ListModelsResponseEntryStatusDownloading ListModelsResponseEntryStatus = "downloading"
-	ListModelsResponseEntryStatusError       ListModelsResponseEntryStatus = "error"
-)
-
-// AI model
-type ListModelsResponseEntry struct {
-	// Creation time
-	CreatedAT time.Time `json:"created-at,omitempty"`
-	// Model ID
-	ID UUID `json:"id,omitempty"`
-	// Model size (nullable)
-	ModelSize int64 `json:"model-size,omitempty" validate:"omitempty,gte=0"`
-	// Model name
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
-	// Model status
-	Status ListModelsResponseEntryStatus `json:"status,omitempty"`
-	// Update time
-	UpdatedAT time.Time `json:"updated-at,omitempty"`
-}
 
 type LoadBalancerState string
 
@@ -3899,13 +3753,6 @@ type Manager struct {
 	ID UUID `json:"id,omitempty"`
 	// Manager type
 	Type ManagerType `json:"type,omitempty"`
-}
-
-type ModelRef struct {
-	// Associated model ID
-	ID UUID `json:"id,omitempty"`
-	// Associated model name
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
 }
 
 // Cluster networking configuration.
@@ -4060,19 +3907,8 @@ type Resource struct {
 	Name string `json:"name,omitempty"`
 }
 
-// AI deployment inference endpoint authentication key
-type RevealDeploymentAPIKeyResponse struct {
-	APIKey string `json:"api-key,omitempty"`
-}
-
 type ReverseDNSRecord struct {
 	DomainName DomainName `json:"domain-name,omitempty" validate:"omitempty,gte=1,lte=253"`
-}
-
-// Scale AI deployment
-type ScaleDeploymentRequest struct {
-	// Number of replicas (>=0)
-	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gte=0"`
 }
 
 // Security Group
@@ -4397,8 +4233,6 @@ const (
 
 // Snapshot
 type Snapshot struct {
-	// Indicates whether the snapshot was taken using an application-consistent method
-	ApplicationConsistent *bool `json:"application-consistent,omitempty"`
 	// Snapshot creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Exported snapshot information
