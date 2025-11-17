@@ -13,7 +13,7 @@ import (
 )
 
 type DeploymentCreateCmd struct {
-    exocmd.CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -30,11 +30,11 @@ type DeploymentCreateCmd struct {
 func (c *DeploymentCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 func (c *DeploymentCreateCmd) CmdShort() string     { return "Create AI deployment" }
 func (c *DeploymentCreateCmd) CmdLong() string {
-    return "This command creates an AI deployment on dedicated inference servers."
+	return "This command creates an AI deployment on dedicated inference servers."
 }
 func (c *DeploymentCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-    exocmd.CmdSetZoneFlagFromDefault(cmd)
-    return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *DeploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -82,5 +82,5 @@ func (c *DeploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-    cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &DeploymentCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &DeploymentCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
 }

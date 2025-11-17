@@ -60,5 +60,5 @@ func (c *ModelCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-    cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &ModelCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &ModelCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
 }
