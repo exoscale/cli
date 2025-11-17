@@ -11,18 +11,18 @@ import (
 )
 
 type DeploymentShowOutput struct {
-    ID            v3.UUID                        `json:"id"`
-    Name          string                         `json:"name"`
-    Status        v3.GetDeploymentResponseStatus `json:"status"`
-    GPUType       string                         `json:"gpu_type"`
-    GPUCount      int64                          `json:"gpu_count"`
-    Replicas      int64                          `json:"replicas"`
-    ServiceLevel  string                         `json:"service_level"`
-    DeploymentURL string                         `json:"deployment_url"`
-    ModelID       *v3.UUID                       `json:"model_id"`
-    ModelName     string                         `json:"model_name"`
-    CreatedAt     string                         `json:"created_at"`
-    UpdatedAt     string                         `json:"updated_at"`
+	ID            v3.UUID                        `json:"id"`
+	Name          string                         `json:"name"`
+	Status        v3.GetDeploymentResponseStatus `json:"status"`
+	GPUType       string                         `json:"gpu_type"`
+	GPUCount      int64                          `json:"gpu_count"`
+	Replicas      int64                          `json:"replicas"`
+	ServiceLevel  string                         `json:"service_level"`
+	DeploymentURL string                         `json:"deployment_url"`
+	ModelID       *v3.UUID                       `json:"model_id"`
+	ModelName     string                         `json:"model_name"`
+	CreatedAt     string                         `json:"created_at"`
+	UpdatedAt     string                         `json:"updated_at"`
 }
 
 func (o *DeploymentShowOutput) ToJSON()  { output.JSON(o) }
@@ -30,7 +30,7 @@ func (o *DeploymentShowOutput) ToText()  { output.Text(o) }
 func (o *DeploymentShowOutput) ToTable() { output.Table(o) }
 
 type DeploymentShowCmd struct {
-    exocmd.CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -41,11 +41,11 @@ type DeploymentShowCmd struct {
 func (c *DeploymentShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 func (c *DeploymentShowCmd) CmdShort() string     { return "Show AI deployment" }
 func (c *DeploymentShowCmd) CmdLong() string {
-    return "This command shows details of an AI deployment by ID or name."
+	return "This command shows details of an AI deployment by ID or name."
 }
 func (c *DeploymentShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-    exocmd.CmdSetZoneFlagFromDefault(cmd)
-    return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *DeploymentShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -74,23 +74,23 @@ func (c *DeploymentShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		modelName = resp.Model.Name
 	}
 
-    out := &DeploymentShowOutput{
-        ID:            resp.ID,
-        Name:          resp.Name,
-        Status:        resp.Status,
-        GPUType:       resp.GpuType,
-        GPUCount:      resp.GpuCount,
-        Replicas:      resp.Replicas,
-        ServiceLevel:  resp.ServiceLevel,
-        DeploymentURL: resp.DeploymentURL,
-        ModelID:       modelIDPtr,
-        ModelName:     modelName,
-        CreatedAt:     resp.CreatedAT.Format(time.RFC3339),
-        UpdatedAt:     resp.UpdatedAT.Format(time.RFC3339),
-    }
-    return c.OutputFunc(out, nil)
+	out := &DeploymentShowOutput{
+		ID:            resp.ID,
+		Name:          resp.Name,
+		Status:        resp.Status,
+		GPUType:       resp.GpuType,
+		GPUCount:      resp.GpuCount,
+		Replicas:      resp.Replicas,
+		ServiceLevel:  resp.ServiceLevel,
+		DeploymentURL: resp.DeploymentURL,
+		ModelID:       modelIDPtr,
+		ModelName:     modelName,
+		CreatedAt:     resp.CreatedAT.Format(time.RFC3339),
+		UpdatedAt:     resp.UpdatedAT.Format(time.RFC3339),
+	}
+	return c.OutputFunc(out, nil)
 }
 
 func init() {
-    cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &DeploymentShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &DeploymentShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
 }

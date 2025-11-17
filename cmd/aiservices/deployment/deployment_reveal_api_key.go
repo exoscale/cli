@@ -9,7 +9,7 @@ import (
 )
 
 type DeploymentRevealAPIKeyOutput struct {
-    APIKey string `json:"api_key"`
+	APIKey string `json:"api_key"`
 }
 
 func (o *DeploymentRevealAPIKeyOutput) ToJSON()  { output.JSON(o) }
@@ -17,7 +17,7 @@ func (o *DeploymentRevealAPIKeyOutput) ToText()  { output.Text(o) }
 func (o *DeploymentRevealAPIKeyOutput) ToTable() { output.Table(o) }
 
 type DeploymentRevealAPIKeyCmd struct {
-    exocmd.CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reveal-api-key"`
 
@@ -28,11 +28,11 @@ type DeploymentRevealAPIKeyCmd struct {
 func (c *DeploymentRevealAPIKeyCmd) CmdAliases() []string { return nil }
 func (c *DeploymentRevealAPIKeyCmd) CmdShort() string     { return "Reveal deployment API key" }
 func (c *DeploymentRevealAPIKeyCmd) CmdLong() string {
-    return "This command reveals the inference endpoint API key for the deployment."
+	return "This command reveals the inference endpoint API key for the deployment."
 }
 func (c *DeploymentRevealAPIKeyCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-    exocmd.CmdSetZoneFlagFromDefault(cmd)
-    return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *DeploymentRevealAPIKeyCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -51,10 +51,10 @@ func (c *DeploymentRevealAPIKeyCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-    out := &DeploymentRevealAPIKeyOutput{APIKey: resp.APIKey}
-    return c.OutputFunc(out, nil)
+	out := &DeploymentRevealAPIKeyOutput{APIKey: resp.APIKey}
+	return c.OutputFunc(out, nil)
 }
 
 func init() {
-    cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &DeploymentRevealAPIKeyCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &DeploymentRevealAPIKeyCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
 }
