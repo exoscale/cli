@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -80,7 +79,6 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 	if err != nil {
 		return err
 	}
-	client = client.WithWaitTimeout(time.Duration(c.Timeout) * time.Second)
 
 	passwordEnabled := !c.DisablePassword
 	sshKeyEnabled := !c.DisableSSHKey
