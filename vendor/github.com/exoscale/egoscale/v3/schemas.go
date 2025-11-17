@@ -4072,7 +4072,7 @@ type ReverseDNSRecord struct {
 // Scale AI deployment
 type ScaleDeploymentRequest struct {
 	// Number of replicas (>=0)
-	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gte=0"`
+	Replicas int64 `json:"replicas" validate:"gte=0"`
 }
 
 // Security Group

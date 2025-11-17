@@ -3,6 +3,7 @@ package dedicated_inference
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"path"
@@ -26,6 +27,9 @@ type testServer struct {
 	models        []v3.ListModelsResponseEntry
 	deployments   []v3.ListDeploymentsResponseEntry
 	zoneListCount atomic.Int32
+
+	// capture bodies for scale requests
+	lastScaleBody string
 }
 
 func newTestServer(t *testing.T) *testServer {
@@ -134,6 +138,10 @@ func newTestServer(t *testing.T) *testServer {
 			return
 		}
 		if len(parts) == 2 && parts[1] == "scale" && r.Method == http.MethodPost {
+			// capture request body for assertions
+			b, _ := io.ReadAll(r.Body)
+			_ = r.Body.Close()
+			ts.lastScaleBody = string(b)
 			op := v3.Operation{ID: v3.UUID("op-deploy-scale"), State: v3.OperationStateSuccess}
 			writeJSON(t, w, http.StatusOK, op)
 			return
@@ -428,6 +436,35 @@ func TestDeploymentDeleteScaleRevealLogs(t *testing.T) {
 	logs := &deploymentLogsCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha"}
 	if err := logs.CmdRun(nil, nil); err != nil {
 		t.Fatalf("logs: %v", err)
+	}
+}
+
+func TestDeploymentScaleZeroIncludesReplicas(t *testing.T) {
+	ts := newTestServer(t)
+	defer setup(t, ts)()
+	now := time.Now()
+	ts.deployments = []v3.ListDeploymentsResponseEntry{
+		{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", CreatedAT: now, UpdatedAT: now},
+	}
+	// scale to zero by name
+	sc := &deploymentScaleCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha", Size: 0}
+	if err := sc.CmdRun(nil, nil); err != nil {
+		t.Fatalf("scale zero: %v", err)
+	}
+	if ts.lastScaleBody == "" {
+		t.Fatalf("expected scale request body to be captured")
+	}
+	var body map[string]any
+	if err := json.Unmarshal([]byte(ts.lastScaleBody), &body); err != nil {
+		t.Fatalf("invalid json body captured: %v", err)
+	}
+	v, ok := body["replicas"]
+	if !ok {
+		t.Fatalf("expected 'replicas' field in request body, got: %s", ts.lastScaleBody)
+	}
+	n, ok := v.(float64)
+	if !ok || n != 0 {
+		t.Fatalf("expected replicas to be 0, got: %v (body: %s)", v, ts.lastScaleBody)
 	}
 }
 
