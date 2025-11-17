@@ -6,6 +6,9 @@ and to keep the imports in one place, keeping main.go clean.
 package subcommands
 
 import (
+	_ "github.com/exoscale/cli/cmd/aiservices"
+	_ "github.com/exoscale/cli/cmd/aiservices/deployment"
+	_ "github.com/exoscale/cli/cmd/aiservices/model"
 	_ "github.com/exoscale/cli/cmd/compute/anti_affinity_group"
 	_ "github.com/exoscale/cli/cmd/compute/blockstorage"
 	_ "github.com/exoscale/cli/cmd/compute/deploy_target"
@@ -21,8 +24,6 @@ import (
 	_ "github.com/exoscale/cli/cmd/compute/ssh_key"
 	_ "github.com/exoscale/cli/cmd/config"
 	_ "github.com/exoscale/cli/cmd/dbaas"
-	_ "github.com/exoscale/cli/cmd/dedicated_inference/deployment"
-	_ "github.com/exoscale/cli/cmd/dedicated_inference/model"
 	_ "github.com/exoscale/cli/cmd/dns"
 	_ "github.com/exoscale/cli/cmd/iam"
 	_ "github.com/exoscale/cli/cmd/storage"
