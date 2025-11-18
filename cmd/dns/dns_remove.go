@@ -8,7 +8,6 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/utils"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -37,10 +36,7 @@ func init() {
 
 func removeDomainRecord(domainIdent, recordIdent string, force bool) error {
 	ctx := exocmd.GContext
-	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
-	if err != nil {
-		return err
-	}
+	client := globalstate.EgoscaleV3Client
 
 	domainsList, err := client.ListDNSDomains(ctx)
 	if err != nil {
