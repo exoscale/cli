@@ -13,8 +13,7 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var configCmd = &cobra.Command{
@@ -220,17 +219,20 @@ func getAccountByName(name string) *account.Account {
 	return nil
 }
 
-func chooseZone(client *egoscale.Client, zones []string) (string, error) {
+func chooseZone(client v3.Client, zones []string) (string, error) {
 	if zones == nil {
 
-		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(exocmd.DefaultEnvironment, exocmd.DefaultZone))
+		ctx := exocmd.GContext
 		var err error
-		zones, err = client.ListZones(ctx)
-
+		zonesResp, err := client.ListZones(ctx)
 		if err != nil {
 			return "", err
 		}
 
+		zones = make([]string, len(zonesResp.Zones))
+		for _, j := range zonesResp.Zones {
+			zones = append(zones, string(j.Name))
+		}
 		if len(zones) == 0 {
 			return "", fmt.Errorf("no zones were found")
 		}

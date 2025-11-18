@@ -4,7 +4,11 @@
 
 ### Features
 
-- Integration of the upcoming dedicated-inference service (in beta). 
+- Integration of the upcoming dedicated-inference service (in beta).
+
+### Improvements
+
+- getting rid of egoscale v2 #761
 
 ## 1.87.0
 
