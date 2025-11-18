@@ -21,11 +21,6 @@ func buildClient() {
 		return
 	}
 
-	clientTimeout := account.CurrentAccount.ClientTimeout
-	if clientTimeout == 0 {
-		clientTimeout = DefaultClientTimeout
-	}
-
 	creds := credentials.NewStaticCredentials(
 		account.CurrentAccount.Key,
 		account.CurrentAccount.APISecret(),
