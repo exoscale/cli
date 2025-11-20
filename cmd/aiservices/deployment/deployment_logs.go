@@ -35,10 +35,16 @@ func (c *DeploymentLogsCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	id, err := ResolveDeploymentID(ctx, client, c.Deployment)
+	// Resolve deployment ID using the SDK helper
+	list, err := client.ListDeployments(ctx)
 	if err != nil {
 		return err
 	}
+	entry, err := list.FindListDeploymentsResponseEntry(c.Deployment)
+	if err != nil {
+		return err
+	}
+	id := entry.ID
 
 	resp, err := client.GetDeploymentLogs(ctx, id)
 	if err != nil {

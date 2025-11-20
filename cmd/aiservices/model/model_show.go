@@ -57,7 +57,11 @@ func (c *ModelShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	sizePtr := int64PtrIfNonZero(resp.ModelSize)
+	var sizePtr *int64
+	if resp.ModelSize != 0 {
+		size := resp.ModelSize
+		sizePtr = &size
+	}
 	out := &ModelShowOutput{
 		ID:        resp.ID,
 		Name:      resp.Name,

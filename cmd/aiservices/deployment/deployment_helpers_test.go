@@ -44,8 +44,14 @@ func newDepHelperServer(t *testing.T) *depHelperServer {
 			writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op"), State: v3.OperationStateSuccess})
 		case http.MethodPost:
 			if strings.HasSuffix(r.URL.Path, "/scale") {
-				io.Copy(io.Discard, r.Body)
-				r.Body.Close()
+				_, err := io.Copy(io.Discard, r.Body)
+				if err != nil {
+					return
+				}
+				err = r.Body.Close()
+				if err != nil {
+					return
+				}
 				writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op"), State: v3.OperationStateSuccess})
 				return
 			}
@@ -58,7 +64,7 @@ func newDepHelperServer(t *testing.T) *depHelperServer {
 	return ts
 }
 
-func TestResolveDeploymentIDByIDAndName(t *testing.T) {
+func TestFindListDeploymentsResponseEntryByIDAndName(t *testing.T) {
 	ts := newDepHelperServer(t)
 	defer ts.server.Close()
 	now := time.Now()
@@ -72,18 +78,22 @@ func TestResolveDeploymentIDByIDAndName(t *testing.T) {
 	ctx := context.Background()
 
 	// by ID
-	id, err := ResolveDeploymentID(ctx, client, "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-	if err != nil || string(id) != "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" {
-		t.Fatalf("resolve by id failed: %v %v", id, err)
+	list, err := client.ListDeployments(ctx)
+	if err != nil {
+		t.Fatalf("list deployments: %v", err)
+	}
+	entry, err := list.FindListDeploymentsResponseEntry("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	if err != nil || string(entry.ID) != "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" {
+		t.Fatalf("resolve by id failed: %v %v", entry.ID, err)
 	}
 	// by name
-	id, err = ResolveDeploymentID(ctx, client, "alpha")
-	if err != nil || string(id) != "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" {
-		t.Fatalf("resolve by name failed: %v %v", id, err)
+	entry, err = list.FindListDeploymentsResponseEntry("alpha")
+	if err != nil || string(entry.ID) != "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" {
+		t.Fatalf("resolve by name failed: %v %v", entry.ID, err)
 	}
 	// not found
-	_, err = ResolveDeploymentID(ctx, client, "missing")
-	if err == nil || !strings.Contains(err.Error(), "deployment \"missing\" not found") {
+	_, err = list.FindListDeploymentsResponseEntry("missing")
+	if err == nil {
 		t.Fatalf("expected not found error, got %v", err)
 	}
 }

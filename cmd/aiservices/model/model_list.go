@@ -50,7 +50,6 @@ func (c *ModelListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-
 	resp, err := client.ListModels(ctx)
 	if err != nil {
 		return err
@@ -58,7 +57,11 @@ func (c *ModelListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	out := make(ModelListOutput, 0, len(resp.Models))
 	for _, m := range resp.Models {
-		sizePtr := int64PtrIfNonZero(m.ModelSize)
+		var sizePtr *int64
+		if m.ModelSize != 0 {
+			size := m.ModelSize
+			sizePtr = &size
+		}
 		out = append(out, ModelListItemOutput{
 			ID:        m.ID,
 			Name:      m.Name,

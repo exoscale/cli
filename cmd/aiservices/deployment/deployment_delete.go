@@ -37,10 +37,16 @@ func (c *DeploymentDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	id, err := ResolveDeploymentID(ctx, client, c.Deployment)
+	// Resolve deployment ID using the SDK helper
+	list, err := client.ListDeployments(ctx)
 	if err != nil {
 		return err
 	}
+	entry, err := list.FindListDeploymentsResponseEntry(c.Deployment)
+	if err != nil {
+		return err
+	}
+	id := entry.ID
 
 	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Deleting deployment %s...", c.Deployment), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
 		return c.DeleteDeployment(ctx, id)

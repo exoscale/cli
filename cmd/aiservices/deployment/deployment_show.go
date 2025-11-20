@@ -54,24 +54,20 @@ func (c *DeploymentShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	id, err := ResolveDeploymentID(ctx, client, c.Deployment)
+	// Resolve deployment ID using the SDK helper
+	list, err := client.ListDeployments(ctx)
 	if err != nil {
 		return err
 	}
+	entry, err := list.FindListDeploymentsResponseEntry(c.Deployment)
+	if err != nil {
+		return err
+	}
+	id := entry.ID
 
 	resp, err := client.GetDeployment(ctx, id)
 	if err != nil {
 		return err
-	}
-
-	var modelIDPtr *v3.UUID
-	var modelName string
-	if resp.Model != nil {
-		if resp.Model.ID.String() != "00000000-0000-0000-0000-000000000000" {
-			id := resp.Model.ID
-			modelIDPtr = &id
-		}
-		modelName = resp.Model.Name
 	}
 
 	out := &DeploymentShowOutput{
@@ -83,8 +79,8 @@ func (c *DeploymentShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		Replicas:      resp.Replicas,
 		ServiceLevel:  resp.ServiceLevel,
 		DeploymentURL: resp.DeploymentURL,
-		ModelID:       modelIDPtr,
-		ModelName:     modelName,
+		ModelID:       &resp.Model.ID,
+		ModelName:     resp.Model.Name,
 		CreatedAt:     resp.CreatedAT.Format(time.RFC3339),
 		UpdatedAt:     resp.UpdatedAT.Format(time.RFC3339),
 	}

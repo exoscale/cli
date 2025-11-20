@@ -37,10 +37,16 @@ func (c *DeploymentScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	id, err := ResolveDeploymentID(ctx, client, c.Deployment)
+	// Resolve deployment ID using the SDK helper
+	list, err := client.ListDeployments(ctx)
 	if err != nil {
 		return err
 	}
+	entry, err := list.FindListDeploymentsResponseEntry(c.Deployment)
+	if err != nil {
+		return err
+	}
+	id := entry.ID
 
 	req := v3.ScaleDeploymentRequest{Replicas: c.Size}
 	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Scaling deployment %s to %d...", c.Deployment, c.Size), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
