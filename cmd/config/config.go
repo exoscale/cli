@@ -220,15 +220,17 @@ func getAccountByName(name string) *account.Account {
 }
 
 func chooseZone(client *v3.Client, zones []string) (string, error) {
-	if len(zones) == 0 {
-		ctx := exocmd.GContext
+	if zones == nil {
 
+		ctx := exocmd.GContext
+		var err error
 		zonesResp, err := client.ListZones(ctx)
 		if err != nil {
 			return "", err
 		}
 
 		zones = make([]string, len(zonesResp.Zones))
+
 		for i, z := range zonesResp.Zones {
 			zones[i] = string(z.Name)
 		}
@@ -241,6 +243,7 @@ func chooseZone(client *v3.Client, zones []string) (string, error) {
 	prompt := promptui.Select{
 		Label: "Default zone",
 		Items: zones,
+		Size:  len(zones),
 	}
 
 	_, result, err := prompt.Run()

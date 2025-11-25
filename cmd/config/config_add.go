@@ -126,20 +126,15 @@ func promptAccountInformation() (*account.Account, error) {
 	}
 	account.DefaultZone, err = chooseZone(client, nil)
 	if err != nil {
-		// Fallback: use the global client if it's available
-		if globalstate.EgoscaleV3Client != nil {
-			defaultZone, gErr := chooseZone(globalstate.EgoscaleV3Client, utils.AllZones)
-			if gErr != nil {
-				return nil, gErr
+		for {
+			defaultZone, err := chooseZone(globalstate.EgoscaleV3Client, utils.AllZones)
+			if err != nil {
+				return nil, err
 			}
 			if defaultZone != "" {
 				account.DefaultZone = defaultZone
-			} else {
-				return nil, fmt.Errorf("no zone selected")
+				break
 			}
-		} else {
-			// No global client to fall back to; return the original error
-			return nil, err
 		}
 	}
 
