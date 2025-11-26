@@ -124,10 +124,10 @@ func promptAccountInformation() (*account.Account, error) {
 	if err != nil {
 		return nil, err
 	}
-	account.DefaultZone, err = chooseZone(*client, nil)
+	account.DefaultZone, err = chooseZone(client, nil)
 	if err != nil {
 		for {
-			defaultZone, err := chooseZone(*globalstate.EgoscaleV3Client, utils.AllZones)
+			defaultZone, err := chooseZone(globalstate.EgoscaleV3Client, utils.AllZones)
 			if err != nil {
 				return nil, err
 			}

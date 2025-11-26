@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug fixes
+
+- Fix a bug with setting config from scratch #767
+
 ## 1.88.0
 
 ### Features

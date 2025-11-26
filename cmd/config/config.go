@@ -219,7 +219,7 @@ func getAccountByName(name string) *account.Account {
 	return nil
 }
 
-func chooseZone(client v3.Client, zones []string) (string, error) {
+func chooseZone(client *v3.Client, zones []string) (string, error) {
 	if zones == nil {
 
 		ctx := exocmd.GContext
@@ -230,9 +230,11 @@ func chooseZone(client v3.Client, zones []string) (string, error) {
 		}
 
 		zones = make([]string, len(zonesResp.Zones))
-		for _, j := range zonesResp.Zones {
-			zones = append(zones, string(j.Name))
+
+		for i, z := range zonesResp.Zones {
+			zones[i] = string(z.Name)
 		}
+
 		if len(zones) == 0 {
 			return "", fmt.Errorf("no zones were found")
 		}
@@ -245,9 +247,8 @@ func chooseZone(client v3.Client, zones []string) (string, error) {
 	}
 
 	_, result, err := prompt.Run()
-
 	if err != nil {
-		return "", fmt.Errorf("prompt failed %v", err)
+		return "", fmt.Errorf("prompt failed: %w", err)
 	}
 
 	return result, nil
