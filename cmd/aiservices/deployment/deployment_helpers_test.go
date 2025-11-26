@@ -46,11 +46,11 @@ func newDepHelperServer(t *testing.T) *depHelperServer {
 			if strings.HasSuffix(r.URL.Path, "/scale") {
 				_, err := io.Copy(io.Discard, r.Body)
 				if err != nil {
-					return
+					t.Fail()
 				}
 				err = r.Body.Close()
 				if err != nil {
-					return
+					t.Fail()
 				}
 				writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op"), State: v3.OperationStateSuccess})
 				return

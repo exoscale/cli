@@ -19,7 +19,7 @@ type DeploymentShowOutput struct {
 	Replicas      int64                          `json:"replicas"`
 	ServiceLevel  string                         `json:"service_level"`
 	DeploymentURL string                         `json:"deployment_url"`
-	ModelID       *v3.UUID                       `json:"model_id"`
+	ModelID       v3.UUID                        `json:"model_id"`
 	ModelName     string                         `json:"model_name"`
 	CreatedAt     string                         `json:"created_at"`
 	UpdatedAt     string                         `json:"updated_at"`
@@ -70,6 +70,13 @@ func (c *DeploymentShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
+	var modelID v3.UUID
+	var modelName string
+	if resp.Model != nil {
+		modelID = resp.Model.ID
+		modelName = resp.Model.Name
+	}
+
 	out := &DeploymentShowOutput{
 		ID:            resp.ID,
 		Name:          resp.Name,
@@ -79,8 +86,8 @@ func (c *DeploymentShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		Replicas:      resp.Replicas,
 		ServiceLevel:  resp.ServiceLevel,
 		DeploymentURL: resp.DeploymentURL,
-		ModelID:       &resp.Model.ID,
-		ModelName:     resp.Model.Name,
+		ModelID:       modelID,
+		ModelName:     modelName,
 		CreatedAt:     resp.CreatedAT.Format(time.RFC3339),
 		UpdatedAt:     resp.UpdatedAT.Format(time.RFC3339),
 	}
