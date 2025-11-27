@@ -175,7 +175,7 @@ type CreateDeploymentRequest struct {
 	// Deployment name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
 	// Number of replicas (>=1)
-	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gt=0"`
+	Replicas int64 `json:"replicas" validate:"required,gt=0"`
 }
 
 // AI model
@@ -2337,6 +2337,8 @@ type InstancePrivateNetworks struct {
 type Instance struct {
 	// Instance Anti-affinity Groups
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	// Indicates if the instance will take application-consistent snapshots
+	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Instance creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Deploy target
@@ -2471,17 +2473,18 @@ type InstanceTarget struct {
 type InstanceTypeFamily string
 
 const (
-	InstanceTypeFamilyGpu3      InstanceTypeFamily = "gpu3"
-	InstanceTypeFamilyGpua30    InstanceTypeFamily = "gpua30"
-	InstanceTypeFamilyGpu3080ti InstanceTypeFamily = "gpu3080ti"
-	InstanceTypeFamilyGpu2      InstanceTypeFamily = "gpu2"
-	InstanceTypeFamilyGpu       InstanceTypeFamily = "gpu"
-	InstanceTypeFamilyMemory    InstanceTypeFamily = "memory"
-	InstanceTypeFamilyGpua5000  InstanceTypeFamily = "gpua5000"
-	InstanceTypeFamilyStorage   InstanceTypeFamily = "storage"
-	InstanceTypeFamilyStandard  InstanceTypeFamily = "standard"
-	InstanceTypeFamilyColossus  InstanceTypeFamily = "colossus"
-	InstanceTypeFamilyCPU       InstanceTypeFamily = "cpu"
+	InstanceTypeFamilyGpu3          InstanceTypeFamily = "gpu3"
+	InstanceTypeFamilyGpua30        InstanceTypeFamily = "gpua30"
+	InstanceTypeFamilyGpu3080ti     InstanceTypeFamily = "gpu3080ti"
+	InstanceTypeFamilyGpu2          InstanceTypeFamily = "gpu2"
+	InstanceTypeFamilyGpu           InstanceTypeFamily = "gpu"
+	InstanceTypeFamilyMemory        InstanceTypeFamily = "memory"
+	InstanceTypeFamilyGpua5000      InstanceTypeFamily = "gpua5000"
+	InstanceTypeFamilyGpurtx6000pro InstanceTypeFamily = "gpurtx6000pro"
+	InstanceTypeFamilyStorage       InstanceTypeFamily = "storage"
+	InstanceTypeFamilyStandard      InstanceTypeFamily = "standard"
+	InstanceTypeFamilyColossus      InstanceTypeFamily = "colossus"
+	InstanceTypeFamilyCPU           InstanceTypeFamily = "cpu"
 )
 
 type InstanceTypeSize string
@@ -4072,7 +4075,7 @@ type ReverseDNSRecord struct {
 // Scale AI deployment
 type ScaleDeploymentRequest struct {
 	// Number of replicas (>=0)
-	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gte=0"`
+	Replicas int64 `json:"replicas" validate:"required,gte=0"`
 }
 
 // Security Group
