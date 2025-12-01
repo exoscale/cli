@@ -52,7 +52,7 @@ func (o *securityGroupShowOutput) ToText() { output.Text(o) }
 func (o *securityGroupShowOutput) ToTable() {
 	formatExternalSources := func(sources []string) string {
 		if len(sources) > 0 {
-			return strings.Join(sources, ", ")
+			return "  " + strings.Join(sources, "\n  ")
 		}
 		return "-"
 	}

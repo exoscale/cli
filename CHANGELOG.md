@@ -6,6 +6,10 @@
 
 - Fix a bug with setting config from scratch #767
 
+### Improvements
+
+- Display one external source per line when doing showing a security group
+
 ## 1.88.0
 
 ### Features
