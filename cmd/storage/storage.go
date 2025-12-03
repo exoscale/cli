@@ -45,7 +45,7 @@ func init() {
 			// Custom HTTP client User-Agent
 			awsconfig.WithAPIOptions([]func(*middleware.Stack) error{
 				awsmiddleware.AddUserAgentKeyValue("Exoscale-CLI",
-					fmt.Sprintf("%s (%s) %s", exocmd.GVersion, exocmd.GCommit, getUserAgent(globalstate.EgoscaleV3Client))),
+					fmt.Sprintf("%s (%s) %s", globalstate.GitVersion, globalstate.GitCommit, getUserAgent(globalstate.EgoscaleV3Client))),
 			}),
 
 			// Conditional HTTP client request tracing

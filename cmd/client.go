@@ -35,6 +35,7 @@ func buildClient() {
 
 			return nil
 		}),
+		v3.ClientOptWithUserAgent(fmt.Sprintf("exocli/%s/%s", globalstate.GitVersion, globalstate.GitCommit)),
 	)
 	if err != nil {
 		panic(fmt.Sprintf("unable to initialize Exoscale API V3 client: %v", err))

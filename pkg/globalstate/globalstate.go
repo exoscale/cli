@@ -5,8 +5,9 @@ import (
 )
 
 var (
-	OutputFormat     string
-	EgoscaleV3Client *v3.Client
-	Quiet            bool
-	ConfigFolder     string
+	OutputFormat          string
+	EgoscaleV3Client      *v3.Client
+	Quiet                 bool
+	ConfigFolder          string
+	GitVersion, GitCommit string
 )
