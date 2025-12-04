@@ -9,7 +9,8 @@
 ### Improvements
 
 - Display one external source per line when doing showing a security group
-- chore: update crypto version #770 
+- chore: update crypto version #770
+- chores: add git version/commit in user agent header #769
 
 ## 1.88.0
 

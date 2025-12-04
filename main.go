@@ -21,6 +21,7 @@ import (
 
 	"github.com/exoscale/cli/cmd"
 	_ "github.com/exoscale/cli/cmd/subcommands"
+	"github.com/exoscale/cli/pkg/globalstate"
 )
 
 var (
@@ -32,5 +33,7 @@ var (
 
 func main() {
 	log.SetFlags(0)
+	globalstate.GitCommit = commit
+	globalstate.GitVersion = version
 	cmd.Execute(version, commit)
 }
