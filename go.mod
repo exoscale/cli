@@ -1,5 +1,7 @@
 module github.com/exoscale/cli
 
+go 1.24.11
+
 require (
 	github.com/aws/aws-sdk-go-v2 v1.2.0
 	github.com/aws/aws-sdk-go-v2/config v1.1.1
@@ -105,7 +107,3 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-go 1.24.0
-
-toolchain go1.24.9
