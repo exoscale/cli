@@ -9,6 +9,7 @@
 ### Improvements
 
 - Display one external source per line when doing showing a security group
+- chore: update crypto version #770 
 
 ## 1.88.0
 
