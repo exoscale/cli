@@ -7,14 +7,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	// "github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/utils"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	// v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dnsListItemOutput struct {
