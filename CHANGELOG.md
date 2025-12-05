@@ -49,6 +49,7 @@
 
 ### Bug fixes
 
+- compute: properly pass the private networks when creating a new instance pool
 - Fix EIPv6 address family #740
 - Remove debug log line #741
 - Bump go.mk & goreleaser #747
