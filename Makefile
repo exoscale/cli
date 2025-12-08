@@ -40,7 +40,7 @@ OAS_FILE := public-api.json
 RM = rm -rf
 
 $(OAS_FILE):
-	wget -O public-api.json -q https://openapi-v2.exoscale.com/source.json
+	wget -O public-api.json -q https://api-ch-gva-2.exoscale.com/v2/openapi.json
 
 .PHONY:
 .ONESHELL:
@@ -49,7 +49,7 @@ x-cmd: $(OAS_FILE) ## Generates code for "exo x" experimental subcommands
 		echo "openapi-cli-generator tool not found, downloading"
 		go install github.com/exoscale/openapi-cli-generator@latest
 	fi
-	wget -q https://openapi-v2.exoscale.com/source.json
+	wget -q https://api-ch-gva-2.exoscale.com/v2/openapi.json
 	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go $(OAS_FILE)
 
 .PHONY: docker
