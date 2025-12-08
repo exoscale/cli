@@ -8,11 +8,9 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dnsShowItemOutput struct {
@@ -68,10 +66,7 @@ func showDNS(ident, name string, types []string) (output.Outputter, error) {
 	}
 
 	ctx := exocmd.GContext
-	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
-	if err != nil {
-		return nil, err
-	}
+	client := globalstate.EgoscaleV3Client
 
 	domainsList, err := client.ListDNSDomains(ctx)
 	if err != nil {
