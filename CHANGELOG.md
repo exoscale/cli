@@ -11,6 +11,8 @@
 - Display one external source per line when doing showing a security group
 - chore: update crypto version #770
 - chores: add git version/commit in user agent header #769
+- Prompting for validation before deleting deployments and models (dedicated-inference)
+- Ability to delete multiple deployments and models at once (dedicated-inference)
 
 ## 1.88.0
 

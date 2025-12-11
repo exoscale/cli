@@ -1,7 +1,6 @@
 package model
 
 import (
-	"context"
 	"fmt"
 	"os"
 
@@ -17,8 +16,9 @@ type ModelDeleteCmd struct {
 
 	_ bool `cli-cmd:"delete"`
 
-	ID   string      `cli-arg:"#" cli-usage:"MODEL-ID (UUID)"`
-	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
+	IDs   []string    `cli-arg:"#" cli-usage:"MODEL-ID (UUID)..."`
+	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *ModelDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
@@ -35,18 +35,45 @@ func (c *ModelDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	id, err := v3.ParseUUID(c.ID)
-	if err != nil {
-		return fmt.Errorf("invalid model ID: %w", err)
+	modelsToDelete := []v3.UUID{}
+	for _, idStr := range c.IDs {
+		id, err := v3.ParseUUID(idStr)
+		if err != nil {
+			if !c.Force {
+				return fmt.Errorf("invalid model ID %q: %w", idStr, err)
+			}
+			fmt.Fprintf(os.Stderr, "warning: invalid model ID %q: %v\n", idStr, err)
+			continue
+		}
+
+		if !c.Force {
+			if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete model %q?", idStr)) {
+				return nil
+			}
+		}
+
+		modelsToDelete = append(modelsToDelete, id)
 	}
 
-	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Deleting model %s...", c.ID), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
-		return c.DeleteModel(ctx, id)
-	}); err != nil {
+	var fns []func() error
+	for _, id := range modelsToDelete {
+		fns = append(fns, func() error {
+			op, err := client.DeleteModel(ctx, id)
+			if err != nil {
+				return err
+			}
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+			return err
+		})
+	}
+
+	err = utils.DecorateAsyncOperations("Deleting model(s)...", fns...)
+	if err != nil {
 		return err
 	}
+
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Model deleted.")
+		fmt.Fprintln(os.Stdout, "Model(s) deleted.")
 	}
 	return nil
 }
