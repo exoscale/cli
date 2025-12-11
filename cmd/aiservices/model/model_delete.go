@@ -17,8 +17,9 @@ type ModelDeleteCmd struct {
 
 	_ bool `cli-cmd:"delete"`
 
-	ID   string      `cli-arg:"#" cli-usage:"MODEL-ID (UUID)"`
-	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
+	ID    string      `cli-arg:"#" cli-usage:"MODEL-ID (UUID)"`
+	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *ModelDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
@@ -38,6 +39,12 @@ func (c *ModelDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	id, err := v3.ParseUUID(c.ID)
 	if err != nil {
 		return fmt.Errorf("invalid model ID: %w", err)
+	}
+
+	if !c.Force {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete model %q?", c.ID)) {
+			return nil
+		}
 	}
 
 	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Deleting model %s...", c.ID), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {

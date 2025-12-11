@@ -45,12 +45,12 @@ func TestModelDeleteInvalidUUIDAndSuccess(t *testing.T) {
 	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(srv.URL))
 
 	// invalid UUID
-	cmd := &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), ID: "not-a-uuid"}
+	cmd := &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), ID: "not-a-uuid", Force: true}
 	if err := cmd.CmdRun(nil, nil); err == nil || !regexp.MustCompile(`invalid model ID`).MatchString(err.Error()) {
 		t.Fatalf("expected invalid uuid error, got %v", err)
 	}
 	// success
-	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), ID: "33333333-3333-3333-3333-333333333333"}
+	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), ID: "33333333-3333-3333-3333-333333333333", Force: true}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("model delete: %v", err)
 	}

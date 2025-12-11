@@ -103,7 +103,7 @@ func TestDeploymentDeleteScaleRevealLogs(t *testing.T) {
 	now := time.Now()
 	ts.deployments = []v3.ListDeploymentsResponseEntry{{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", CreatedAT: now, UpdatedAT: now}}
 	// delete by name
-	del := &DeploymentDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha"}
+	del := &DeploymentDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha", Force: true}
 	if err := del.CmdRun(nil, nil); err != nil {
 		t.Fatalf("delete: %v", err)
 	}

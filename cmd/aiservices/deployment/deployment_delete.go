@@ -18,6 +18,7 @@ type DeploymentDeleteCmd struct {
 	_ bool `cli-cmd:"delete"`
 
 	Deployment string      `cli-arg:"#" cli-usage:"ID or NAME"`
+	Force      bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 	Zone       v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
@@ -47,6 +48,12 @@ func (c *DeploymentDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 	id := entry.ID
+
+	if !c.Force {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete deployment %q?", c.Deployment)) {
+			return nil
+		}
+	}
 
 	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Deleting deployment %s...", c.Deployment), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
 		return c.DeleteDeployment(ctx, id)
