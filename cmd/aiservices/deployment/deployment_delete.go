@@ -75,7 +75,7 @@ func (c *DeploymentDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	err = utils.DecorateAsyncOperations(fmt.Sprintf("Deleting deployment(s)..."), fns...)
+	err = utils.DecorateAsyncOperations("Deleting deployment(s)...", fns...)
 	if err != nil {
 		return err
 	}

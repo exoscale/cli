@@ -67,7 +67,7 @@ func (c *ModelDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	err = utils.DecorateAsyncOperations(fmt.Sprintf("Deleting model(s)..."), fns...)
+	err = utils.DecorateAsyncOperations("Deleting model(s)...", fns...)
 	if err != nil {
 		return err
 	}
