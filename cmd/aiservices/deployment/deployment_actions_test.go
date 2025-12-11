@@ -103,9 +103,15 @@ func TestDeploymentDeleteScaleRevealLogs(t *testing.T) {
 	now := time.Now()
 	ts.deployments = []v3.ListDeploymentsResponseEntry{{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", CreatedAT: now, UpdatedAT: now}}
 	// delete by name
-	del := &DeploymentDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha", Force: true}
+	del := &DeploymentDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployments: []string{"alpha"}, Force: true}
 	if err := del.CmdRun(nil, nil); err != nil {
 		t.Fatalf("delete: %v", err)
+	}
+	// delete multiple (add another deployment first)
+	ts.deployments = append(ts.deployments, v3.ListDeploymentsResponseEntry{ID: v3.UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), Name: "beta", CreatedAT: now, UpdatedAT: now})
+	delMultiple := &DeploymentDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployments: []string{"alpha", "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"}, Force: true}
+	if err := delMultiple.CmdRun(nil, nil); err != nil {
+		t.Fatalf("delete multiple: %v", err)
 	}
 	// scale by id
 	sc := &DeploymentScaleCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", Size: 3}

@@ -1,7 +1,6 @@
 package deployment
 
 import (
-	"context"
 	"fmt"
 	"os"
 
@@ -17,9 +16,9 @@ type DeploymentDeleteCmd struct {
 
 	_ bool `cli-cmd:"delete"`
 
-	Deployment string      `cli-arg:"#" cli-usage:"ID or NAME"`
-	Force      bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone       v3.ZoneName `cli-short:"z" cli-usage:"zone"`
+	Deployments []string    `cli-arg:"#" cli-usage:"NAME|ID..."`
+	Force       bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone        v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *DeploymentDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
@@ -38,30 +37,51 @@ func (c *DeploymentDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	// Resolve deployment ID using the SDK helper
+	// Resolve deployment IDs using the SDK helper
 	list, err := client.ListDeployments(ctx)
 	if err != nil {
 		return err
 	}
-	entry, err := list.FindListDeploymentsResponseEntry(c.Deployment)
+
+	deploymentsToDelete := []v3.UUID{}
+	for _, deploymentStr := range c.Deployments {
+		entry, err := list.FindListDeploymentsResponseEntry(deploymentStr)
+		if err != nil {
+			if !c.Force {
+				return err
+			}
+			fmt.Fprintf(os.Stderr, "warning: %s not found.\n", deploymentStr)
+			continue
+		}
+
+		if !c.Force {
+			if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete deployment %q?", deploymentStr)) {
+				return nil
+			}
+		}
+
+		deploymentsToDelete = append(deploymentsToDelete, entry.ID)
+	}
+
+	var fns []func() error
+	for _, id := range deploymentsToDelete {
+		fns = append(fns, func() error {
+			op, err := client.DeleteDeployment(ctx, id)
+			if err != nil {
+				return err
+			}
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+			return err
+		})
+	}
+
+	err = utils.DecorateAsyncOperations(fmt.Sprintf("Deleting deployment(s)..."), fns...)
 	if err != nil {
 		return err
 	}
-	id := entry.ID
 
-	if !c.Force {
-		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete deployment %q?", c.Deployment)) {
-			return nil
-		}
-	}
-
-	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Deleting deployment %s...", c.Deployment), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
-		return c.DeleteDeployment(ctx, id)
-	}); err != nil {
-		return err
-	}
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Deployment deleted.")
+		fmt.Fprintln(os.Stdout, "Deployment(s) deleted.")
 	}
 	return nil
 }

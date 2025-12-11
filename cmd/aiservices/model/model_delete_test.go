@@ -44,14 +44,24 @@ func TestModelDeleteInvalidUUIDAndSuccess(t *testing.T) {
 	}
 	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(srv.URL))
 
-	// invalid UUID
-	cmd := &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), ID: "not-a-uuid", Force: true}
+	// invalid UUID without force
+	cmd := &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), IDs: []string{"not-a-uuid"}, Force: false}
 	if err := cmd.CmdRun(nil, nil); err == nil || !regexp.MustCompile(`invalid model ID`).MatchString(err.Error()) {
 		t.Fatalf("expected invalid uuid error, got %v", err)
 	}
+	// invalid UUID with force (should skip with warning, no error)
+	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), IDs: []string{"not-a-uuid"}, Force: true}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("expected no error with force flag, got %v", err)
+	}
 	// success
-	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), ID: "33333333-3333-3333-3333-333333333333", Force: true}
+	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), IDs: []string{"33333333-3333-3333-3333-333333333333"}, Force: true}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("model delete: %v", err)
+	}
+	// multiple models
+	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), IDs: []string{"33333333-3333-3333-3333-333333333333", "44444444-4444-4444-4444-444444444444"}, Force: true}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("model delete multiple: %v", err)
 	}
 }
