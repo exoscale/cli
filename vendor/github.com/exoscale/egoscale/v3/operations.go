@@ -128,7 +128,7 @@ func (c Client) CreateDeployment(ctx context.Context, req CreateDeploymentReques
 
 // Get list of allowed inference engine parameters with their descriptions, types, allowed values, and defaults
 func (c Client) GetInferenceEngineHelp(ctx context.Context) (*GetInferenceEngineHelpResponse, error) {
-	path := "/ai/deployment/inference-engine-help"
+	path := "/ai/help/inference-engine-parameters"
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
 	if err != nil {

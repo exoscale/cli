@@ -2338,12 +2338,16 @@ type IAMServicePolicyRule struct {
 type InferenceEngineParameterEntry struct {
 	// Allowed values
 	AllowedValues []string `json:"allowed-values,omitempty"`
+	// Default value
+	Default string `json:"default,omitempty"`
 	// Parameter description
 	Description string `json:"description,omitempty"`
 	// Flag name
 	Flags []string `json:"flags,omitempty"`
 	// Parameter name
 	Name string `json:"name,omitempty"`
+	// Parameter section
+	Section string `json:"section,omitempty"`
 	// Parameter type
 	Type string `json:"type,omitempty"`
 }
