@@ -11,6 +11,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/exoscale/egoscale/v3/credentials"
 )
@@ -95,5 +96,34 @@ func TestModelListUsesZone(t *testing.T) {
 	}
 	if ts.zoneListCount.Load() == 0 {
 		t.Fatalf("expected zone list endpoint to be called")
+	}
+}
+
+func TestModelListOutput_ToJSON(t *testing.T) {
+	ts := newModelListTestServer(t)
+	defer setupModelList(t, ts)()
+	now := time.Now()
+	ts.models = []v3.ListModelsResponseEntry{
+		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", Status: v3.ListModelsResponseEntryStatusReady, ModelSize: 1000, CreatedAT: now, UpdatedAT: now},
+		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", Status: v3.ListModelsResponseEntryStatusCreating, ModelSize: 0, CreatedAT: now, UpdatedAT: now},
+	}
+	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	cmd.OutputFunc = func(out output.Outputter, err error) error {
+		if err != nil {
+			return err
+		}
+		out.ToJSON()
+		return nil
+	}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("model list: %v", err)
+	}
+}
+
+func TestModelListCmd_CmdShort(t *testing.T) {
+	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	short := cmd.CmdShort()
+	if short == "" {
+		t.Fatal("CmdShort() returned empty string")
 	}
 }
