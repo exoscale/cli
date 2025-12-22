@@ -60,6 +60,7 @@ type CreateNodepoolOpts struct {
 	SecurityGroups     []string
 	Taints             []string
 	KubeletImageGC     *v3.KubeletImageGC
+	PublicIPAssignment *v3.PublicIPAssignment
 }
 
 func createNodepoolRequest(
@@ -76,6 +77,10 @@ func createNodepoolRequest(
 		Size:           opts.Size,
 		Labels:         opts.Labels,
 		KubeletImageGC: opts.KubeletImageGC,
+	}
+
+	if opts.PublicIPAssignment != nil {
+		nodepoolReq.PublicIPAssignment = v3.CreateSKSNodepoolRequestPublicIPAssignment(*opts.PublicIPAssignment)
 	}
 
 	aaGroups, err := lookupAntiAffinityGroups(ctx, client, opts.AntiAffinityGroups)

@@ -24,6 +24,7 @@ type sksNodepoolShowOutput struct {
 	InstanceType         string            `json:"instance_type"`
 	Template             string            `json:"template"`
 	DiskSize             int64             `json:"disk_size"`
+	IPv6                 bool              `json:"ipv6_enabled" outputLabel:"IPv6"`
 	AntiAffinityGroups   []string          `json:"anti_affinity_groups"`
 	SecurityGroups       []string          `json:"security_groups"`
 	PrivateNetworks      []string          `json:"private_networks"`
@@ -99,6 +100,11 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return errors.New("nodepool not found")
 	}
 
+	ipv6Enabled := false
+	if nodepool.PublicIPAssignment == v3.SKSNodepoolPublicIPAssignmentDual {
+		ipv6Enabled = true
+	}
+
 	out := sksNodepoolShowOutput{
 		AddOns: func() (v []string) {
 			if nodepool.Addons != nil {
@@ -124,6 +130,7 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		PrivateNetworks: make([]string, 0),
 		Size:            nodepool.Size,
 		State:           string(nodepool.State),
+		IPv6:            ipv6Enabled,
 		Taints: func() (v []string) {
 			if nodepool.Taints != nil {
 				v = make([]string, 0)

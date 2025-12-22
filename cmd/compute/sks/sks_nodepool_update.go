@@ -34,6 +34,7 @@ type sksNodepoolUpdateCmd struct {
 	SecurityGroups     []string    `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	Taints             []string    `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
 	Zone               v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
+	IPv6               bool        `cli-flag:"ipv6" cli-usage:"Enable public IPv6 assignment to Nodepool nodes"`
 }
 
 func (c *sksNodepoolUpdateCmd) CmdAliases() []string { return nil }
@@ -188,6 +189,15 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 			(updateReq.Taints)[key] = *taint
 		}
 
+		updated = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.IPv6)) {
+		if c.IPv6 {
+			updateReq.PublicIPAssignment = v3.UpdateSKSNodepoolRequestPublicIPAssignmentDual
+		} else {
+			updateReq.PublicIPAssignment = v3.UpdateSKSNodepoolRequestPublicIPAssignmentInet4
+		}
 		updated = true
 	}
 
