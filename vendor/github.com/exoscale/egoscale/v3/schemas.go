@@ -170,8 +170,10 @@ type CreateDeploymentRequest struct {
 	// Number of GPUs (1-8)
 	GpuCount int64 `json:"gpu-count" validate:"required,gt=0"`
 	// GPU type family (e.g., gpua5000, gpu3080ti)
-	GpuType string    `json:"gpu-type" validate:"required"`
-	Model   *ModelRef `json:"model,omitempty"`
+	GpuType string `json:"gpu-type" validate:"required"`
+	// Optional extra inference engine server CLI args
+	InferenceEngineParameters []string  `json:"inference-engine-parameters,omitempty"`
+	Model                     *ModelRef `json:"model,omitempty"`
 	// Deployment name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
 	// Number of replicas (>=1)
@@ -2206,8 +2208,10 @@ type GetDeploymentResponse struct {
 	// GPU type family
 	GpuType string `json:"gpu-type,omitempty" validate:"omitempty,gte=1"`
 	// Deployment ID
-	ID    UUID      `json:"id,omitempty"`
-	Model *ModelRef `json:"model,omitempty"`
+	ID UUID `json:"id,omitempty"`
+	// Optional extra inference engine server CLI args
+	InferenceEngineParameters []string  `json:"inference-engine-parameters,omitempty"`
+	Model                     *ModelRef `json:"model,omitempty"`
 	// Deployment name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
 	// Number of replicas (>=0)
@@ -2218,6 +2222,11 @@ type GetDeploymentResponse struct {
 	Status GetDeploymentResponseStatus `json:"status,omitempty"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
+}
+
+// List of allowed inference-engine parameters
+type GetInferenceEngineHelpResponse struct {
+	Parameters []InferenceEngineParameterEntry `json:"parameters,omitempty"`
 }
 
 type GetModelResponseStatus string
@@ -2323,6 +2332,20 @@ type IAMServicePolicyRule struct {
 	Action     IAMServicePolicyRuleAction `json:"action,omitempty"`
 	Expression string                     `json:"expression,omitempty"`
 	Resources  []string                   `json:"resources,omitempty"`
+}
+
+// inference-engine parameter definition
+type InferenceEngineParameterEntry struct {
+	// Allowed values
+	AllowedValues []string `json:"allowed-values,omitempty"`
+	// Parameter description
+	Description string `json:"description,omitempty"`
+	// Flag name
+	Flags []string `json:"flags,omitempty"`
+	// Parameter name
+	Name string `json:"name,omitempty"`
+	// Parameter type
+	Type string `json:"type,omitempty"`
 }
 
 // Private Network

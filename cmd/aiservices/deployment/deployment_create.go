@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -22,9 +23,10 @@ type DeploymentCreateCmd struct {
 	GPUCount int64  `cli-flag:"gpu-count" cli-usage:"Number of GPUs (1-8)"`
 	Replicas int64  `cli-flag:"replicas" cli-usage:"Number of replicas (>=1)"`
 
-	ModelID   string      `cli-flag:"model-id" cli-usage:"Model ID (UUID)"`
-	ModelName string      `cli-flag:"model-name" cli-usage:"Model name (as created)"`
-	Zone      v3.ZoneName `cli-short:"z" cli-usage:"zone"`
+	ModelID                   string      `cli-flag:"model-id" cli-usage:"Model ID (UUID)"`
+	ModelName                 string      `cli-flag:"model-name" cli-usage:"Model name (as created)"`
+	InferenceEngineParameters string      `cli-flag:"inference-engine-params" cli-usage:"Space-separated inference engine server CLI arguments (e.g., \"--gpu-memory-usage=0.8 --max-tokens=4096\")"`
+	Zone                      v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *DeploymentCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
@@ -50,11 +52,18 @@ func (c *DeploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("--model-id or --model-name is required")
 	}
 
+	// Parse inference engine parameters from space-separated string
+	var inferenceParams []string
+	if c.InferenceEngineParameters != "" {
+		inferenceParams = strings.Fields(c.InferenceEngineParameters)
+	}
+
 	req := v3.CreateDeploymentRequest{
-		Name:     c.Name,
-		GpuType:  c.GPUType,
-		GpuCount: c.GPUCount,
-		Replicas: c.Replicas,
+		Name:                      c.Name,
+		GpuType:                   c.GPUType,
+		GpuCount:                  c.GPUCount,
+		Replicas:                  c.Replicas,
+		InferenceEngineParameters: inferenceParams,
 	}
 	if c.ModelID != "" || c.ModelName != "" {
 		req.Model = &v3.ModelRef{}

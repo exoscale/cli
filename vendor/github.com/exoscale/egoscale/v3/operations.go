@@ -126,6 +126,50 @@ func (c Client) CreateDeployment(ctx context.Context, req CreateDeploymentReques
 	return bodyresp, nil
 }
 
+// Get list of allowed inference engine parameters with their descriptions, types, allowed values, and defaults
+func (c Client) GetInferenceEngineHelp(ctx context.Context) (*GetInferenceEngineHelpResponse, error) {
+	path := "/ai/deployment/inference-engine-help"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-inference-engine-help")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: http response: %w", err)
+	}
+
+	bodyresp := new(GetInferenceEngineHelpResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 // [BETA] Delete Deployment
 func (c Client) DeleteDeployment(ctx context.Context, id UUID) (*Operation, error) {
 	path := fmt.Sprintf("/ai/deployment/%v", id)
@@ -16347,6 +16391,8 @@ const (
 )
 
 type RegisterTemplateRequest struct {
+	// Template with support for Application Consistent Snapshots
+	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Boot mode (default: legacy)
 	BootMode RegisterTemplateRequestBootMode `json:"boot-mode,omitempty"`
 	// Template build
