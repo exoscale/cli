@@ -17,13 +17,13 @@ import (
 )
 
 type instanceListItemOutput struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Zone        string `json:"zone"`
-	Type        string `json:"type"`
-	IPAddress   string `json:"ip_address"`
-	IPv6Address string `json:"ipv6_address"`
-	State       string `json:"state"`
+	ID          v3.UUID     `json:"id"`
+	Name        string      `json:"name"`
+	Zone        v3.ZoneName `json:"zone"`
+	Type        string      `json:"type"`
+	IPAddress   string      `json:"ip_address"`
+	IPv6Address string      `json:"ipv6_address"`
+	State       string      `json:"state"`
 }
 
 type instanceListOutput []instanceListItemOutput
@@ -46,9 +46,9 @@ func (o *instanceListOutput) ToTable() {
 
 	for _, instance := range *o {
 		t.Append([]string{
-			instance.ID,
+			string(instance.ID),
 			instance.Name,
-			instance.Zone,
+			string(instance.Zone),
 			instance.Type,
 			instance.IPAddress,
 			instance.IPv6Address,
@@ -62,7 +62,7 @@ type instanceListCmd struct {
 
 	_ bool `cli-cmd:"list"`
 
-	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
 func (c *instanceListCmd) CmdAliases() []string { return exocmd.GListAlias }
@@ -81,20 +81,12 @@ func (c *instanceListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var zones []v3.ZoneName
+	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
-	if c.Zone != "" {
-		zones = []v3.ZoneName{v3.ZoneName(c.Zone)}
-	} else {
-		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
-		if err != nil {
-			return err
-		}
-		zones, err = utils.AllZonesV3(ctx, client)
-		if err != nil {
-			return err
-		}
+	zones, err := utils.AllZonesV3(ctx, client, c.Zone)
+	if err != nil {
+		return err
 	}
 
 	out := make(instanceListOutput, 0)
@@ -109,14 +101,11 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 		done <- struct{}{}
 	}()
-	err := utils.ForEachZone(zones, func(zone v3.ZoneName) error {
-		ctx := exocmd.GContext
-		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
-		if err != nil {
-			return err
-		}
+	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
 
-		instances, err := client.ListInstances(ctx)
+		c := client.WithEndpoint(zone.APIEndpoint)
+		instances, err := c.ListInstances(ctx)
+
 		if err != nil {
 			return err
 		}
@@ -138,9 +127,9 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			}
 
 			res <- instanceListItemOutput{
-				ID:          i.ID.String(),
+				ID:          i.ID,
 				Name:        i.Name,
-				Zone:        string(zone),
+				Zone:        zone.Name,
 				Type:        fmt.Sprintf("%s.%s", instanceType.Family, instanceType.Size),
 				IPAddress:   utils.DefaultIP(&i.PublicIP, utils.EmptyIPAddressVisualization),
 				IPv6Address: utils.DefaultIP(i.Ipv6Address, utils.EmptyIPAddressVisualization),
@@ -150,6 +139,7 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 		return nil
 	})
+
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr,
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint

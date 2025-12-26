@@ -13,6 +13,7 @@
 - chores: add git version/commit in user agent header #769
 - Prompting for validation before deleting deployments and models (dedicated-inference)
 - Ability to delete multiple deployments and models at once (dedicated-inference)
+- Avoid redundant calls to `list-zones` #775
 
 ## 1.88.0
 
