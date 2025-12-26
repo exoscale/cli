@@ -43,7 +43,7 @@ func AllZonesV3(ctx context.Context, client *v3.Client, zoneName v3.ZoneName) ([
 		if err != nil {
 			return nil, fmt.Errorf("get zone api endpoint: find zone: %w", err)
 		}
-		zones = []v3.Zone{{APIEndpoint: zone.APIEndpoint}}
+		zones = []v3.Zone{zone}
 	}
 
 	return zones, nil
@@ -228,7 +228,6 @@ func ForEveryZone(zones []v3.Zone, f func(zone v3.Zone) error) error {
 	meg := new(multierror.Group)
 
 	for _, zone := range zones {
-		zone := zone
 		meg.Go(func() error {
 			return f(zone)
 		})
