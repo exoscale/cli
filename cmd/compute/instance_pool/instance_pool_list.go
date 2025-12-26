@@ -15,11 +15,11 @@ import (
 )
 
 type instancePoolListItemOutput struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Zone  string `json:"zone"`
-	Size  int64  `json:"size"`
-	State string `json:"state"`
+	ID    v3.UUID     `json:"id"`
+	Name  string      `json:"name"`
+	Zone  v3.ZoneName `json:"zone"`
+	Size  int64       `json:"size"`
+	State string      `json:"state"`
 }
 
 type instancePoolListOutput []instancePoolListItemOutput
@@ -33,7 +33,7 @@ type instancePoolListCmd struct {
 
 	_ bool `cli-cmd:"list"`
 
-	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
 func (c *instancePoolListCmd) CmdAliases() []string { return exocmd.GListAlias }
@@ -52,20 +52,12 @@ func (c *instancePoolListCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *instancePoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var zones []v3.ZoneName
+	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
-	if c.Zone != "" {
-		zones = []v3.ZoneName{v3.ZoneName(c.Zone)}
-	} else {
-		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
-		if err != nil {
-			return err
-		}
-		zones, err = utils.AllZonesV3(ctx, client)
-		if err != nil {
-			return err
-		}
+	zones, err := utils.AllZonesV3(ctx, client, c.Zone)
+	if err != nil {
+		return err
 	}
 
 	out := make(instancePoolListOutput, 0)
@@ -78,22 +70,19 @@ func (c *instancePoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 		done <- struct{}{}
 	}()
-	err := utils.ForEachZone(zones, func(zone v3.ZoneName) error {
-		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, zone)
-		if err != nil {
-			return err
-		}
+	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
+		c := client.WithEndpoint(zone.APIEndpoint)
+		list, err := c.ListInstancePools(ctx)
 
-		list, err := client.ListInstancePools(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to list Instance Pools in zone %s: %w", zone, err)
 		}
 
 		for _, i := range list.InstancePools {
 			res <- instancePoolListItemOutput{
-				ID:    i.ID.String(),
+				ID:    i.ID,
 				Name:  i.Name,
-				Zone:  string(zone),
+				Zone:  zone.Name,
 				Size:  i.Size,
 				State: string(i.State),
 			}

@@ -79,7 +79,7 @@ func (c *privateNetworkListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}()
 	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
 
-		c := client.WithEndpoint((zone.APIEndpoint))
+		c := client.WithEndpoint(zone.APIEndpoint)
 		resp, err := c.ListPrivateNetworks(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to list Private Networks in zone %s: %w", zone, err)

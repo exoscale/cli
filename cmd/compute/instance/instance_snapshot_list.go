@@ -16,11 +16,11 @@ import (
 )
 
 type instanceSnapshotListItemOutput struct {
-	ID           string `json:"id"`
-	CreationDate string `json:"creation_date"`
-	Instance     string `json:"instance"`
-	State        string `json:"state"`
-	Zone         string `json:"zone"`
+	ID           v3.UUID     `json:"id"`
+	CreationDate string      `json:"creation_date"`
+	Instance     string      `json:"instance"`
+	State        string      `json:"state"`
+	Zone         v3.ZoneName `json:"zone"`
 }
 
 type instanceSnapshotListOutput []instanceSnapshotListItemOutput
@@ -34,7 +34,7 @@ type instanceSnapshotListCmd struct {
 
 	_ bool `cli-cmd:"list"`
 
-	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
 func (c *instanceSnapshotListCmd) CmdAliases() []string { return nil }
@@ -53,20 +53,12 @@ func (c *instanceSnapshotListCmd) CmdPreRun(cmd *cobra.Command, args []string) e
 }
 
 func (c *instanceSnapshotListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var zones []v3.ZoneName
+	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
-	if c.Zone != "" {
-		zones = []v3.ZoneName{v3.ZoneName(c.Zone)}
-	} else {
-		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
-		if err != nil {
-			return err
-		}
-		zones, err = utils.AllZonesV3(ctx, client)
-		if err != nil {
-			return err
-		}
+	zones, err := utils.AllZonesV3(ctx, client, c.Zone)
+	if err != nil {
+		return err
 	}
 
 	out := make(instanceSnapshotListOutput, 0)
@@ -81,14 +73,9 @@ func (c *instanceSnapshotListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 		done <- struct{}{}
 	}()
-	err := utils.ForEachZone(zones, func(zone v3.ZoneName) error {
-		ctx := exocmd.GContext
-		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
-		if err != nil {
-			return err
-		}
-
-		snapshots, err := client.ListSnapshots(ctx)
+	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
+		c := client.WithEndpoint(zone.APIEndpoint)
+		snapshots, err := c.ListSnapshots(ctx)
 		if err != nil {
 			return err
 		}
@@ -107,11 +94,11 @@ func (c *instanceSnapshotListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			}
 
 			res <- instanceSnapshotListItemOutput{
-				ID:           s.ID.String(),
+				ID:           s.ID,
 				CreationDate: s.CreatedAT.String(),
 				Instance:     instance.Name,
 				State:        string(s.State),
-				Zone:         string(zone),
+				Zone:         zone.Name,
 			}
 		}
 

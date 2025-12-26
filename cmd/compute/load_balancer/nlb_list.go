@@ -32,7 +32,7 @@ type nlbListCmd struct {
 
 	_ bool `cli-cmd:"list"`
 
-	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
 func (c *nlbListCmd) CmdAliases() []string { return exocmd.GListAlias }
@@ -51,20 +51,21 @@ func (c *nlbListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var zones []v3.ZoneName
+	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
+	resp, err := client.ListZones(ctx)
+	if err != nil {
+		return err
+	}
+	zones := resp.Zones
+
 	if c.Zone != "" {
-		zones = []v3.ZoneName{v3.ZoneName(c.Zone)}
-	} else {
-		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+		endpoint, err := client.GetZoneAPIEndpoint(ctx, c.Zone)
 		if err != nil {
 			return err
 		}
-		zones, err = utils.AllZonesV3(ctx, client)
-		if err != nil {
-			return err
-		}
+		zones = []v3.Zone{{APIEndpoint: endpoint}}
 	}
 
 	out := make(nlbListOutput, 0)
@@ -77,13 +78,9 @@ func (c *nlbListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 		done <- struct{}{}
 	}()
-	err := utils.ForEachZone(zones, func(zone v3.ZoneName) error {
-		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
-		if err != nil {
-			return err
-		}
-
-		list, err := client.ListLoadBalancers(ctx)
+	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
+		c := client.WithEndpoint(zone.APIEndpoint)
+		list, err := c.ListLoadBalancers(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to list Network Load Balancers in zone %s: %w", zone, err)
 		}
@@ -92,7 +89,7 @@ func (c *nlbListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			res <- nlbListItemOutput{
 				ID:        nlb.ID,
 				Name:      nlb.Name,
-				Zone:      v3.ZoneName(zone),
+				Zone:      zone.Name,
 				IPAddress: nlb.IP.String(),
 			}
 		}
