@@ -170,8 +170,10 @@ type CreateDeploymentRequest struct {
 	// Number of GPUs (1-8)
 	GpuCount int64 `json:"gpu-count" validate:"required,gt=0"`
 	// GPU type family (e.g., gpua5000, gpu3080ti)
-	GpuType string    `json:"gpu-type" validate:"required"`
-	Model   *ModelRef `json:"model,omitempty"`
+	GpuType string `json:"gpu-type" validate:"required"`
+	// Optional extra inference engine server CLI args
+	InferenceEngineParameters []string  `json:"inference-engine-parameters,omitempty"`
+	Model                     *ModelRef `json:"model,omitempty"`
 	// Deployment name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
 	// Number of replicas (>=1)
@@ -1581,6 +1583,12 @@ type DBAASServiceThanosPrometheusURI struct {
 	Port int64  `json:"port,omitempty" validate:"omitempty,gte=0,lte=65535"`
 }
 
+type DBAASServiceThanosUsers struct {
+	Password string `json:"password,omitempty"`
+	Type     string `json:"type,omitempty"`
+	Username string `json:"username,omitempty"`
+}
+
 type DBAASServiceThanos struct {
 	// List of backups for the service
 	Backups []DBAASServiceBackup `json:"backups,omitempty"`
@@ -1594,6 +1602,8 @@ type DBAASServiceThanos struct {
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
 	// Service integrations
 	Integrations []DBAASIntegration `json:"integrations,omitempty"`
+	// Allowed CIDR address blocks for incoming connections
+	IPFilter []string `json:"ip-filter,omitempty"`
 	// Automatic maintenance settings
 	Maintenance *DBAASServiceMaintenance `json:"maintenance,omitempty"`
 	Name        DBAASServiceName         `json:"name" validate:"required,gte=0,lte=63"`
@@ -1623,6 +1633,8 @@ type DBAASServiceThanos struct {
 	URI string `json:"uri,omitempty"`
 	// service_uri parameterized into key-value pairs
 	URIParams map[string]any `json:"uri-params,omitempty"`
+	// List of service users
+	Users []DBAASServiceThanosUsers `json:"users,omitempty"`
 	// The zone where the service is running
 	Zone string `json:"zone,omitempty"`
 }
@@ -1814,6 +1826,14 @@ type DBAASUserPostgresSecrets struct {
 	// Postgres password
 	Password string `json:"password,omitempty"`
 	// Postgres username
+	Username string `json:"username,omitempty"`
+}
+
+// Thanos User secrets
+type DBAASUserThanosSecrets struct {
+	// Thanos password
+	Password string `json:"password,omitempty"`
+	// Thanos username
 	Username string `json:"username,omitempty"`
 }
 
@@ -2206,8 +2226,10 @@ type GetDeploymentResponse struct {
 	// GPU type family
 	GpuType string `json:"gpu-type,omitempty" validate:"omitempty,gte=1"`
 	// Deployment ID
-	ID    UUID      `json:"id,omitempty"`
-	Model *ModelRef `json:"model,omitempty"`
+	ID UUID `json:"id,omitempty"`
+	// Optional extra inference engine server CLI args
+	InferenceEngineParameters []string  `json:"inference-engine-parameters,omitempty"`
+	Model                     *ModelRef `json:"model,omitempty"`
 	// Deployment name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
 	// Number of replicas (>=0)
@@ -2218,6 +2240,11 @@ type GetDeploymentResponse struct {
 	Status GetDeploymentResponseStatus `json:"status,omitempty"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
+}
+
+// List of allowed inference-engine parameters
+type GetInferenceEngineHelpResponse struct {
+	Parameters []InferenceEngineParameterEntry `json:"parameters,omitempty"`
 }
 
 type GetModelResponseStatus string
@@ -2325,6 +2352,24 @@ type IAMServicePolicyRule struct {
 	Resources  []string                   `json:"resources,omitempty"`
 }
 
+// inference-engine parameter definition
+type InferenceEngineParameterEntry struct {
+	// Allowed values
+	AllowedValues []string `json:"allowed-values,omitempty"`
+	// Default value if nothing is specified
+	Default string `json:"default,omitempty"`
+	// Parameter description
+	Description string `json:"description,omitempty"`
+	// Flag name
+	Flags []string `json:"flags,omitempty"`
+	// Parameter name
+	Name string `json:"name,omitempty"`
+	// Section
+	Section string `json:"section,omitempty"`
+	// Parameter type
+	Type string `json:"type,omitempty"`
+}
+
 // Private Network
 type InstancePrivateNetworks struct {
 	// Private Network ID
@@ -2406,6 +2451,8 @@ const (
 type InstancePool struct {
 	// Instance Pool Anti-affinity Groups
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	// Enable application consistent snapshots
+	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Deploy target
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Instance Pool description
@@ -4330,7 +4377,7 @@ type SKSNodepool struct {
 	// Nodepool Security Groups
 	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
 	// Number of instances
-	Size int64 `json:"size,omitempty" validate:"omitempty,gt=0"`
+	Size int64 `json:"size,omitempty" validate:"omitempty,gte=0"`
 	// Nodepool state
 	State  SKSNodepoolState  `json:"state,omitempty"`
 	Taints SKSNodepoolTaints `json:"taints,omitempty"`
@@ -4453,6 +4500,8 @@ const (
 
 // Instance template
 type Template struct {
+	// Template with Qemu Guest Agent installed for application consistent snapshot
+	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Boot mode (default: legacy)
 	BootMode TemplateBootMode `json:"boot-mode,omitempty"`
 	// Template build

@@ -353,6 +353,50 @@ func (c Client) ScaleDeployment(ctx context.Context, id UUID, req ScaleDeploymen
 	return bodyresp, nil
 }
 
+// Get list of allowed inference engine parameters with their descriptions, types, allowed values, and defaults
+func (c Client) GetInferenceEngineHelp(ctx context.Context) (*GetInferenceEngineHelpResponse, error) {
+	path := "/ai/help/inference-engine-parameters"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-inference-engine-help")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: http response: %w", err)
+	}
+
+	bodyresp := new(GetInferenceEngineHelpResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetInferenceEngineHelp: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 // FindListModelsResponseEntry attempts to find an ListModelsResponseEntry by nameOrID.
 func (l ListModelsResponse) FindListModelsResponseEntry(nameOrID string) (ListModelsResponseEntry, error) {
 	var result []ListModelsResponseEntry
@@ -793,7 +837,6 @@ func (l ListAPIKeysResponse) FindIAMAPIKey(nameOrKey string) (IAMAPIKey, error) 
 	return IAMAPIKey{}, fmt.Errorf("%q not found in ListAPIKeysResponse: %w", nameOrKey, ErrNotFound)
 }
 
-// List API keys
 func (c Client) ListAPIKeys(ctx context.Context) (*ListAPIKeysResponse, error) {
 	path := "/api-key"
 
@@ -844,7 +887,6 @@ type CreateAPIKeyRequest struct {
 	RoleID UUID `json:"role-id" validate:"required"`
 }
 
-// Create a new API key
 func (c Client) CreateAPIKey(ctx context.Context, req CreateAPIKeyRequest) (*IAMAPIKeyCreated, error) {
 	path := "/api-key"
 
@@ -895,7 +937,6 @@ func (c Client) CreateAPIKey(ctx context.Context, req CreateAPIKeyRequest) (*IAM
 	return bodyresp, nil
 }
 
-// Delete an API key
 func (c Client) DeleteAPIKey(ctx context.Context, id string) (*Operation, error) {
 	path := fmt.Sprintf("/api-key/%v", id)
 
@@ -939,7 +980,6 @@ func (c Client) DeleteAPIKey(ctx context.Context, id string) (*Operation, error)
 	return bodyresp, nil
 }
 
-// Get API key
 func (c Client) GetAPIKey(ctx context.Context, id string) (*IAMAPIKey, error) {
 	path := fmt.Sprintf("/api-key/%v", id)
 
@@ -3175,7 +3215,6 @@ func (c Client) ListDBAASExternalIntegrations(ctx context.Context, serviceName s
 	return bodyresp, nil
 }
 
-// Delete a Grafana service
 func (c Client) DeleteDBAASServiceGrafana(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-grafana/%v", name)
 
@@ -3219,7 +3258,6 @@ func (c Client) DeleteDBAASServiceGrafana(ctx context.Context, name string) (*Op
 	return bodyresp, nil
 }
 
-// Get a DBaaS Grafana service
 func (c Client) GetDBAASServiceGrafana(ctx context.Context, name string) (*DBAASServiceGrafana, error) {
 	path := fmt.Sprintf("/dbaas-grafana/%v", name)
 
@@ -3383,7 +3421,6 @@ type UpdateDBAASServiceGrafanaRequest struct {
 	TerminationProtection *bool `json:"termination-protection,omitempty"`
 }
 
-// Update a DBaaS Grafana service
 func (c Client) UpdateDBAASServiceGrafana(ctx context.Context, name string, req UpdateDBAASServiceGrafanaRequest) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-grafana/%v", name)
 
@@ -3434,7 +3471,6 @@ func (c Client) UpdateDBAASServiceGrafana(ctx context.Context, name string, req 
 	return bodyresp, nil
 }
 
-// Initiate Grafana maintenance update
 func (c Client) StartDBAASGrafanaMaintenance(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-grafana/%v/maintenance/start", name)
 
@@ -3533,7 +3569,6 @@ func (c Client) ResetDBAASGrafanaUserPassword(ctx context.Context, serviceName s
 	return bodyresp, nil
 }
 
-// Reveal the secrets of a DBaaS Grafana user
 func (c Client) RevealDBAASGrafanaUserPassword(ctx context.Context, serviceName string, username string) (*DBAASUserGrafanaSecrets, error) {
 	path := fmt.Sprintf("/dbaas-grafana/%v/user/%v/password/reveal", serviceName, username)
 
@@ -3885,7 +3920,6 @@ func (c Client) UpdateDBAASIntegration(ctx context.Context, id UUID, req UpdateD
 	return bodyresp, nil
 }
 
-// Delete a Kafka service
 func (c Client) DeleteDBAASServiceKafka(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v", name)
 
@@ -3929,7 +3963,6 @@ func (c Client) DeleteDBAASServiceKafka(ctx context.Context, name string) (*Oper
 	return bodyresp, nil
 }
 
-// Get a DBaaS Kafka service
 func (c Client) GetDBAASServiceKafka(ctx context.Context, name string) (*DBAASServiceKafka, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v", name)
 
@@ -4191,7 +4224,6 @@ func (c Client) UpdateDBAASServiceKafka(ctx context.Context, name string, req Up
 	return bodyresp, nil
 }
 
-// Get DBaaS kafka ACL configuration
 func (c Client) GetDBAASKafkaAclConfig(ctx context.Context, name string) (*DBAASKafkaAcls, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v/acl-config", name)
 
@@ -4235,7 +4267,6 @@ func (c Client) GetDBAASKafkaAclConfig(ctx context.Context, name string) (*DBAAS
 	return bodyresp, nil
 }
 
-// Initiate Kafka maintenance update
 func (c Client) StartDBAASKafkaMaintenance(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v/maintenance/start", name)
 
@@ -4279,7 +4310,6 @@ func (c Client) StartDBAASKafkaMaintenance(ctx context.Context, name string) (*O
 	return bodyresp, nil
 }
 
-// Add a Kafka Schema Registry ACL entry
 func (c Client) CreateDBAASKafkaSchemaRegistryAclConfig(ctx context.Context, name string, req DBAASKafkaSchemaRegistryAclEntry) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v/schema-registry/acl-config", name)
 
@@ -4330,7 +4360,6 @@ func (c Client) CreateDBAASKafkaSchemaRegistryAclConfig(ctx context.Context, nam
 	return bodyresp, nil
 }
 
-// Delete a Kafka ACL entry
 func (c Client) DeleteDBAASKafkaSchemaRegistryAclConfig(ctx context.Context, name string, aclID string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v/schema-registry/acl-config/%v", name, aclID)
 
@@ -4374,7 +4403,6 @@ func (c Client) DeleteDBAASKafkaSchemaRegistryAclConfig(ctx context.Context, nam
 	return bodyresp, nil
 }
 
-// Add a Kafka topic ACL entry
 func (c Client) CreateDBAASKafkaTopicAclConfig(ctx context.Context, name string, req DBAASKafkaTopicAclEntry) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v/topic/acl-config", name)
 
@@ -4425,7 +4453,6 @@ func (c Client) CreateDBAASKafkaTopicAclConfig(ctx context.Context, name string,
 	return bodyresp, nil
 }
 
-// Delete a Kafka ACL entry
 func (c Client) DeleteDBAASKafkaTopicAclConfig(ctx context.Context, name string, aclID string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v/topic/acl-config/%v", name, aclID)
 
@@ -4469,7 +4496,6 @@ func (c Client) DeleteDBAASKafkaTopicAclConfig(ctx context.Context, name string,
 	return bodyresp, nil
 }
 
-// Reveal the secrets for DBaaS Kafka Connect
 func (c Client) RevealDBAASKafkaConnectPassword(ctx context.Context, serviceName string) (*DBAASUserKafkaConnectSecrets, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v/connect/password/reveal", serviceName)
 
@@ -4517,7 +4543,6 @@ type CreateDBAASKafkaUserRequest struct {
 	Username DBAASUserUsername `json:"username" validate:"required,gte=1,lte=64"`
 }
 
-// Create a DBaaS Kafka user
 func (c Client) CreateDBAASKafkaUser(ctx context.Context, serviceName string, req CreateDBAASKafkaUserRequest) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v/user", serviceName)
 
@@ -4568,7 +4593,6 @@ func (c Client) CreateDBAASKafkaUser(ctx context.Context, serviceName string, re
 	return bodyresp, nil
 }
 
-// Delete a DBaaS kafka user
 func (c Client) DeleteDBAASKafkaUser(ctx context.Context, serviceName string, username string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v/user/%v", serviceName, username)
 
@@ -4667,7 +4691,6 @@ func (c Client) ResetDBAASKafkaUserPassword(ctx context.Context, serviceName str
 	return bodyresp, nil
 }
 
-// Reveal the secrets of a DBaaS Kafka user
 func (c Client) RevealDBAASKafkaUserPassword(ctx context.Context, serviceName string, username string) (*DBAASUserKafkaSecrets, error) {
 	path := fmt.Sprintf("/dbaas-kafka/%v/user/%v/password/reveal", serviceName, username)
 
@@ -4755,7 +4778,6 @@ func (c Client) GetDBAASMigrationStatus(ctx context.Context, name string) (*DBAA
 	return bodyresp, nil
 }
 
-// Delete a MySQL service
 func (c Client) DeleteDBAASServiceMysql(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-mysql/%v", name)
 
@@ -5101,7 +5123,6 @@ func (c Client) UpdateDBAASServiceMysql(ctx context.Context, name string, req Up
 	return bodyresp, nil
 }
 
-// Temporarily enable writes for MySQL services in read-only mode due to filled up storage
 func (c Client) EnableDBAASMysqlWrites(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-mysql/%v/enable/writes", name)
 
@@ -5145,7 +5166,6 @@ func (c Client) EnableDBAASMysqlWrites(ctx context.Context, name string) (*Opera
 	return bodyresp, nil
 }
 
-// Initiate MySQL maintenance update
 func (c Client) StartDBAASMysqlMaintenance(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-mysql/%v/maintenance/start", name)
 
@@ -5189,7 +5209,6 @@ func (c Client) StartDBAASMysqlMaintenance(ctx context.Context, name string) (*O
 	return bodyresp, nil
 }
 
-// Stop a DBaaS MySQL migration
 func (c Client) StopDBAASMysqlMigration(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-mysql/%v/migration/stop", name)
 
@@ -5237,7 +5256,6 @@ type CreateDBAASMysqlDatabaseRequest struct {
 	DatabaseName DBAASDatabaseName `json:"database-name" validate:"required,gte=1,lte=40"`
 }
 
-// Create a DBaaS MySQL database
 func (c Client) CreateDBAASMysqlDatabase(ctx context.Context, serviceName string, req CreateDBAASMysqlDatabaseRequest) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-mysql/%v/database", serviceName)
 
@@ -5288,7 +5306,6 @@ func (c Client) CreateDBAASMysqlDatabase(ctx context.Context, serviceName string
 	return bodyresp, nil
 }
 
-// Delete a DBaaS MySQL database
 func (c Client) DeleteDBAASMysqlDatabase(ctx context.Context, serviceName string, databaseName string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-mysql/%v/database/%v", serviceName, databaseName)
 
@@ -5337,7 +5354,6 @@ type CreateDBAASMysqlUserRequest struct {
 	Username       DBAASUserUsername             `json:"username" validate:"required,gte=1,lte=64"`
 }
 
-// Create a DBaaS MySQL user
 func (c Client) CreateDBAASMysqlUser(ctx context.Context, serviceName string, req CreateDBAASMysqlUserRequest) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-mysql/%v/user", serviceName)
 
@@ -5388,7 +5404,6 @@ func (c Client) CreateDBAASMysqlUser(ctx context.Context, serviceName string, re
 	return bodyresp, nil
 }
 
-// Delete a DBaaS MySQL user
 func (c Client) DeleteDBAASMysqlUser(ctx context.Context, serviceName string, username string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-mysql/%v/user/%v", serviceName, username)
 
@@ -5488,7 +5503,6 @@ func (c Client) ResetDBAASMysqlUserPassword(ctx context.Context, serviceName str
 	return bodyresp, nil
 }
 
-// Reveal the secrets of a DBaaS MySQL user
 func (c Client) RevealDBAASMysqlUserPassword(ctx context.Context, serviceName string, username string) (*DBAASUserMysqlSecrets, error) {
 	path := fmt.Sprintf("/dbaas-mysql/%v/user/%v/password/reveal", serviceName, username)
 
@@ -5532,7 +5546,6 @@ func (c Client) RevealDBAASMysqlUserPassword(ctx context.Context, serviceName st
 	return bodyresp, nil
 }
 
-// Delete a OpenSearch service
 func (c Client) DeleteDBAASServiceOpensearch(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-opensearch/%v", name)
 
@@ -5889,7 +5902,6 @@ func (c Client) UpdateDBAASServiceOpensearch(ctx context.Context, name string, r
 	return bodyresp, nil
 }
 
-// Get DBaaS OpenSearch ACL configuration
 func (c Client) GetDBAASOpensearchAclConfig(ctx context.Context, name string) (*DBAASOpensearchAclConfig, error) {
 	path := fmt.Sprintf("/dbaas-opensearch/%v/acl-config", name)
 
@@ -5933,7 +5945,6 @@ func (c Client) GetDBAASOpensearchAclConfig(ctx context.Context, name string) (*
 	return bodyresp, nil
 }
 
-// Create a DBaaS OpenSearch ACL configuration
 func (c Client) UpdateDBAASOpensearchAclConfig(ctx context.Context, name string, req DBAASOpensearchAclConfig) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-opensearch/%v/acl-config", name)
 
@@ -5984,7 +5995,6 @@ func (c Client) UpdateDBAASOpensearchAclConfig(ctx context.Context, name string,
 	return bodyresp, nil
 }
 
-// Initiate OpenSearch maintenance update
 func (c Client) StartDBAASOpensearchMaintenance(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-opensearch/%v/maintenance/start", name)
 
@@ -6032,7 +6042,6 @@ type CreateDBAASOpensearchUserRequest struct {
 	Username DBAASUserUsername `json:"username" validate:"required,gte=1,lte=64"`
 }
 
-// Create a DBaaS OpenSearch user
 func (c Client) CreateDBAASOpensearchUser(ctx context.Context, serviceName string, req CreateDBAASOpensearchUserRequest) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-opensearch/%v/user", serviceName)
 
@@ -6083,7 +6092,6 @@ func (c Client) CreateDBAASOpensearchUser(ctx context.Context, serviceName strin
 	return bodyresp, nil
 }
 
-// Delete a DBaaS OpenSearch user
 func (c Client) DeleteDBAASOpensearchUser(ctx context.Context, serviceName string, username string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-opensearch/%v/user/%v", serviceName, username)
 
@@ -6182,7 +6190,6 @@ func (c Client) ResetDBAASOpensearchUserPassword(ctx context.Context, serviceNam
 	return bodyresp, nil
 }
 
-// Reveal the secrets of a DBaaS OpenSearch user
 func (c Client) RevealDBAASOpensearchUserPassword(ctx context.Context, serviceName string, username string) (*DBAASUserOpensearchSecrets, error) {
 	path := fmt.Sprintf("/dbaas-opensearch/%v/user/%v/password/reveal", serviceName, username)
 
@@ -6226,7 +6233,6 @@ func (c Client) RevealDBAASOpensearchUserPassword(ctx context.Context, serviceNa
 	return bodyresp, nil
 }
 
-// Delete a Postgres service
 func (c Client) DeleteDBAASServicePG(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-postgres/%v", name)
 
@@ -6414,7 +6420,6 @@ type CreateDBAASServicePGRequest struct {
 	WorkMem int64 `json:"work-mem,omitempty" validate:"omitempty,gte=1,lte=1024"`
 }
 
-// Create a DBaaS PostgreSQL service
 func (c Client) CreateDBAASServicePG(ctx context.Context, name string, req CreateDBAASServicePGRequest) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-postgres/%v", name)
 
@@ -6593,7 +6598,6 @@ func (c Client) UpdateDBAASServicePG(ctx context.Context, name string, req Updat
 	return bodyresp, nil
 }
 
-// Initiate PostgreSQL maintenance update
 func (c Client) StartDBAASPGMaintenance(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-postgres/%v/maintenance/start", name)
 
@@ -6637,7 +6641,6 @@ func (c Client) StartDBAASPGMaintenance(ctx context.Context, name string) (*Oper
 	return bodyresp, nil
 }
 
-// Stop a DBaaS PostgreSQL migration
 func (c Client) StopDBAASPGMigration(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-postgres/%v/migration/stop", name)
 
@@ -6850,7 +6853,6 @@ type CreateDBAASPGDatabaseRequest struct {
 	LCCtype string `json:"lc-ctype,omitempty" validate:"omitempty,lte=128"`
 }
 
-// Create a DBaaS Postgres database
 func (c Client) CreateDBAASPGDatabase(ctx context.Context, serviceName string, req CreateDBAASPGDatabaseRequest) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-postgres/%v/database", serviceName)
 
@@ -6901,7 +6903,6 @@ func (c Client) CreateDBAASPGDatabase(ctx context.Context, serviceName string, r
 	return bodyresp, nil
 }
 
-// Delete a DBaaS Postgres database
 func (c Client) DeleteDBAASPGDatabase(ctx context.Context, serviceName string, databaseName string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-postgres/%v/database/%v", serviceName, databaseName)
 
@@ -6950,7 +6951,6 @@ type CreateDBAASPostgresUserRequest struct {
 	Username         DBAASUserUsername `json:"username" validate:"required,gte=1,lte=64"`
 }
 
-// Create a DBaaS Postgres user
 func (c Client) CreateDBAASPostgresUser(ctx context.Context, serviceName string, req CreateDBAASPostgresUserRequest) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-postgres/%v/user", serviceName)
 
@@ -7001,7 +7001,6 @@ func (c Client) CreateDBAASPostgresUser(ctx context.Context, serviceName string,
 	return bodyresp, nil
 }
 
-// Delete a DBaaS Postgres user
 func (c Client) DeleteDBAASPostgresUser(ctx context.Context, serviceName string, username string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-postgres/%v/user/%v", serviceName, username)
 
@@ -7049,7 +7048,6 @@ type UpdateDBAASPostgresAllowReplicationRequest struct {
 	AllowReplication *bool `json:"allow-replication,omitempty"`
 }
 
-// Update access control for one service user
 func (c Client) UpdateDBAASPostgresAllowReplication(ctx context.Context, serviceName string, username string, req UpdateDBAASPostgresAllowReplicationRequest) (*DBAASPostgresUsers, error) {
 	path := fmt.Sprintf("/dbaas-postgres/%v/user/%v/allow-replication", serviceName, username)
 
@@ -7155,7 +7153,6 @@ func (c Client) ResetDBAASPostgresUserPassword(ctx context.Context, serviceName 
 	return bodyresp, nil
 }
 
-// Reveal the secrets of a DBaaS Postgres user
 func (c Client) RevealDBAASPostgresUserPassword(ctx context.Context, serviceName string, username string) (*DBAASUserPostgresSecrets, error) {
 	path := fmt.Sprintf("/dbaas-postgres/%v/user/%v/password/reveal", serviceName, username)
 
@@ -7970,6 +7967,67 @@ func (c Client) GetDBAASSettingsPG(ctx context.Context) (*GetDBAASSettingsPGResp
 	return bodyresp, nil
 }
 
+// Thanos configuration values
+type GetDBAASSettingsThanosResponseSettingsThanos struct {
+	AdditionalProperties *bool          `json:"additionalProperties,omitempty"`
+	Properties           map[string]any `json:"properties,omitempty"`
+	Title                string         `json:"title,omitempty"`
+	Type                 string         `json:"type,omitempty"`
+}
+
+type GetDBAASSettingsThanosResponseSettings struct {
+	// Thanos configuration values
+	Thanos *GetDBAASSettingsThanosResponseSettingsThanos `json:"thanos,omitempty"`
+}
+
+type GetDBAASSettingsThanosResponse struct {
+	Settings *GetDBAASSettingsThanosResponseSettings `json:"settings,omitempty"`
+}
+
+// Get DBaaS Thanos settings
+func (c Client) GetDBAASSettingsThanos(ctx context.Context) (*GetDBAASSettingsThanosResponse, error) {
+	path := "/dbaas-settings-thanos"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsThanos: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsThanos: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsThanos: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-dbaas-settings-thanos")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsThanos: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsThanos: http response: %w", err)
+	}
+
+	bodyresp := new(GetDBAASSettingsThanosResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsThanos: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 // Valkey configuration values
 type GetDBAASSettingsValkeyResponseSettingsValkey struct {
 	AdditionalProperties *bool          `json:"additionalProperties,omitempty"`
@@ -8134,7 +8192,349 @@ func (c Client) GetDBAASTask(ctx context.Context, service string, id UUID) (*DBA
 	return bodyresp, nil
 }
 
-// Delete a Valkey service
+func (c Client) DeleteDBAASServiceThanos(ctx context.Context, name string) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-thanos/%v", name)
+
+	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceThanos: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceThanos: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceThanos: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "delete-dbaas-service-thanos")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceThanos: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceThanos: http response: %w", err)
+	}
+
+	bodyresp := new(Operation)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceThanos: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Get a DBaaS Thanos service
+func (c Client) GetDBAASServiceThanos(ctx context.Context, name string) (*DBAASServiceThanos, error) {
+	path := fmt.Sprintf("/dbaas-thanos/%v", name)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceThanos: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceThanos: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceThanos: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-dbaas-service-thanos")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceThanos: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceThanos: http response: %w", err)
+	}
+
+	bodyresp := new(DBAASServiceThanos)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceThanos: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type CreateDBAASServiceThanosRequestMaintenanceDow string
+
+const (
+	CreateDBAASServiceThanosRequestMaintenanceDowSaturday  CreateDBAASServiceThanosRequestMaintenanceDow = "saturday"
+	CreateDBAASServiceThanosRequestMaintenanceDowTuesday   CreateDBAASServiceThanosRequestMaintenanceDow = "tuesday"
+	CreateDBAASServiceThanosRequestMaintenanceDowNever     CreateDBAASServiceThanosRequestMaintenanceDow = "never"
+	CreateDBAASServiceThanosRequestMaintenanceDowWednesday CreateDBAASServiceThanosRequestMaintenanceDow = "wednesday"
+	CreateDBAASServiceThanosRequestMaintenanceDowSunday    CreateDBAASServiceThanosRequestMaintenanceDow = "sunday"
+	CreateDBAASServiceThanosRequestMaintenanceDowFriday    CreateDBAASServiceThanosRequestMaintenanceDow = "friday"
+	CreateDBAASServiceThanosRequestMaintenanceDowMonday    CreateDBAASServiceThanosRequestMaintenanceDow = "monday"
+	CreateDBAASServiceThanosRequestMaintenanceDowThursday  CreateDBAASServiceThanosRequestMaintenanceDow = "thursday"
+)
+
+// Automatic maintenance settings
+type CreateDBAASServiceThanosRequestMaintenance struct {
+	// Day of week for installing updates
+	Dow CreateDBAASServiceThanosRequestMaintenanceDow `json:"dow" validate:"required"`
+	// Time for installing updates, UTC
+	Time string `json:"time" validate:"required,gte=8,lte=8"`
+}
+
+type CreateDBAASServiceThanosRequest struct {
+	// Allowed CIDR address blocks for incoming connections
+	IPFilter []string `json:"ip-filter,omitempty"`
+	// Automatic maintenance settings
+	Maintenance *CreateDBAASServiceThanosRequestMaintenance `json:"maintenance,omitempty"`
+	// Subscription plan
+	Plan string `json:"plan" validate:"required,gte=1,lte=128"`
+	// Service is protected against termination and powering off
+	TerminationProtection *bool `json:"termination-protection,omitempty"`
+	// Thanos settings
+	ThanosSettings *JSONSchemaThanos `json:"thanos-settings,omitempty"`
+}
+
+// Create a DBaaS Thanos service
+func (c Client) CreateDBAASServiceThanos(ctx context.Context, name string, req CreateDBAASServiceThanosRequest) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-thanos/%v", name)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceThanos: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceThanos: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceThanos: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceThanos: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "create-dbaas-service-thanos")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceThanos: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceThanos: http response: %w", err)
+	}
+
+	bodyresp := new(Operation)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceThanos: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type UpdateDBAASServiceThanosRequestMaintenanceDow string
+
+const (
+	UpdateDBAASServiceThanosRequestMaintenanceDowSaturday  UpdateDBAASServiceThanosRequestMaintenanceDow = "saturday"
+	UpdateDBAASServiceThanosRequestMaintenanceDowTuesday   UpdateDBAASServiceThanosRequestMaintenanceDow = "tuesday"
+	UpdateDBAASServiceThanosRequestMaintenanceDowNever     UpdateDBAASServiceThanosRequestMaintenanceDow = "never"
+	UpdateDBAASServiceThanosRequestMaintenanceDowWednesday UpdateDBAASServiceThanosRequestMaintenanceDow = "wednesday"
+	UpdateDBAASServiceThanosRequestMaintenanceDowSunday    UpdateDBAASServiceThanosRequestMaintenanceDow = "sunday"
+	UpdateDBAASServiceThanosRequestMaintenanceDowFriday    UpdateDBAASServiceThanosRequestMaintenanceDow = "friday"
+	UpdateDBAASServiceThanosRequestMaintenanceDowMonday    UpdateDBAASServiceThanosRequestMaintenanceDow = "monday"
+	UpdateDBAASServiceThanosRequestMaintenanceDowThursday  UpdateDBAASServiceThanosRequestMaintenanceDow = "thursday"
+)
+
+// Automatic maintenance settings
+type UpdateDBAASServiceThanosRequestMaintenance struct {
+	// Day of week for installing updates
+	Dow UpdateDBAASServiceThanosRequestMaintenanceDow `json:"dow" validate:"required"`
+	// Time for installing updates, UTC
+	Time string `json:"time" validate:"required,gte=8,lte=8"`
+}
+
+type UpdateDBAASServiceThanosRequest struct {
+	// Allowed CIDR address blocks for incoming connections
+	IPFilter []string `json:"ip-filter,omitempty"`
+	// Automatic maintenance settings
+	Maintenance *UpdateDBAASServiceThanosRequestMaintenance `json:"maintenance,omitempty"`
+	// Subscription plan
+	Plan string `json:"plan,omitempty" validate:"omitempty,gte=1,lte=128"`
+	// Service is protected against termination and powering off
+	TerminationProtection *bool `json:"termination-protection,omitempty"`
+	// Thanos settings
+	ThanosSettings *JSONSchemaThanos `json:"thanos-settings,omitempty"`
+}
+
+// Update a DBaaS Thanos service
+func (c Client) UpdateDBAASServiceThanos(ctx context.Context, name string, req UpdateDBAASServiceThanosRequest) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-thanos/%v", name)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceThanos: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceThanos: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceThanos: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceThanos: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "update-dbaas-service-thanos")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceThanos: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceThanos: http response: %w", err)
+	}
+
+	bodyresp := new(Operation)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceThanos: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+func (c Client) StartDBAASThanosMaintenance(ctx context.Context, name string) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-thanos/%v/maintenance/start", name)
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("StartDBAASThanosMaintenance: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("StartDBAASThanosMaintenance: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("StartDBAASThanosMaintenance: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "start-dbaas-thanos-maintenance")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("StartDBAASThanosMaintenance: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("StartDBAASThanosMaintenance: http response: %w", err)
+	}
+
+	bodyresp := new(Operation)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("StartDBAASThanosMaintenance: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+func (c Client) RevealDBAASThanosUserPassword(ctx context.Context, serviceName string, username string) (*DBAASUserThanosSecrets, error) {
+	path := fmt.Sprintf("/dbaas-thanos/%v/user/%v/password/reveal", serviceName, username)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("RevealDBAASThanosUserPassword: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("RevealDBAASThanosUserPassword: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("RevealDBAASThanosUserPassword: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "reveal-dbaas-thanos-user-password")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("RevealDBAASThanosUserPassword: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("RevealDBAASThanosUserPassword: http response: %w", err)
+	}
+
+	bodyresp := new(DBAASUserThanosSecrets)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("RevealDBAASThanosUserPassword: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 func (c Client) DeleteDBAASServiceValkey(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-valkey/%v", name)
 
@@ -8437,7 +8837,6 @@ func (c Client) UpdateDBAASServiceValkey(ctx context.Context, name string, req U
 	return bodyresp, nil
 }
 
-// Initiate Valkey maintenance update
 func (c Client) StartDBAASValkeyMaintenance(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-valkey/%v/maintenance/start", name)
 
@@ -8481,7 +8880,6 @@ func (c Client) StartDBAASValkeyMaintenance(ctx context.Context, name string) (*
 	return bodyresp, nil
 }
 
-// Stop a DBaaS Valkey migration
 func (c Client) StopDBAASValkeyMigration(ctx context.Context, name string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-valkey/%v/migration/stop", name)
 
@@ -8529,7 +8927,6 @@ type CreateDBAASValkeyUserRequest struct {
 	Username DBAASUserUsername `json:"username" validate:"required,gte=1,lte=64"`
 }
 
-// Create a DBaaS Valkey user
 func (c Client) CreateDBAASValkeyUser(ctx context.Context, serviceName string, req CreateDBAASValkeyUserRequest) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-valkey/%v/user", serviceName)
 
@@ -8580,7 +8977,6 @@ func (c Client) CreateDBAASValkeyUser(ctx context.Context, serviceName string, r
 	return bodyresp, nil
 }
 
-// Delete a DBaaS Valkey user
 func (c Client) DeleteDBAASValkeyUser(ctx context.Context, serviceName string, username string) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-valkey/%v/user/%v", serviceName, username)
 
@@ -8679,7 +9075,6 @@ func (c Client) ResetDBAASValkeyUserPassword(ctx context.Context, serviceName st
 	return bodyresp, nil
 }
 
-// Reveal the secrets of a DBaaS Valkey user
 func (c Client) RevealDBAASValkeyUserPassword(ctx context.Context, serviceName string, username string) (*DBAASUserValkeySecrets, error) {
 	path := fmt.Sprintf("/dbaas-valkey/%v/user/%v/password/reveal", serviceName, username)
 
@@ -10725,6 +11120,8 @@ const (
 type CreateInstancePoolRequest struct {
 	// Instance Pool Anti-affinity Groups
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	// Enable application consistent snapshots
+	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Deploy target
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Instance Pool description
@@ -10911,6 +11308,8 @@ const (
 type UpdateInstancePoolRequest struct {
 	// Instance Pool Anti-affinity Groups
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups"`
+	// Enable application consistent snapshots
+	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Deploy target
 	DeployTarget *DeployTarget `json:"deploy-target"`
 	// Instance Pool description
@@ -15251,7 +15650,7 @@ func (c Client) EvictSKSNodepoolMembers(ctx context.Context, id UUID, sksNodepoo
 
 type ScaleSKSNodepoolRequest struct {
 	// Number of instances
-	Size int64 `json:"size" validate:"required,gt=0"`
+	Size int64 `json:"size" validate:"required,gte=0"`
 }
 
 // Scale a SKS Nodepool
@@ -16347,6 +16746,8 @@ const (
 )
 
 type RegisterTemplateRequest struct {
+	// Template with support for Application Consistent Snapshots
+	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Boot mode (default: legacy)
 	BootMode RegisterTemplateRequestBootMode `json:"boot-mode,omitempty"`
 	// Template build
@@ -16731,7 +17132,6 @@ func (l ListUsersResponse) FindUser(id string) (User, error) {
 	return User{}, fmt.Errorf("%q not found in ListUsersResponse: %w", id, ErrNotFound)
 }
 
-// List Users
 func (c Client) ListUsers(ctx context.Context) (*ListUsersResponse, error) {
 	path := "/user"
 
@@ -16782,7 +17182,6 @@ type CreateUserRequest struct {
 	Role *IAMRole `json:"role,omitempty"`
 }
 
-// Create a User
 func (c Client) CreateUser(ctx context.Context, req CreateUserRequest) (*Operation, error) {
 	path := "/user"
 
@@ -16833,7 +17232,6 @@ func (c Client) CreateUser(ctx context.Context, req CreateUserRequest) (*Operati
 	return bodyresp, nil
 }
 
-// Delete User
 func (c Client) DeleteUser(ctx context.Context, id UUID) (*Operation, error) {
 	path := fmt.Sprintf("/user/%v", id)
 
@@ -16882,7 +17280,6 @@ type UpdateUserRoleRequest struct {
 	Role *IAMRole `json:"role,omitempty"`
 }
 
-// Update a User's IAM role
 func (c Client) UpdateUserRole(ctx context.Context, id UUID, req UpdateUserRoleRequest) (*Operation, error) {
 	path := fmt.Sprintf("/user/%v", id)
 

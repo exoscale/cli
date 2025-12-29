@@ -4,7 +4,7 @@ Exoscale API Golang wrapper
 
 **Egoscale v3** is based on a generator written from scratch with [libopenapi](https://github.com/pb33f/libopenapi).
 
-The core base of the generator is using libopenapi to parse and read the [Exoscale OpenAPI spec](https://openapi-v2.exoscale.com/source.yaml) and then generate the code from it.
+The core base of the generator is using libopenapi to parse and read the [Exoscale OpenAPI spec](https://api-ch-gva-2.exoscale.com/v2/openapi.json) and then generate the code from it.
 
 ## Installation
 
@@ -67,7 +67,7 @@ func main() {
 	}
 
 	spew.Dump(instance)
-}	
+}
 ```
 
 ### Findable
