@@ -13,6 +13,7 @@
 - chores: add git version/commit in user agent header #769
 - Prompting for validation before deleting deployments and models (dedicated-inference)
 - Ability to delete multiple deployments and models at once (dedicated-inference)
+- Add IPv6 public IP assignment support for SKS Nodepools #774
 
 ## 1.88.0
 
