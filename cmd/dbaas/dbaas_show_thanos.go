@@ -208,30 +208,22 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceThanos(ctx context.Context) (ou
 	case c.ShowURI:
 		uriParams := databaseService.URIParams
 
-		user, ok := uriParams["user"].(string)
-		if !ok {
-			return nil, fmt.Errorf("unable to get user from URI params")
-		}
-
 		creds, err := client.RevealDBAASThanosUserPassword(
 			ctx,
 			string(databaseService.Name),
-			user,
+			uriParams["user"].(string),
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		host, _ := uriParams["host"].(string)
-		port, _ := uriParams["port"].(string)
-
 		// Build URI
 		uri := fmt.Sprintf(
 			"https://%s:%s@%s:%s",
-			user,
+			uriParams["user"],
 			creds.Password,
-			host,
-			port,
+			uriParams["host"],
+			uriParams["port"],
 		)
 
 		fmt.Println(uri)
@@ -250,7 +242,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceThanos(ctx context.Context) (ou
 		UpdateDate:            databaseService.UpdatedAT,
 		DiskSize:              databaseService.DiskSize,
 		State:                 string(databaseService.State),
-		TerminationProtection: utils.DefaultBool(databaseService.TerminationProtection, false),
+		TerminationProtection: *databaseService.TerminationProtection,
 
 		Maintenance: func() (v *dbServiceMaintenanceShowOutput) {
 			if databaseService.Maintenance != nil {
@@ -314,9 +306,9 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceThanos(ctx context.Context) (ou
 				if databaseService.Users != nil {
 					for _, u := range databaseService.Users {
 						v = append(v, dbServiceThanosUserShowOutput{
-							Password: u.Password,
-							Type:     u.Type,
-							Username: u.Username,
+							Password: utils.DefaultString(&u.Password, ""),
+							Type:     utils.DefaultString(&u.Type, ""),
+							Username: utils.DefaultString(&u.Username, ""),
 						})
 					}
 				}
