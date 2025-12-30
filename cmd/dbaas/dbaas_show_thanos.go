@@ -13,7 +13,6 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -56,7 +55,7 @@ type dbServiceThanosShowOutput struct {
 var thanosSettings = []string{"thanos", "compactor", "query", "query-frontend"}
 
 func formatDatabaseServiceThanosTable(t *table.Table, o *dbServiceThanosShowOutput) {
-	t.Append([]string{"URI", redactDatabaseServiceURI(o.URI)})
+	t.Append([]string{"URI", o.URI})
 	t.Append([]string{"IP Filter", strings.Join(o.IPFilter, ", ")})
 
 	if o.ConnectionInfo != nil {
@@ -206,27 +205,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceThanos(ctx context.Context) (ou
 		return nil, nil
 
 	case c.ShowURI:
-		uriParams := databaseService.URIParams
-
-		creds, err := client.RevealDBAASThanosUserPassword(
-			ctx,
-			string(databaseService.Name),
-			uriParams["user"].(string),
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		// Build URI
-		uri := fmt.Sprintf(
-			"https://%s:%s@%s:%s",
-			uriParams["user"],
-			creds.Password,
-			uriParams["host"],
-			uriParams["port"],
-		)
-
-		fmt.Println(uri)
+		fmt.Println(databaseService.URI)
 		return nil, nil
 	}
 
@@ -306,9 +285,8 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceThanos(ctx context.Context) (ou
 				if databaseService.Users != nil {
 					for _, u := range databaseService.Users {
 						v = append(v, dbServiceThanosUserShowOutput{
-							Password: utils.DefaultString(&u.Password, ""),
-							Type:     utils.DefaultString(&u.Type, ""),
-							Username: utils.DefaultString(&u.Username, ""),
+							Type:     u.Type,
+							Username: u.Username,
 						})
 					}
 				}
