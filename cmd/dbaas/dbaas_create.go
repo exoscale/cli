@@ -27,6 +27,7 @@ type dbaasServiceCreateCmd struct {
 	HelpPg         bool `cli-usage:"show usage for flags specific to the pg type"`
 	HelpValkey     bool `cli-usage:"show usage for flags specific to the valkey type"`
 	HelpGrafana    bool `cli-usage:"show usage for flags specific to the grafana type"`
+	HelpThanos     bool `cli-usage:"show usage for flags specific to the thanos type"`
 
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
@@ -118,6 +119,10 @@ type dbaasServiceCreateCmd struct {
 	ValkeyMigrationDBName    string   `cli-flag:"valkey-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
 	ValkeyMigrationMethod    string   `cli-flag:"valkey-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
 	ValkeyMigrationIgnoreDbs []string `cli-flag:"valkey-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
+
+	// "thanos" type specific flags
+	ThanosIPFilter []string `cli-flag:"thanos-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	ThanosSettings string   `cli-flag:"thanos-settings" cli-usage:"Thanos configuration settings (JSON format)" cli-hidden:""`
 }
 
 func (c *dbaasServiceCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
@@ -154,6 +159,9 @@ func (c *dbaasServiceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 	case cmd.Flags().Changed("help-valkey"):
 		exocmd.CmdShowHelpFlags(cmd.Flags(), "valkey-")
 		os.Exit(0)
+	case cmd.Flags().Changed("help-thanos"):
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "thanos-")
+		os.Exit(0)
 	}
 
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
@@ -184,6 +192,8 @@ func (c *dbaasServiceCreateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 		return c.createPG(cmd, args)
 	case "valkey":
 		return c.createValkey(cmd, args)
+	case "thanos":
+		return c.createThanos(cmd, args)
 	default:
 		return fmt.Errorf("unsupported service type %q", c.Type)
 	}

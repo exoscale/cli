@@ -25,6 +25,7 @@ type dbaasServiceUpdateCmd struct {
 	HelpMysql             bool   `cli-usage:"show usage for flags specific to the mysql type"`
 	HelpPg                bool   `cli-usage:"show usage for flags specific to the pg type"`
 	HelpValkey            bool   `cli-usage:"show usage for flags specific to the valkey type"`
+	HelpThanos            bool   `cli-usage:"show usage for flags specific to the thanos type"`
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
 	Plan                  string `cli-usage:"Database Service plan"`
@@ -100,6 +101,10 @@ type dbaasServiceUpdateCmd struct {
 	ValkeyMigrationDBName    string   `cli-flag:"valkey-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
 	ValkeyMigrationMethod    string   `cli-flag:"valkey-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
 	ValkeyMigrationIgnoreDbs []string `cli-flag:"valkey-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
+
+	// "thanos" type specific flags
+	ThanosIPFilter []string `cli-flag:"thanos-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	ThanosSettings string   `cli-flag:"thanos-settings" cli-usage:"Thanos configuration settings (JSON format)" cli-hidden:""`
 }
 
 func (c *dbaasServiceUpdateCmd) CmdAliases() []string { return nil }
@@ -136,6 +141,9 @@ func (c *dbaasServiceUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 		os.Exit(0)
 	case cmd.Flags().Changed("help-valkey"):
 		exocmd.CmdShowHelpFlags(cmd.Flags(), "valkey-")
+		os.Exit(0)
+	case cmd.Flags().Changed("help-thanos"):
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "thanos-")
 		os.Exit(0)
 	}
 
@@ -181,6 +189,8 @@ func (c *dbaasServiceUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 		return c.updatePG(cmd, args)
 	case "valkey":
 		return c.updateValkey(cmd, args)
+	case "thanos":
+		return c.updateThanos(cmd, args)
 	}
 
 	return nil

@@ -136,6 +136,7 @@ Supported Database Service type settings:
 * %s
 * %s
 * %s
+* %s
 
 Supported output template annotations:
 
@@ -148,6 +149,7 @@ Supported output template annotations:
 		strings.Join(mysqlSettings, ", "),
 		strings.Join(pgSettings, ", "),
 		strings.Join(valkeySettings, ", "),
+		strings.Join(thanosSettings, ", "),
 		strings.Join(output.TemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
 }
@@ -317,6 +319,27 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 
 			if c.ShowSettings == "valkey" {
 				settings = res.Settings.Valkey.Properties
+			}
+
+			dbaasShowSettings(settings)
+
+		case "thanos":
+			if !utils.IsInList(thanosSettings, c.ShowSettings) {
+				return fmt.Errorf(
+					"invalid settings value %q, expected one of: %s",
+					c.ShowSettings,
+					strings.Join(thanosSettings, ", "),
+				)
+			}
+
+			res, err := client.GetDBAASSettingsThanos(ctx)
+
+			if err != nil {
+				return err
+			}
+
+			if c.ShowSettings == "thanos" {
+				settings = res.Settings.Thanos.Properties
 			}
 
 			dbaasShowSettings(settings)
