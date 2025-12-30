@@ -15,28 +15,29 @@ import (
 )
 
 type sksNodepoolShowOutput struct {
-	ID                   v3.UUID           `json:"id"`
-	Name                 string            `json:"name"`
-	Description          string            `json:"description"`
-	CreationDate         string            `json:"creation_date"`
-	InstancePoolID       v3.UUID           `json:"instance_pool_id"`
-	InstancePrefix       string            `json:"instance_prefix"`
-	InstanceType         string            `json:"instance_type"`
-	Template             string            `json:"template"`
-	DiskSize             int64             `json:"disk_size"`
-	IPv6                 bool              `json:"ipv6_enabled" outputLabel:"IPv6"`
-	AntiAffinityGroups   []string          `json:"anti_affinity_groups"`
-	SecurityGroups       []string          `json:"security_groups"`
-	PrivateNetworks      []string          `json:"private_networks"`
-	Version              string            `json:"version"`
-	Size                 int64             `json:"size"`
-	State                string            `json:"state"`
-	Taints               []string          `json:"taints"`
-	Labels               map[string]string `json:"labels"`
-	AddOns               []string          `json:"addons"`
-	ImageGCMin           string            `json:"image_gc_min_age"`
-	ImageGcLowThreshold  int64             `json:"image_gc_low_threshold"`
-	ImageGcHighThreshold int64             `json:"image_gc_high_threshold"`
+	ID                   v3.UUID               `json:"id"`
+	Name                 string                `json:"name"`
+	Description          string                `json:"description"`
+	PublicIPAssignment   v3.PublicIPAssignment `json:"public_ip_assignment"`
+	CreationDate         string                `json:"creation_date"`
+	InstancePoolID       v3.UUID               `json:"instance_pool_id"`
+	InstancePrefix       string                `json:"instance_prefix"`
+	InstanceType         string                `json:"instance_type"`
+	Template             string                `json:"template"`
+	DiskSize             int64                 `json:"disk_size"`
+	IPv6                 bool                  `json:"ipv6_enabled" outputLabel:"IPv6"`
+	AntiAffinityGroups   []string              `json:"anti_affinity_groups"`
+	SecurityGroups       []string              `json:"security_groups"`
+	PrivateNetworks      []string              `json:"private_networks"`
+	Version              string                `json:"version"`
+	Size                 int64                 `json:"size"`
+	State                string                `json:"state"`
+	Taints               []string              `json:"taints"`
+	Labels               map[string]string     `json:"labels"`
+	AddOns               []string              `json:"addons"`
+	ImageGCMin           string                `json:"image_gc_min_age"`
+	ImageGcLowThreshold  int64                 `json:"image_gc_low_threshold"`
+	ImageGcHighThreshold int64                 `json:"image_gc_high_threshold"`
 }
 
 func (o *sksNodepoolShowOutput) Type() string { return "SKS Nodepool" }
@@ -125,12 +126,13 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			}
 			return
 		}(),
-		Name:            nodepool.Name,
-		SecurityGroups:  make([]string, 0),
-		PrivateNetworks: make([]string, 0),
-		Size:            nodepool.Size,
-		State:           string(nodepool.State),
-		IPv6:            ipv6Enabled,
+		Name:               nodepool.Name,
+		SecurityGroups:     make([]string, 0),
+		PrivateNetworks:    make([]string, 0),
+		Size:               nodepool.Size,
+		State:              string(nodepool.State),
+		PublicIPAssignment: v3.PublicIPAssignment(nodepool.PublicIPAssignment),
+		IPv6:               ipv6Enabled,
 		Taints: func() (v []string) {
 			if nodepool.Taints != nil {
 				v = make([]string, 0)

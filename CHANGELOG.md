@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- sks: Public IP Assignment support for nodepools
+
 ## 1.89.0
 
 ### Bug fixes

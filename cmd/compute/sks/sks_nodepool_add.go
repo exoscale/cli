@@ -39,6 +39,7 @@ type sksNodepoolAddCmd struct {
 	Labels               []string `cli-flag:"label" cli-usage:"Nodepool label (format: key=value)"`
 	PrivateNetworks      []string `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
 	SecurityGroups       []string `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
+	PublicIPAssignment   string   `cli-usage:"Configures public IP assignment of the Instances (inet4|dual). (default: inet4)"`
 	Size                 int64    `cli-usage:"Nodepool size"`
 	StorageLvm           bool     `cli-usage:"Create nodes with non-standard partitioning for persistent storage"`
 	Taints               []string `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
@@ -88,6 +89,11 @@ func (c *sksNodepoolAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
+	publicIP := v3.PublicIPAssignment(c.PublicIPAssignment)
+	if publicIP == "" {
+		publicIP = v3.PublicIPAssignmentInet4 // default
+	}
+
 	opts := CreateNodepoolOpts{
 		Name:               c.Name,
 		Description:        c.Description,
@@ -100,6 +106,7 @@ func (c *sksNodepoolAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		DeployTarget:       c.DeployTarget,
 		PrivateNetworks:    c.PrivateNetworks,
 		SecurityGroups:     c.SecurityGroups,
+		PublicIPAssignment: &publicIP,
 		Taints:             c.Taints,
 		KubeletImageGC: &v3.KubeletImageGC{
 			MinAge:        c.ImageGcMinAge,
