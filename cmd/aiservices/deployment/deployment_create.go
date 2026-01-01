@@ -12,6 +12,7 @@ import (
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 type DeploymentCreateCmd struct {
@@ -78,12 +79,17 @@ func (c *DeploymentCreateCmd) showInferenceEngineParameterHelp(ctx context.Conte
 				}
 			}
 
-			// Simple wrapping
+			// Simple wrapping - adapt to terminal width
+			maxWidth := 80 // default fallback
+			if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil && width > 0 {
+				maxWidth = width
+			}
+
 			words := strings.Fields(desc)
 			if len(words) > 0 {
 				line := "                        "
 				for _, word := range words {
-					if len(line)+len(word) > 160 {
+					if len(line)+len(word) > maxWidth {
 						fmt.Println(line)
 						line = "                        " + word
 					} else {

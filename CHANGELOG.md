@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- dedicated-inference: ability to define the inference engine parameters, and to have some help around that
+
 ## 1.89.0
 
 ### Bug fixes

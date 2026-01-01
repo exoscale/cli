@@ -126,7 +126,7 @@ func TestDeploymentCreateWithInferenceEngineParameters(t *testing.T) {
 
 func TestDeploymentCreateInferenceEngineHelp(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/ai/deployment/inference-engine-help", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/ai/help/inference-engine-parameters", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
