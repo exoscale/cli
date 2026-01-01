@@ -65,3 +65,21 @@ func TestModelDeleteInvalidUUIDAndSuccess(t *testing.T) {
 		t.Fatalf("model delete multiple: %v", err)
 	}
 }
+
+func TestModelDeleteCmd_CmdAliases(t *testing.T) {
+	cmd := &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	aliases := cmd.CmdAliases()
+	if len(aliases) == 0 {
+		t.Fatal("CmdAliases() returned empty slice")
+	}
+	// Verify it returns the standard delete aliases
+	expectedAliases := exocmd.GDeleteAlias
+	if len(aliases) != len(expectedAliases) {
+		t.Fatalf("expected %d aliases, got %d", len(expectedAliases), len(aliases))
+	}
+	for i, alias := range aliases {
+		if alias != expectedAliases[i] {
+			t.Fatalf("expected alias[%d] to be %q, got %q", i, expectedAliases[i], alias)
+		}
+	}
+}
