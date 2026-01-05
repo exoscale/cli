@@ -31,19 +31,22 @@ var (
 	}
 )
 
-func AllZonesV3(ctx context.Context, client *v3.Client) ([]v3.ZoneName, error) {
-	zones, err := client.ListZones(ctx)
+func AllZonesV3(ctx context.Context, client *v3.Client, zoneName v3.ZoneName) ([]v3.Zone, error) {
+	resp, err := client.ListZones(ctx)
 	if err != nil {
 		return nil, err
 	}
+	zones := resp.Zones
 
-	zoneNames := make([]v3.ZoneName, len(zones.Zones))
-
-	for i, z := range zones.Zones {
-		zoneNames[i] = z.Name
+	if zoneName != "" {
+		zone, err := resp.FindZone(string(zoneName))
+		if err != nil {
+			return nil, fmt.Errorf("get zone api endpoint: find zone: %w", err)
+		}
+		zones = []v3.Zone{zone}
 	}
 
-	return zoneNames, nil
+	return zones, nil
 }
 
 const (
@@ -219,31 +222,12 @@ func VersionsAreEquivalent(a, b string) bool {
 	return (VersionMajor(b) == VersionMajor(a) && VersionMinor(b) == VersionMinor(a))
 }
 
-// ForEachZone executes the function f for each specified zone, and return a multierror.Error containing all
-// errors that may have occurred during execution.
-func ForEachZone[T any](zones []T, f func(zone T) error) error {
-	meg := new(multierror.Group)
-
-	for _, zone := range zones {
-		zone := zone
-		meg.Go(func() error {
-			return f(zone)
-		})
-	}
-
-	return meg.Wait().ErrorOrNil()
-}
-
 // ForEveryZone executes the function f for every specified zone, and returns a multierror.Error containing all
 // errors that may have occurred during execution.
-
-// TODO: This is a copy paste from the function above, but suitable for egoscale v3 calls.
-// Remove the old one after the migration.
 func ForEveryZone(zones []v3.Zone, f func(zone v3.Zone) error) error {
 	meg := new(multierror.Group)
 
 	for _, zone := range zones {
-		zone := zone
 		meg.Go(func() error {
 			return f(zone)
 		})

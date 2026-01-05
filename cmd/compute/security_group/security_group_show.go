@@ -43,7 +43,7 @@ type securityGroupShowOutput struct {
 type securityGroupInstanceOutput struct {
 	Name     string      `json:"name"`
 	PublicIP string      `json:"public_ip"`
-	ID       string      `json:"id"`
+	ID       v3.UUID     `json:"id"`
 	Zone     v3.ZoneName `json:"zone"`
 }
 
@@ -105,7 +105,7 @@ func (o *securityGroupShowOutput) ToTable() {
 		at.SetAlignment(tablewriter.ALIGN_LEFT)
 
 		for _, instance := range instances {
-			r := []string{instance.Name, instance.ID}
+			r := []string{instance.Name, string(instance.ID)}
 
 			r = append(r, instance.PublicIP)
 			r = append(r, string(instance.Zone))
@@ -226,15 +226,15 @@ func (c *securityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	zones := utils.AllZones
+	zones, err := utils.AllZonesV3(ctx, client, "")
+	if err != nil {
+		return err
+	}
 
-	err = utils.ForEachZone(zones, func(zone string) error {
-		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
-		if err != nil {
-			return err
-		}
+	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
+		c := client.WithEndpoint(zone.APIEndpoint)
+		instancesResp, err := c.ListInstances(ctx)
 
-		instancesResp, err := client.ListInstances(ctx)
 		if err != nil {
 			return err
 		}
@@ -251,8 +251,8 @@ func (c *securityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 					out.Instances = append(out.Instances, securityGroupInstanceOutput{
 						Name:     utils.DefaultString(&instance.Name, "-"),
 						PublicIP: publicIP,
-						ID:       instance.ID.String(),
-						Zone:     v3.ZoneName(zone),
+						ID:       instance.ID,
+						Zone:     zone.Name,
 					})
 
 				}

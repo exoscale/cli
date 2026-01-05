@@ -14,6 +14,7 @@
 - Prompting for validation before deleting deployments and models (dedicated-inference)
 - Ability to delete multiple deployments and models at once (dedicated-inference)
 - Add IPv6 public IP assignment support for SKS Nodepools #774
+- Avoid redundant calls to `list-zones` #775
 
 ## 1.88.0
 
