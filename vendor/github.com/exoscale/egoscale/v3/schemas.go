@@ -2204,7 +2204,21 @@ type Event struct {
 	Zone string `json:"zone,omitempty"`
 }
 
-type GetDeploymentLogsResponse string
+// A single log entry
+type GetDeploymentLogsEntry struct {
+	// Log message content
+	Message string `json:"message,omitempty"`
+	// Node identifier
+	Node string `json:"node,omitempty"`
+	// Timestamp of the log entry
+	Time string `json:"time,omitempty"`
+}
+
+// Deployment logs
+type GetDeploymentLogsResponse struct {
+	// List of log entries
+	Logs []GetDeploymentLogsEntry `json:"logs,omitempty"`
+}
 
 type GetDeploymentResponseStatus string
 
@@ -2238,6 +2252,8 @@ type GetDeploymentResponse struct {
 	ServiceLevel string `json:"service-level,omitempty" validate:"omitempty,gte=1"`
 	// Deployment status
 	Status GetDeploymentResponseStatus `json:"status,omitempty"`
+	// Deployment status details
+	StatusDetails string `json:"status-details,omitempty"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
 }

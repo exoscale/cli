@@ -52,7 +52,9 @@ func (c *DeploymentLogsCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, string(*resp))
+		for _, entry := range resp.Logs {
+			fmt.Fprintln(os.Stdout, entry.Message)
+		}
 		return nil
 	}
 	// When quiet, do nothing

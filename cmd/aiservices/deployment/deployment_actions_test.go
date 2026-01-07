@@ -72,7 +72,12 @@ func newDepActionsServer(t *testing.T) *depActionsServer {
 			return
 		}
 		if len(parts) == 2 && parts[1] == "logs" && r.Method == http.MethodGet {
-			writeJSON(t, w, http.StatusOK, v3.GetDeploymentLogsResponse("l1\nl2"))
+			writeJSON(t, w, http.StatusOK, v3.GetDeploymentLogsResponse{
+				Logs: []v3.GetDeploymentLogsEntry{
+					{Message: "l1"},
+					{Message: "l2"},
+				},
+			})
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
