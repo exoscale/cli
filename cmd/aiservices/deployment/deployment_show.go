@@ -14,6 +14,7 @@ type DeploymentShowOutput struct {
 	ID            v3.UUID                        `json:"id"`
 	Name          string                         `json:"name"`
 	Status        v3.GetDeploymentResponseStatus `json:"status"`
+	StatusDetails string                         `json:"status_details"`
 	GPUType       string                         `json:"gpu_type"`
 	GPUCount      int64                          `json:"gpu_count"`
 	Replicas      int64                          `json:"replicas"`
@@ -81,6 +82,7 @@ func (c *DeploymentShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		ID:            resp.ID,
 		Name:          resp.Name,
 		Status:        resp.Status,
+		StatusDetails: resp.StatusDetails,
 		GPUType:       resp.GpuType,
 		GPUCount:      resp.GpuCount,
 		Replicas:      resp.Replicas,

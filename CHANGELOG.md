@@ -6,6 +6,10 @@
 
 - dedicated-inference: ability to define the inference engine parameters, and to have some help around that
 
+### Bug fixes
+
+- dedicated-inference: get deployment logs command fixed
+
 ## 1.89.0
 
 ### Bug fixes
