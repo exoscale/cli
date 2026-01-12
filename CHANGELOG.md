@@ -9,6 +9,7 @@
 ### Bug fixes
 
 - dedicated-inference: get deployment logs command fixed
+- Recover 'exo api' command registration removed by mistake #782
 
 ## 1.89.0
 
