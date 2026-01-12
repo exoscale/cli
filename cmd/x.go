@@ -56,6 +56,7 @@ input parameters can be supplied either via stdin or using Shorthands[2].
 			"Exoscale-CLI-X/%s (%s) %s",
 			globalstate.GitVersion,
 			globalstate.GitCommit,
+			//lint:ignore SA1019 we only read value so it is fine
 			egoscale.UserAgent,
 		))
 
