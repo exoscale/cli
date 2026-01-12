@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug fixes
+
+- Recover 'exo api' command registration removed by mistake #782
+
 ## 1.90.0
 
 ### Features
@@ -9,7 +15,6 @@
 ### Bug fixes
 
 - dedicated-inference: get deployment logs command fixed
-- Recover 'exo api' command registration removed by mistake #782
 
 ## 1.89.0
 
