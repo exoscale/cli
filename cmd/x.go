@@ -64,13 +64,3 @@ input parameters can be supplied either via stdin or using Shorthands[2].
 
 	RootCmd.AddCommand(xCmd)
 }
-
-func buildServerURL(zone, env string) string {
-	server := "https://api-ch-gva-2.exoscale.com/v2"
-
-	if zone != "" && env != "" {
-		server = fmt.Sprintf("https://%s-%s.exoscale.com/v2", env, zone)
-	}
-
-	return server
-}
