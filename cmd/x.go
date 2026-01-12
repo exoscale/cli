@@ -57,7 +57,7 @@ input parameters can be supplied either via stdin or using Shorthands[2].
 			globalstate.GitVersion,
 			globalstate.GitCommit,
 			//lint:ignore SA1019 we only read value so it is fine
-			egoscale.UserAgent,
+			egoscale.UserAgent, //nolint:staticcheck
 		))
 
 		return x.SetClientCredentials(account.CurrentAccount.Key, account.CurrentAccount.Secret)
