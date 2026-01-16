@@ -20,6 +20,7 @@ import (
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/go-multierror"
 	"github.com/vbauerster/mpb/v4"
@@ -158,6 +159,19 @@ func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string
 
 	switch method {
 	case "get":
+        // Check if the object exists
+        if _, err := c.S3Client.(*s3.Client).HeadObject(ctx, &s3.HeadObjectInput{
+            Bucket: aws.String(bucket),
+            Key:    aws.String(key),
+        }); err != nil {
+        	var apiErr smithy.APIError
+		    if errors.As(err, &apiErr) {
+			    if apiErr.ErrorCode() == "NotFound" {
+                    fmt.Printf("⚠️ The object %s/%s does not exist. The Presigned URL will return 404 ⚠️\n\n", bucket, key)
+			    }
+		    }
+        }
+
 		psURL, err = psClient.PresignGetObject(ctx, &s3.GetObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
