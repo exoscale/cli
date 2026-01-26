@@ -50,8 +50,8 @@ func (c *sksNodepoolScaleCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *sksNodepoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	if c.Size <= 0 {
-		return errors.New("minimum Nodepool size is 1")
+	if c.Size < 0 {
+		return errors.New("minimum Nodepool size is 0")
 	}
 
 	ctx := exocmd.GContext
