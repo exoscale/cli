@@ -143,7 +143,7 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		Zone:            c.Zone,
 	}
 
-	if appConsistentSnapshotEnabled := instance.ApplicationConsistentSnapshotEnabled; appConsistentSnapshotEnabled != nil {
+	if instance.ApplicationConsistentSnapshotEnabled != nil {
 		out.AppConsistentSnapshot = *instance.ApplicationConsistentSnapshotEnabled
 	}
 
