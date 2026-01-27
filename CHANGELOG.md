@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug fixes
+
+- Allow downscaling InstancePool and NodePool to 0
+
 ## 1.90.1
 
 ### Bug fixes

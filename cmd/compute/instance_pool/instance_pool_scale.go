@@ -44,8 +44,8 @@ func (c *instancePoolScaleCmd) CmdPreRun(cmd *cobra.Command, args []string) erro
 }
 
 func (c *instancePoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	if c.Size <= 0 {
-		return errors.New("minimum Instance Pool size is 1")
+	if c.Size < 0 {
+		return errors.New("minimum Instance Pool size is 0")
 	}
 
 	ctx := exocmd.GContext
