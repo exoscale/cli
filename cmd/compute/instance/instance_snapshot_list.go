@@ -86,7 +86,7 @@ func (c *instanceSnapshotListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			if cached {
 				instance = instanceI.(*v3.Instance)
 			} else {
-				instance, err = client.GetInstance(ctx, s.Instance.ID)
+				instance, err = c.GetInstance(ctx, s.Instance.ID)
 				if err != nil {
 					return fmt.Errorf("unable to retrieve Compute instance %q: %w", s.Instance.ID.String(), err)
 				}
