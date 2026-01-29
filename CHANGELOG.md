@@ -5,6 +5,7 @@
 ### Bug fixes
 
 - Allow downscaling InstancePool and NodePool to 0
+- Fix incorrect zone handing in instance snapshot list #787
 
 ### Features
 
