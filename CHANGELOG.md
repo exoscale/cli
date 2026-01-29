@@ -6,6 +6,10 @@
 
 - Allow downscaling InstancePool and NodePool to 0
 
+### Features
+
+- instance: expose a new `console-url` sub-command with a direct link to the VM console on the portal
+
 ## 1.90.1
 
 ### Bug fixes
