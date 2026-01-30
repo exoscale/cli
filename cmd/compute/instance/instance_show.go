@@ -124,7 +124,7 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		DiskSize:           humanize.IBytes(uint64(instance.DiskSize << 30)),
 		ElasticIPs:         make([]string, 0),
 		ID:                 instance.ID,
-		IPAddress:          utils.DefaultIP(&instance.PublicIP, "-"),
+		IPAddress:          utils.DefaultIP(instance.PublicIP, "-"),
 		IPv6Address:        utils.DefaultIP(ipV6, "-"),
 		Labels: func() (v map[string]string) {
 			if instance.Labels != nil {
