@@ -1,12 +1,12 @@
 {
-    "version": "1.90.1",
+    "version": "1.91.0",
     "architecture": {
         "64bit": {
-            "url": "https://github.com/exoscale/cli/releases/download/v1.90.1/exoscale-cli_1.90.1_windows_amd64.zip",
+            "url": "https://github.com/exoscale/cli/releases/download/v1.91.0/exoscale-cli_1.91.0_windows_amd64.zip",
             "bin": [
                 "exo.exe"
             ],
-            "hash": "3b3e81430bde0770bf843d8d09836a0fe1a1bdb177ef86008d1a85d0e2890d01"
+            "hash": "9118263c0ef7558a4082969f8b9243c83f1a9873b33118af92e6198e6c88248e"
         }
     },
     "homepage": "https://github.com/exoscale/cli",
