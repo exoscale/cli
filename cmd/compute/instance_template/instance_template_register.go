@@ -22,6 +22,8 @@ type instanceTemplateRegisterCmd struct {
 	URL      string `cli-arg:"#"`
 	Checksum string `cli-arg:"#"`
 
+	AppConsistentSnapshotEnabled bool `json:"application_consistent_snapshot" outputLabel:"Template with support for Application Consistent Snapshot"`
+
 	BootMode        string `cli-usage:"template boot mode (legacy|uefi)"`
 	Description     string `cli-usage:"template description"`
 	Build           string `cli-usage:"template build"`
@@ -84,16 +86,17 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 	sshKeyEnabled := !c.DisableSSHKey
 
 	templateRequest = v3.RegisterTemplateRequest{
-		Checksum:        c.Checksum,
-		DefaultUser:     c.Username,
-		Description:     c.Description,
-		Build:           c.Build,
-		Version:         c.Version,
-		Maintainer:      c.Maintainer,
-		Name:            c.Name,
-		PasswordEnabled: &passwordEnabled,
-		SSHKeyEnabled:   &sshKeyEnabled,
-		URL:             c.URL,
+		ApplicationConsistentSnapshotEnabled: &c.AppConsistentSnapshotEnabled,
+		Checksum:                             c.Checksum,
+		DefaultUser:                          c.Username,
+		Description:                          c.Description,
+		Build:                                c.Build,
+		Version:                              c.Version,
+		Maintainer:                           c.Maintainer,
+		Name:                                 c.Name,
+		PasswordEnabled:                      &passwordEnabled,
+		SSHKeyEnabled:                        &sshKeyEnabled,
+		URL:                                  c.URL,
 	}
 
 	if c.FromSnapshot != "" {
@@ -155,6 +158,7 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 		} else {
 			templateRequest.DefaultUser = srcTemplate.DefaultUser
 		}
+
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.BootMode)) {

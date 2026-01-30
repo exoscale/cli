@@ -22,25 +22,26 @@ type instancePoolUpdateCmd struct {
 
 	InstancePool string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	AntiAffinityGroups []string          `cli-flag:"anti-affinity-group" cli-short:"a" cli-usage:"managed Compute instances Anti-Affinity Group NAME|ID (can be specified multiple times)"`
-	CloudInitFile      string            `cli-flag:"cloud-init" cli-short:"c" cli-usage:"cloud-init user data configuration file path"`
-	CloudInitCompress  bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
-	DeployTarget       string            `cli-usage:"managed Compute instances Deploy Target NAME|ID"`
-	Description        string            `cli-usage:"Instance Pool description"`
-	DiskSize           int64             `cli-usage:"managed Compute instances disk size"`
-	ElasticIPs         []string          `cli-flag:"elastic-ip" cli-short:"e" cli-usage:"managed Compute instances Elastic IP ADDRESS|ID (can be specified multiple times)"`
-	IPv6               bool              `cli-flag:"ipv6" cli-short:"6" cli-usage:"enable IPv6 on managed Compute instances"`
-	InstancePrefix     string            `cli-usage:"string to prefix managed Compute instances names with"`
-	InstanceType       string            `cli-usage:"managed Compute instances type (format: [FAMILY.]SIZE)"`
-	Labels             map[string]string `cli-flag:"label" cli-usage:"Instance Pool label (format: key=value)"`
-	MinAvailable       int64             `cli-usage:"Minimum number of running Instances"`
-	Name               string            `cli-short:"n" cli-usage:"Instance Pool name"`
-	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
-	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances"`
-	SecurityGroups     []string          `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
-	Template           string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
-	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
-	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"Instance Pool zone"`
+	AppConsistentSnapshotEnabled bool              `cli-flag:"application-consistent-snapshot-enabled" cli-usage:"enable application-consistent snapshots if supported; set false to disable; omit to use template default value"`
+	AntiAffinityGroups           []string          `cli-flag:"anti-affinity-group" cli-short:"a" cli-usage:"managed Compute instances Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	CloudInitFile                string            `cli-flag:"cloud-init" cli-short:"c" cli-usage:"cloud-init user data configuration file path"`
+	CloudInitCompress            bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
+	DeployTarget                 string            `cli-usage:"managed Compute instances Deploy Target NAME|ID"`
+	Description                  string            `cli-usage:"Instance Pool description"`
+	DiskSize                     int64             `cli-usage:"managed Compute instances disk size"`
+	ElasticIPs                   []string          `cli-flag:"elastic-ip" cli-short:"e" cli-usage:"managed Compute instances Elastic IP ADDRESS|ID (can be specified multiple times)"`
+	IPv6                         bool              `cli-flag:"ipv6" cli-short:"6" cli-usage:"enable IPv6 on managed Compute instances"`
+	InstancePrefix               string            `cli-usage:"string to prefix managed Compute instances names with"`
+	InstanceType                 string            `cli-usage:"managed Compute instances type (format: [FAMILY.]SIZE)"`
+	Labels                       map[string]string `cli-flag:"label" cli-usage:"Instance Pool label (format: key=value)"`
+	MinAvailable                 int64             `cli-usage:"Minimum number of running Instances"`
+	Name                         string            `cli-short:"n" cli-usage:"Instance Pool name"`
+	PrivateNetworks              []string          `cli-flag:"private-network" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
+	SSHKey                       string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances"`
+	SecurityGroups               []string          `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
+	Template                     string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
+	TemplateVisibility           string            `cli-usage:"instance template visibility (public|private)"`
+	Zone                         v3.ZoneName       `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
 func (c *instancePoolUpdateCmd) CmdAliases() []string { return nil }
@@ -160,6 +161,11 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.IPv6)) {
 		updateReq.Ipv6Enabled = &c.IPv6
+		updated = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AppConsistentSnapshotEnabled)) {
+		updateReq.ApplicationConsistentSnapshotEnabled = &c.AppConsistentSnapshotEnabled
 		updated = true
 	}
 
