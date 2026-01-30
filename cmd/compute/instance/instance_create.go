@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"time"
 
@@ -36,13 +37,12 @@ type instanceCreateCmd struct {
 	CloudInitCompress  bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
 	DeployTarget       string            `cli-usage:"instance Deploy Target NAME|ID"`
 	DiskSize           int64             `cli-usage:"instance disk size"`
-	IPv6               bool              `cli-flag:"ipv6" cli-usage:"enable IPv6 on instance"`
 	TPM                bool              `cli-flag:"tpm" cli-usage:"enable TPM on instance"`
 	SecureBoot         bool              `cli-flag:"secureboot" cli-usage:"enable Secure boot on instance"`
 	InstanceType       string            `cli-usage:"instance type (format: [FAMILY.]SIZE)"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"instance Private Network NAME|ID (can be specified multiple times)"`
-	PrivateInstance    bool              `cli-flag:"private-instance" cli-usage:"enable private instance to be created"`
+	PublicIPAssignment string            `cli-flag:"public-ip" cli-usage:"Configures public IP assignment of the Instances (none|inet4|dual). (default: inet4)"`
 	SSHKeys            []string          `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on the instance (can be specified multiple times)"`
 	Protection         bool              `cli-flag:"protection" cli-usage:"enable delete protection"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-usage:"instance Security Group NAME|ID (can be specified multiple times)"`
@@ -79,6 +79,7 @@ func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolin
 		singleUseSSHPrivateKey *rsa.PrivateKey
 		singleUseSSHPublicKey  ssh.PublicKey
 	)
+
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -90,18 +91,24 @@ func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolin
 		sshKeys = append(sshKeys, v3.SSHKey{Name: sshkeyName})
 	}
 
-	instanceReq := v3.CreateInstanceRequest{
-		DiskSize:          c.DiskSize,
-		Ipv6Enabled:       &c.IPv6,
-		TpmEnabled:        &c.TPM,
-		SecurebootEnabled: &c.SecureBoot,
-		Labels:            c.Labels,
-		Name:              c.Name,
-		SSHKeys:           sshKeys,
+	publicIPAssignment := v3.PublicIPAssignmentInet4
+	if c.PublicIPAssignment != "" {
+		if !slices.Contains([]v3.PublicIPAssignment{
+			v3.PublicIPAssignmentDual, v3.PublicIPAssignmentInet4, v3.PublicIPAssignmentNone,
+		}, v3.PublicIPAssignment(c.PublicIPAssignment)) {
+			return fmt.Errorf("error invalid public-ip: %s", c.PublicIPAssignment)
+		}
+		publicIPAssignment = v3.PublicIPAssignment(c.PublicIPAssignment)
 	}
 
-	if c.PrivateInstance {
-		instanceReq.PublicIPAssignment = v3.PublicIPAssignmentNone
+	instanceReq := v3.CreateInstanceRequest{
+		DiskSize:           c.DiskSize,
+		PublicIPAssignment: publicIPAssignment,
+		TpmEnabled:         &c.TPM,
+		SecurebootEnabled:  &c.SecureBoot,
+		Labels:             c.Labels,
+		Name:               c.Name,
+		SSHKeys:            sshKeys,
 	}
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
