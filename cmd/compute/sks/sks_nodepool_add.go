@@ -2,6 +2,7 @@ package sks
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -43,7 +44,7 @@ type sksNodepoolAddCmd struct {
 	StorageLvm           bool     `cli-usage:"Create nodes with non-standard partitioning for persistent storage"`
 	Taints               []string `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
 	Zone                 string   `cli-short:"z" cli-usage:"SKS cluster zone"`
-	IPv6                 bool     `cli-flag:"ipv6" cli-usage:"Enable public IPv6 assignment to Nodepool nodes"`
+	PublicIPAssignment   string   `cli-flag:"public-ip" cli-usage:"Configures public IP assignment of the Instances (inet4|dual). (default: inet4)"`
 }
 
 func (c *sksNodepoolAddCmd) CmdAliases() []string { return nil }
@@ -87,6 +88,15 @@ func (c *sksNodepoolAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			return fmt.Errorf("label: %w", err)
 		}
 	}
+	publicIPAssignment := v3.CreateSKSNodepoolRequestPublicIPAssignmentInet4
+	if c.PublicIPAssignment != "" {
+		if !slices.Contains([]v3.CreateSKSNodepoolRequestPublicIPAssignment{
+			v3.CreateSKSNodepoolRequestPublicIPAssignmentInet4, v3.CreateSKSNodepoolRequestPublicIPAssignmentDual,
+		}, v3.CreateSKSNodepoolRequestPublicIPAssignment(c.PublicIPAssignment)) {
+			return fmt.Errorf("error invalid public-ip: %s", c.PublicIPAssignment)
+		}
+		publicIPAssignment = v3.CreateSKSNodepoolRequestPublicIPAssignment(c.PublicIPAssignment)
+	}
 
 	opts := CreateNodepoolOpts{
 		Name:               c.Name,
@@ -106,14 +116,7 @@ func (c *sksNodepoolAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			LowThreshold:  c.ImageGcLowThreshold,
 			HighThreshold: c.ImageGcHighThreshold,
 		},
-	}
-
-	if c.IPv6 {
-		v := v3.PublicIPAssignmentDual
-		opts.PublicIPAssignment = &v
-	} else {
-		v := v3.PublicIPAssignmentInet4
-		opts.PublicIPAssignment = &v
+		PublicIPAssignment: publicIPAssignment,
 	}
 
 	nodepoolReq, err := createNodepoolRequest(ctx, client, opts)
