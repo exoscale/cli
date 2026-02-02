@@ -18,28 +18,29 @@ import (
 )
 
 type InstanceShowOutput struct {
-	ID                 v3.UUID               `json:"id"`
-	Name               string                `json:"name"`
-	CreationDate       string                `json:"creation_date"`
-	InstanceType       string                `json:"instance_type"`
-	Template           string                `json:"template"`
-	Zone               v3.ZoneName           `json:"zone"`
-	AntiAffinityGroups []string              `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
-	DeployTarget       string                `json:"deploy_target"`
-	SecurityGroups     []string              `json:"security_groups"`
-	PrivateInstance    string                `json:"private-instance" outputLabel:"Private Instance"`
-	PrivateNetworks    []string              `json:"private_networks"`
-	ElasticIPs         []string              `json:"elastic_ips" outputLabel:"Elastic IPs"`
-	PublicIPAssignment v3.PublicIPAssignment `json:"public-ip" outputLabel:"Public IP"`
-	IPAddress          string                `json:"ip_address"`
-	IPv6Address        string                `json:"ipv6_address" outputLabel:"IPv6 Address"`
-	SSHKey             string                `json:"ssh_key"`
-	DiskSize           string                `json:"disk_size"`
-	State              v3.InstanceState      `json:"state"`
-	Labels             map[string]string     `json:"labels"`
-	SecureBoot         bool                  `json:"secureboot"`
-	Tpm                bool                  `json:"tpm"`
-	ReverseDNS         v3.DomainName         `json:"reverse_dns" outputLabel:"Reverse DNS"`
+	ID                    v3.UUID               `json:"id"`
+	Name                  string                `json:"name"`
+	CreationDate          string                `json:"creation_date"`
+	InstanceType          string                `json:"instance_type"`
+	Template              string                `json:"template"`
+	Zone                  v3.ZoneName           `json:"zone"`
+	AntiAffinityGroups    []string              `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
+	DeployTarget          string                `json:"deploy_target"`
+	SecurityGroups        []string              `json:"security_groups"`
+	PrivateInstance       string                `json:"private-instance" outputLabel:"Private Instance"`
+	PrivateNetworks       []string              `json:"private_networks"`
+	ElasticIPs            []string              `json:"elastic_ips" outputLabel:"Elastic IPs"`
+	PublicIPAssignment    v3.PublicIPAssignment `json:"public-ip" outputLabel:"Public IP"`
+	IPAddress             string                `json:"ip_address"`
+	IPv6Address           string                `json:"ipv6_address" outputLabel:"IPv6 Address"`
+	SSHKey                string                `json:"ssh_key"`
+	DiskSize              string                `json:"disk_size"`
+	State                 v3.InstanceState      `json:"state"`
+	Labels                map[string]string     `json:"labels"`
+	SecureBoot            bool                  `json:"secureboot"`
+	Tpm                   bool                  `json:"tpm"`
+	ReverseDNS            v3.DomainName         `json:"reverse_dns" outputLabel:"Reverse DNS"`
+	AppConsistentSnapshot bool                  `json:"application_consistent_snapshot_enabled" outputLabel:"Application-Consistent Snapshot enabled"`
 }
 
 func (o *InstanceShowOutput) Type() string { return "Compute instance" }
@@ -142,6 +143,10 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		Tpm:             *instance.TpmEnabled,
 		State:           instance.State,
 		Zone:            c.Zone,
+	}
+
+	if instance.ApplicationConsistentSnapshotEnabled != nil {
+		out.AppConsistentSnapshot = *instance.ApplicationConsistentSnapshotEnabled
 	}
 
 	out.PrivateInstance = "No"

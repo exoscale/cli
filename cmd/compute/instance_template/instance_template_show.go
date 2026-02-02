@@ -17,22 +17,23 @@ import (
 )
 
 type instanceTemplateShowOutput struct {
-	ID              string `json:"id"`
-	Zone            string `json:"zone"`
-	Name            string `json:"name"`
-	Description     string `json:"description"`
-	Family          string `json:"family"`
-	CreationDate    string `json:"creation_date"`
-	Visibility      string `json:"visibility"`
-	Size            int64  `json:"size"`
-	Version         string `json:"version"`
-	Build           string `json:"build"`
-	Maintainer      string `json:"maintainer"`
-	DefaultUser     string `json:"default_user"`
-	SSHKeyEnabled   bool   `json:"ssh_key_enabled"`
-	PasswordEnabled bool   `json:"password_enabled"`
-	BootMode        string `json:"boot_mode"`
-	Checksum        string `json:"checksum"`
+	ID                           string `json:"id"`
+	Zone                         string `json:"zone"`
+	Name                         string `json:"name"`
+	Description                  string `json:"description"`
+	Family                       string `json:"family"`
+	CreationDate                 string `json:"creation_date"`
+	Visibility                   string `json:"visibility"`
+	Size                         int64  `json:"size"`
+	Version                      string `json:"version"`
+	Build                        string `json:"build"`
+	Maintainer                   string `json:"maintainer"`
+	DefaultUser                  string `json:"default_user"`
+	SSHKeyEnabled                bool   `json:"ssh_key_enabled"`
+	PasswordEnabled              bool   `json:"password_enabled"`
+	BootMode                     string `json:"boot_mode"`
+	Checksum                     string `json:"checksum"`
+	AppConsistentSnapshotEnabled bool   `json:"application_consistent_snapshot_enabled"`
 }
 
 func (o *instanceTemplateShowOutput) ToJSON() { output.JSON(o) }
@@ -58,6 +59,7 @@ func (o *instanceTemplateShowOutput) ToTable() {
 	t.Append([]string{"Password enabled", fmt.Sprint(o.PasswordEnabled)})
 	t.Append([]string{"Boot Mode", o.BootMode})
 	t.Append([]string{"Checksum", o.Checksum})
+	t.Append([]string{"Application Consistent Snapshot Enabled", fmt.Sprint(o.AppConsistentSnapshotEnabled)})
 }
 
 type instanceTemplateShowCmd struct {
@@ -107,22 +109,23 @@ func (c *instanceTemplateShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	return c.OutputFunc(&instanceTemplateShowOutput{
-		ID:              template.ID.String(),
-		Zone:            c.Zone,
-		Family:          template.Family,
-		Name:            template.Name,
-		Description:     template.Description,
-		CreationDate:    template.CreatedAT.String(),
-		Visibility:      string(template.Visibility),
-		Size:            template.Size,
-		Version:         template.Version,
-		Build:           template.Build,
-		Maintainer:      template.Maintainer,
-		Checksum:        template.Checksum,
-		DefaultUser:     template.DefaultUser,
-		SSHKeyEnabled:   utils.DefaultBool(template.SSHKeyEnabled, false),
-		PasswordEnabled: utils.DefaultBool(template.PasswordEnabled, false),
-		BootMode:        string(template.BootMode),
+		ID:                           template.ID.String(),
+		Zone:                         c.Zone,
+		Family:                       template.Family,
+		Name:                         template.Name,
+		Description:                  template.Description,
+		CreationDate:                 template.CreatedAT.String(),
+		Visibility:                   string(template.Visibility),
+		Size:                         template.Size,
+		Version:                      template.Version,
+		Build:                        template.Build,
+		Maintainer:                   template.Maintainer,
+		Checksum:                     template.Checksum,
+		DefaultUser:                  template.DefaultUser,
+		SSHKeyEnabled:                utils.DefaultBool(template.SSHKeyEnabled, false),
+		PasswordEnabled:              utils.DefaultBool(template.PasswordEnabled, false),
+		BootMode:                     string(template.BootMode),
+		AppConsistentSnapshotEnabled: utils.DefaultBool(template.ApplicationConsistentSnapshotEnabled, false),
 	}, nil)
 }
 

@@ -13,13 +13,14 @@ import (
 )
 
 type instanceSnapshotShowOutput struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	CreationDate string `json:"creation_date"`
-	State        string `json:"state"`
-	Size         int64  `json:"size" outputLabel:"Size (GB)"`
-	Instance     string `json:"instance"`
-	Zone         string `json:"zone"`
+	ID                    string `json:"id"`
+	Name                  string `json:"name"`
+	CreationDate          string `json:"creation_date"`
+	State                 string `json:"state"`
+	Size                  int64  `json:"size" outputLabel:"Size (GB)"`
+	Instance              string `json:"instance"`
+	Zone                  string `json:"zone"`
+	AppConsistentSnapshot bool   `json:"application_consistent_snapshot" outputLabel:"Application Consistent Snapshot"`
 }
 
 func (o *instanceSnapshotShowOutput) Type() string { return "Snapshot" }
@@ -76,13 +77,14 @@ func (c *instanceSnapshotShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	return c.OutputFunc(&instanceSnapshotShowOutput{
-		ID:           snapshot.ID.String(),
-		Name:         snapshot.Name,
-		CreationDate: snapshot.CreatedAT.String(),
-		State:        string(snapshot.State),
-		Size:         snapshot.Size,
-		Instance:     instance.Name,
-		Zone:         c.Zone,
+		ID:                    snapshot.ID.String(),
+		Name:                  snapshot.Name,
+		CreationDate:          snapshot.CreatedAT.String(),
+		State:                 string(snapshot.State),
+		Size:                  snapshot.Size,
+		Instance:              instance.Name,
+		Zone:                  c.Zone,
+		AppConsistentSnapshot: *snapshot.ApplicationConsistent,
 	}, nil)
 }
 

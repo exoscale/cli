@@ -32,23 +32,24 @@ type instanceCreateCmd struct {
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
-	AntiAffinityGroups []string          `cli-flag:"anti-affinity-group" cli-usage:"instance Anti-Affinity Group NAME|ID (can be specified multiple times)"`
-	CloudInitFile      string            `cli-flag:"cloud-init" cli-usage:"instance cloud-init user data configuration file path"`
-	CloudInitCompress  bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
-	DeployTarget       string            `cli-usage:"instance Deploy Target NAME|ID"`
-	DiskSize           int64             `cli-usage:"instance disk size"`
-	TPM                bool              `cli-flag:"tpm" cli-usage:"enable TPM on instance"`
-	SecureBoot         bool              `cli-flag:"secureboot" cli-usage:"enable Secure boot on instance"`
-	InstanceType       string            `cli-usage:"instance type (format: [FAMILY.]SIZE)"`
-	Labels             map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
-	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"instance Private Network NAME|ID (can be specified multiple times)"`
-	PublicIPAssignment string            `cli-flag:"public-ip" cli-usage:"Configures public IP assignment of the Instances (none|inet4|dual). (default: inet4)"`
-	SSHKeys            []string          `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on the instance (can be specified multiple times)"`
-	Protection         bool              `cli-flag:"protection" cli-usage:"enable delete protection"`
-	SecurityGroups     []string          `cli-flag:"security-group" cli-usage:"instance Security Group NAME|ID (can be specified multiple times)"`
-	Template           string            `cli-usage:"instance template NAME|ID"`
-	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
-	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"instance zone"`
+	AppConsistentSnapshot bool              `cli-flag:"application-consistent-snapshot-enabled" cli-usage:"enable application-consistent snapshots when supported; false disables; omit for template default"`
+	AntiAffinityGroups    []string          `cli-flag:"anti-affinity-group" cli-usage:"instance Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	CloudInitFile         string            `cli-flag:"cloud-init" cli-usage:"instance cloud-init user data configuration file path"`
+	CloudInitCompress     bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
+	DeployTarget          string            `cli-usage:"instance Deploy Target NAME|ID"`
+	DiskSize              int64             `cli-usage:"instance disk size"`
+	TPM                   bool              `cli-flag:"tpm" cli-usage:"enable TPM on instance"`
+	SecureBoot            bool              `cli-flag:"secureboot" cli-usage:"enable Secure boot on instance"`
+	InstanceType          string            `cli-usage:"instance type (format: [FAMILY.]SIZE)"`
+	Labels                map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
+	PrivateNetworks       []string          `cli-flag:"private-network" cli-usage:"instance Private Network NAME|ID (can be specified multiple times)"`
+	PublicIPAssignment    string            `cli-flag:"public-ip" cli-usage:"Configures public IP assignment of the Instances (none|inet4|dual). (default: inet4)"`
+	SSHKeys               []string          `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on the instance (can be specified multiple times)"`
+	Protection            bool              `cli-flag:"protection" cli-usage:"enable delete protection"`
+	SecurityGroups        []string          `cli-flag:"security-group" cli-usage:"instance Security Group NAME|ID (can be specified multiple times)"`
+	Template              string            `cli-usage:"instance template NAME|ID"`
+	TemplateVisibility    string            `cli-usage:"instance template visibility (public|private)"`
+	Zone                  v3.ZoneName       `cli-short:"z" cli-usage:"instance zone"`
 }
 
 func (c *instanceCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
@@ -74,7 +75,7 @@ func (c *instanceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
+func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
 	var (
 		singleUseSSHPrivateKey *rsa.PrivateKey
 		singleUseSSHPublicKey  ssh.PublicKey
@@ -245,6 +246,10 @@ func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolin
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
 		instanceReq.UserData = userData
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AppConsistentSnapshot)) {
+		instanceReq.ApplicationConsistentSnapshotEnabled = &c.AppConsistentSnapshot
 	}
 
 	var instanceID v3.UUID

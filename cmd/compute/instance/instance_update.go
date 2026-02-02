@@ -21,13 +21,14 @@ type instanceUpdateCmd struct {
 
 	Instance string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	CloudInitFile     string            `cli-flag:"cloud-init" cli-short:"c" cli-usage:"instance cloud-init user data configuration file path"`
-	CloudInitCompress bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
-	Labels            map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
-	Name              string            `cli-short:"n" cli-usage:"instance name"`
-	Protection        bool              `cli-flag:"protection" cli-usage:"delete protection; set --protection=false to disable instance protection"`
-	Zone              string            `cli-short:"z" cli-usage:"instance zone"`
-	ReverseDNS        string            `cli-usage:"Reverse DNS Domain"`
+	AppConsistentSnapshot bool              `cli-flag:"application-consistent-snapshot-enabled" cli-usage:"update instance application-consistent snapshots"`
+	CloudInitFile         string            `cli-flag:"cloud-init" cli-short:"c" cli-usage:"instance cloud-init user data configuration file path"`
+	CloudInitCompress     bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
+	Labels                map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
+	Name                  string            `cli-short:"n" cli-usage:"instance name"`
+	Protection            bool              `cli-flag:"protection" cli-usage:"delete protection; set --protection=false to disable instance protection"`
+	Zone                  string            `cli-short:"z" cli-usage:"instance zone"`
+	ReverseDNS            string            `cli-usage:"Reverse DNS Domain"`
 }
 
 func (c *instanceUpdateCmd) CmdAliases() []string { return nil }
@@ -93,6 +94,11 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ReverseDNS)) {
 		updateRDNSRequest.DomainName = c.ReverseDNS
 		updatedRDNS = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AppConsistentSnapshot)) {
+		updateRequest.ApplicationConsistentSnapshotEnabled = &c.AppConsistentSnapshot
+		updatedInstance = true
 	}
 
 	if updatedInstance || updatedRDNS || cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Protection)) {
