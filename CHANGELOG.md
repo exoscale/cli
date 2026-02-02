@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Features
+ 
+- instance create: added support for the new --application-consistent-snapshot-enabled flag
+- instance update:  added support for the new --application-consistent-snapshot-enabled flag
+- instance show: now displays the Application Consistent Snapshot Enabled field
+- instance snapshot create: added support for the new --application-consistent-snapshot-enabled flag
+- instance snapshot show: now displays the Application Consistent Snapshot Enabled field
+- instance-template register: added support for the new --application-consistent-snapshot-enabled flag
+- instance-template show: now displays the Application Consistent Snapshot Enabled field
+
+
 ### Bug fixes
 - fix(instance): create instance with an IPv6 #788
 
