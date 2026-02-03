@@ -5,6 +5,9 @@
 ### Bug fixes
 - fix(instance): create instance with an IPv6 #788
 
+## Features
+- feat(cli scaffold): allow deprecated flags #789 
+
 ### Breaking changes
 - instance create: merge --ipv6 and --private-instance into --public-ip #788
 - nodepool: replace --ipv6 and --nodepool-ipv6 with --public-ip and --nodepool-public-ip #788
