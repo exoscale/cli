@@ -17,6 +17,7 @@ type DeploymentLogsCmd struct {
 
 	Deployment string      `cli-arg:"#" cli-usage:"ID or NAME"`
 	Zone       v3.ZoneName `cli-short:"z" cli-usage:"zone"`
+	Tail       int64       `cli-usage:"number of lines to tail (default 10)"`
 }
 
 func (c *DeploymentLogsCmd) CmdAliases() []string { return nil }
@@ -28,6 +29,7 @@ func (c *DeploymentLogsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
+
 func (c *DeploymentLogsCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
@@ -46,7 +48,12 @@ func (c *DeploymentLogsCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 	id := entry.ID
 
-	resp, err := client.GetDeploymentLogs(ctx, id)
+	tail := c.Tail
+	if tail <= 0 {
+		tail = 10
+	}
+
+	resp, err := client.GetDeploymentLogs(ctx, id, v3.GetDeploymentLogsWithTail(tail))
 	if err != nil {
 		return err
 	}
