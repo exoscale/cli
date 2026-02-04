@@ -155,3 +155,64 @@ The generator support two types of extension:
 		return ElasticIP{}, fmt.Errorf("%q not found in ListElasticIPSResponse: %w", idOrIP, ErrNotFound)
 	}
 	```
+
+## Generator Overrides System
+
+The Egoscale v3 generator incorporates an overrides system to preserve backwards compatibility in the Go API when the OpenAPI specification changes, such as renaming schemas or references. This ensures that existing code using the SDK does not break due to type, field name, or JSON tag changes.
+
+The system consists of a unified overrides system working during code generation, scoped to schemas with overrides to avoid affecting new APIs.
+
+### Components
+
+#### Schema Property and Reference Overrides
+- **Location**: `generator/helpers/helpers.go` (`SchemaPropertyOverrides` map)
+- **Purpose**: Unified map for property names and reference paths in legacy schemas to preserve backwards compatibility. Schemas with `Refs` are treated as legacy (applying ref overrides); others use spec defaults. Property overrides are applied per-schema as needed.
+- **Example**:
+  ```go
+  var SchemaPropertyOverrides = map[string]*Overrides{
+      "AttachInstanceToElasticIPRequest": {
+          Props: map[string]string{
+              "instance-target": "instance",
+          },
+          Refs: map[string]string{
+              "#/components/schemas/ssh-key-ref": "SSHKey",
+              "#/components/schemas/instance-ref": "InstanceTarget",
+          },
+      },
+      "CreateInstance": {
+          Props: nil,
+          Refs: map[string]string{
+              // ... ref overrides map
+          },
+      },
+  }
+  ```
+  - In `AttachInstanceToElasticIPRequest`, a property `"instance-target"` generates `Instance` with JSON `"instance"`, and refs like `"#/components/schemas/ssh-key-ref"` generate `SSHKey`.
+  - Schemas without entries or with `Refs: nil` use spec defaults.
+
+#### Backwards Compatibility Full Types
+- **Purpose**: Generates full struct definitions for old type names (e.g., `Template`) directly from the OpenAPI spec to maintain backwards compatibility, ensuring old types have complete field sets for operations like listing.
+- **Generation**: All schemas in the spec are generated, including full types (e.g., `Template` with 18 fields from `template`) and ref types (e.g., `TemplateRef` with 1 field from `template-ref`).
+
+#### Special Aliases
+- **Location**: `generator/schemas/schemas.go` (hardcoded in `Generate` function)
+- **Purpose**: Adds specific type aliases for complex backwards compatibility cases where aliasing is appropriate.
+- **Example**:
+  ```go
+  type InstanceTarget = InstanceRef
+  type BlockStorageSnapshotTarget = BlockStorageSnapshotRef
+  type BlockStorageVolumeTarget = BlockStorageVolumeRef
+  ```
+  - Provides aliases like `InstanceTarget` for operations requiring distinct field names.
+
+### How It Works
+1. **Schema Processing**: Generates all schemas from the OpenAPI spec in alphabetical order, including full types (e.g., `Template`) and ref types (e.g., `TemplateRef`).
+2. **Conditional Application**: For schemas with overrides in `SchemaPropertyOverrides`, applies `Refs` (if present) and `Props` (if present); otherwise, uses spec defaults.
+3. **Type and Field Generation**: References and properties are resolved with overrides, producing consistent Go structs.
+4. **Special Aliases Addition**: Special aliases are appended globally.
+
+### Usage in Development
+- Modify `SchemaPropertyOverrides` in `generator/helpers/helpers.go` for spec updates (add/update `Props` or `Refs` per schema).
+- Regenerate with `make generate`, build with `go build ./...`, and inspect with `GENERATOR_DEBUG=schemas make generate`.
+
+This system enables the SDK to evolve with the OpenAPI spec while preserving API stability for existing users.

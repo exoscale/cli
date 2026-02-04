@@ -258,8 +258,16 @@ func (c Client) RevealDeploymentAPIKey(ctx context.Context, id UUID) (*RevealDep
 	return bodyresp, nil
 }
 
+type GetDeploymentLogsOpt func(url.Values)
+
+func GetDeploymentLogsWithTail(tail int64) GetDeploymentLogsOpt {
+	return func(q url.Values) {
+		q.Add("tail", fmt.Sprint(tail))
+	}
+}
+
 // Return logs for the vLLM deployment (deploy/<release-name>--deployment-vllm). Optional ?stream=true to request streaming (may not be supported).
-func (c Client) GetDeploymentLogs(ctx context.Context, id UUID) (*GetDeploymentLogsResponse, error) {
+func (c Client) GetDeploymentLogs(ctx context.Context, id UUID, opts ...GetDeploymentLogsOpt) (*GetDeploymentLogsResponse, error) {
 	path := fmt.Sprintf("/ai/deployment/%v/logs", id)
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
@@ -268,6 +276,14 @@ func (c Client) GetDeploymentLogs(ctx context.Context, id UUID) (*GetDeploymentL
 	}
 
 	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if len(opts) > 0 {
+		q := request.URL.Query()
+		for _, opt := range opts {
+			opt(q)
+		}
+		request.URL.RawQuery = q.Encode()
+	}
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
 		return nil, fmt.Errorf("GetDeploymentLogs: execute request editors: %w", err)
@@ -4928,8 +4944,7 @@ type CreateDBAASServiceMysqlRequestMigration struct {
 }
 
 type CreateDBAASServiceMysqlRequest struct {
-	// Custom password for admin user. Defaults to random string. This must be set only when a new service is being created.
-	AdminPassword string `json:"admin-password,omitempty" validate:"omitempty,gte=8,lte=256"`
+	AdminPassword DBAASMysqlUserPassword `json:"admin-password,omitempty" validate:"omitempty,gte=8,lte=256"`
 	// Custom username for admin user. This must be set only when a new service is being created.
 	AdminUsername  string                                        `json:"admin-username,omitempty" validate:"omitempty,gte=1,lte=64"`
 	BackupSchedule *CreateDBAASServiceMysqlRequestBackupSchedule `json:"backup-schedule,omitempty"`
@@ -5449,7 +5464,7 @@ func (c Client) DeleteDBAASMysqlUser(ctx context.Context, serviceName string, us
 
 type ResetDBAASMysqlUserPasswordRequest struct {
 	Authentication EnumMysqlAuthenticationPlugin `json:"authentication,omitempty"`
-	Password       DBAASUserPassword             `json:"password,omitempty" validate:"omitempty,gte=8,lte=256"`
+	Password       DBAASMysqlUserPassword        `json:"password,omitempty" validate:"omitempty,gte=8,lte=256"`
 }
 
 // If no password is provided one will be generated automatically.
@@ -10552,11 +10567,15 @@ func (c Client) ListIAMRoles(ctx context.Context) (*ListIAMRolesResponse, error)
 }
 
 type CreateIAMRoleRequest struct {
+	// Policy
+	AssumeRolePolicy *IAMPolicy `json:"assume-role-policy,omitempty"`
 	// IAM Role description
 	Description string `json:"description,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Sets if the IAM Role Policy is editable or not (default: true). This setting cannot be changed after creation
 	Editable *bool  `json:"editable,omitempty"`
 	Labels   Labels `json:"labels,omitempty"`
+	// Maximum TTL requester is allowed to ask for when assuming a role
+	MaxSessionTtl int64 `json:"max-session-ttl,omitempty" validate:"omitempty,gt=0"`
 	// IAM Role name
 	Name string `json:"name" validate:"required,gte=1,lte=191"`
 	// IAM Role permissions
@@ -10708,6 +10727,8 @@ type UpdateIAMRoleRequest struct {
 	// IAM Role description
 	Description string `json:"description,omitempty" validate:"omitempty,gte=1,lte=255"`
 	Labels      Labels `json:"labels,omitempty"`
+	// Maximum TTL requester is allowed to ask for when assuming a role
+	MaxSessionTtl int64 `json:"max-session-ttl,omitempty" validate:"omitempty,gt=0"`
 	// IAM Role permissions
 	Permissions []string `json:"permissions,omitempty"`
 }
@@ -10758,6 +10779,57 @@ func (c Client) UpdateIAMRole(ctx context.Context, id UUID, req UpdateIAMRoleReq
 	bodyresp := new(Operation)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateIAMRole: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Update IAM Assume role Policy
+func (c Client) UpdateIAMAssumeRolePolicy(ctx context.Context, id UUID, req IAMPolicy) (*Operation, error) {
+	path := fmt.Sprintf("/iam-role/%v:assume-role-policy", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateIAMAssumeRolePolicy: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateIAMAssumeRolePolicy: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("UpdateIAMAssumeRolePolicy: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("UpdateIAMAssumeRolePolicy: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "update-iam-assume-role-policy")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateIAMAssumeRolePolicy: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("UpdateIAMAssumeRolePolicy: http response: %w", err)
+	}
+
+	bodyresp := new(Operation)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("UpdateIAMAssumeRolePolicy: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -10963,11 +11035,11 @@ type CreateInstanceRequest struct {
 	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Start Instance on creation (default: true)
 	AutoStart *bool `json:"auto-start,omitempty"`
-	// Deploy target
+	// Deploy target reference
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Instance disk size in GiB
 	DiskSize int64 `json:"disk-size" validate:"required,gte=10,lte=51200"`
-	// Compute instance type
+	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type" validate:"required"`
 	// Enable IPv6. DEPRECATED: use `public-ip-assignments`.
 	Ipv6Enabled *bool  `json:"ipv6-enabled,omitempty"`
@@ -10979,11 +11051,11 @@ type CreateInstanceRequest struct {
 	SecurebootEnabled *bool `json:"secureboot-enabled,omitempty"`
 	// Instance Security Groups
 	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
-	// SSH key
+	// SSH key reference
 	SSHKey *SSHKey `json:"ssh-key,omitempty"`
 	// Instance SSH Keys
 	SSHKeys []SSHKey `json:"ssh-keys,omitempty"`
-	// Instance template
+	// Template reference
 	Template *Template `json:"template" validate:"required"`
 	// Enable Trusted Platform Module (TPM)
 	TpmEnabled *bool `json:"tpm-enabled,omitempty"`
@@ -11512,7 +11584,7 @@ func (c Client) EvictInstancePoolMembers(ctx context.Context, id UUID, req Evict
 
 type ScaleInstancePoolRequest struct {
 	// Number of managed Instances
-	Size int64 `json:"size" validate:"required,gt=0"`
+	Size int64 `json:"size" validate:"required,gte=0"`
 }
 
 // Scale an Instance Pool
@@ -12148,7 +12220,7 @@ func (c Client) RemoveInstanceProtection(ctx context.Context, id UUID) (*Operati
 type ResetInstanceRequest struct {
 	// Instance disk size in GiB
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=51200"`
-	// Instance template
+	// Template reference
 	Template *Template `json:"template,omitempty"`
 }
 
@@ -12304,7 +12376,7 @@ func (c Client) ResizeInstanceDisk(ctx context.Context, id UUID, req ResizeInsta
 }
 
 type ScaleInstanceRequest struct {
-	// Compute instance type
+	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type" validate:"required"`
 }
 
