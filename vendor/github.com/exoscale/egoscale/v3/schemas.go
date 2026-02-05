@@ -86,6 +86,12 @@ type AntiAffinityGroup struct {
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 }
 
+// Anti-affinity group reference
+type AntiAffinityGroupRef struct {
+	// Anti-affinity group ID
+	ID UUID `json:"id,omitempty"`
+}
+
 type BlockStorageSnapshotState string
 
 const (
@@ -119,7 +125,7 @@ type BlockStorageSnapshot struct {
 }
 
 // Target block storage snapshot
-type BlockStorageSnapshotTarget struct {
+type BlockStorageSnapshotRef struct {
 	// Block storage snapshot ID
 	ID UUID `json:"id,omitempty"`
 }
@@ -160,7 +166,7 @@ type BlockStorageVolume struct {
 }
 
 // Target block storage volume
-type BlockStorageVolumeTarget struct {
+type BlockStorageVolumeRef struct {
 	// Block storage volume ID
 	ID UUID `json:"id,omitempty"`
 }
@@ -740,6 +746,8 @@ type DBAASMigrationStatus struct {
 }
 
 type DBAASMysqlDatabaseName string
+
+type DBAASMysqlUserPassword string
 
 type DBAASNodeStateRole string
 
@@ -1872,6 +1880,12 @@ type DeployTarget struct {
 	Type DeployTargetType `json:"type,omitempty"`
 }
 
+// Deploy target reference
+type DeployTargetRef struct {
+	// Deploy target ID
+	ID UUID `json:"id,omitempty"`
+}
+
 // DNS domain
 type DNSDomain struct {
 	// DNS domain creation date
@@ -1979,6 +1993,12 @@ type ElasticIPHealthcheck struct {
 	TlsSNI string `json:"tls-sni,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// An endpoint to use for the health check, for example '/status'
 	URI string `json:"uri,omitempty" validate:"omitempty,gte=1,lte=255"`
+}
+
+// Elastic IP reference
+type ElasticIPRef struct {
+	// Elastic IP ID
+	ID UUID `json:"id,omitempty"`
 }
 
 type EnumComponentRoute string
@@ -2288,6 +2308,12 @@ type GetModelResponse struct {
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
 }
 
+// GPU usage for an organization
+type GetOrganizationUsageResponse struct {
+	// Total GPU count
+	Gpu int64 `json:"gpu,omitempty" validate:"omitempty,gte=0"`
+}
+
 // IAM API Key
 type IAMAPIKey struct {
 	// IAM API Key
@@ -2327,6 +2353,8 @@ type IAMPolicy struct {
 
 // IAM Role
 type IAMRole struct {
+	// Policy
+	AssumeRolePolicy *IAMPolicy `json:"assume-role-policy,omitempty"`
 	// IAM Role description
 	Description string `json:"description,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// IAM Role mutability
@@ -2334,6 +2362,8 @@ type IAMRole struct {
 	// IAM Role ID
 	ID     UUID   `json:"id,omitempty"`
 	Labels Labels `json:"labels,omitempty"`
+	// Maximum TTL requester is allowed to ask for when assuming a role
+	MaxSessionTtl int64 `json:"max-session-ttl,omitempty" validate:"omitempty,gt=0"`
 	// IAM Role name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// IAM Role permissions
@@ -2513,6 +2543,12 @@ type InstancePool struct {
 	UserData string `json:"user-data,omitempty" validate:"omitempty,gte=1"`
 }
 
+// Target Instance
+type InstanceRef struct {
+	// Instance ID
+	ID UUID `json:"id,omitempty"`
+}
+
 type InstanceState string
 
 const (
@@ -2526,12 +2562,6 @@ const (
 	InstanceStateError      InstanceState = "error"
 	InstanceStateDestroyed  InstanceState = "destroyed"
 )
-
-// Target Instance
-type InstanceTarget struct {
-	// Instance ID
-	ID UUID `json:"id,omitempty"`
-}
 
 type InstanceTypeFamily string
 
@@ -2585,6 +2615,12 @@ type InstanceType struct {
 	Size InstanceTypeSize `json:"size,omitempty"`
 	// Instance Type available zones
 	Zones []ZoneName `json:"zones,omitempty"`
+}
+
+// Instance type reference
+type InstanceTypeRef struct {
+	// Instance type ID
+	ID UUID `json:"id,omitempty"`
 }
 
 type JSONSchemaGrafanaAlertingErrorORTimeout string
@@ -4100,6 +4136,12 @@ type PrivateNetworkOptions struct {
 	Routers []net.IP `json:"routers,omitempty"`
 }
 
+// Private network reference
+type PrivateNetworkRef struct {
+	// Private network ID
+	ID UUID `json:"id,omitempty"`
+}
+
 type PublicIPAssignment string
 
 const (
@@ -4153,6 +4195,12 @@ type SecurityGroup struct {
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Security Group rules
 	Rules []SecurityGroupRule `json:"rules,omitempty"`
+}
+
+// Security group reference
+type SecurityGroupRef struct {
+	// Security group ID
+	ID UUID `json:"id,omitempty"`
 }
 
 type SecurityGroupResourceVisibility string
@@ -4328,6 +4376,12 @@ type SKSClusterDeprecatedResource struct {
 
 type SKSClusterLabels map[string]string
 
+// SKS cluster reference
+type SKSClusterRef struct {
+	// SKS cluster ID
+	ID UUID `json:"id,omitempty"`
+}
+
 // Kubeconfig request for a SKS cluster
 type SKSKubeconfigRequest struct {
 	// List of roles. The certificate present in the Kubeconfig will have these roles set in the Org field.
@@ -4500,6 +4554,12 @@ type SSHKey struct {
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 }
 
+// SSH key reference
+type SSHKeyRef struct {
+	// SSH key name
+	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
+}
+
 type TemplateBootMode string
 
 const (
@@ -4554,6 +4614,12 @@ type Template struct {
 	Zones []ZoneName `json:"zones,omitempty"`
 }
 
+// Template reference
+type TemplateRef struct {
+	// Template ID
+	ID UUID `json:"id,omitempty"`
+}
+
 // User
 type User struct {
 	// User Email
@@ -4591,3 +4657,7 @@ const (
 	ZoneNameATVie2 ZoneName = "at-vie-2"
 	ZoneNameHrZag1 ZoneName = "hr-zag-1"
 )
+
+type InstanceTarget = InstanceRef
+type BlockStorageSnapshotTarget = BlockStorageSnapshotRef
+type BlockStorageVolumeTarget = BlockStorageVolumeRef

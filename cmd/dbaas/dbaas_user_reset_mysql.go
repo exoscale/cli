@@ -22,7 +22,7 @@ func (c *dbaasUserResetCmd) resetMysql(cmd *cobra.Command, _ []string) error {
 	req := v3.ResetDBAASMysqlUserPasswordRequest{}
 
 	if c.Password != "" {
-		req.Password = v3.DBAASUserPassword(c.Password)
+		req.Password = v3.DBAASMysqlUserPassword(c.Password)
 	}
 	if c.MysqlAuthenticationMethod != "" {
 		req.Authentication = v3.EnumMysqlAuthenticationPlugin(c.MysqlAuthenticationMethod)

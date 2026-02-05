@@ -11,10 +11,11 @@
 - instance snapshot show: now displays the Application Consistent Snapshot Enabled field
 - instance-template register: added support for the new --application-consistent-snapshot-enabled flag
 - instance-template show: now displays the Application Consistent Snapshot Enabled field
-
+- dedicated-inference/deployment logs: support for --tail
 
 ### Bug fixes
 - fix(instance): create instance with an IPv6 #788
+- dedicated-inference/deployment logs: works again even without the --tail argument
 
 ### Breaking changes
 - instance create: merge --ipv6 and --private-instance into --public-ip #788
