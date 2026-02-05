@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"github.com/dustin/go-humanize"
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -14,7 +15,7 @@ type ModelShowOutput struct {
 	ID        v3.UUID                   `json:"id"`
 	Name      string                    `json:"name"`
 	Status    v3.GetModelResponseStatus `json:"status"`
-	ModelSize *int64                    `json:"model_size"`
+	ModelSize string                    `json:"model_size" outputLabel:"Size"`
 	CreatedAt string                    `json:"created_at"`
 	UpdatedAt string                    `json:"updated_at"`
 }
@@ -63,16 +64,15 @@ func (c *ModelShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	var sizePtr *int64
+	var size string
 	if resp.ModelSize != 0 {
-		size := resp.ModelSize
-		sizePtr = &size
+		size = humanize.IBytes(uint64(resp.ModelSize))
 	}
 	out := &ModelShowOutput{
 		ID:        resp.ID,
 		Name:      resp.Name,
 		Status:    resp.Status,
-		ModelSize: sizePtr,
+		ModelSize: size,
 		CreatedAt: resp.CreatedAT.Format(time.RFC3339),
 		UpdatedAt: resp.UpdatedAT.Format(time.RFC3339),
 	}

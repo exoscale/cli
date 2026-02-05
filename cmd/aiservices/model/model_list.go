@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/dustin/go-humanize"
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -17,7 +18,7 @@ type ModelListItemOutput struct {
 	Name      string                           `json:"name"`
 	Zone      v3.ZoneName                      `json:"zone"`
 	Status    v3.ListModelsResponseEntryStatus `json:"status"`
-	ModelSize *int64                           `json:"model_size"`
+	ModelSize string                           `json:"model_size" outputLabel:"Size"`
 }
 
 type ModelListOutput []ModelListItemOutput
@@ -63,17 +64,16 @@ func (c *ModelListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		for _, m := range resp.Models {
-			var sizePtr *int64
+			var size string
 			if m.ModelSize != 0 {
-				size := m.ModelSize
-				sizePtr = &size
+				size = humanize.IBytes(uint64(m.ModelSize))
 			}
 			out = append(out, ModelListItemOutput{
 				ID:        m.ID,
 				Name:      m.Name,
 				Zone:      zone.Name,
 				Status:    m.Status,
-				ModelSize: sizePtr,
+				ModelSize: size,
 			})
 		}
 
