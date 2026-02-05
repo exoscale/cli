@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.92.0
 
 ### Features
  
