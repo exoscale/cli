@@ -7,6 +7,7 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
@@ -14,6 +15,7 @@ import (
 type DeploymentListItemOutput struct {
 	ID        v3.UUID                               `json:"id"`
 	Name      string                                `json:"name"`
+	Zone      v3.ZoneName                           `json:"zone"`
 	Status    v3.ListDeploymentsResponseEntryStatus `json:"status"`
 	GPUType   string                                `json:"gpu_type"`
 	GPUCount  int64                                 `json:"gpu_count"`
@@ -44,39 +46,46 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&DeploymentListOutput{}), ", "))
 }
 func (c *DeploymentListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *DeploymentListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
-	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client := globalstate.EgoscaleV3Client
+
+	zones, err := utils.AllZonesV3(ctx, client, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.ListDeployments(ctx)
-	if err != nil {
-		return err
-	}
-
-	out := make(DeploymentListOutput, 0, len(resp.Deployments))
-	for _, d := range resp.Deployments {
-		var modelName string
-		if d.Model != nil {
-			modelName = d.Model.Name
+	out := make(DeploymentListOutput, 0)
+	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
+		c := client.WithEndpoint(zone.APIEndpoint)
+		resp, err := c.ListDeployments(ctx)
+		if err != nil {
+			return err
 		}
-		out = append(out, DeploymentListItemOutput{
-			ID:        d.ID,
-			Name:      d.Name,
-			Status:    d.Status,
-			GPUType:   d.GpuType,
-			GPUCount:  d.GpuCount,
-			Replicas:  d.Replicas,
-			ModelName: modelName,
-		})
-	}
 
-	return c.OutputFunc(&out, nil)
+		for _, d := range resp.Deployments {
+			var modelName string
+			if d.Model != nil {
+				modelName = d.Model.Name
+			}
+			out = append(out, DeploymentListItemOutput{
+				ID:        d.ID,
+				Name:      d.Name,
+				Zone:      zone.Name,
+				Status:    d.Status,
+				GPUType:   d.GpuType,
+				GPUCount:  d.GpuCount,
+				Replicas:  d.Replicas,
+				ModelName: modelName,
+			})
+		}
+
+		return nil
+	})
+
+	return c.OutputFunc(&out, err)
 }
 
 func init() {

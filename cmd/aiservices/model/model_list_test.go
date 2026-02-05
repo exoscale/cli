@@ -82,6 +82,21 @@ func TestModelList(t *testing.T) {
 		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", Status: v3.ListModelsResponseEntryStatusCreating, ModelSize: 1234, CreatedAT: now, UpdatedAT: now},
 	}
 	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	cmd.OutputFunc = func(out output.Outputter, err error) error {
+		if err != nil {
+			return err
+		}
+		o := out.(*ModelListOutput)
+		if len(*o) != 2 {
+			t.Fatalf("expected 2 models, got %d", len(*o))
+		}
+		for _, m := range *o {
+			if m.Zone != "test-zone" {
+				t.Errorf("expected zone %q, got %q", "test-zone", m.Zone)
+			}
+		}
+		return nil
+	}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("model list: %v", err)
 	}
