@@ -45,7 +45,7 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 	}
 
 	if c.MysqlAdminPassword != "" {
-		databaseService.AdminPassword = v3.DBAASMysqlUserPassword(c.MysqlAdminPassword)
+		databaseService.AdminPassword = c.MysqlAdminPassword
 	}
 
 	if c.MysqlAdminUsername != "" {

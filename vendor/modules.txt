@@ -154,7 +154,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.1
 ## explicit; go 1.16
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale/v3 v3.1.34-0.20260204205607-841b140c4adc
+# github.com/exoscale/egoscale/v3 v3.1.34-0.20260206093319-99a05e32e6d3
 ## explicit; go 1.23.8
 github.com/exoscale/egoscale/v3
 github.com/exoscale/egoscale/v3/credentials
