@@ -17,7 +17,7 @@ type ModelCreateCmd struct {
 
 	_ bool `cli-cmd:"create"`
 
-	Name             string      `cli-arg:"#" cli-usage:"NAME (e.g. openai/gpt-oss-120b)"`
+	Name             string      `cli-arg:"#" cli-usage:"NAME (e.g. swiss-ai/Apertus-8B-Instruct-2509)"`
 	HuggingfaceToken string      `cli-flag:"huggingface-token" cli-usage:"Huggingface token if required by the model"`
 	Zone             v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
