@@ -111,9 +111,16 @@ func TestModelShow(t *testing.T) {
 	ts := newModelTestServer(t)
 	defer modelSetup(t, ts)()
 	now := time.Now()
-	ts.models = []v3.ListModelsResponseEntry{{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", Status: v3.ListModelsResponseEntryStatusReady, ModelSize: 123, CreatedAT: now, UpdatedAT: now}}
+	ts.models = []v3.ListModelsResponseEntry{{
+		ID:        v3.UUID("11111111-1111-1111-1111-111111111111"),
+		Name:      "m1",
+		Status:    v3.ListModelsResponseEntryStatusReady,
+		ModelSize: 1024 * 1024 * 1024 * 2,
+		CreatedAT: now,
+		UpdatedAT: now,
+	}}
 
-	cmd := &ModelShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), ID: "11111111-1111-1111-1111-111111111111"}
+	cmd := &ModelShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Model: "11111111-1111-1111-1111-111111111111"}
 	var got ModelShowOutput
 	cmd.OutputFunc = func(o output.Outputter, err error) error {
 		if err != nil {
@@ -127,5 +134,24 @@ func TestModelShow(t *testing.T) {
 	}
 	if string(got.ID) != "11111111-1111-1111-1111-111111111111" || got.Name != "m1" || got.Status != v3.GetModelResponseStatusReady {
 		t.Fatalf("unexpected model show output: %+v", got)
+	}
+	if got.ModelSize != "2.0 GiB" {
+		t.Errorf("expected model size 2.0 GiB, got %q", got.ModelSize)
+	}
+
+	// Test show by name
+	cmd = &ModelShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Model: "m1"}
+	cmd.OutputFunc = func(o output.Outputter, err error) error {
+		if err != nil {
+			return err
+		}
+		got = *(o.(*ModelShowOutput))
+		return nil
+	}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("model show by name: %v", err)
+	}
+	if string(got.ID) != "11111111-1111-1111-1111-111111111111" || got.Name != "m1" {
+		t.Fatalf("unexpected model show output (by name): %+v", got)
 	}
 }

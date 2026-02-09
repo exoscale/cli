@@ -79,9 +79,30 @@ func TestModelList(t *testing.T) {
 	now := time.Now()
 	ts.models = []v3.ListModelsResponseEntry{
 		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", Status: v3.ListModelsResponseEntryStatusReady, ModelSize: 0, CreatedAT: now, UpdatedAT: now},
-		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", Status: v3.ListModelsResponseEntryStatusCreating, ModelSize: 1234, CreatedAT: now, UpdatedAT: now},
+		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", Status: v3.ListModelsResponseEntryStatusCreating, ModelSize: 1024 * 1024 * 1024, CreatedAT: now, UpdatedAT: now},
 	}
 	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	cmd.OutputFunc = func(out output.Outputter, err error) error {
+		if err != nil {
+			return err
+		}
+		o := out.(*ModelListOutput)
+		if len(*o) != 2 {
+			t.Fatalf("expected 2 models, got %d", len(*o))
+		}
+		for _, m := range *o {
+			if m.Zone != "test-zone" {
+				t.Errorf("expected zone %q, got %q", "test-zone", m.Zone)
+			}
+			if m.Name == "m1" && m.ModelSize != "" {
+				t.Errorf("expected m1 size empty, got %q", m.ModelSize)
+			}
+			if m.Name == "m2" && m.ModelSize != "1.0 GiB" {
+				t.Errorf("expected m2 size 1.0 GiB, got %q", m.ModelSize)
+			}
+		}
+		return nil
+	}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("model list: %v", err)
 	}

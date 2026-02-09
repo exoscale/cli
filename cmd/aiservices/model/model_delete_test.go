@@ -1,66 +1,42 @@
 package model
 
 import (
-	"context"
-	"net/http"
-	"net/http/httptest"
-	"regexp"
 	"testing"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/exoscale/egoscale/v3/credentials"
 )
 
-func newModelDeleteServer(t *testing.T) *httptest.Server {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/ai/model/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodDelete {
-			writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-model-delete"), State: v3.OperationStateSuccess})
-			return
-		}
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	})
-	mux.HandleFunc("/operation/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-model-delete"), State: v3.OperationStateSuccess})
-	})
-	return httptest.NewServer(mux)
-}
+func TestModelDelete(t *testing.T) {
+	ts := newModelTestServer(t)
+	defer modelSetup(t, ts)()
+	ts.models = []v3.ListModelsResponseEntry{
+		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1"},
+		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2"},
+	}
 
-func TestModelDeleteInvalidUUIDAndSuccess(t *testing.T) {
-	srv := newModelDeleteServer(t)
-	defer srv.Close()
-	exocmd.GContext = context.Background()
-	globalstate.Quiet = true
-	creds := credentials.NewStaticCredentials("key", "secret")
-	client, err := v3.NewClient(creds)
-	if err != nil {
-		t.Fatalf("new client: %v", err)
+	// Not found without force
+	cmd := &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Models: []string{"not-found"}, Force: false}
+	if err := cmd.CmdRun(nil, nil); err == nil {
+		t.Fatal("expected error for not found model without force")
 	}
-	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(srv.URL))
-
-	// invalid UUID without force
-	cmd := &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), IDs: []string{"not-a-uuid"}, Force: false}
-	if err := cmd.CmdRun(nil, nil); err == nil || !regexp.MustCompile(`invalid model ID`).MatchString(err.Error()) {
-		t.Fatalf("expected invalid uuid error, got %v", err)
-	}
-	// invalid UUID with force (should skip with warning, no error)
-	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), IDs: []string{"not-a-uuid"}, Force: true}
+	// Not found with force (should skip with warning, no error)
+	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Models: []string{"not-found"}, Force: true}
 	if err := cmd.CmdRun(nil, nil); err != nil {
-		t.Fatalf("expected no error with force flag, got %v", err)
+		t.Fatalf("expected no error with force flag for not found model, got %v", err)
 	}
-	// success
-	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), IDs: []string{"33333333-3333-3333-3333-333333333333"}, Force: true}
+	// Success by ID
+	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Models: []string{"11111111-1111-1111-1111-111111111111"}, Force: true}
 	if err := cmd.CmdRun(nil, nil); err != nil {
-		t.Fatalf("model delete: %v", err)
+		t.Fatalf("model delete by ID: %v", err)
+	}
+	// Success by Name
+	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Models: []string{"m2"}, Force: true}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("model delete by name: %v", err)
 	}
 	// multiple models
-	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), IDs: []string{"33333333-3333-3333-3333-333333333333", "44444444-4444-4444-4444-444444444444"}, Force: true}
+	cmd = &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Models: []string{"m1", "22222222-2222-2222-2222-222222222222"}, Force: true}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("model delete multiple: %v", err)
 	}

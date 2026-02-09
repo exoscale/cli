@@ -10,6 +10,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/exoscale/egoscale/v3/credentials"
 )
@@ -68,6 +69,21 @@ func TestDeploymentList(t *testing.T) {
 		{ID: v3.UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), Name: "d2", Status: v3.ListDeploymentsResponseEntryStatusCreating, GpuType: "gpua5000", GpuCount: 2, Replicas: 1, ServiceLevel: "pro", DeploymentURL: "", Model: nil, CreatedAT: now, UpdatedAT: now},
 	}
 	cmd := &DeploymentListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	cmd.OutputFunc = func(out output.Outputter, err error) error {
+		if err != nil {
+			return err
+		}
+		o := out.(*DeploymentListOutput)
+		if len(*o) != 2 {
+			t.Fatalf("expected 2 deployments, got %d", len(*o))
+		}
+		for _, d := range *o {
+			if d.Zone != "test-zone" {
+				t.Errorf("expected zone %q, got %q", "test-zone", d.Zone)
+			}
+		}
+		return nil
+	}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("deployment list: %v", err)
 	}

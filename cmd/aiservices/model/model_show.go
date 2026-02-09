@@ -1,9 +1,9 @@
 package model
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -15,7 +15,7 @@ type ModelShowOutput struct {
 	ID        v3.UUID                   `json:"id"`
 	Name      string                    `json:"name"`
 	Status    v3.GetModelResponseStatus `json:"status"`
-	ModelSize *int64                    `json:"model_size"`
+	ModelSize string                    `json:"model_size" outputLabel:"Size"`
 	CreatedAt string                    `json:"created_at"`
 	UpdatedAt string                    `json:"updated_at"`
 }
@@ -29,14 +29,14 @@ type ModelShowCmd struct {
 
 	_ bool `cli-cmd:"show"`
 
-	ID   string      `cli-arg:"#" cli-usage:"MODEL-ID (UUID)"`
-	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
+	Model string      `cli-arg:"#" cli-usage:"ID or NAME"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *ModelShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 func (c *ModelShowCmd) CmdShort() string     { return "Show AI model" }
 func (c *ModelShowCmd) CmdLong() string {
-	return "This command shows details of an AI model by its ID."
+	return "This command shows details of an AI model by ID or name."
 }
 func (c *ModelShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
@@ -49,24 +49,30 @@ func (c *ModelShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	id, err := v3.ParseUUID(c.ID)
+	// Resolve model ID using the SDK helper
+	list, err := client.ListModels(ctx)
 	if err != nil {
-		return fmt.Errorf("invalid model ID: %w", err)
+		return err
 	}
+	entry, err := list.FindListModelsResponseEntry(c.Model)
+	if err != nil {
+		return err
+	}
+	id := entry.ID
+
 	resp, err := client.GetModel(ctx, id)
 	if err != nil {
 		return err
 	}
-	var sizePtr *int64
+	var size string
 	if resp.ModelSize != 0 {
-		size := resp.ModelSize
-		sizePtr = &size
+		size = humanize.IBytes(uint64(resp.ModelSize))
 	}
 	out := &ModelShowOutput{
 		ID:        resp.ID,
 		Name:      resp.Name,
 		Status:    resp.Status,
-		ModelSize: sizePtr,
+		ModelSize: size,
 		CreatedAt: resp.CreatedAT.Format(time.RFC3339),
 		UpdatedAt: resp.UpdatedAT.Format(time.RFC3339),
 	}

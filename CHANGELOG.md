@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- `exo ai model list` and `exo ai deployment list` don't list in all zones like other commands do
+- `exo ai model download` is an alias for `exo ai model create`
+- `exo ai model show` and `exo ai model delete` behave like deployments, and be able to search models by name
+- `exo ai model show` and `exo ai model list` show model size in MiB/GiB
+
+
 ## 1.92.0
 
 ### Features
