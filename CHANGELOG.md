@@ -26,6 +26,7 @@
 ### Bug fixes
 - fix(instance): create instance with an IPv6 #788
 - dedicated-inference/deployment logs: works again even without the --tail argument
+- fix cli doc generation #793
 
 ## Features
 - feat(cli scaffold): allow deprecated flags #789 
