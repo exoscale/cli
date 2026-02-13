@@ -177,12 +177,14 @@ func TestDeploymentCreateWithInferenceEngineVersion(t *testing.T) {
 }
 
 func TestDeploymentCreateInferenceEngineHelp(t *testing.T) {
+	var capturedVersion string
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ai/help/inference-engine-parameters", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
+		capturedVersion = r.URL.Query().Get("version")
 		resp := v3.GetInferenceEngineHelpResponse{
 			Parameters: []v3.InferenceEngineParameterEntry{
 				{
@@ -232,5 +234,22 @@ func TestDeploymentCreateInferenceEngineHelp(t *testing.T) {
 	}
 	if err := c.CmdRun(nil, nil); err != nil {
 		t.Fatalf("deployment create help with name: %v", err)
+	}
+
+	if capturedVersion != "" {
+		t.Errorf("expected empty version, got %q", capturedVersion)
+	}
+
+	c = &DeploymentCreateCmd{
+		CliCommandSettings:     exocmd.DefaultCLICmdSettings(),
+		InferenceEngineHelp:    true,
+		InferenceEngineVersion: "0.15.1",
+	}
+	if err := c.CmdRun(nil, nil); err != nil {
+		t.Fatalf("deployment create help with version: %v", err)
+	}
+
+	if capturedVersion != "0.15.1" {
+		t.Errorf("expected version 0.15.1, got %q", capturedVersion)
 	}
 }
