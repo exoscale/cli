@@ -38,7 +38,7 @@ func newDepShowServer(t *testing.T) *depShowServer {
 		id := path.Base(r.URL.Path)
 		for _, d := range ts.deployments {
 			if string(d.ID) == id {
-				resp := v3.GetDeploymentResponse{ID: d.ID, Name: d.Name, Status: v3.GetDeploymentResponseStatus(d.Status), GpuType: d.GpuType, GpuCount: d.GpuCount, Replicas: d.Replicas, ServiceLevel: d.ServiceLevel, DeploymentURL: d.DeploymentURL, Model: d.Model, CreatedAT: d.CreatedAT, UpdatedAT: d.UpdatedAT}
+				resp := v3.GetDeploymentResponse{ID: d.ID, Name: d.Name, State: v3.GetDeploymentResponseState(d.State), GpuType: d.GpuType, GpuCount: d.GpuCount, Replicas: d.Replicas, ServiceLevel: d.ServiceLevel, DeploymentURL: d.DeploymentURL, Model: d.Model, CreatedAT: d.CreatedAT, UpdatedAT: d.UpdatedAT}
 				writeJSON(t, w, http.StatusOK, resp)
 				return
 			}
@@ -62,7 +62,7 @@ func TestDeploymentShowByIDAndName(t *testing.T) {
 	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(ts.server.URL))
 
 	now := time.Now()
-	ts.deployments = []v3.ListDeploymentsResponseEntry{{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", Status: v3.ListDeploymentsResponseEntryStatusReady, GpuType: "gpua5000", GpuCount: 1, Replicas: 1, ServiceLevel: "pro", DeploymentURL: "https://u", Model: &v3.ModelRef{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1"}, CreatedAT: now, UpdatedAT: now}}
+	ts.deployments = []v3.ListDeploymentsResponseEntry{{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", State: v3.ListDeploymentsResponseEntryStateReady, GpuType: "gpua5000", GpuCount: 1, Replicas: 1, ServiceLevel: "pro", DeploymentURL: "https://u", Model: &v3.ModelRef{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1"}, CreatedAT: now, UpdatedAT: now}}
 
 	// by ID
 	cmd := &DeploymentShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}
@@ -77,7 +77,7 @@ func TestDeploymentShowByIDAndName(t *testing.T) {
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("deployment show by id: %v", err)
 	}
-	if got.Name != "alpha" || got.GPUType != "gpua5000" || got.Status != v3.GetDeploymentResponseStatusReady {
+	if got.Name != "alpha" || got.GPUType != "gpua5000" || got.State != v3.GetDeploymentResponseStateReady {
 		t.Fatalf("unexpected show output: %+v", got)
 	}
 	// by name

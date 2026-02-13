@@ -40,7 +40,7 @@ func newModelListTestServer(t *testing.T) *modelListTestServer {
 		if r.Method == http.MethodGet {
 			for _, m := range ts.models {
 				if string(m.ID) == id {
-					writeJSON(t, w, http.StatusOK, v3.GetModelResponse{ID: m.ID, Name: m.Name, Status: v3.GetModelResponseStatus(m.Status), ModelSize: m.ModelSize, CreatedAT: m.CreatedAT, UpdatedAT: m.UpdatedAT})
+					writeJSON(t, w, http.StatusOK, v3.GetModelResponse{ID: m.ID, Name: m.Name, State: v3.GetModelResponseState(m.State), ModelSize: m.ModelSize, CreatedAT: m.CreatedAT, UpdatedAT: m.UpdatedAT})
 					return
 				}
 			}
@@ -78,8 +78,8 @@ func TestModelList(t *testing.T) {
 	defer setupModelList(t, ts)()
 	now := time.Now()
 	ts.models = []v3.ListModelsResponseEntry{
-		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", Status: v3.ListModelsResponseEntryStatusReady, ModelSize: 0, CreatedAT: now, UpdatedAT: now},
-		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", Status: v3.ListModelsResponseEntryStatusCreating, ModelSize: 1024 * 1024 * 1024, CreatedAT: now, UpdatedAT: now},
+		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", State: v3.ListModelsResponseEntryStateReady, ModelSize: 0, CreatedAT: now, UpdatedAT: now},
+		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", State: v3.ListModelsResponseEntryStateCreating, ModelSize: 1024 * 1024 * 1024, CreatedAT: now, UpdatedAT: now},
 	}
 	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
 	cmd.OutputFunc = func(out output.Outputter, err error) error {
@@ -125,8 +125,8 @@ func TestModelListOutput_ToJSON(t *testing.T) {
 	defer setupModelList(t, ts)()
 	now := time.Now()
 	ts.models = []v3.ListModelsResponseEntry{
-		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", Status: v3.ListModelsResponseEntryStatusReady, ModelSize: 1000, CreatedAT: now, UpdatedAT: now},
-		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", Status: v3.ListModelsResponseEntryStatusCreating, ModelSize: 0, CreatedAT: now, UpdatedAT: now},
+		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", State: v3.ListModelsResponseEntryStateReady, ModelSize: 1000, CreatedAT: now, UpdatedAT: now},
+		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", State: v3.ListModelsResponseEntryStateCreating, ModelSize: 0, CreatedAT: now, UpdatedAT: now},
 	}
 	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
 	cmd.OutputFunc = func(out output.Outputter, err error) error {

@@ -83,13 +83,34 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 	// So while this is fixed, we populate those fields
 	// with the existing values
 	updateReq := v3.UpdateInstancePoolRequest{
-		AntiAffinityGroups: instancePool.AntiAffinityGroups,
-		ElasticIPS:         instancePool.ElasticIPS,
-		PrivateNetworks:    instancePool.PrivateNetworks,
-		SecurityGroups:     instancePool.SecurityGroups,
-		DeployTarget:       instancePool.DeployTarget,
-		SSHKey:             instancePool.SSHKey,
-		SSHKeys:            instancePool.SSHKeys,
+		AntiAffinityGroups: make([]v3.AntiAffinityGroup, len(instancePool.AntiAffinityGroups)),
+		ElasticIPS:         make([]v3.ElasticIP, len(instancePool.ElasticIPS)),
+		PrivateNetworks:    make([]v3.PrivateNetwork, len(instancePool.PrivateNetworks)),
+		SecurityGroups:     make([]v3.SecurityGroup, len(instancePool.SecurityGroups)),
+		SSHKeys:            make([]v3.SSHKey, len(instancePool.SSHKeys)),
+	}
+
+	for i, v := range instancePool.AntiAffinityGroups {
+		updateReq.AntiAffinityGroups[i] = v3.AntiAffinityGroup{ID: v.ID}
+	}
+	for i, v := range instancePool.ElasticIPS {
+		updateReq.ElasticIPS[i] = v3.ElasticIP{ID: v.ID}
+	}
+	for i, v := range instancePool.PrivateNetworks {
+		updateReq.PrivateNetworks[i] = v3.PrivateNetwork{ID: v.ID}
+	}
+	for i, v := range instancePool.SecurityGroups {
+		updateReq.SecurityGroups[i] = v3.SecurityGroup{ID: v.ID}
+	}
+	for i, v := range instancePool.SSHKeys {
+		updateReq.SSHKeys[i] = v3.SSHKey{Name: v.Name}
+	}
+
+	if instancePool.DeployTarget != nil {
+		updateReq.DeployTarget = &v3.DeployTarget{ID: instancePool.DeployTarget.ID}
+	}
+	if instancePool.SSHKey != nil {
+		updateReq.SSHKey = &v3.SSHKey{Name: instancePool.SSHKey.Name}
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AntiAffinityGroups)) {

@@ -14,11 +14,11 @@ import (
 )
 
 type ModelListItemOutput struct {
-	ID        v3.UUID                          `json:"id"`
-	Name      string                           `json:"name"`
-	Zone      v3.ZoneName                      `json:"zone"`
-	Status    v3.ListModelsResponseEntryStatus `json:"status"`
-	ModelSize string                           `json:"model_size" outputLabel:"Size"`
+	ID        v3.UUID                         `json:"id"`
+	Name      string                          `json:"name"`
+	Zone      v3.ZoneName                     `json:"zone"`
+	State     v3.ListModelsResponseEntryState `json:"state" outputLabel:"Status"`
+	ModelSize string                          `json:"model_size" outputLabel:"Size"`
 }
 
 type ModelListOutput []ModelListItemOutput
@@ -72,7 +72,7 @@ func (c *ModelListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				ID:        m.ID,
 				Name:      m.Name,
 				Zone:      zone.Name,
-				Status:    m.Status,
+				State:     m.State,
 				ModelSize: size,
 			})
 		}

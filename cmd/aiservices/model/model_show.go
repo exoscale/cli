@@ -12,12 +12,12 @@ import (
 )
 
 type ModelShowOutput struct {
-	ID        v3.UUID                   `json:"id"`
-	Name      string                    `json:"name"`
-	Status    v3.GetModelResponseStatus `json:"status"`
-	ModelSize string                    `json:"model_size" outputLabel:"Size"`
-	CreatedAt string                    `json:"created_at"`
-	UpdatedAt string                    `json:"updated_at"`
+	ID        v3.UUID                  `json:"id"`
+	Name      string                   `json:"name"`
+	State     v3.GetModelResponseState `json:"state" outputLabel:"Status"`
+	ModelSize string                   `json:"model_size" outputLabel:"Size"`
+	CreatedAt string                   `json:"created_at"`
+	UpdatedAt string                   `json:"updated_at"`
 }
 
 func (o *ModelShowOutput) ToJSON()  { output.JSON(o) }
@@ -71,7 +71,7 @@ func (c *ModelShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	out := &ModelShowOutput{
 		ID:        resp.ID,
 		Name:      resp.Name,
-		Status:    resp.Status,
+		State:     resp.State,
 		ModelSize: size,
 		CreatedAt: resp.CreatedAT.Format(time.RFC3339),
 		UpdatedAt: resp.UpdatedAT.Format(time.RFC3339),

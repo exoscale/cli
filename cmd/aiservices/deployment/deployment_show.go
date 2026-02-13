@@ -11,19 +11,19 @@ import (
 )
 
 type DeploymentShowOutput struct {
-	ID            v3.UUID                        `json:"id"`
-	Name          string                         `json:"name"`
-	Status        v3.GetDeploymentResponseStatus `json:"status"`
-	StatusDetails string                         `json:"status_details"`
-	GPUType       string                         `json:"gpu_type"`
-	GPUCount      int64                          `json:"gpu_count"`
-	Replicas      int64                          `json:"replicas"`
-	ServiceLevel  string                         `json:"service_level"`
-	DeploymentURL string                         `json:"deployment_url"`
-	ModelID       v3.UUID                        `json:"model_id"`
-	ModelName     string                         `json:"model_name"`
-	CreatedAt     string                         `json:"created_at"`
-	UpdatedAt     string                         `json:"updated_at"`
+	ID            v3.UUID                       `json:"id"`
+	Name          string                        `json:"name"`
+	State         v3.GetDeploymentResponseState `json:"state" outputLabel:"Status"`
+	StateDetails  string                        `json:"state_details" outputLabel:"Status Details"`
+	GPUType       string                        `json:"gpu_type"`
+	GPUCount      int64                         `json:"gpu_count"`
+	Replicas      int64                         `json:"replicas"`
+	ServiceLevel  string                        `json:"service_level"`
+	DeploymentURL string                        `json:"deployment_url"`
+	ModelID       v3.UUID                       `json:"model_id"`
+	ModelName     string                        `json:"model_name"`
+	CreatedAt     string                        `json:"created_at"`
+	UpdatedAt     string                        `json:"updated_at"`
 }
 
 func (o *DeploymentShowOutput) ToJSON()  { output.JSON(o) }
@@ -81,8 +81,8 @@ func (c *DeploymentShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	out := &DeploymentShowOutput{
 		ID:            resp.ID,
 		Name:          resp.Name,
-		Status:        resp.Status,
-		StatusDetails: resp.StatusDetails,
+		State:         resp.State,
+		StateDetails:  resp.StateDetails,
 		GPUType:       resp.GpuType,
 		GPUCount:      resp.GpuCount,
 		Replicas:      resp.Replicas,
