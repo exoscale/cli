@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## 1.93.0
+
+### Features
+
+- new command `exo ai deployment update`
+- ability to set inference engine version on creation
+- when asking for `exo ai deployment create --inference-engine-parameter-help`, if you also define the inference engine version, it will show the parameters for that specific version
 
 ### Improvements
 
