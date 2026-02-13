@@ -124,6 +124,58 @@ func TestDeploymentCreateWithInferenceEngineParameters(t *testing.T) {
 	}
 }
 
+func TestDeploymentCreateWithInferenceEngineVersion(t *testing.T) {
+	var capturedRequest v3.CreateDeploymentRequest
+	mux := http.NewServeMux()
+	mux.HandleFunc("/ai/deployment", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		body, _ := io.ReadAll(r.Body)
+		r.Body.Close()
+		if err := json.Unmarshal(body, &capturedRequest); err != nil {
+			t.Fatalf("failed to unmarshal request: %v", err)
+		}
+		writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-deploy-create"), State: v3.OperationStateSuccess})
+	})
+	mux.HandleFunc("/operation/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-deploy-create"), State: v3.OperationStateSuccess})
+	})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	exocmd.GContext = context.Background()
+	globalstate.Quiet = true
+	creds := credentials.NewStaticCredentials("key", "secret")
+	client, err := v3.NewClient(creds)
+	if err != nil {
+		t.Fatalf("new client: %v", err)
+	}
+	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(srv.URL))
+
+	c := &DeploymentCreateCmd{
+		CliCommandSettings:     exocmd.DefaultCLICmdSettings(),
+		Name:                   "dep-with-version",
+		GPUType:                "gpua5000",
+		GPUCount:               1,
+		Replicas:               1,
+		ModelName:              "m1",
+		InferenceEngineVersion: "0.15.1",
+	}
+	if err := c.CmdRun(nil, nil); err != nil {
+		t.Fatalf("deployment create with version: %v", err)
+	}
+
+	if string(capturedRequest.InferenceEngineVersion) != "0.15.1" {
+		t.Errorf("expected version %q, got %q", "0.15.1", capturedRequest.InferenceEngineVersion)
+	}
+}
+
 func TestDeploymentCreateInferenceEngineHelp(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ai/help/inference-engine-parameters", func(w http.ResponseWriter, r *http.Request) {

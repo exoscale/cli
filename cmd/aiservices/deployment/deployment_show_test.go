@@ -38,7 +38,22 @@ func newDepShowServer(t *testing.T) *depShowServer {
 		id := path.Base(r.URL.Path)
 		for _, d := range ts.deployments {
 			if string(d.ID) == id {
-				resp := v3.GetDeploymentResponse{ID: d.ID, Name: d.Name, State: v3.GetDeploymentResponseState(d.State), GpuType: d.GpuType, GpuCount: d.GpuCount, Replicas: d.Replicas, ServiceLevel: d.ServiceLevel, DeploymentURL: d.DeploymentURL, Model: d.Model, CreatedAT: d.CreatedAT, UpdatedAT: d.UpdatedAT}
+				resp := v3.GetDeploymentResponse{
+					ID:           d.ID,
+					Name:         d.Name,
+					State:        v3.GetDeploymentResponseState(d.State),
+					GpuType:      d.GpuType,
+					GpuCount:     d.GpuCount,
+					Replicas:     d.Replicas,
+					ServiceLevel: d.ServiceLevel,
+					// InferenceEngineVersion is not in ListDeploymentsResponseEntry so we hardcode it for show tests if needed,
+					// or just leave it empty. GetDeploymentResponse DOES have it.
+					InferenceEngineVersion: "0.15.1",
+					DeploymentURL:          d.DeploymentURL,
+					Model:                  d.Model,
+					CreatedAT:              d.CreatedAT,
+					UpdatedAT:              d.UpdatedAT,
+				}
 				writeJSON(t, w, http.StatusOK, resp)
 				return
 			}
@@ -79,6 +94,9 @@ func TestDeploymentShowByIDAndName(t *testing.T) {
 	}
 	if got.Name != "alpha" || got.GPUType != "gpua5000" || got.State != v3.GetDeploymentResponseStateReady {
 		t.Fatalf("unexpected show output: %+v", got)
+	}
+	if got.InferenceEngineVersion != "0.15.1" {
+		t.Errorf("expected inference engine version 0.15.1, got %q", got.InferenceEngineVersion)
 	}
 	// by name
 	cmd = &DeploymentShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha"}
