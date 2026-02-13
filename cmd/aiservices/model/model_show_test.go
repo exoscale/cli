@@ -46,7 +46,7 @@ func newModelTestServer(t *testing.T) *modelTestServer {
 					resp := v3.GetModelResponse{
 						ID:        m.ID,
 						Name:      m.Name,
-						Status:    v3.GetModelResponseStatus(m.Status),
+						State:     v3.GetModelResponseState(m.State),
 						ModelSize: m.ModelSize,
 						CreatedAT: m.CreatedAT,
 						UpdatedAT: m.UpdatedAT,
@@ -114,7 +114,7 @@ func TestModelShow(t *testing.T) {
 	ts.models = []v3.ListModelsResponseEntry{{
 		ID:        v3.UUID("11111111-1111-1111-1111-111111111111"),
 		Name:      "m1",
-		Status:    v3.ListModelsResponseEntryStatusReady,
+		State:     v3.ListModelsResponseEntryStateReady,
 		ModelSize: 1024 * 1024 * 1024 * 2,
 		CreatedAT: now,
 		UpdatedAT: now,
@@ -132,7 +132,7 @@ func TestModelShow(t *testing.T) {
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("model show: %v", err)
 	}
-	if string(got.ID) != "11111111-1111-1111-1111-111111111111" || got.Name != "m1" || got.Status != v3.GetModelResponseStatusReady {
+	if string(got.ID) != "11111111-1111-1111-1111-111111111111" || got.Name != "m1" || got.State != v3.GetModelResponseStateReady {
 		t.Fatalf("unexpected model show output: %+v", got)
 	}
 	if got.ModelSize != "2.0 GiB" {

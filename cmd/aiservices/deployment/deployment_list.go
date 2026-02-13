@@ -13,14 +13,14 @@ import (
 )
 
 type DeploymentListItemOutput struct {
-	ID        v3.UUID                               `json:"id"`
-	Name      string                                `json:"name"`
-	Zone      v3.ZoneName                           `json:"zone"`
-	Status    v3.ListDeploymentsResponseEntryStatus `json:"status"`
-	GPUType   string                                `json:"gpu_type"`
-	GPUCount  int64                                 `json:"gpu_count"`
-	Replicas  int64                                 `json:"replicas"`
-	ModelName string                                `json:"model_name"`
+	ID        v3.UUID                              `json:"id"`
+	Name      string                               `json:"name"`
+	Zone      v3.ZoneName                          `json:"zone"`
+	State     v3.ListDeploymentsResponseEntryState `json:"state" outputLabel:"Status"`
+	GPUType   string                               `json:"gpu_type"`
+	GPUCount  int64                                `json:"gpu_count"`
+	Replicas  int64                                `json:"replicas"`
+	ModelName string                               `json:"model_name"`
 }
 
 type DeploymentListOutput []DeploymentListItemOutput
@@ -74,7 +74,7 @@ func (c *DeploymentListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				ID:        d.ID,
 				Name:      d.Name,
 				Zone:      zone.Name,
-				Status:    d.Status,
+				State:     d.State,
 				GPUType:   d.GpuType,
 				GPUCount:  d.GpuCount,
 				Replicas:  d.Replicas,

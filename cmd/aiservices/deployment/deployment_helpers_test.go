@@ -35,7 +35,7 @@ func newDepHelperServer(t *testing.T) *depHelperServer {
 		case http.MethodGet:
 			for _, d := range ts.deployments {
 				if string(d.ID) == id {
-					writeJSON(t, w, http.StatusOK, v3.GetDeploymentResponse{ID: d.ID, Name: d.Name, Status: v3.GetDeploymentResponseStatus(d.Status), GpuType: d.GpuType, GpuCount: d.GpuCount, Replicas: d.Replicas, ServiceLevel: d.ServiceLevel, DeploymentURL: d.DeploymentURL, Model: d.Model, CreatedAT: d.CreatedAT, UpdatedAT: d.UpdatedAT})
+					writeJSON(t, w, http.StatusOK, v3.GetDeploymentResponse{ID: d.ID, Name: d.Name, State: v3.GetDeploymentResponseState(d.State), GpuType: d.GpuType, GpuCount: d.GpuCount, Replicas: d.Replicas, ServiceLevel: d.ServiceLevel, DeploymentURL: d.DeploymentURL, Model: d.Model, CreatedAT: d.CreatedAT, UpdatedAT: d.UpdatedAT})
 					return
 				}
 			}

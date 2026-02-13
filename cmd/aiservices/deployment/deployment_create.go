@@ -28,6 +28,7 @@ type DeploymentCreateCmd struct {
 	ModelID                   string      `cli-flag:"model-id" cli-usage:"Model ID (UUID)"`
 	ModelName                 string      `cli-flag:"model-name" cli-usage:"Model name (as created)"`
 	InferenceEngineParameters string      `cli-flag:"inference-engine-params" cli-usage:"Space-separated inference engine server CLI arguments (e.g., \"--gpu-memory-usage=0.8 --max-tokens=4096\")"`
+	InferenceEngineVersion    string      `cli-flag:"inference-engine-version" cli-usage:"Inference engine version"`
 	InferenceEngineHelp       bool        `cli-flag:"inference-engine-parameter-help" cli-usage:"Show inference engine parameters help"`
 	Zone                      v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
@@ -41,8 +42,12 @@ func (c *DeploymentCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
-func (c *DeploymentCreateCmd) showInferenceEngineParameterHelp(ctx context.Context, client *v3.Client) error {
-	resp, err := client.GetInferenceEngineHelp(ctx)
+func (c *DeploymentCreateCmd) showInferenceEngineParameterHelp(ctx context.Context, client *v3.Client, version string) error {
+	var opts []v3.GetInferenceEngineHelpOpt
+	if version != "" {
+		opts = append(opts, v3.GetInferenceEngineHelpWithVersion(version))
+	}
+	resp, err := client.GetInferenceEngineHelp(ctx, opts...)
 	if err != nil {
 		return err
 	}
@@ -116,7 +121,7 @@ func (c *DeploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		if err != nil {
 			return err
 		}
-		return c.showInferenceEngineParameterHelp(ctx, client)
+		return c.showInferenceEngineParameterHelp(ctx, client, c.InferenceEngineVersion)
 	}
 
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
@@ -147,6 +152,7 @@ func (c *DeploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		GpuCount:                  c.GPUCount,
 		Replicas:                  c.Replicas,
 		InferenceEngineParameters: inferenceParams,
+		InferenceEngineVersion:    v3.InferenceEngineVersion(c.InferenceEngineVersion),
 	}
 	if c.ModelID != "" || c.ModelName != "" {
 		req.Model = &v3.ModelRef{}
