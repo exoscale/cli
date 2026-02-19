@@ -1,4 +1,4 @@
-name: Testscript Integration Tests
+name: E2E Testscript Tests
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [ master ]
 
 jobs:
-  unit-tests:
-    name: Unit Tests (No API)
+  local-tests:
+    name: Local Tests (No API)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,19 +21,17 @@ jobs:
       - name: Build binary
         run: make build
       
-      - name: Run unit tests
+      - name: Run local tests
         run: |
-          cd internal/integ
-          # Only run tests that don't need API access
-          go test -v -run 'TestScripts/(basic_no_api|config_isolated|example)'
+          cd tests/e2e
+          # Run local tests (no build tag required)
+          go test -v
 
-  # TODO: Commented out until API-based test scenarios are added in a future PR
-  # integration-tests:
-  #   name: Integration Tests (With API)
+  # TODO: Uncomment when API-based test scenarios are added to scenarios/api/
+  # api-tests:
+  #   name: API Tests (With API)
   #   runs-on: ubuntu-latest
   #   # Only run on master branch or when manually triggered
-  #   # TODO: This job is ready but no API-based test scenarios exist yet.
-  #   #       A future PR will add API tests requiring org account setup.
   #   if: github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
   #   steps:
   #     - uses: actions/checkout@v4
@@ -64,14 +62,14 @@ jobs:
   #         # secret = "$EXOSCALE_API_SECRET"
   #         # EOF
   #     
-  #     - name: Run integration tests
+  #     - name: Run API tests
   #       env:
   #         EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_TEST_API_KEY }}
   #         EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_TEST_API_SECRET }}
   #       run: |
-  #         cd internal/integ
-  #         # Run all tests (including API tests)
-  #         go test -v -run TestScripts -timeout 30m
+  #         cd tests/e2e
+  #         # Run API tests with build tag
+  #         go test -v -tags=api -timeout 30m
   #     
   #     - name: Cleanup test resources
   #       if: always()
