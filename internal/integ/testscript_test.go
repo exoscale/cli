@@ -100,11 +100,14 @@ func TestScripts(t *testing.T) {
 			e.Setenv("HOME", e.WorkDir)
 
 			// Set default flags that all tests need
+			// TODO: Make these parametrizable per test scenario
 			e.Setenv("EXO_ZONE", "ch-gva-2")
 			e.Setenv("EXO_OUTPUT", "json")
 
 			// Forward API credentials from environment (for CI and local API tests)
 			// Tests can use either env vars or config files
+			// TODO: Currently no scenarios use API credentials. Future PR will add
+			//       API-based tests requiring org account setup with proper credentials.
 			if apiKey := os.Getenv("EXOSCALE_API_KEY"); apiKey != "" {
 				e.Setenv("EXOSCALE_API_KEY", apiKey)
 			}

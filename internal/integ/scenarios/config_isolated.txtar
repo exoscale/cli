@@ -27,6 +27,3 @@ stdout 'EXOtest1234'
 # Read default account
 # exec exo config default
 # stdout 'test-account'
-
-# Note: This test is commented because 'exo config add' might be interactive
-# Uncomment if your CLI has non-interactive flags for testing
