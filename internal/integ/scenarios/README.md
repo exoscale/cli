@@ -9,7 +9,12 @@ This directory contains testscript scenarios for integration testing the Exoscal
 
 ## Running Tests
 
+Tests use the pre-built binary from the existing build pipeline. Build it first:
+
 ```bash
+# Build the CLI binary (from repository root)
+make build
+
 # Run all scenarios
 cd internal/integ
 go test -v -run TestScripts

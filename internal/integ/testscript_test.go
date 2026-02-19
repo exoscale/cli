@@ -6,17 +6,14 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"sync"
 	"testing"
 
 	"github.com/rogpeppe/go-internal/testscript"
 )
 
 var (
-	buildOnce  sync.Once
-	buildError error
-	exoBinary  string
-	cliRoot    string // Set at init time before working directory changes
+	exoBinary string
+	cliRoot   string // Set at init time before working directory changes
 )
 
 func init() {
@@ -29,6 +26,10 @@ func init() {
 	// filename is .../cli/internal/integ/testscript_test.go
 	// We need .../cli
 	cliRoot = filepath.Dir(filepath.Dir(filepath.Dir(filename)))
+	
+	// Use pre-built binary from the existing build pipeline
+	// Tests should run against the actual build artifact, not rebuild it
+	exoBinary = filepath.Join(cliRoot, "bin", "exo")
 }
 
 func TestMain(m *testing.M) {
@@ -37,45 +38,15 @@ func TestMain(m *testing.M) {
 	}))
 }
 
-// buildExoBinary builds the exo CLI binary once for all tests
-func buildExoBinary() error {
-	buildOnce.Do(func() {
-		// Verify go.mod exists
-		if _, err := os.Stat(filepath.Join(cliRoot, "go.mod")); err != nil {
-			buildError = fmt.Errorf("go.mod not found in %s: %w", cliRoot, err)
-			return
-		}
-
-		// Create bin directory if it doesn't exist
-		binDir := filepath.Join(cliRoot, "bin")
-		if err := os.MkdirAll(binDir, 0755); err != nil {
-			buildError = fmt.Errorf("failed to create bin directory: %w", err)
-			return
-		}
-
-		exoBinary = filepath.Join(binDir, "exo")
-
-		// Build the binary - use the main.go path explicitly
-		mainPath := filepath.Join(cliRoot, "main.go")
-		cmd := exec.Command("go", "build", "-o", exoBinary, mainPath)
-		cmd.Dir = cliRoot
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			buildError = fmt.Errorf("failed to build exo binary: %w\n%s", err, output)
-			return
-		}
-	})
-	return buildError
-}
-
 func mainExo() int {
-	// Build binary once if not already built
-	if err := buildExoBinary(); err != nil {
-		fmt.Fprintf(os.Stderr, "build error: %v\n", err)
+	// Check if binary exists
+	if _, err := os.Stat(exoBinary); err != nil {
+		fmt.Fprintf(os.Stderr, "exo binary not found at %s\n", exoBinary)
+		fmt.Fprintf(os.Stderr, "Please build the binary first: make build\n")
 		return 1
 	}
 
-	// Run the compiled binary
+	// Run the pre-built binary
 	cmd := exec.Command(exoBinary, os.Args[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
