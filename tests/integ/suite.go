@@ -1,4 +1,4 @@
-package test
+package integ_test
 
 import (
 	"bytes"

@@ -1,0 +1,82 @@
+name: E2E Testscript Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  local-tests:
+    name: Local Tests (No API)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+      
+      - name: Build binary
+        run: make build
+      
+      - name: Run local tests
+        run: |
+          cd tests/e2e
+          # Run local tests (no build tag required)
+          go test -v
+
+  # TODO: Uncomment when API-based test scenarios are added to scenarios/api/
+  # api-tests:
+  #   name: API Tests (With API)
+  #   runs-on: ubuntu-latest
+  #   # Only run on master branch or when manually triggered
+  #   if: github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v5
+  #       with:
+  #         go-version-file: 'go.mod'
+  #     
+  #     - name: Build binary
+  #       run: make build
+  #     
+  #     - name: Create test config
+  #       env:
+  #         EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_TEST_API_KEY }}
+  #         EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_TEST_API_SECRET }}
+  #       run: |
+  #         # Testscript will use XDG_CONFIG_HOME, but we can also use env vars
+  #         echo "Using environment variables for credentials"
+  #         # Or create a config file:
+  #         # mkdir -p ~/.config/exoscale
+  #         # cat > ~/.config/exoscale/exoscale.toml <<EOF
+  #         # default_account = "ci-test"
+  #         # 
+  #         # [[accounts]]
+  #         # name = "ci-test"
+  #         # key = "$EXOSCALE_API_KEY"
+  #         # secret = "$EXOSCALE_API_SECRET"
+  #         # EOF
+  #     
+  #     - name: Run API tests
+  #       env:
+  #         EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_TEST_API_KEY }}
+  #         EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_TEST_API_SECRET }}
+  #       run: |
+  #         cd tests/e2e
+  #         # Run API tests with build tag
+  #         go test -v -tags=api -timeout 30m
+  #     
+  #     - name: Cleanup test resources
+  #       if: always()
+  #       env:
+  #         EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_TEST_API_KEY }}
+  #         EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
+  #       run: |
+  #         # Optional: Clean up any leaked test resources
+  #         # ./cleanup-test-resources.sh || true
+  #         echo "Cleanup complete"

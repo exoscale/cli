@@ -1,0 +1,29 @@
+# Test config command with isolated config file
+# Each test gets its own temp directory, so config changes are isolated
+
+# Create a config directory structure (txtar file archives can include files)
+-- .config/exoscale/exoscale.toml --
+default_account = "test-account"
+
+[[accounts]]
+name = "test-account"
+key = "EXOtest1234"
+secret = "testsecret1234"
+default_zone = "ch-gva-2"
+-- END --
+
+# Now test config commands that read this file
+exec exo config show
+stdout 'test-account'
+stdout 'EXOtest1234'
+
+# Add a new account (modifies the isolated config, not your real one!)
+# exec exo config add new-account --key EXOnew123 --secret newsecret
+# 
+# # Verify it was added
+# exec exo config show
+# stdout 'new-account'
+
+# Read default account
+# exec exo config default
+# stdout 'test-account'
