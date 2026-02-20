@@ -20,15 +20,31 @@ func init() {
 		Use:   "add",
 		Short: "Add a new account to configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Check if this is the first account
+			isFirstAccount := account.GAllAccount == nil || len(account.GAllAccount.Accounts) == 0
+
+			if isFirstAccount {
+				printNoConfigMessage()
+			}
+
 			newAccount, err := promptAccountInformation()
 			if err != nil {
 				return err
 			}
 
 			config := &account.Config{Accounts: []account.Account{*newAccount}}
-			if utils.AskQuestion(exocmd.GContext, "Set ["+newAccount.Name+"] as default account?") {
+
+			if isFirstAccount {
+				// First account: automatically set as default
 				config.DefaultAccount = newAccount.Name
 				exocmd.GConfig.Set("defaultAccount", newAccount.Name)
+				fmt.Printf("Set [%s] as default account (first account)\n", newAccount.Name)
+			} else {
+				// Additional account: ask user if it should be the new default
+				if utils.AskQuestion(exocmd.GContext, "Set ["+newAccount.Name+"] as default account?") {
+					config.DefaultAccount = newAccount.Name
+					exocmd.GConfig.Set("defaultAccount", newAccount.Name)
+				}
 			}
 
 			return saveConfig(exocmd.GConfig.ConfigFileUsed(), config)

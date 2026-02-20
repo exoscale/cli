@@ -63,15 +63,7 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 		return nil
 	}
 
-	fmt.Println("No Exoscale CLI configuration found")
-
-	fmt.Print(`
-In order to set up your configuration profile, you will need to retrieve
-Exoscale API credentials from your organization's IAM:
-
-    https://portal.exoscale.com/iam/keys
-
-`)
+	printNoConfigMessage()
 	return addConfigAccount(true)
 }
 
@@ -157,7 +149,8 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 		return err
 	}
 
-	conf.DefaultAccount = exocmd.GConfig.Get("defaultAccount").(string)
+	// Safely get defaultAccount - may be empty/unset if user declined to set default
+	conf.DefaultAccount = exocmd.GConfig.GetString("defaultAccount")
 	if conf.DefaultAccount == "" {
 		fmt.Println("no default account set")
 	}
@@ -252,6 +245,17 @@ func chooseZone(client *v3.Client, zones []string) (string, error) {
 	}
 
 	return result, nil
+}
+
+func printNoConfigMessage() {
+	fmt.Print(`No Exoscale CLI configuration found
+
+In order to set up your configuration profile, you will need to retrieve
+Exoscale API credentials from your organization's IAM:
+
+    https://portal.exoscale.com/iam/keys
+
+`)
 }
 
 func init() {
