@@ -264,15 +264,26 @@ func initConfig() { //nolint:gocyclo
 		return
 	}
 
-	if config.DefaultAccount == "" && gAccountName == "" {
+	// Allow config management commands to run without a default account
+	// This prevents circular dependency where "config set" requires a default to set a default
+	noDefaultAccount := config.DefaultAccount == "" && gAccountName == ""
+	if noDefaultAccount && !isNonCredentialCmd(nonCredentialCmds...) {
 		log.Fatalf("default account not defined")
+	}
+
+	// Always load all accounts for config management commands
+	account.GAllAccount = config
+
+	// Skip current account and client setup for config commands without default
+	if noDefaultAccount && isNonCredentialCmd(nonCredentialCmds...) {
+		ignoreClientBuild = true
+		return
 	}
 
 	if gAccountName == "" {
 		gAccountName = config.DefaultAccount
 	}
 
-	account.GAllAccount = config
 	account.GAllAccount.DefaultAccount = gAccountName
 
 	for i, acc := range config.Accounts {

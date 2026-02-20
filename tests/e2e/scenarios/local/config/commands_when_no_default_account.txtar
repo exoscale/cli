@@ -1,15 +1,19 @@
-# Test: Commands handle gracefully when account exists but no default is set
-# Previously this caused a panic at cmd/config/config.go:160 (unsafe type assertion)
-# Bug fix: Changed from Get("defaultAccount").(string) to GetString("defaultAccount")
+# Test: Config commands work without default account (fixes circular dependency)
+# Previously `exo config set` failed with "default account not defined", creating a circular
+# dependency where the command to set a default required a default to exist.
+#
+# Bug fixes:
+# 1. Changed from Get("defaultAccount").(string) to GetString("defaultAccount") (panic fix)
+# 2. Allow config commands (set, list, show) to run without default account (circular dependency fix)
 #
 # Note: With the fix, `exo config add` automatically sets the first account as default,
 # so this state should not occur through normal CLI usage. However, it can still happen if:
 # - User manually edits config file and removes defaultAccount
 # - Config file was created by an external tool
 #
-# This test compares behavior in two similar failure scenarios:
-# 1. No config file at all (first-time use) - various errors depending on command
-# 2. Config with accounts but no defaultAccount - "default account not defined"
+# This test verifies:
+# 1. No config file at all - helpful message shown
+# 2. Config with accounts but no defaultAccount - config commands work, other commands fail gracefully
 #
 # Cannot test `exo config add` interactively in testscript due to promptui.
 # See tests/integ/config_panic_test.go for integration test coverage.
@@ -28,32 +32,28 @@ stdout 'https://portal.exoscale.com/iam/keys'
 mkdir -p .config/exoscale
 cp test-config.toml .config/exoscale/exoscale.toml
 
-# Now commands should fail with clear "default account not defined" error
-! exec exo config show
-stderr 'default account not defined'
+# Config management commands now work without a default account (fixes circular dependency)
+exec exo config list
+stdout 'Exoscale-Test'
 
-! exec exo config list
-stderr 'default account not defined'
+# config set can now set a default account even when none exists
+exec exo config set Exoscale-Test
+stdout 'Default profile set to \[Exoscale-Test\]'
 
-! exec exo config set Exoscale-Test
+# After setting default, config show should work
+exec exo config show
+stdout 'Exoscale-Test'
+stdout 'EXOtest123'
+
+# Reset config to no default for additional tests
+cp test-config.toml .config/exoscale/exoscale.toml
+
+# Non-config commands still require default account or --use-account flag
+! exec exo compute instance list
 stderr 'default account not defined'
 
 # Workaround: --use-account flag bypasses the default account requirement
 exec exo --use-account Exoscale-Test config show
-stdout 'Exoscale-Test'
-stdout 'EXOtest123'
-
-# Test with explicit --config flag (same results)
-! exec exo --config .config/exoscale/exoscale.toml config show
-stderr 'default account not defined'
-
-! exec exo --config .config/exoscale/exoscale.toml config list
-stderr 'default account not defined'
-
-! exec exo --config .config/exoscale/exoscale.toml config set Exoscale-Test
-stderr 'default account not defined'
-
-exec exo --config .config/exoscale/exoscale.toml --use-account Exoscale-Test config show
 stdout 'Exoscale-Test'
 stdout 'EXOtest123'
 

@@ -1,4 +1,4 @@
-package integ_test
+package integ
 
 import (
 	"os"
@@ -8,8 +8,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 )
-
-var Binary = "../../bin/exo"
 
 // TestConfigPanic tests that config commands handle gracefully when
 // defaultAccount field is missing from the config file.
@@ -45,7 +43,9 @@ defaultZone = "ch-gva-2"
 	require.NoError(t, err)
 
 	t.Run("commands handle missing default account gracefully", func(t *testing.T) {
-		cmd := exec.Command(Binary, "config", "show")
+		// With the fix, config commands now work without a default account
+		// But other commands (like compute instance list) will still fail
+		cmd := exec.Command(Binary, "compute", "instance", "list")
 		cmd.Env = append(os.Environ(), "HOME="+tmpHome)
 		output, err := cmd.CombinedOutput()
 
@@ -67,5 +67,36 @@ defaultZone = "ch-gva-2"
 		} else {
 			require.Contains(t, string(output), "test-account")
 		}
+	})
+
+	t.Run("config set works without default account (fixes circular dependency)", func(t *testing.T) {
+		// This tests that "exo config set" can set a default account even when no default exists
+		// Previously this failed with "default account not defined", creating circular dependency
+		cmd := exec.Command(Binary, "config", "set", "test-account")
+		cmd.Env = append(os.Environ(), "HOME="+tmpHome)
+		output, err := cmd.CombinedOutput()
+
+		// Should succeed now
+		require.NoError(t, err, "config set should work without existing default: %s", output)
+		require.Contains(t, string(output), "Default profile set to [test-account]")
+
+		// Verify the default was actually saved
+		configContent, err := os.ReadFile(configPath)
+		require.NoError(t, err)
+		require.Contains(t, string(configContent), "defaultaccount = 'test-account'")
+	})
+
+	t.Run("config list works without default account", func(t *testing.T) {
+		// Reset config to no default for this test
+		err := os.WriteFile(configPath, []byte(configWithoutDefault), 0644)
+		require.NoError(t, err)
+
+		cmd := exec.Command(Binary, "config", "list")
+		cmd.Env = append(os.Environ(), "HOME="+tmpHome)
+		output, err := cmd.CombinedOutput()
+
+		// Should succeed and show accounts
+		require.NoError(t, err, "config list should work without default: %s", output)
+		require.Contains(t, string(output), "test-account")
 	})
 }

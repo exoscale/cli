@@ -5,6 +5,7 @@
 ### Bug fixes
 
 - Fix panic when config commands are used without a default account set
+- Fix circular dependency where `exo config set` required a default account to set a default account
 
 ## 1.93.0
 
