@@ -20,15 +20,27 @@ func init() {
 		Use:   "add",
 		Short: "Add a new account to configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Check if this is the first account
+			isFirstAccount := account.GAllAccount == nil || len(account.GAllAccount.Accounts) == 0
+
+			if isFirstAccount {
+				fmt.Println("No Exoscale CLI configuration found")
+
+				fmt.Print(`
+In order to set up your configuration profile, you will need to retrieve
+Exoscale API credentials from your organization's IAM:
+
+    https://portal.exoscale.com/iam/keys
+
+`)
+			}
+
 			newAccount, err := promptAccountInformation()
 			if err != nil {
 				return err
 			}
 
 			config := &account.Config{Accounts: []account.Account{*newAccount}}
-
-			// Check if this is the first account
-			isFirstAccount := account.GAllAccount == nil || len(account.GAllAccount.Accounts) == 0
 
 			if isFirstAccount {
 				// First account: automatically set as default
