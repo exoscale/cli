@@ -1,4 +1,4 @@
-name: E2E Testscript Tests
+name: Tests - E2E - Testscript
 
 on:
   push:
