@@ -236,6 +236,12 @@ func initConfig() { //nolint:gocyclo
 	if err := GConfig.ReadInConfig(); err != nil {
 		if isNonCredentialCmd(nonCredentialCmds...) {
 			ignoreClientBuild = true
+			// Set GAllAccount with empty config so config commands can handle gracefully
+			account.GAllAccount = &account.Config{}
+			// DEBUG: Log the error to understand why ReadInConfig failed
+			log.Printf("DEBUG: ReadInConfig failed: %v", err)
+			log.Printf("DEBUG: Config search paths: %v", GConfig.ConfigFileUsed())
+			log.Printf("DEBUG: HOME env: %s", os.Getenv("HOME"))
 			return
 		}
 
