@@ -40,7 +40,7 @@ Supported output template annotations: %s`,
 		Aliases: exocmd.GShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if account.GAllAccount == nil || len(account.GAllAccount.Accounts) == 0 {
-				return fmt.Errorf("no accounts configured. Run: exo config")
+				return fmt.Errorf("no accounts configured. Run: exo config (or exo config add)")
 			}
 
 			var name string

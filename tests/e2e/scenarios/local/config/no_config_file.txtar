@@ -9,7 +9,7 @@ stdout 'https://portal.exoscale.com/iam/keys'
 
 # Other config commands should fail gracefully
 ! exec exo config show
-stderr 'Run: exo config'
+stderr 'exo config add'
 
 # Config list with no accounts returns empty (doesn't error)
 exec exo config list

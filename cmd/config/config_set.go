@@ -17,7 +17,7 @@ var configSetCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 		if account.GAllAccount == nil || len(account.GAllAccount.Accounts) == 0 {
-			return fmt.Errorf("no accounts configured. Run: exo config")
+			return fmt.Errorf("no accounts configured. Run: exo config (or exo config add)")
 		}
 
 		if a := getAccountByName(args[0]); a == nil {
