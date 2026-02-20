@@ -14,7 +14,9 @@ import (
 )
 
 var (
-	Binary = "../../bin/exo"
+	// Binary path is relative to tests/integ (parent of api/local subdirectories)
+	// When tests are run from subdirectories, adjust as needed
+	Binary = "../../../bin/exo"
 )
 
 type Step struct {

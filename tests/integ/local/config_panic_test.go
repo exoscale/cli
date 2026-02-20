@@ -1,4 +1,4 @@
-package integ_test
+package integ_local_test
 
 import (
 	"os"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var Binary = "../../bin/exo"
+var Binary = "../../../bin/exo"
 
 // TestConfigPanic tests that config commands handle gracefully when
 // defaultAccount field is missing from the config file.
