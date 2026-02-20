@@ -9,8 +9,6 @@ on:
     - 'bucket/**'
     tags-ignore:
     - 'v*'
-  pull_request:
-    branches: [ master ]
 
 jobs:
   local-tests:
