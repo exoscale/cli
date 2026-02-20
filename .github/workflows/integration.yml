@@ -23,23 +23,12 @@ jobs:
           go-version-file: 'go.mod'
       
       - name: Build binary
-        run: |
-          go clean -cache -modcache
-          rm -rf bin/
-          make build
-      
-      - name: Verify binary
-        run: |
-          ./bin/exo version
-          ls -la ./bin/exo
-          file ./bin/exo
-          # Check if our new error message is in the binary
-          strings ./bin/exo | grep -i "please specify an account name" && echo "✓ New code present" || echo "✗ Old code still present"
+        run: make build
       
       - name: Run local integration tests
         run: |
           cd tests/integ/local
-          go test -v -count=1
+          go test -v
 
   # TODO: Uncomment when you want to run API integration tests in CI/CD
   # api-tests:
