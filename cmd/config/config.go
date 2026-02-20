@@ -157,7 +157,8 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 		return err
 	}
 
-	conf.DefaultAccount = exocmd.GConfig.Get("defaultAccount").(string)
+	// Safely get defaultAccount - may be empty/unset if user declined to set default
+	conf.DefaultAccount = exocmd.GConfig.GetString("defaultAccount")
 	if conf.DefaultAccount == "" {
 		fmt.Println("no default account set")
 	}
