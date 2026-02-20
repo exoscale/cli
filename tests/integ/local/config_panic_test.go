@@ -51,7 +51,7 @@ defaultZone = "ch-gva-2"
 
 		// Should fail gracefully with clear error message, not panic
 		require.Error(t, err)
-		require.Contains(t, string(output), "default account not defined")
+		require.Contains(t, string(output), "Please specify an account name or set a default")
 		t.Logf("Output: %s", output)
 	})
 
