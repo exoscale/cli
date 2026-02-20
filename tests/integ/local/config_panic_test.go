@@ -52,7 +52,7 @@ defaultZone = "ch-gva-2"
 		t.Logf("Config path: %s", configPath)
 		t.Logf("HOME: %s", tmpHome)
 		t.Logf("Binary: %s", Binary)
-		
+
 		cmd := exec.Command(Binary, "config", "show")
 		cmd.Env = append(os.Environ(), "HOME="+tmpHome)
 		output, err := cmd.CombinedOutput()

@@ -24,13 +24,15 @@ jobs:
       
       - name: Build binary
         run: |
-          go clean -cache
+          go clean -cache -modcache
+          rm -rf bin/
           make build
       
       - name: Verify binary
         run: |
           ./bin/exo version
           ls -la ./bin/exo
+          file ./bin/exo
       
       - name: Run local integration tests
         run: |
