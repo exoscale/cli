@@ -11,12 +11,33 @@ import (
 // TestScriptsLocal runs testscript scenarios that don't require API access.
 // These tests run by default without any build tags.
 func TestScriptsLocal(t *testing.T) {
+	// Find all txtar files recursively in scenarios/local
+	files, err := findTestScripts("scenarios/local")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	testscript.Run(t, testscript.Params{
-		Dir: "scenarios/local",
+		Files: files,
 		Setup: func(e *testscript.Env) error {
 			return setupTestEnv(e, false)
 		},
 	})
+}
+
+// findTestScripts recursively finds all .txtar and .txt files in a directory
+func findTestScripts(dir string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && (filepath.Ext(path) == ".txtar" || filepath.Ext(path) == ".txt") {
+			files = append(files, path)
+		}
+		return nil
+	})
+	return files, err
 }
 
 // setupTestEnv configures the test environment for testscript scenarios.

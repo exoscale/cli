@@ -1,0 +1,37 @@
+# Bug: exo config add panics when declining to set first account as default
+# Panic location: cmd/config/config.go:160
+# Panic: interface conversion: interface {} is nil, not string
+#
+# Note: Cannot reproduce `exo config add` directly in testscript because it uses
+# interactive prompts (promptui) for zone selection and account info, which don't
+# work in testscript's non-interactive environment. See tests/integ/config_panic_test.go
+# for integration test coverage.
+#
+# E2E test: This file documents the BROKEN STATE left after the panic
+
+# Simulate the broken state: config with account but no defaultaccount field
+mkdir -p .config/exoscale
+cp broken-config.toml .config/exoscale/exoscale.toml
+
+# Verify commands fail when account exists but no defaultaccount
+! exec exo config show
+stderr 'default account not defined'
+
+! exec exo config list
+stderr 'default account not defined'
+
+# Circular dependency: config set requires a default account to set a default account!
+! exec exo config set Exoscale-Panic  
+stderr 'default account not defined'
+
+# Workaround: --use-account flag works
+exec exo --use-account Exoscale-Panic config show
+stdout 'Exoscale-Panic'
+
+# Config in broken state: account without defaultaccount field
+-- broken-config.toml --
+[[accounts]]
+name = "Exoscale-Panic"
+key = "EXOpanic123"
+secret = "testsecret123"
+defaultZone = "ch-gva-2"

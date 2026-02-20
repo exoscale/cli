@@ -1,11 +1,9 @@
-package integ_test
+package integ
 
 import (
 	"fmt"
 	"math/rand"
 	"testing"
-
-	"github.com/exoscale/cli/internal/integ/test"
 )
 
 type blockStorageShowOutput struct {
@@ -36,10 +34,10 @@ func TestBlockStorage(t *testing.T) {
 		NewSnapshotName: fmt.Sprintf("test-snap-name-%d-renamed", rand.Int()),
 	}
 
-	s := test.Suite{
+	s := Suite{
 		Zone:       "ch-gva-2",
 		Parameters: params,
-		Steps: []test.Step{
+		Steps: []Step{
 			{
 				Description: "create volume",
 				Command: "exo compute block-storage create {{.VolumeName}}" +
