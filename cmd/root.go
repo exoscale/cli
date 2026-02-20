@@ -257,6 +257,8 @@ func initConfig() { //nolint:gocyclo
 	if len(config.Accounts) == 0 {
 		if isNonCredentialCmd(nonCredentialCmds...) {
 			ignoreClientBuild = true
+			// Set GAllAccount so config commands can handle the empty state gracefully
+			account.GAllAccount = config
 			return
 		}
 
