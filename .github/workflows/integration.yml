@@ -33,6 +33,8 @@ jobs:
           ./bin/exo version
           ls -la ./bin/exo
           file ./bin/exo
+          # Check if our new error message is in the binary
+          strings ./bin/exo | grep -i "please specify an account name" && echo "✓ New code present" || echo "✗ Old code still present"
       
       - name: Run local integration tests
         run: |
