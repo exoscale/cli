@@ -2,7 +2,13 @@ name: Tests - E2E - Testscript
 
 on:
   push:
-    branches: [ master ]
+    branches:
+    - '**'
+    paths-ignore:
+    - '**.md'
+    - 'bucket/**'
+    tags-ignore:
+    - 'v*'
   pull_request:
     branches: [ master ]
 
