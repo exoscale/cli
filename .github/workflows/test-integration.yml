@@ -14,7 +14,7 @@ on:
 
 jobs:
   local-tests:
-    name: Integration Tests (No API)
+    name: Local Tests (No API)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
