@@ -27,10 +27,15 @@ jobs:
           go clean -cache
           make build
       
+      - name: Verify binary
+        run: |
+          ./bin/exo version
+          ls -la ./bin/exo
+      
       - name: Run local integration tests
         run: |
           cd tests/integ/local
-          go test -v
+          go test -v -count=1
 
   # TODO: Uncomment when you want to run API integration tests in CI/CD
   # api-tests:

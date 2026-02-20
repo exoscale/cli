@@ -45,14 +45,22 @@ defaultZone = "ch-gva-2"
 	require.NoError(t, err)
 
 	t.Run("commands handle missing default account gracefully", func(t *testing.T) {
+		// Debug: verify config file exists and has content
+		configContent, err := os.ReadFile(configPath)
+		require.NoError(t, err)
+		t.Logf("Config file content:\n%s", string(configContent))
+		t.Logf("Config path: %s", configPath)
+		t.Logf("HOME: %s", tmpHome)
+		t.Logf("Binary: %s", Binary)
+		
 		cmd := exec.Command(Binary, "config", "show")
 		cmd.Env = append(os.Environ(), "HOME="+tmpHome)
 		output, err := cmd.CombinedOutput()
 
 		// Should fail gracefully with clear error message, not panic
 		require.Error(t, err)
-		require.Contains(t, string(output), "Please specify an account name or set a default")
 		t.Logf("Output: %s", output)
+		require.Contains(t, string(output), "Please specify an account name or set a default")
 	})
 
 	t.Run("use-account flag bypasses default account requirement", func(t *testing.T) {
