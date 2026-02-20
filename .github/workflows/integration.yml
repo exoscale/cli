@@ -23,7 +23,9 @@ jobs:
           go-version-file: 'go.mod'
       
       - name: Build binary
-        run: make build
+        run: |
+          go clean -cache
+          make build
       
       - name: Run local integration tests
         run: |
