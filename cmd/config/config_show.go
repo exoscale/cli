@@ -43,9 +43,13 @@ Supported output template annotations: %s`,
 				return fmt.Errorf("no accounts configured")
 			}
 
-			name := account.CurrentAccount.Name
+			var name string
 			if len(args) > 0 {
 				name = args[0]
+			} else if account.CurrentAccount != nil && account.CurrentAccount.Name != "" {
+				name = account.CurrentAccount.Name
+			} else {
+				return fmt.Errorf("default account not defined. Please specify an account name or set a default with: exo config set <account-name>")
 			}
 
 			return utils.PrintOutput(showConfig(name))

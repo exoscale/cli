@@ -1,0 +1,42 @@
+# Test: Commands require default account or --use-account flag
+# When config exists but no default account is set, most commands should fail
+# with a helpful error message, unless --use-account flag is provided.
+
+# Create config with account but NO defaultAccount field
+mkdir -p .config/exoscale
+cp test-config.toml .config/exoscale/exoscale.toml
+
+# Config management commands work (they don't require default)
+exec exo config list
+stdout 'Exoscale-Test'
+
+# Config show without account name or default should fail with helpful message
+! exec exo config show
+stderr 'default account not defined'
+
+# Non-config commands require default account
+! exec exo compute instance list
+stderr 'default account not defined'
+stderr 'Set a default account with: exo config set <account-name>'
+stderr 'Available accounts: Exoscale-Test'
+
+# Workaround 1: --use-account flag bypasses the default account requirement
+exec exo --use-account Exoscale-Test config show
+stdout 'Exoscale-Test'
+stdout 'EXOtest123'
+
+# Workaround 2: Set a default account
+exec exo config set Exoscale-Test
+stdout 'Default profile set to \[Exoscale-Test\]'
+
+# Now commands work without flag
+exec exo config show
+stdout 'Exoscale-Test'
+
+# Config file without defaultAccount field
+-- test-config.toml --
+[[accounts]]
+name = "Exoscale-Test"
+key = "EXOtest123"
+secret = "testsecret123"
+defaultZone = "ch-gva-2"
