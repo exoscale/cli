@@ -248,9 +248,8 @@ func chooseZone(client *v3.Client, zones []string) (string, error) {
 }
 
 func printNoConfigMessage() {
-	fmt.Println("No Exoscale CLI configuration found")
+	fmt.Print(`No Exoscale CLI configuration found
 
-	fmt.Print(`
 In order to set up your configuration profile, you will need to retrieve
 Exoscale API credentials from your organization's IAM:
 
