@@ -12,11 +12,63 @@ on:
 
 jobs:
   build:
-    name: Build And Test
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+      
+      - name: Build binary
+        run: make build
+
+  test-unit:
+    name: Tests - Unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
+      
       - uses: ./.github/actions/build
+
+  test-integration:
+    name: Tests - Integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+      
+      - name: Build binary
+        run: make build
+      
+      - name: Run local integration tests
+        run: |
+          cd tests/integ/local
+          go test -v
+
+  test-e2e:
+    name: Tests - E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+      
+      - name: Build binary
+        run: make build
+      
+      - name: Run E2E tests
+        run: |
+          cd tests/e2e
+          go test -v
