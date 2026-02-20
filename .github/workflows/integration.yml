@@ -1,0 +1,75 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+    - '**'
+    paths-ignore:
+    - '**.md'
+    - 'bucket/**'
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  local-tests:
+    name: Integration Tests (No API)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+      
+      - name: Build binary
+        run: make build
+      
+      - name: Run local integration tests
+        run: |
+          cd tests/integ/local
+          go test -v
+
+  # TODO: Uncomment when you want to run API integration tests in CI/CD
+  # api-tests:
+  #   name: Integration Tests (With API)
+  #   runs-on: ubuntu-latest
+  #   # Only run on master branch or when manually triggered
+  #   if: github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v5
+  #       with:
+  #         go-version-file: 'go.mod'
+  #     
+  #     - name: Build binary
+  #       run: make build
+  #     
+  #     - name: Create test config
+  #       env:
+  #         EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_TEST_API_KEY }}
+  #         EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_TEST_API_SECRET }}
+  #       run: |
+  #         mkdir -p ~/.config/exoscale
+  #         cat > ~/.config/exoscale/exoscale.toml <<EOF
+  #         defaultAccount = "ci-test"
+  #         
+  #         [[accounts]]
+  #         name = "ci-test"
+  #         key = "$EXOSCALE_API_KEY"
+  #         secret = "$EXOSCALE_API_SECRET"
+  #         defaultZone = "ch-gva-2"
+  #         EOF
+  #     
+  #     - name: Run API integration tests
+  #       run: |
+  #         cd tests/integ/api
+  #         go test -v -tags=integration_api -timeout 30m
+  #     
+  #     - name: Cleanup test resources
+  #       if: always()
+  #       run: |
+  #         # Optional: Clean up any leaked test resources
+  #         echo "Cleanup complete (add cleanup script if needed)"

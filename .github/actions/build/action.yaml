@@ -18,9 +18,3 @@ runs:
 
     - run: make test-verbose
       shell: bash
-
-    - name: Run local integration tests
-      run: |
-        cd tests/integ/local
-        go test -v
-      shell: bash
