@@ -4,7 +4,7 @@
 
 ### Bug fixes
 
-- Fix panic when config commands are used without a default account set
+- Fix panic when config commands are used without a default account set #798
 
 ## 1.93.0
 
