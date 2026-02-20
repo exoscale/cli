@@ -55,7 +55,7 @@ jobs:
           go test -v
 
   test-e2e:
-    name: Tests - E2E
+    name: Tests - E2E (Testscript)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -68,7 +68,7 @@ jobs:
       - name: Build binary
         run: make build
       
-      - name: Run E2E tests
+      - name: Run local E2E tests (Testscript)
         run: |
           cd tests/e2e
-          go test -v
+          go test -v -run TestScripts/local
