@@ -236,6 +236,8 @@ func initConfig() { //nolint:gocyclo
 	if err := GConfig.ReadInConfig(); err != nil {
 		if isNonCredentialCmd(nonCredentialCmds...) {
 			ignoreClientBuild = true
+			// Set GAllAccount with empty config so config commands can handle gracefully
+			account.GAllAccount = &account.Config{}
 			return
 		}
 
@@ -257,6 +259,8 @@ func initConfig() { //nolint:gocyclo
 	if len(config.Accounts) == 0 {
 		if isNonCredentialCmd(nonCredentialCmds...) {
 			ignoreClientBuild = true
+			// Set GAllAccount so config commands can handle the empty state gracefully
+			account.GAllAccount = config
 			return
 		}
 
@@ -264,8 +268,44 @@ func initConfig() { //nolint:gocyclo
 		return
 	}
 
+	// Allow config management commands to run without a default account
+	// This fixes the circular dependency where 'exo config set' couldn't run
+	// to set a default account because it required a default account to exist
+	configManagementCmds := []string{"list", "set", "show"}
+	isConfigManagementCmd := getCmdPosition("config") == 1
+	if isConfigManagementCmd && len(os.Args) > 2 {
+		// Check if the subcommand is a config management command
+		// Need to find the actual subcommand by skipping flags
+		for i := 2; i < len(os.Args); i++ {
+			if !strings.HasPrefix(os.Args[i], "-") {
+				isConfigManagementCmd = contains(configManagementCmds, os.Args[i])
+				break
+			}
+		}
+	} else {
+		isConfigManagementCmd = false
+	}
+
 	if config.DefaultAccount == "" && gAccountName == "" {
-		log.Fatalf("default account not defined")
+		// Allow config management commands to proceed without default account
+		if isConfigManagementCmd {
+			ignoreClientBuild = true
+			// Set GAllAccount so config commands can access the account list
+			account.GAllAccount = config
+			return
+		}
+
+		// Provide helpful error message with available accounts
+		var availableAccounts []string
+		for _, acc := range config.Accounts {
+			availableAccounts = append(availableAccounts, acc.Name)
+		}
+		if len(availableAccounts) > 0 {
+			log.Fatalf("default account not defined\n\nSet a default account with: exo config set <account-name>\nAvailable accounts: %s\n\nOr specify an account for this command with: --use-account <account-name>",
+				strings.Join(availableAccounts, ", "))
+		} else {
+			log.Fatalf("default account not defined")
+		}
 	}
 
 	if gAccountName == "" {
@@ -362,6 +402,16 @@ func getCmdPosition(cmd string) int {
 	}
 
 	return count
+}
+
+// contains checks if a string slice contains a specific string
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
 }
 
 // readFromEnv is a os.Getenv on steroids

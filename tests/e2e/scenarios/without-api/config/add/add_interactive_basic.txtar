@@ -1,0 +1,27 @@
+# Test: Interactive config add with all prompts (first account)
+# Tests the full interactive flow of adding a new account configuration
+# with API key, secret, name, zone selection, and default account confirmation.
+
+# Create empty config directory (simulating first-time setup)
+mkdir -p .config/exoscale
+
+# Run interactive config add with PTY support
+execpty --stdin=inputs exo config add
+stdout 'No Exoscale CLI configuration found'
+stdout '\[TestAccount\] as default account \(first account\)'
+
+# Verify config file was created with correct content
+exec exo config show
+stdout 'TestAccount'
+stdout 'EXOtest123key'
+
+# Verify it was set as default (first account is auto-default)
+exec exo config list
+stdout 'TestAccount\*'
+
+-- inputs --
+EXOtest123key
+secretTestKey123
+TestAccount
+@down
+@enter
