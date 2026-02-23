@@ -1,7 +1,6 @@
 package e2e_test
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -62,36 +62,65 @@ var ansiRe = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
 func stripANSI(s string) string { return ansiRe.ReplaceAllString(s, "") }
 
 // runInPTY starts cmd inside a PTY, optionally feeds keystrokes via the
-// inputs channel (each []byte is written with a small delay between writes),
-// collects all PTY output with ANSI stripped, waits for the process to exit
-// and returns the cleaned output.
+// inputs channel, collects all PTY output with ANSI stripped, waits for the
+// process to exit and returns the cleaned output.
+//
+// Instead of a fixed delay between keystrokes, it uses an output-settle
+// approach: each keystroke is sent only once the PTY has produced output
+// after the previous write and then gone quiet for settleDelay. This is
+// similar to how `expect` works and is much more robust on slow CI runners.
 func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan []byte) string {
 	ptm, err := pty.Start(cmd)
 	ts.Check(err)
 
+	// lastWrite is the UnixNano time of the most recent write to the PTY (0 = none).
+	// lastActivity is the UnixNano time of the most recent byte read from the PTY (0 = none).
+	// The input goroutine waits until lastActivity > lastWrite (output appeared after
+	// the last write) and time.Since(lastActivity) >= settleDelay (output has gone quiet),
+	// ensuring the prompt is ready before each keystroke is sent.
+	const settleDelay = 80 * time.Millisecond
+	var lastWrite, lastActivity atomic.Int64
+
+	outCh := make(chan string, 1)
+	go func() {
+		var sb strings.Builder
+		buf := make([]byte, 4096)
+		for {
+			n, rerr := ptm.Read(buf)
+			if n > 0 {
+				lastActivity.Store(time.Now().UnixNano())
+				for _, line := range strings.Split(stripANSI(string(buf[:n])), "\n") {
+					if line = strings.TrimSpace(line); line != "" {
+						sb.WriteString(line + "\n")
+					}
+				}
+			}
+			if rerr != nil {
+				break
+			}
+		}
+		outCh <- sb.String()
+	}()
+
 	if inputs != nil {
 		go func() {
 			for b := range inputs {
-				time.Sleep(80 * time.Millisecond)
+				// Wait until output has appeared after the last write and settled.
+				for {
+					lw := lastWrite.Load()
+					la := lastActivity.Load()
+					if la > lw && time.Since(time.Unix(0, la)) >= settleDelay {
+						break
+					}
+					time.Sleep(10 * time.Millisecond)
+				}
+				lastWrite.Store(time.Now().UnixNano())
 				if _, werr := ptm.Write(b); werr != nil && werr != io.ErrClosedPipe {
 					return
 				}
 			}
 		}()
 	}
-
-	outCh := make(chan string, 1)
-	go func() {
-		var sb strings.Builder
-		scanner := bufio.NewScanner(ptm)
-		for scanner.Scan() {
-			line := strings.TrimSpace(stripANSI(scanner.Text()))
-			if line != "" {
-				sb.WriteString(line + "\n")
-			}
-		}
-		outCh <- sb.String()
-	}()
 
 	_ = cmd.Wait()
 	_ = ptm.Close()
