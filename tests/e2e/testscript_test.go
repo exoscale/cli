@@ -93,32 +93,9 @@ func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan []byte) st
 		outCh <- sb.String()
 	}()
 
-	// Wait for the process in a separate goroutine so we can close the PTY
-	// master promptly. On some Linux environments (CI containers in particular)
-	// os.File.Close on a PTY master created via os.NewFile does not interrupt
-	// a goroutine blocked in syscall.Read. We therefore also attempt
-	// SetReadDeadline (effective when the fd is registered with the netpoller)
-	// and then close so the scanner goroutine can unblock and send its output.
-	waitDone := make(chan struct{})
-	go func() {
-		_ = cmd.Wait()
-		_ = ptm.SetReadDeadline(time.Now())
-		_ = ptm.Close()
-		close(waitDone)
-	}()
-
-	const ptyReadTimeout = 30 * time.Second
-	var out string
-	select {
-	case out = <-outCh:
-	case <-time.After(ptyReadTimeout):
-		ts.Fatalf("runInPTY: timed out after %s waiting for PTY output (process may have hung)", ptyReadTimeout)
-		return ""
-	}
-	// Ensure cmd.Wait() has completed so ProcessState is populated before
-	// the caller inspects the exit code.
-	<-waitDone
-	return out
+	_ = cmd.Wait()
+	_ = ptm.Close()
+	return <-outCh
 }
 
 // cmdExecPTY mirrors the built-in exec but runs the binary inside a PTY.
