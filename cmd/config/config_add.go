@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -59,9 +60,18 @@ func init() {
 				fmt.Printf("Set [%s] as default account (first account)\n", newAccount.Name)
 			} else {
 				// Additional account: ask user if it should be the new default
-				if utils.AskQuestion(exocmd.GContext, "Set ["+newAccount.Name+"] as default account?") {
+				setDefault, err := askSetDefault(newAccount.Name)
+				if err != nil {
+					if errors.Is(err, promptui.ErrInterrupt) || err == io.EOF {
+						fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+						os.Exit(130)
+					}
+					return err
+				}
+				if setDefault {
 					config.DefaultAccount = newAccount.Name
 					exocmd.GConfig.Set("defaultAccount", newAccount.Name)
+					fmt.Printf("Set [%s] as default account\n", newAccount.Name)
 				}
 			}
 
@@ -221,4 +231,25 @@ func promptAccountInformation() (*account.Account, error) {
 	}
 
 	return account, nil
+}
+
+// askSetDefault uses a promptui Prompt (PTY-compatible) to ask whether the new
+// account should become the default. Returns true for "y/Y/yes", false for anything else.
+func askSetDefault(name string) (bool, error) {
+	prompt := promptui.Prompt{
+		Label: fmt.Sprintf("Set [%s] as default account? [y/N]", name),
+		Validate: func(input string) error {
+			lower := strings.ToLower(strings.TrimSpace(input))
+			if lower == "" || lower == "y" || lower == "yes" || lower == "n" || lower == "no" {
+				return nil
+			}
+			return fmt.Errorf("please enter y or n")
+		},
+	}
+	result, err := prompt.Run()
+	if err != nil {
+		return false, err
+	}
+	lower := strings.ToLower(strings.TrimSpace(result))
+	return lower == "y" || lower == "yes", nil
 }
