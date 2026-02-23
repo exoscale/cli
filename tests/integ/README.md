@@ -5,7 +5,7 @@ This directory contains integration tests for the Exoscale CLI.
 ## Directory Structure
 
 ```
-tests/integration/
+tests/integ/
 ├── without-api/    # Tests that don't require API credentials
 ├── with-api/       # Tests that require real API credentials (build tag: integration_api)
 └── suite.go        # Shared test utilities
@@ -18,13 +18,13 @@ tests/integration/
 These tests verify CLI behavior without making actual API calls:
 
 ```bash
-cd tests/integration/without-api
+cd tests/integ/without-api
 go test -v
 ```
 
 Or from the root:
 ```bash
-go test -v ./tests/integration/without-api/...
+go test -v ./tests/integ/without-api/...
 ```
 
 **Tests in without-api/:**
@@ -35,13 +35,13 @@ go test -v ./tests/integration/without-api/...
 These tests make real API calls and require valid Exoscale credentials:
 
 ```bash
-cd tests/integration/with-api
+cd tests/integ/with-api
 go test -v -tags=integration_api
 ```
 
 Or from the root:
 ```bash
-go test -v -tags=integration_api ./tests/integration/with-api/...
+go test -v -tags=integration_api ./tests/integ/with-api/...
 ```
 
 **Tests in with-api/:**
@@ -61,12 +61,12 @@ go test -v -tags=integration_api ./tests/integration/with-api/...
 ## Adding New Tests
 
 ### Test Without API
-1. Create test file in `tests/integration/without-api/`
+1. Create test file in `tests/integ/without-api/`
 2. Use package `integration_without_api_test`
 3. No build tags needed
 
 ### Test With API
-1. Create test file in `tests/integration/with-api/`
+1. Create test file in `tests/integ/with-api/`
 2. Use package `integration_with_api_test`
 3. Add build tags at the top:
    ```go

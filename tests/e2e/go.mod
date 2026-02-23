@@ -1,4 +1,4 @@
-module github.com/exoscale/cli/internal/integ
+module github.com/exoscale/cli/internal/e2e
 
 go 1.23
 

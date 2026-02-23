@@ -1,4 +1,4 @@
-package integration
+package integ
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	// Binary path is relative to tests/integration (parent of with-api/without-api subdirectories)
+	// Binary path is relative to tests/integ (parent of with-api/without-api subdirectories)
 	// When tests are run from subdirectories, adjust as needed
 	Binary = "../../../bin/exo"
 )
