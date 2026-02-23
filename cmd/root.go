@@ -9,6 +9,7 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -278,7 +279,7 @@ func initConfig() { //nolint:gocyclo
 		// Need to find the actual subcommand by skipping flags
 		for i := 2; i < len(os.Args); i++ {
 			if !strings.HasPrefix(os.Args[i], "-") {
-				isConfigManagementCmd = contains(configManagementCmds, os.Args[i])
+				isConfigManagementCmd = slices.Contains(configManagementCmds, os.Args[i])
 				break
 			}
 		}
@@ -402,16 +403,6 @@ func getCmdPosition(cmd string) int {
 	}
 
 	return count
-}
-
-// contains checks if a string slice contains a specific string
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
 }
 
 // readFromEnv is a os.Getenv on steroids
