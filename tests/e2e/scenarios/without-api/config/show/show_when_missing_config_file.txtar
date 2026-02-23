@@ -1,0 +1,7 @@
+# Test config show fails when config file does not exist
+
+! exec exo config show
+stderr 'exo config add'
+
+! exec exo --config ./i-do-not-exist.toml config show
+stderr 'no such file or directory'

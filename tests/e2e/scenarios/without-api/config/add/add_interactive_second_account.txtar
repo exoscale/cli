@@ -1,0 +1,41 @@
+# Test: Interactive config add for second account (with default prompt)
+# Tests adding a second account and being prompted whether to make it the new default.
+
+# Create initial config with one account
+mkdir -p .config/exoscale
+cp initial-config.toml .config/exoscale/exoscale.toml
+
+# Add second account interactively and decline to make it default
+execpty --stdin=inputs exo config add
+! stdout 'No Exoscale CLI configuration found'
+
+# Verify both accounts exist
+exec exo config list
+stdout 'FirstAccount'
+stdout 'SecondAccount'
+
+# Verify first account is still default (we answered 'n' to the prompt)
+stdout 'FirstAccount\*'
+! stdout 'SecondAccount\*'
+
+# Verify second account was added
+exec exo config show SecondAccount
+stdout 'SecondAccount'
+stdout 'EXOsecond456'
+
+-- inputs --
+EXOsecond456
+secretSecond456
+SecondAccount
+@enter
+n
+
+-- initial-config.toml --
+defaultAccount = "FirstAccount"
+
+[[accounts]]
+account = "FirstAccount"
+defaultZone = "ch-gva-2"
+key = "EXOfirst123"
+name = "FirstAccount"
+secret = "secretFirst123"

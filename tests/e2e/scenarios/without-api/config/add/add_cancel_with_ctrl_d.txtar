@@ -1,0 +1,9 @@
+# Test cancelling with Ctrl+D (EOF) during API key prompt
+# Ctrl+D sends EOF signal which should be handled like Ctrl+C
+
+# Attempt to add account and cancel with Ctrl+D
+! execpty --stdin=inputs exo config add
+stderr 'Error: Operation Cancelled'
+
+-- inputs --
+@ctrl+d

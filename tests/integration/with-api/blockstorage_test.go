@@ -1,9 +1,14 @@
-package integ
+//go:build integration_api
+// +build integration_api
+
+package integration_with_api_test
 
 import (
 	"fmt"
 	"math/rand"
 	"testing"
+
+	"github.com/exoscale/cli/internal/integ"
 )
 
 type blockStorageShowOutput struct {
@@ -34,10 +39,10 @@ func TestBlockStorage(t *testing.T) {
 		NewSnapshotName: fmt.Sprintf("test-snap-name-%d-renamed", rand.Int()),
 	}
 
-	s := Suite{
+	s := integ.Suite{
 		Zone:       "ch-gva-2",
 		Parameters: params,
-		Steps: []Step{
+		Steps: []integ.Step{
 			{
 				Description: "create volume",
 				Command: "exo compute block-storage create {{.VolumeName}}" +

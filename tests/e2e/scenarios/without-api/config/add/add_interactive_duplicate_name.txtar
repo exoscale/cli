@@ -1,0 +1,39 @@
+# Test: Interactive config add with duplicate name handling
+# Tests that the CLI properly rejects duplicate account names and re-prompts.
+
+# Create initial config with one account
+mkdir -p .config/exoscale
+cp initial-config.toml .config/exoscale/exoscale.toml
+
+# Try to add account with duplicate name, then provide unique name
+execpty --stdin=inputs exo config add
+stdout 'Name \[ExistingAccount\] already exist'
+stdout 'UniqueAccount'
+
+# Verify the new account was added with the corrected name
+exec exo config list
+stdout 'ExistingAccount'
+stdout 'UniqueAccount'
+
+# Verify UniqueAccount was created properly
+exec exo config show UniqueAccount
+stdout 'UniqueAccount'
+stdout 'EXOunique999'
+
+-- inputs --
+EXOunique999
+secretUnique999
+ExistingAccount
+UniqueAccount
+@enter
+n
+
+-- initial-config.toml --
+defaultAccount = "ExistingAccount"
+
+[[accounts]]
+account = "ExistingAccount"
+defaultZone = "ch-gva-2"
+key = "EXOexisting456"
+name = "ExistingAccount"
+secret = "secretExisting456"

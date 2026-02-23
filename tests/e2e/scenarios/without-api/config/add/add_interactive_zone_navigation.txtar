@@ -1,0 +1,29 @@
+# Test: Interactive config add with zone selection navigation
+# Tests navigating the zone selection menu with arrow keys.
+
+# Create empty config directory
+mkdir -p .config/exoscale
+
+# Add account and navigate down to select ch-dk-2 (second zone in typical list)
+# Typical zone order: at-vie-1, at-vie-2, bg-sof-1, ch-dk-2, ch-gva-2...
+execpty --stdin=inputs exo config add
+stdout 'TestZoneNav'
+stdout 'as default account \(first account\)'
+
+# Verify the account was created
+exec exo config show
+stdout 'TestZoneNav'
+stdout 'EXOzonetest111'
+
+# Note: We can't easily verify the selected zone in non-API mode
+# as the zone list requires API access. In real scenarios with API,
+# this test would verify the defaultZone field in the config.
+
+-- inputs --
+EXOzonetest111
+secretZone111
+TestZoneNav
+@down
+@down
+@down
+@enter

@@ -1,0 +1,28 @@
+# Test: Interactive config add with empty value validation
+# Tests that API Key, Secret Key, and Name cannot be left empty.
+# The CLI should re-prompt when empty values are submitted.
+
+# Create empty config directory (simulating first-time setup)
+mkdir -p .config/exoscale
+
+# Run interactive config add, attempting to submit empty values first
+execpty --stdin=inputs exo config add
+stdout 'API Key cannot be empty'
+stdout 'Secret Key cannot be empty'
+stdout 'Name cannot be empty'
+stdout '\[TestAccount\] as default account \(first account\)'
+
+# Verify config file was created with correct content
+exec exo config show
+stdout 'TestAccount'
+stdout 'EXOvalid123'
+
+-- inputs --
+@enter
+EXOvalid123
+@enter
+validSecret456
+@enter
+TestAccount
+@down
+@enter

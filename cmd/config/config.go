@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -44,7 +45,8 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 		if err != nil {
 			switch err {
 			case promptui.ErrInterrupt:
-				return nil
+				fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+				os.Exit(130)
 			default:
 				return fmt.Errorf("prompt failed: %s", err)
 			}
@@ -241,6 +243,9 @@ func chooseZone(client *v3.Client, zones []string) (string, error) {
 
 	_, result, err := prompt.Run()
 	if err != nil {
+		if err == promptui.ErrInterrupt {
+			return "", io.EOF // Return io.EOF to signal cancellation
+		}
 		return "", fmt.Errorf("prompt failed: %w", err)
 	}
 

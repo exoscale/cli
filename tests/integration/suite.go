@@ -1,4 +1,4 @@
-package integ
+package integration
 
 import (
 	"bytes"
@@ -14,7 +14,9 @@ import (
 )
 
 var (
-	Binary = "../../bin/exo"
+	// Binary path is relative to tests/integration (parent of with-api/without-api subdirectories)
+	// When tests are run from subdirectories, adjust as needed
+	Binary = "../../../bin/exo"
 )
 
 type Step struct {
