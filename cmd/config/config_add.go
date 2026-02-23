@@ -233,23 +233,45 @@ func promptAccountInformation() (*account.Account, error) {
 	return account, nil
 }
 
-// askSetDefault uses a promptui Prompt (PTY-compatible) to ask whether the new
-// account should become the default. Returns true for "y/Y/yes", false for anything else.
+// askSetDefault asks whether the new account should become the default.
+// Returns true for "y/Y/yes", false for anything else (empty = default No).
+//
+// This deliberately uses plain bufio line-based I/O rather than promptui.Prompt
+// (readline). promptui.Prompt defers its initial PTY render until the first
+// keystroke, which deadlocks the settle-based PTY test harness: the test waits
+// for output before sending input, but the prompt waits for input before
+// producing output. Plain bufio avoids readline entirely; the PTY line
+// discipline (cooked mode, restored by the preceding promptui.Select) handles
+// '\r' → '\n' translation for us.
 func askSetDefault(name string) (bool, error) {
-	prompt := promptui.Prompt{
-		Label: fmt.Sprintf("Set [%s] as default account? [y/N]", name),
-		Validate: func(input string) error {
-			lower := strings.ToLower(strings.TrimSpace(input))
-			if lower == "" || lower == "y" || lower == "yes" || lower == "n" || lower == "no" {
-				return nil
-			}
-			return fmt.Errorf("please enter y or n")
-		},
+	fmt.Printf("[?] Set [%s] as default account? [y/N]: ", name)
+
+	ctx := exocmd.GContext
+	reader := bufio.NewReader(os.Stdin)
+
+	resultCh := make(chan struct {
+		value string
+		err   error
+	}, 1)
+	go func() {
+		value, err := reader.ReadString('\n')
+		resultCh <- struct {
+			value string
+			err   error
+		}{value, err}
+	}()
+
+	select {
+	case result := <-resultCh:
+		if result.err == io.EOF {
+			return false, io.EOF
+		}
+		if result.err != nil {
+			return false, result.err
+		}
+		lower := strings.ToLower(strings.TrimSpace(result.value))
+		return lower == "y" || lower == "yes", nil
+	case <-ctx.Done():
+		return false, ctx.Err()
 	}
-	result, err := prompt.Run()
-	if err != nil {
-		return false, err
-	}
-	lower := strings.ToLower(strings.TrimSpace(result))
-	return lower == "y" || lower == "yes", nil
 }
