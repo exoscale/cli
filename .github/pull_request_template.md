@@ -9,7 +9,7 @@
 ## Checklist
 (For exoscale contributors)
 
-* [ ] Changelog updated (under *Unreleased* block)
+* [ ] Changelog updated (under *Unreleased* block, and add the Pull Request #number for each bit you add to the `CHANGELOG.md`)
 * [ ] Testing
 
 ## Testing
