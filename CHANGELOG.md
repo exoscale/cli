@@ -6,6 +6,10 @@
 
 - fix(config): panic when used without a default account set #798
 
+### Documentation
+
+- docs(pr-template): clarify changelog update instructions #802
+
 ### Testing
 
 - test(testscript): add PTY infrastructure for testing interactive flows and commands #800
