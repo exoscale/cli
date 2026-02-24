@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Features
+
+- sks: add `rotate-karpenter-credentials` command #797
+- sks: add `active-nodepool-templates` command #797
+
 ### Bug fixes
 
 - fix(config): panic when used without a default account set #798
