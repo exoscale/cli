@@ -12,6 +12,7 @@ on:
 
 jobs:
   build:
+    name: Build + Run Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -19,3 +20,22 @@ jobs:
           fetch-depth: 0
 
       - uses: ./.github/actions/build
+
+  test-e2e:
+    name: Run E2E (Testscript) Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+      
+      - name: Build binary
+        run: make build
+      
+      - name: Run E2E (Testscript) Tests / Without API
+        run: |
+          cd tests/e2e
+          go test -v

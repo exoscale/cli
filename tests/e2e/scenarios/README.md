@@ -4,17 +4,17 @@ This directory contains testscript scenarios for end-to-end testing the Exoscale
 
 ## Directory Structure
 
-- **local/**: Test scenarios that don't require API access (run by default)
-- **api/**: Test scenarios that require API access (run with `-tags=api`)
+- **without-api/**: Test scenarios that don't require API access (run by default)
+- **with-api/**: Test scenarios that require API access (run with `-tags=api`)
 
 ## Current Scenarios
 
-### Local Tests (scenarios/local/)
+### Tests Without API (scenarios/without-api/)
 
 - **basic_no_api.txtar**: Tests basic CLI functionality without API access (version, help commands)
 - **config_isolated.txtar**: Tests config file isolation using `XDG_CONFIG_HOME`
 
-### API Tests (scenarios/api/)
+### Tests With API (scenarios/with-api/)
 
 No API test scenarios yet. These will be added in a future PR.
 
@@ -50,7 +50,7 @@ This approach is more maintainable than regex filtering and follows Go best prac
 
 ## Future Work
 
-**TODO**: API-based tests will be added in a separate PR to `scenarios/api/`. These will require:
+**TODO**: API-based tests will be added in a separate PR to `scenarios/with-api/`. These will require:
 - Organization test account setup
 - Proper API credentials configuration (`EXOSCALE_API_KEY`, `EXOSCALE_API_SECRET`)
 - Test scenarios covering:

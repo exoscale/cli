@@ -2,8 +2,12 @@ package config
 
 import (
 	"bufio"
+	"context"
+	"errors"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -29,10 +33,24 @@ func init() {
 
 			newAccount, err := promptAccountInformation()
 			if err != nil {
+				// Handle cancellation gracefully without showing error
+				if errors.Is(err, context.Canceled) || err == io.EOF {
+					fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+					os.Exit(130) // Standard exit code for SIGINT
+				}
 				return err
 			}
 
 			config := &account.Config{Accounts: []account.Account{*newAccount}}
+
+			// Get config file path, creating if this is the first account
+			filePath := exocmd.GConfig.ConfigFileUsed()
+			if isFirstAccount && filePath == "" {
+				if filePath, err = createConfigFile(exocmd.DefaultConfigFileName); err != nil {
+					return err
+				}
+				exocmd.GConfig.SetConfigFile(filePath)
+			}
 
 			if isFirstAccount {
 				// First account: automatically set as default
@@ -47,7 +65,7 @@ func init() {
 				}
 			}
 
-			return saveConfig(exocmd.GConfig.ConfigFileUsed(), config)
+			return saveConfig(filePath, config)
 		},
 	})
 }
@@ -70,6 +88,11 @@ func addConfigAccount(firstRun bool) error {
 
 	newAccount, err := promptAccountInformation()
 	if err != nil {
+		// Handle cancellation gracefully with message
+		if errors.Is(err, context.Canceled) || err == io.EOF {
+			fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+			os.Exit(130) // Standard exit code for SIGINT
+		}
 		return err
 	}
 	config.DefaultAccount = newAccount.Name
@@ -83,6 +106,36 @@ func addConfigAccount(firstRun bool) error {
 	return saveConfig(filePath, &config)
 }
 
+// readInputWithContext reads a line from stdin with context cancellation support.
+// Returns io.EOF if Ctrl+C or Ctrl+D is pressed, allowing graceful cancellation.
+// Silent exit behavior matches promptui.Select's interrupt handling.
+func readInputWithContext(ctx context.Context, reader *bufio.Reader, prompt string) (string, error) {
+	fmt.Printf("[+] %s: ", prompt)
+
+	inputCh := make(chan struct {
+		value string
+		err   error
+	}, 1)
+
+	go func() {
+		value, err := reader.ReadString('\n')
+		inputCh <- struct {
+			value string
+			err   error
+		}{value, err}
+	}()
+
+	select {
+	case result := <-inputCh:
+		if result.err != nil {
+			return "", result.err
+		}
+		return strings.TrimSpace(result.value), nil
+	case <-ctx.Done():
+		return "", ctx.Err()
+	}
+}
+
 func promptAccountInformation() (*account.Account, error) {
 	var client *v3.Client
 
@@ -91,34 +144,47 @@ func promptAccountInformation() (*account.Account, error) {
 	reader := bufio.NewReader(os.Stdin)
 	account := &account.Account{}
 
-	apiKey, err := utils.ReadInput(ctx, reader, "API Key", account.Key)
+	// Prompt for API Key with validation
+	apiKey, err := readInputWithContext(ctx, reader, "API Key")
 	if err != nil {
 		return nil, err
 	}
-	if apiKey != account.Key {
-		account.Key = apiKey
+	for apiKey == "" {
+		fmt.Println("API Key cannot be empty")
+		apiKey, err = readInputWithContext(ctx, reader, "API Key")
+		if err != nil {
+			return nil, err
+		}
 	}
+	account.Key = apiKey
 
-	secret := account.APISecret()
-	secretShow := account.APISecret()
-	if secret != "" && len(secret) > 10 {
-		secretShow = secret[0:7] + "..."
-	}
-	secretKey, err := utils.ReadInput(ctx, reader, "Secret Key", secretShow)
+	// Prompt for Secret Key with validation
+	secretKey, err := readInputWithContext(ctx, reader, "Secret Key")
 	if err != nil {
 		return nil, err
 	}
-	if secretKey != secret && secretKey != secretShow {
-		account.Secret = secretKey
+	for secretKey == "" {
+		fmt.Println("Secret Key cannot be empty")
+		secretKey, err = readInputWithContext(ctx, reader, "Secret Key")
+		if err != nil {
+			return nil, err
+		}
 	}
+	account.Secret = secretKey
 
-	name, err := utils.ReadInput(ctx, reader, "Name", account.Name)
+	// Prompt for Name with validation
+	name, err := readInputWithContext(ctx, reader, "Name")
 	if err != nil {
 		return nil, err
 	}
-	if name != "" {
-		account.Name = name
+	for name == "" {
+		fmt.Println("Name cannot be empty")
+		name, err = readInputWithContext(ctx, reader, "Name")
+		if err != nil {
+			return nil, err
+		}
 	}
+	account.Name = name
 
 	for {
 		if a := getAccountByName(account.Name); a == nil {

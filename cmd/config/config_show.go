@@ -39,13 +39,17 @@ Supported output template annotations: %s`,
 			strings.Join(output.TemplateAnnotations(&configShowOutput{}), ", ")),
 		Aliases: exocmd.GShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if account.GAllAccount == nil {
-				return fmt.Errorf("no accounts configured")
+			if account.GAllAccount == nil || len(account.GAllAccount.Accounts) == 0 {
+				return fmt.Errorf("no accounts configured. Run: exo config (or exo config add)")
 			}
 
-			name := account.CurrentAccount.Name
+			var name string
 			if len(args) > 0 {
 				name = args[0]
+			} else if account.CurrentAccount != nil && account.CurrentAccount.Name != "" {
+				name = account.CurrentAccount.Name
+			} else {
+				return fmt.Errorf("default account not defined. Please specify an account name or set a default with: exo config set <account-name>")
 			}
 
 			return utils.PrintOutput(showConfig(name))

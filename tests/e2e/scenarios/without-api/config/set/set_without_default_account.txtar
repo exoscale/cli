@@ -1,0 +1,35 @@
+# Test: Config set command works without default account (fixes circular dependency)
+# Previously `exo config set` failed with "default account not defined", creating a circular
+# dependency where the command to set a default required a default to exist.
+#
+# Bug fix: Allow config commands (set, list, show) to run without default account
+#
+# This state can occur when:
+# - User manually edits config file and removes defaultAccount
+# - Config file was created by an external tool
+# - User declined to set default during `exo config add` (though this now auto-sets)
+
+# Create config with account but NO defaultAccount field
+mkdir -p .config/exoscale
+cp test-config.toml .config/exoscale/exoscale.toml
+
+# Config list works without default account
+exec exo config list
+stdout 'Exoscale-Test'
+
+# Config set can now set a default account even when none exists (fixes circular dependency)
+exec exo config set Exoscale-Test
+stdout 'Default profile set to \[Exoscale-Test\]'
+
+# After setting default, config show should work
+exec exo config show
+stdout 'Exoscale-Test'
+stdout 'EXOtest123'
+
+# Config file without defaultAccount field
+-- test-config.toml --
+[[accounts]]
+name = "Exoscale-Test"
+key = "EXOtest123"
+secret = "testsecret123"
+defaultZone = "ch-gva-2"

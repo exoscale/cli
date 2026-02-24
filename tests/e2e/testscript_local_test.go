@@ -11,14 +11,17 @@ import (
 // TestScriptsLocal runs testscript scenarios that don't require API access.
 // These tests run by default without any build tags.
 func TestScriptsLocal(t *testing.T) {
-	// Find all txtar files recursively in scenarios/local
-	files, err := findTestScripts("scenarios/local")
+	// Find all txtar files recursively in scenarios/without-api
+	files, err := findTestScripts("scenarios/without-api")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	testscript.Run(t, testscript.Params{
 		Files: files,
+		Cmds: map[string]func(ts *testscript.TestScript, neg bool, args []string){
+			"execpty": cmdExecPTY,
+		},
 		Setup: func(e *testscript.Env) error {
 			return setupTestEnv(e, false)
 		},
@@ -48,11 +51,6 @@ func setupTestEnv(e *testscript.Env, withAPI bool) error {
 	configDir := filepath.Join(e.WorkDir, ".config")
 	e.Setenv("XDG_CONFIG_HOME", configDir)
 	e.Setenv("HOME", e.WorkDir)
-
-	// Set default flags that all tests need
-	// TODO: Make these parametrizable per test scenario
-	e.Setenv("EXO_ZONE", "ch-gva-2")
-	e.Setenv("EXO_OUTPUT", "json")
 
 	// Forward API credentials if requested (for integration tests)
 	if withAPI {

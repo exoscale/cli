@@ -4,7 +4,12 @@
 
 ### Bug fixes
 
-- Fix panic when config commands are used without a default account set #798
+- fix(config): panic when used without a default account set #798
+
+### Testing
+
+- test(testscript): add PTY infrastructure for testing interactive flows and commands #800
+
 
 ## 1.93.0
 

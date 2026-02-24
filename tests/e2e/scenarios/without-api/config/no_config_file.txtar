@@ -1,0 +1,15 @@
+# Test: Helpful messages when no config file exists
+# First-time users should get clear guidance on how to configure the CLI
+
+# Config command without any config file should show setup instructions
+! exec exo config
+stdout 'No Exoscale CLI configuration found'
+stdout 'In order to set up your configuration profile'
+stdout 'https://portal.exoscale.com/iam/keys'
+
+# Other config commands should fail gracefully
+! exec exo config show
+stderr 'exo config add'
+
+# Config list with no accounts returns empty (doesn't error)
+exec exo config list
