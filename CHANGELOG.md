@@ -4,8 +4,8 @@
 
 ### Features
 
-- sks: add `rotate-karpenter-credentials` command
-- sks: add `active-nodepool-templates` command
+- sks: add `rotate-karpenter-credentials` command #797
+- sks: add `active-nodepool-templates` command #797
 
 ### Bug fixes
 
