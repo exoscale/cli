@@ -9,7 +9,7 @@
 ### Testing
 
 - test(testscript): add PTY infrastructure for testing interactive flows and commands #800
-- test(testscript): add validation handling in PTY-based interactive flows
+- test(testscript): add validation handling in PTY-based interactive flows #801
 
 ## 1.93.0
 
