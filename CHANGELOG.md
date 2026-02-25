@@ -2,8 +2,10 @@
 
 ## Unreleased
 
+
 ### Features
 
+- `exo compute eip list` now shows the description & the management type of the EIP #803
 - sks: add `rotate-karpenter-credentials` command #797
 - sks: add `active-nodepool-templates` command #797
 
