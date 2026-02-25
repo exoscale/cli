@@ -15,9 +15,11 @@ import (
 )
 
 type elasticIPListItemOutput struct {
-	ID        v3.UUID     `json:"id"`
-	IPAddress string      `json:"ip_address"`
-	Zone      v3.ZoneName `json:"zone"`
+	ID          v3.UUID     `json:"id"`
+	IPAddress   string      `json:"ip_address"`
+	Description string      `json:"description"`
+	Type        string      `json:"type"`
+	Zone        v3.ZoneName `json:"zone"`
 }
 
 type elasticIPListOutput []elasticIPListItemOutput
@@ -78,10 +80,18 @@ func (c *elasticIPListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 		if list != nil {
 			for _, e := range list.ElasticIPS {
+				var eipType string
+				if e.Healthcheck != nil {
+					eipType = "Managed"
+				} else {
+					eipType = "Manual"
+				}
 				res <- elasticIPListItemOutput{
-					ID:        e.ID,
-					IPAddress: e.IP,
-					Zone:      zone.Name,
+					ID:          e.ID,
+					IPAddress:   e.IP,
+					Description: e.Description,
+					Type:        eipType,
+					Zone:        zone.Name,
 				}
 			}
 
