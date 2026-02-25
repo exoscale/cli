@@ -46,7 +46,10 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 			switch err {
 			case promptui.ErrInterrupt:
 				fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-				os.Exit(130)
+				os.Exit(exocmd.ExitCodeInterrupt)
+			case promptui.ErrEOF:
+				fmt.Fprintln(os.Stderr, "")
+				os.Exit(0)
 			default:
 				return fmt.Errorf("prompt failed: %s", err)
 			}

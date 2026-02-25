@@ -34,10 +34,14 @@ func init() {
 
 			newAccount, err := promptAccountInformation()
 			if err != nil {
-				// Handle cancellation gracefully without showing error
-				if errors.Is(err, context.Canceled) || err == io.EOF {
+				// Handle cancellation gracefully
+				if errors.Is(err, context.Canceled) {
 					fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-					os.Exit(130) // Standard exit code for SIGINT
+					os.Exit(exocmd.ExitCodeInterrupt)
+				}
+				if err == io.EOF {
+					fmt.Fprintln(os.Stderr, "")
+					os.Exit(0)
 				}
 				return err
 			}
@@ -62,9 +66,13 @@ func init() {
 				// Additional account: ask user if it should be the new default
 				setDefault, err := askSetDefault(newAccount.Name)
 				if err != nil {
-					if errors.Is(err, promptui.ErrInterrupt) || err == io.EOF {
+					if errors.Is(err, promptui.ErrInterrupt) {
 						fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-						os.Exit(130)
+						os.Exit(exocmd.ExitCodeInterrupt)
+					}
+					if err == promptui.ErrEOF {
+						fmt.Fprintln(os.Stderr, "")
+						os.Exit(0)
 					}
 					return err
 				}
@@ -98,10 +106,14 @@ func addConfigAccount(firstRun bool) error {
 
 	newAccount, err := promptAccountInformation()
 	if err != nil {
-		// Handle cancellation gracefully with message
-		if errors.Is(err, context.Canceled) || err == io.EOF {
+		// Handle cancellation gracefully
+		if errors.Is(err, context.Canceled) {
 			fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-			os.Exit(130) // Standard exit code for SIGINT
+			os.Exit(exocmd.ExitCodeInterrupt)
+		}
+		if err == io.EOF {
+			fmt.Fprintln(os.Stderr, "")
+			os.Exit(0)
 		}
 		return err
 	}
