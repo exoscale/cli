@@ -80,11 +80,9 @@ func (c *elasticIPListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 		if list != nil {
 			for _, e := range list.ElasticIPS {
-				var eipType string
+				eipType := "Manual"
 				if e.Healthcheck != nil {
 					eipType = "Managed"
-				} else {
-					eipType = "Manual"
 				}
 				res <- elasticIPListItemOutput{
 					ID:          e.ID,
