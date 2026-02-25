@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
@@ -31,6 +31,12 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 
 	if exocmd.GConfigFilePath == "" && account.CurrentAccount.Key != "" {
 		log.Fatalf("remove ENV credentials variables to use %s", cmd.CalledAs())
+	}
+
+	// Check if running non-interactively (no TTY)
+	if !isTerminal(os.Stdin.Fd()) {
+		printNoConfigMessage()
+		return fmt.Errorf("interactive terminal required for config setup")
 	}
 
 	if exocmd.GConfigFilePath != "" && account.CurrentAccount.Key != "" {
@@ -246,13 +252,22 @@ func chooseZone(client *v3.Client, zones []string) (string, error) {
 
 	_, result, err := prompt.Run()
 	if err != nil {
-		if err == promptui.ErrInterrupt {
-			return "", io.EOF // Return io.EOF to signal cancellation
+		switch err {
+		case promptui.ErrInterrupt:
+			return "", promptui.ErrInterrupt // Propagate Ctrl+C
+		case promptui.ErrEOF:
+			return "", promptui.ErrEOF // Propagate Ctrl+D
+		default:
+			return "", fmt.Errorf("prompt failed: %w", err)
 		}
-		return "", fmt.Errorf("prompt failed: %w", err)
 	}
 
 	return result, nil
+}
+
+// isTerminal checks if the given file descriptor is a terminal
+func isTerminal(fd uintptr) bool {
+	return term.IsTerminal(int(fd))
 }
 
 func printNoConfigMessage() {

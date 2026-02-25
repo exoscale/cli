@@ -230,9 +230,28 @@ func promptAccountInformation() (*account.Account, error) {
 	}
 	account.DefaultZone, err = chooseZone(client, nil)
 	if err != nil {
+		// Handle prompt cancellation
+		if err == promptui.ErrInterrupt {
+			fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+			os.Exit(exocmd.ExitCodeInterrupt)
+		}
+		if err == promptui.ErrEOF {
+			fmt.Fprintln(os.Stderr, "")
+			os.Exit(0)
+		}
+		// API error - try with fallback zones
 		for {
 			defaultZone, err := chooseZone(globalstate.EgoscaleV3Client, utils.AllZones)
 			if err != nil {
+				// Handle prompt cancellation in fallback
+				if err == promptui.ErrInterrupt {
+					fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+					os.Exit(exocmd.ExitCodeInterrupt)
+				}
+				if err == promptui.ErrEOF {
+					fmt.Fprintln(os.Stderr, "")
+					os.Exit(0)
+				}
 				return nil, err
 			}
 			if defaultZone != "" {
