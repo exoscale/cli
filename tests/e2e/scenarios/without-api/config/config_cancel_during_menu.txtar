@@ -1,0 +1,24 @@
+# Test cancelling at config menu selection
+# User has existing config, opens menu, then cancels
+
+# Create existing config with one account
+env HOME=$WORK
+mkdir $HOME/.config/exoscale
+cp test-config.toml $HOME/.config/exoscale/exoscale.toml
+
+# Open config menu and cancel
+! execpty --stdin=inputs exo config
+stderr 'Error: Operation Cancelled'
+
+-- test-config.toml --
+defaultaccount = "test"
+
+[[accounts]]
+  name = "test"
+  key = "EXOtest123"
+  secret = "secretTest456"
+  defaultzone = "ch-gva-2"
+
+-- inputs --
+@down
+@ctrl+c

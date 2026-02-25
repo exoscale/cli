@@ -1,0 +1,9 @@
+# Test cancelling with Ctrl+C (interrupt) during API key prompt
+# Ctrl+C should show error message and exit with code 130
+
+# Attempt to add account and cancel with Ctrl+C
+! execpty --stdin=inputs exo config add
+stderr 'Error: Operation Cancelled'
+
+-- inputs --
+@ctrl+c

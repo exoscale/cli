@@ -62,7 +62,7 @@ var ansiRe = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
 func stripANSI(s string) string { return ansiRe.ReplaceAllString(s, "") }
 
 // runInPTY starts cmd inside a PTY, optionally feeds keystrokes via the
-// inputs channel (each []byte is written with a small delay between writes),
+// inputs channel (each []byte is written with a fixed delay between writes),
 // collects all PTY output with ANSI stripped, waits for the process to exit
 // and returns the cleaned output.
 func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan []byte) string {
@@ -72,7 +72,7 @@ func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan []byte) st
 	if inputs != nil {
 		go func() {
 			for b := range inputs {
-				time.Sleep(80 * time.Millisecond)
+				time.Sleep(300 * time.Millisecond)
 				if _, werr := ptm.Write(b); werr != nil && werr != io.ErrClosedPipe {
 					return
 				}

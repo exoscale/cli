@@ -1,0 +1,8 @@
+# Test cancelling with Ctrl+D (EOF) during API key prompt
+# Ctrl+D should exit gracefully with code 0 (not an error like Ctrl+C)
+
+# Attempt to add account and cancel with Ctrl+D - should exit gracefully
+execpty --stdin=inputs exo config add
+
+-- inputs --
+@ctrl+d

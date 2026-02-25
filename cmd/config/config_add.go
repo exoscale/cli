@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -33,10 +34,14 @@ func init() {
 
 			newAccount, err := promptAccountInformation()
 			if err != nil {
-				// Handle cancellation gracefully without showing error
-				if errors.Is(err, context.Canceled) || err == io.EOF {
+				// Handle cancellation gracefully
+				if errors.Is(err, context.Canceled) {
 					fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-					os.Exit(130) // Standard exit code for SIGINT
+					os.Exit(exocmd.ExitCodeInterrupt)
+				}
+				if err == io.EOF {
+					fmt.Fprintln(os.Stderr, "")
+					os.Exit(0)
 				}
 				return err
 			}
@@ -59,9 +64,22 @@ func init() {
 				fmt.Printf("Set [%s] as default account (first account)\n", newAccount.Name)
 			} else {
 				// Additional account: ask user if it should be the new default
-				if utils.AskQuestion(exocmd.GContext, "Set ["+newAccount.Name+"] as default account?") {
+				setDefault, err := askSetDefault(newAccount.Name)
+				if err != nil {
+					if errors.Is(err, promptui.ErrInterrupt) {
+						fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+						os.Exit(exocmd.ExitCodeInterrupt)
+					}
+					if err == promptui.ErrEOF {
+						fmt.Fprintln(os.Stderr, "")
+						os.Exit(0)
+					}
+					return err
+				}
+				if setDefault {
 					config.DefaultAccount = newAccount.Name
 					exocmd.GConfig.Set("defaultAccount", newAccount.Name)
+					fmt.Printf("Set [%s] as default account\n", newAccount.Name)
 				}
 			}
 
@@ -88,10 +106,14 @@ func addConfigAccount(firstRun bool) error {
 
 	newAccount, err := promptAccountInformation()
 	if err != nil {
-		// Handle cancellation gracefully with message
-		if errors.Is(err, context.Canceled) || err == io.EOF {
+		// Handle cancellation gracefully
+		if errors.Is(err, context.Canceled) {
 			fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-			os.Exit(130) // Standard exit code for SIGINT
+			os.Exit(exocmd.ExitCodeInterrupt)
+		}
+		if err == io.EOF {
+			fmt.Fprintln(os.Stderr, "")
+			os.Exit(0)
 		}
 		return err
 	}
@@ -208,9 +230,28 @@ func promptAccountInformation() (*account.Account, error) {
 	}
 	account.DefaultZone, err = chooseZone(client, nil)
 	if err != nil {
+		// Handle prompt cancellation
+		if err == promptui.ErrInterrupt {
+			fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+			os.Exit(exocmd.ExitCodeInterrupt)
+		}
+		if err == promptui.ErrEOF {
+			fmt.Fprintln(os.Stderr, "")
+			os.Exit(0)
+		}
+		// API error - try with fallback zones
 		for {
 			defaultZone, err := chooseZone(globalstate.EgoscaleV3Client, utils.AllZones)
 			if err != nil {
+				// Handle prompt cancellation in fallback
+				if err == promptui.ErrInterrupt {
+					fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+					os.Exit(exocmd.ExitCodeInterrupt)
+				}
+				if err == promptui.ErrEOF {
+					fmt.Fprintln(os.Stderr, "")
+					os.Exit(0)
+				}
 				return nil, err
 			}
 			if defaultZone != "" {
@@ -221,4 +262,47 @@ func promptAccountInformation() (*account.Account, error) {
 	}
 
 	return account, nil
+}
+
+// askSetDefault asks whether the new account should become the default.
+// Returns true for "y/Y/yes", false for anything else (empty = default No).
+//
+// This deliberately uses plain bufio line-based I/O rather than promptui.Prompt
+// (readline). promptui.Prompt defers its initial PTY render until the first
+// keystroke, which deadlocks the settle-based PTY test harness: the test waits
+// for output before sending input, but the prompt waits for input before
+// producing output. Plain bufio avoids readline entirely; the PTY line
+// discipline (cooked mode, restored by the preceding promptui.Select) handles
+// '\r' → '\n' translation for us.
+func askSetDefault(name string) (bool, error) {
+	fmt.Printf("[?] Set [%s] as default account? [y/N]: ", name)
+
+	ctx := exocmd.GContext
+	reader := bufio.NewReader(os.Stdin)
+
+	resultCh := make(chan struct {
+		value string
+		err   error
+	}, 1)
+	go func() {
+		value, err := reader.ReadString('\n')
+		resultCh <- struct {
+			value string
+			err   error
+		}{value, err}
+	}()
+
+	select {
+	case result := <-resultCh:
+		if result.err == io.EOF {
+			return false, io.EOF
+		}
+		if result.err != nil {
+			return false, result.err
+		}
+		lower := strings.ToLower(strings.TrimSpace(result.value))
+		return lower == "y" || lower == "yes", nil
+	case <-ctx.Done():
+		return false, ctx.Err()
+	}
 }
