@@ -39,3 +39,26 @@ jobs:
         run: |
           cd tests/e2e
           go test -v
+
+  test-e2e-api:
+    name: Run E2E (Testscript) Tests / With API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Build binary
+        run: make build
+
+      - name: Run E2E (Testscript) Tests / With API
+        env:
+          EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_API_KEY }}
+          EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
+          EXOSCALE_ZONE: ch-gva-2
+        run: |
+          cd tests/e2e
+          go test -v -tags=api -timeout 30m -run TestScriptsAPI
