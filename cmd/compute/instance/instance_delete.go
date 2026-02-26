@@ -54,7 +54,7 @@ func (c *instanceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	instanceToDelete := []v3.UUID{}
 	for _, i := range c.Instances {
-		instance, err := instances.FindListInstancesResponseInstances(i)
+		instance, err := findInstance(instances, i, c.Zone)
 		if err != nil {
 			if !c.Force {
 				return err

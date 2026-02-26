@@ -59,7 +59,7 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	instance, err := instances.FindListInstancesResponseInstances(c.Instance)
+	instance, err := findInstance(instances, c.Instance, c.Zone)
 	if err != nil {
 		return err
 	}

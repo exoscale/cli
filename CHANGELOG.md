@@ -5,6 +5,10 @@
 ### Features
 
 - sks: add `rotate-karpenter-credentials` command #797
+
+### Improvements
+
+- compute instance: enrich "not found" error with the zone searched and a hint to use -z #805
 - sks: add `active-nodepool-templates` command #797
 
 ### Bug fixes

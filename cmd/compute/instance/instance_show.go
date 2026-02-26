@@ -87,7 +87,7 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	foundInstance, err := resp.FindListInstancesResponseInstances(c.Instance)
+	foundInstance, err := findInstance(resp, c.Instance, string(c.Zone))
 	if err != nil {
 		return err
 	}
