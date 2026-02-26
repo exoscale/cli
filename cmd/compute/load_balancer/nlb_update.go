@@ -82,6 +82,9 @@ func (c *nlbUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if updated {
 
 		op, err := client.UpdateLoadBalancer(ctx, n.ID, nlbRequest)
+		if err != nil {
+			return err
+		}
 
 		utils.DecorateAsyncOperation(
 			fmt.Sprintf("Updating Network Load Balancer %q...", c.NetworkLoadBalancer),
