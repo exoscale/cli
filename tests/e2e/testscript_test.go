@@ -1,7 +1,6 @@
 package e2e_test
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -61,37 +61,84 @@ var ansiRe = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
 
 func stripANSI(s string) string { return ansiRe.ReplaceAllString(s, "") }
 
+// ptyInput represents a single keystroke/sequence to be fed into a PTY process.
+// If waitFor is non-empty, the input is held until that exact string appears
+// somewhere in the accumulated PTY output (or a 10-second deadline expires),
+// making test scenarios deterministic even on slow CI runners.
+type ptyInput struct {
+	waitFor string // pattern to wait for in PTY output before writing
+	data    []byte // bytes to write to the PTY
+}
+
 // runInPTY starts cmd inside a PTY, optionally feeds keystrokes via the
-// inputs channel (each []byte is written with a fixed delay between writes),
-// collects all PTY output with ANSI stripped, waits for the process to exit
-// and returns the cleaned output.
-func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan []byte) string {
+// inputs channel, collects all PTY output with ANSI stripped, waits for the
+// process to exit and returns the cleaned output.
+//
+// Each ptyInput can carry a waitFor pattern: when set, the byte sequence is
+// not written until that string appears in the accumulated PTY output (or a
+// 10-second timeout elapses). Inputs without a waitFor are still preceded by
+// a short fixed delay so that fast-typing scenarios remain stable.
+func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan ptyInput) string {
 	ptm, err := pty.Start(cmd)
 	ts.Check(err)
 
+	// mu protects rawOut, which is the ANSI-stripped PTY output accumulated so
+	// far. The input goroutine reads it to detect wait-for patterns; the output
+	// goroutine writes it as bytes arrive from the PTY.
+	var mu sync.Mutex
+	var rawOut strings.Builder
+
+	// Output collector: read the PTY with a raw byte loop so that partial lines
+	// (e.g. prompts that do not end with '\n') are captured immediately.
+	outCh := make(chan string, 1)
+	go func() {
+		var cleaned strings.Builder
+		buf := make([]byte, 4096)
+		for {
+			n, rerr := ptm.Read(buf)
+			if n > 0 {
+				chunk := stripANSI(string(buf[:n]))
+				mu.Lock()
+				rawOut.WriteString(chunk)
+				mu.Unlock()
+				// Accumulate per-line trimmed text for the return value.
+				for _, line := range strings.Split(chunk, "\n") {
+					if t := strings.TrimSpace(line); t != "" {
+						cleaned.WriteString(t + "\n")
+					}
+				}
+			}
+			if rerr != nil {
+				break
+			}
+		}
+		outCh <- cleaned.String()
+	}()
+
 	if inputs != nil {
 		go func() {
-			for b := range inputs {
-				time.Sleep(300 * time.Millisecond)
-				if _, werr := ptm.Write(b); werr != nil && werr != io.ErrClosedPipe {
+			for inp := range inputs {
+				if inp.waitFor != "" {
+					// Block until the expected string appears in PTY output.
+					deadline := time.Now().Add(10 * time.Second)
+					for time.Now().Before(deadline) {
+						mu.Lock()
+						found := strings.Contains(rawOut.String(), inp.waitFor)
+						mu.Unlock()
+						if found {
+							break
+						}
+						time.Sleep(50 * time.Millisecond)
+					}
+				} else {
+					time.Sleep(300 * time.Millisecond)
+				}
+				if _, werr := ptm.Write(inp.data); werr != nil && werr != io.ErrClosedPipe {
 					return
 				}
 			}
 		}()
 	}
-
-	outCh := make(chan string, 1)
-	go func() {
-		var sb strings.Builder
-		scanner := bufio.NewScanner(ptm)
-		for scanner.Scan() {
-			line := strings.TrimSpace(stripANSI(scanner.Text()))
-			if line != "" {
-				sb.WriteString(line + "\n")
-			}
-		}
-		outCh <- sb.String()
-	}()
 
 	_ = cmd.Wait()
 	_ = ptm.Close()
@@ -128,32 +175,46 @@ func cmdExecPTY(ts *testscript.TestScript, neg bool, args []string) {
 		}
 	}
 
-	inputs := make(chan []byte, len(tokens))
+	// pendingWait is set by an @wait:<pattern> line; it is attached to the
+	// very next input token so that the write is delayed until the pattern is
+	// visible in the PTY output.
+	var pendingWait string
+
+	inputs := make(chan ptyInput, len(tokens))
 	for _, token := range tokens {
+		if after, ok := strings.CutPrefix(token, "@wait:"); ok {
+			pendingWait = after
+			continue
+		}
+
+		inp := ptyInput{waitFor: pendingWait}
+		pendingWait = ""
+
 		switch token {
 		case "@down", "↓":
-			inputs <- []byte{'\x1b', '[', 'B'}
+			inp.data = []byte{'\x1b', '[', 'B'}
 		case "@up", "↑":
-			inputs <- []byte{'\x1b', '[', 'A'}
+			inp.data = []byte{'\x1b', '[', 'A'}
 		case "@right", "→":
-			inputs <- []byte{'\x1b', '[', 'C'}
+			inp.data = []byte{'\x1b', '[', 'C'}
 		case "@left", "←":
-			inputs <- []byte{'\x1b', '[', 'D'}
+			inp.data = []byte{'\x1b', '[', 'D'}
 		case "@enter", "↵":
-			inputs <- []byte{'\r'}
+			inp.data = []byte{'\r'}
 		case "@ctrl+c", "^C":
-			inputs <- []byte{'\x03'}
+			inp.data = []byte{'\x03'}
 		case "@ctrl+d", "^D":
-			inputs <- []byte{'\x04'}
+			inp.data = []byte{'\x04'}
 		case "@escape", "⎋":
-			inputs <- []byte{'\x1b'}
+			inp.data = []byte{'\x1b'}
 		default:
 			text := token
 			if strings.HasPrefix(token, `\`) {
 				text = token[1:] // strip the escape prefix, treat rest as literal
 			}
-			inputs <- []byte(text + "\r")
+			inp.data = []byte(text + "\r")
 		}
+		inputs <- inp
 	}
 	close(inputs)
 

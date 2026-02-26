@@ -5,4 +5,5 @@
 execpty --stdin=inputs exo config add
 
 -- inputs --
+@wait:[+] API Key:
 @ctrl+d
