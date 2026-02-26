@@ -130,8 +130,6 @@ func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan ptyInput) 
 						}
 						time.Sleep(50 * time.Millisecond)
 					}
-				} else {
-					time.Sleep(300 * time.Millisecond)
 				}
 				if _, werr := ptm.Write(inp.data); werr != nil && werr != io.ErrClosedPipe {
 					return

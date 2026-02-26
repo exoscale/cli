@@ -20,9 +20,13 @@ stdout 'EXOzonetest111'
 # this test would verify the defaultZone field in the config.
 
 -- inputs --
+@wait:[+] API Key:
 EXOzonetest111
+@wait:[+] Secret Key:
 secretZone111
+@wait:[+] Name:
 TestZoneNav
+@wait:Default zone
 @down
 @down
 @down

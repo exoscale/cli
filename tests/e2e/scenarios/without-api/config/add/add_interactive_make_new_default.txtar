@@ -19,10 +19,15 @@ stdout 'NewDefault\*'
 ! stdout 'FirstAccount\*'
 
 -- inputs --
+@wait:[+] API Key:
 EXOnewdefault789
+@wait:[+] Secret Key:
 secretNew789
+@wait:[+] Name:
 NewDefault
+@wait:Default zone
 @enter
+@wait:[?] Set [
 y
 
 -- initial-config.toml --
