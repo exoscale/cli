@@ -61,8 +61,8 @@ func TestScriptsAPI(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Files: files,
 		Cmds: map[string]func(ts *testscript.TestScript, neg bool, args []string){
-			"execpty":           cmdExecPTY,
-			"json-setenv":       cmdJSONSetenv,
+			"execpty":             cmdExecPTY,
+			"json-setenv":         cmdJSONSetenv,
 			"wait-instance-state": cmdWaitInstanceState,
 		},
 		Setup: func(e *testscript.Env) error {
@@ -153,9 +153,34 @@ func cmdWaitInstanceState(ts *testscript.TestScript, neg bool, args []string) {
 		timeout = time.Duration(secs) * time.Second
 	}
 
+	// Propagate the testscript-isolated environment so the poll command uses the
+	// same config directory and credentials as the rest of the scenario, not the
+	// real process environment.
+	// We filter the real env first: on Linux getenv() returns the first match,
+	// so simply appending overrides to os.Environ() would have no effect.
+	overrides := map[string]string{
+		"HOME":                ts.Getenv("HOME"),
+		"XDG_CONFIG_HOME":     ts.Getenv("XDG_CONFIG_HOME"),
+		"EXOSCALE_API_KEY":    ts.Getenv("EXOSCALE_API_KEY"),
+		"EXOSCALE_API_SECRET": ts.Getenv("EXOSCALE_API_SECRET"),
+	}
+	pollEnv := make([]string, 0, len(os.Environ()))
+	for _, kv := range os.Environ() {
+		key := kv
+		if i := strings.IndexByte(kv, '='); i >= 0 {
+			key = kv[:i]
+		}
+		if _, overridden := overrides[key]; !overridden {
+			pollEnv = append(pollEnv, kv)
+		}
+	}
+	for k, v := range overrides {
+		pollEnv = append(pollEnv, k+"="+v)
+	}
+
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
-		out, err := runCLI(
+		out, err := runCLIWithEnv(pollEnv,
 			"--zone", zone,
 			"--output-format", "json",
 			"compute", "instance", "show",
@@ -182,7 +207,13 @@ func cmdWaitInstanceState(ts *testscript.TestScript, neg bool, args []string) {
 
 // runCLI runs the exo binary with the given arguments and returns combined stdout+stderr.
 func runCLI(args ...string) (string, error) {
+	return runCLIWithEnv(nil, args...)
+}
+
+// runCLIWithEnv runs the exo binary with an explicit environment (nil inherits the process env).
+func runCLIWithEnv(env []string, args ...string) (string, error) {
 	cmd := exec.Command(exoBinary, args...)
+	cmd.Env = env
 	out, err := cmd.CombinedOutput()
 	return strings.TrimSpace(string(out)), err
 }

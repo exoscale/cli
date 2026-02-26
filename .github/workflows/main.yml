@@ -9,6 +9,10 @@ on:
     - 'bucket/**'
     tags-ignore:
     - 'v*' # Don't run CI tests on release tags
+  pull_request:
+    paths-ignore:
+    - '**.md'
+    - 'bucket/**'
 
 jobs:
   build:
