@@ -3,7 +3,7 @@
 
 # Attempt to add account and cancel at zone selection
 # Wait for zone menu to appear (let API call fail first), then cancel
-! exec-pty --stdin=inputs [ exo config add ]
+! exec-pty [ exo config add ] [ inputs ]
 stderr 'Error: Operation Cancelled'
 
 -- inputs --
