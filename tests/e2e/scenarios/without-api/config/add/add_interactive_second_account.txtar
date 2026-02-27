@@ -24,10 +24,15 @@ stdout 'SecondAccount'
 stdout 'EXOsecond456'
 
 -- inputs --
+@wait:[+] API Key:
 EXOsecond456
+@wait:[+] Secret Key:
 secretSecond456
+@wait:[+] Name:
 SecondAccount
+@wait:Default zone
 @enter
+@wait:[?] Set [
 n
 
 -- initial-config.toml --

@@ -21,11 +21,17 @@ stdout 'UniqueAccount'
 stdout 'EXOunique999'
 
 -- inputs --
+@wait:[+] API Key:
 EXOunique999
+@wait:[+] Secret Key:
 secretUnique999
+@wait:[+] Name:
 ExistingAccount
+@wait:already exist
 UniqueAccount
+@wait:Default zone
 @enter
+@wait:[?] Set [
 n
 
 -- initial-config.toml --

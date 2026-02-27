@@ -20,8 +20,12 @@ exec exo config list
 stdout 'TestAccount\*'
 
 -- inputs --
+@wait:[+] API Key:
 EXOtest123key
+@wait:[+] Secret Key:
 secretTestKey123
+@wait:[+] Name:
 TestAccount
+@wait:Default zone
 @down
 @enter

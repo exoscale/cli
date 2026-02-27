@@ -19,6 +19,8 @@
 
 - test(testscript): add PTY infrastructure for testing interactive flows and commands #800
 - test(testscript): add validation handling in PTY-based interactive flows #801
+- test(testscript): add API testscript runner with per-scenario resource lifecycle #804
+- test(testscript): make PTY inputs deterministic via event-driven @wait: synchronisation #804
 
 ## 1.93.0
 

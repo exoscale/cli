@@ -20,5 +20,6 @@ defaultaccount = "test"
   defaultzone = "ch-gva-2"
 
 -- inputs --
+@wait:Configured accounts
 @down
 @ctrl+c

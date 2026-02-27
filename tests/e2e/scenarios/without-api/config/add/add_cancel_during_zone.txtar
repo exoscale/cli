@@ -7,8 +7,12 @@
 stderr 'Error: Operation Cancelled'
 
 -- inputs --
+@wait:[+] API Key:
 EXOtest123
+@wait:[+] Secret Key:
 secretTest456
+@wait:[+] Name:
 TestAccount
+@wait:Default zone
 @down
 @ctrl+c
