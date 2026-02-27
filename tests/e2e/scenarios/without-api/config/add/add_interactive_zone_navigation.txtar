@@ -6,7 +6,7 @@ mkdir -p .config/exoscale
 
 # Add account and navigate down to select ch-dk-2 (second zone in typical list)
 # Typical zone order: at-vie-1, at-vie-2, bg-sof-1, ch-dk-2, ch-gva-2...
-execpty --stdin=inputs exo config add
+exec-pty --stdin=inputs [ exo config add ]
 stdout 'TestZoneNav'
 stdout 'as default account \(first account\)'
 

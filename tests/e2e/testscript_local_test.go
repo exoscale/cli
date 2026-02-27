@@ -20,7 +20,7 @@ func TestScriptsLocal(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Files: files,
 		Cmds: map[string]func(ts *testscript.TestScript, neg bool, args []string){
-			"execpty": cmdExecPTY,
+			"exec-pty": cmdExecPTY,
 		},
 		Setup: func(e *testscript.Env) error {
 			return setupTestEnv(e, false)

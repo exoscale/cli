@@ -63,7 +63,7 @@ func TestScriptsAPI(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Files: files,
 		Cmds: map[string]func(ts *testscript.TestScript, neg bool, args []string){
-			"execpty":     cmdExecPTY,
+			"exec-pty":    cmdExecPTY,
 			"exec-wait":   cmdExecWait,
 			"json-setenv": cmdJSONSetenv,
 		},
@@ -265,33 +265,6 @@ func cmdExecWait(ts *testscript.TestScript, neg bool, args []string) {
 		ts.Logf("exec-wait: selector not satisfied (will retry): %v", selErr)
 		time.Sleep(10 * time.Second)
 	}
-}
-
-// splitByBrackets splits args into a leading options slice and bracket-delimited
-// groups. Each group is the content between a "[" and its matching "]".
-// Leading args before the first "[" are returned separately as options.
-func splitByBrackets(args []string) (opts []string, groups [][]string) {
-	i := 0
-	for i < len(args) && args[i] != "[" {
-		opts = append(opts, args[i])
-		i++
-	}
-	for i < len(args) {
-		if args[i] != "[" {
-			break
-		}
-		i++ // skip "["
-		var group []string
-		for i < len(args) && args[i] != "]" {
-			group = append(group, args[i])
-			i++
-		}
-		if i < len(args) {
-			i++ // skip "]"
-		}
-		groups = append(groups, group)
-	}
-	return opts, groups
 }
 
 // runCLI runs the exo binary with the given arguments and returns combined stdout+stderr.

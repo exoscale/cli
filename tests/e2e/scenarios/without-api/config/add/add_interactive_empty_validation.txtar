@@ -6,7 +6,7 @@
 mkdir -p .config/exoscale
 
 # Run interactive config add, attempting to submit empty values first
-execpty --stdin=inputs exo config add
+exec-pty --stdin=inputs [ exo config add ]
 stdout 'API Key cannot be empty'
 stdout 'Secret Key cannot be empty'
 stdout 'Name cannot be empty'

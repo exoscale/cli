@@ -144,26 +144,31 @@ func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan ptyInput) 
 }
 
 // cmdExecPTY mirrors the built-in exec but runs the binary inside a PTY.
-// The input file is named explicitly via --stdin=<file>, removing any
+// The command is specified inside brackets: exec-pty --stdin=<file> [ <binary> [args...] ]
+// The --stdin flag names a testscript file containing input tokens, removing any
 // ambiguity with arguments forwarded to the binary itself.
 func cmdExecPTY(ts *testscript.TestScript, neg bool, args []string) {
+	opts, groups := splitByBrackets(args)
+	if len(groups) != 1 {
+		ts.Fatalf("exec-pty: usage: exec-pty --stdin=<file> [ <binary> [args...] ]")
+	}
+	cmdArgs := groups[0]
+	if len(cmdArgs) == 0 {
+		ts.Fatalf("exec-pty: no binary specified")
+	}
+
 	var stdinFile string
-	rest := args
-	for i, a := range args {
-		var found bool
-		if stdinFile, found = strings.CutPrefix(a, "--stdin="); found {
-			rest = append(args[:i:i], args[i+1:]...)
+	for _, o := range opts {
+		if v, ok := strings.CutPrefix(o, "--stdin="); ok {
+			stdinFile = v
 			break
 		}
 	}
 	if stdinFile == "" {
-		ts.Fatalf("execpty: usage: execpty --stdin=<file> <binary> [args...]")
-	}
-	if len(rest) == 0 {
-		ts.Fatalf("execpty: no binary specified")
+		ts.Fatalf("exec-pty: usage: exec-pty --stdin=<file> [ <binary> [args...] ]")
 	}
 
-	bin, err := exec.LookPath(rest[0])
+	bin, err := exec.LookPath(cmdArgs[0])
 	ts.Check(err)
 
 	var tokens []string
@@ -216,7 +221,7 @@ func cmdExecPTY(ts *testscript.TestScript, neg bool, args []string) {
 	}
 	close(inputs)
 
-	cmd := exec.Command(bin, rest[1:]...)
+	cmd := exec.Command(bin, cmdArgs[1:]...)
 	cmd.Dir = ts.Getenv("WORK")
 
 	envMap := make(map[string]string)
@@ -242,14 +247,41 @@ func cmdExecPTY(ts *testscript.TestScript, neg bool, args []string) {
 	exitCode := cmd.ProcessState.ExitCode()
 	if exitCode != 0 {
 		if !neg {
-			ts.Fatalf("execpty %s: exit code %d\noutput:\n%s", rest[0], exitCode, out)
+			ts.Fatalf("exec-pty %s: exit code %d\noutput:\n%s", cmdArgs[0], exitCode, out)
 		}
 		_, _ = fmt.Fprint(ts.Stderr(), out)
 		return
 	}
 	if neg {
-		ts.Fatalf("execpty %s: unexpectedly succeeded\noutput:\n%s", rest[0], out)
+		ts.Fatalf("exec-pty %s: unexpectedly succeeded\noutput:\n%s", cmdArgs[0], out)
 	}
 
 	_, _ = fmt.Fprint(ts.Stdout(), out)
+}
+
+// splitByBrackets splits args into a leading options slice and bracket-delimited
+// groups. Each group is the content between a "[" and its matching "]".
+// Leading args before the first "[" are returned separately as options.
+func splitByBrackets(args []string) (opts []string, groups [][]string) {
+	i := 0
+	for i < len(args) && args[i] != "[" {
+		opts = append(opts, args[i])
+		i++
+	}
+	for i < len(args) {
+		if args[i] != "[" {
+			break
+		}
+		i++ // skip "["
+		var group []string
+		for i < len(args) && args[i] != "]" {
+			group = append(group, args[i])
+			i++
+		}
+		if i < len(args) {
+			i++ // skip "]"
+		}
+		groups = append(groups, group)
+	}
+	return opts, groups
 }
