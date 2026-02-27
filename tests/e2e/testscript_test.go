@@ -1,7 +1,6 @@
 package e2e_test
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -61,37 +61,82 @@ var ansiRe = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
 
 func stripANSI(s string) string { return ansiRe.ReplaceAllString(s, "") }
 
+// ptyInput represents a single keystroke/sequence to be fed into a PTY process.
+// If waitFor is non-empty, the input is held until that exact string appears
+// somewhere in the accumulated PTY output (or a 10-second deadline expires),
+// making test scenarios deterministic even on slow CI runners.
+type ptyInput struct {
+	waitFor string // pattern to wait for in PTY output before writing
+	data    []byte // bytes to write to the PTY
+}
+
 // runInPTY starts cmd inside a PTY, optionally feeds keystrokes via the
-// inputs channel (each []byte is written with a fixed delay between writes),
-// collects all PTY output with ANSI stripped, waits for the process to exit
-// and returns the cleaned output.
-func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan []byte) string {
+// inputs channel, collects all PTY output with ANSI stripped, waits for the
+// process to exit and returns the cleaned output.
+//
+// Each ptyInput can carry a waitFor pattern: when set, the byte sequence is
+// not written until that string appears in the accumulated PTY output (or a
+// 10-second timeout elapses). Inputs without a waitFor are still preceded by
+// a short fixed delay so that fast-typing scenarios remain stable.
+func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan ptyInput) string {
 	ptm, err := pty.Start(cmd)
 	ts.Check(err)
 
+	// mu protects rawOut, which is the ANSI-stripped PTY output accumulated so
+	// far. The input goroutine reads it to detect wait-for patterns; the output
+	// goroutine writes it as bytes arrive from the PTY.
+	var mu sync.Mutex
+	var rawOut strings.Builder
+
+	// Output collector: read the PTY with a raw byte loop so that partial lines
+	// (e.g. prompts that do not end with '\n') are captured immediately.
+	outCh := make(chan string, 1)
+	go func() {
+		var cleaned strings.Builder
+		buf := make([]byte, 4096)
+		for {
+			n, rerr := ptm.Read(buf)
+			if n > 0 {
+				chunk := stripANSI(string(buf[:n]))
+				mu.Lock()
+				rawOut.WriteString(chunk)
+				mu.Unlock()
+				// Accumulate per-line trimmed text for the return value.
+				for _, line := range strings.Split(chunk, "\n") {
+					if t := strings.TrimSpace(line); t != "" {
+						cleaned.WriteString(t + "\n")
+					}
+				}
+			}
+			if rerr != nil {
+				break
+			}
+		}
+		outCh <- cleaned.String()
+	}()
+
 	if inputs != nil {
 		go func() {
-			for b := range inputs {
-				time.Sleep(300 * time.Millisecond)
-				if _, werr := ptm.Write(b); werr != nil && werr != io.ErrClosedPipe {
+			for inp := range inputs {
+				if inp.waitFor != "" {
+					// Block until the expected string appears in PTY output.
+					deadline := time.Now().Add(10 * time.Second)
+					for time.Now().Before(deadline) {
+						mu.Lock()
+						found := strings.Contains(rawOut.String(), inp.waitFor)
+						mu.Unlock()
+						if found {
+							break
+						}
+						time.Sleep(50 * time.Millisecond)
+					}
+				}
+				if _, werr := ptm.Write(inp.data); werr != nil && werr != io.ErrClosedPipe {
 					return
 				}
 			}
 		}()
 	}
-
-	outCh := make(chan string, 1)
-	go func() {
-		var sb strings.Builder
-		scanner := bufio.NewScanner(ptm)
-		for scanner.Scan() {
-			line := strings.TrimSpace(stripANSI(scanner.Text()))
-			if line != "" {
-				sb.WriteString(line + "\n")
-			}
-		}
-		outCh <- sb.String()
-	}()
 
 	_ = cmd.Wait()
 	_ = ptm.Close()
@@ -99,26 +144,30 @@ func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan []byte) st
 }
 
 // cmdExecPTY mirrors the built-in exec but runs the binary inside a PTY.
-// The input file is named explicitly via --stdin=<file>, removing any
-// ambiguity with arguments forwarded to the binary itself.
+// Usage: exec-pty --stdin=<file> ( <binary> [args...] )
+// --stdin names a testscript file containing input tokens, one per line.
 func cmdExecPTY(ts *testscript.TestScript, neg bool, args []string) {
+	opts, groups := splitByBrackets(args)
+	if len(groups) != 1 {
+		ts.Fatalf("exec-pty: usage: exec-pty --stdin=<file> ( <binary> [args...] )")
+	}
+	cmdArgs := groups[0]
+	if len(cmdArgs) == 0 {
+		ts.Fatalf("exec-pty: no binary specified")
+	}
+
 	var stdinFile string
-	rest := args
-	for i, a := range args {
-		var found bool
-		if stdinFile, found = strings.CutPrefix(a, "--stdin="); found {
-			rest = append(args[:i:i], args[i+1:]...)
+	for _, o := range opts {
+		if v, ok := strings.CutPrefix(o, "--stdin="); ok {
+			stdinFile = v
 			break
 		}
 	}
 	if stdinFile == "" {
-		ts.Fatalf("execpty: usage: execpty --stdin=<file> <binary> [args...]")
-	}
-	if len(rest) == 0 {
-		ts.Fatalf("execpty: no binary specified")
+		ts.Fatalf("exec-pty: usage: exec-pty --stdin=<file> ( <binary> [args...] )")
 	}
 
-	bin, err := exec.LookPath(rest[0])
+	bin, err := exec.LookPath(cmdArgs[0])
 	ts.Check(err)
 
 	var tokens []string
@@ -128,36 +177,50 @@ func cmdExecPTY(ts *testscript.TestScript, neg bool, args []string) {
 		}
 	}
 
-	inputs := make(chan []byte, len(tokens))
+	// pendingWait is set by an @wait:<pattern> line; it is attached to the
+	// very next input token so that the write is delayed until the pattern is
+	// visible in the PTY output.
+	var pendingWait string
+
+	inputs := make(chan ptyInput, len(tokens))
 	for _, token := range tokens {
+		if after, ok := strings.CutPrefix(token, "@wait:"); ok {
+			pendingWait = after
+			continue
+		}
+
+		inp := ptyInput{waitFor: pendingWait}
+		pendingWait = ""
+
 		switch token {
 		case "@down", "↓":
-			inputs <- []byte{'\x1b', '[', 'B'}
+			inp.data = []byte{'\x1b', '[', 'B'}
 		case "@up", "↑":
-			inputs <- []byte{'\x1b', '[', 'A'}
+			inp.data = []byte{'\x1b', '[', 'A'}
 		case "@right", "→":
-			inputs <- []byte{'\x1b', '[', 'C'}
+			inp.data = []byte{'\x1b', '[', 'C'}
 		case "@left", "←":
-			inputs <- []byte{'\x1b', '[', 'D'}
+			inp.data = []byte{'\x1b', '[', 'D'}
 		case "@enter", "↵":
-			inputs <- []byte{'\r'}
+			inp.data = []byte{'\r'}
 		case "@ctrl+c", "^C":
-			inputs <- []byte{'\x03'}
+			inp.data = []byte{'\x03'}
 		case "@ctrl+d", "^D":
-			inputs <- []byte{'\x04'}
+			inp.data = []byte{'\x04'}
 		case "@escape", "⎋":
-			inputs <- []byte{'\x1b'}
+			inp.data = []byte{'\x1b'}
 		default:
 			text := token
 			if strings.HasPrefix(token, `\`) {
 				text = token[1:] // strip the escape prefix, treat rest as literal
 			}
-			inputs <- []byte(text + "\r")
+			inp.data = []byte(text + "\r")
 		}
+		inputs <- inp
 	}
 	close(inputs)
 
-	cmd := exec.Command(bin, rest[1:]...)
+	cmd := exec.Command(bin, cmdArgs[1:]...)
 	cmd.Dir = ts.Getenv("WORK")
 
 	envMap := make(map[string]string)
@@ -183,14 +246,68 @@ func cmdExecPTY(ts *testscript.TestScript, neg bool, args []string) {
 	exitCode := cmd.ProcessState.ExitCode()
 	if exitCode != 0 {
 		if !neg {
-			ts.Fatalf("execpty %s: exit code %d\noutput:\n%s", rest[0], exitCode, out)
+			ts.Fatalf("exec-pty %s: exit code %d\noutput:\n%s", cmdArgs[0], exitCode, out)
 		}
 		_, _ = fmt.Fprint(ts.Stderr(), out)
 		return
 	}
 	if neg {
-		ts.Fatalf("execpty %s: unexpectedly succeeded\noutput:\n%s", rest[0], out)
+		ts.Fatalf("exec-pty %s: unexpectedly succeeded\noutput:\n%s", cmdArgs[0], out)
 	}
 
 	_, _ = fmt.Fprint(ts.Stdout(), out)
+}
+
+// splitByNamedBrackets parses named groups of the form --name=( args... ).
+// The "=(" must be attached to the flag name as a single token (no spaces).
+// Tokens that are not part of a named group are returned as opts.
+func splitByNamedBrackets(args []string) (opts []string, groups map[string][]string) {
+	groups = make(map[string][]string)
+	i := 0
+	for i < len(args) {
+		if strings.HasPrefix(args[i], "--") && strings.HasSuffix(args[i], "=(") {
+			name := args[i][2 : len(args[i])-2] // strip "--" prefix and "=(" suffix
+			i++
+			var group []string
+			for i < len(args) && args[i] != ")" {
+				group = append(group, args[i])
+				i++
+			}
+			if i < len(args) {
+				i++ // skip ")"
+			}
+			groups[name] = group
+		} else {
+			opts = append(opts, args[i])
+			i++
+		}
+	}
+	return opts, groups
+}
+
+// splitByBrackets splits args into a leading options slice and paren-delimited
+// groups. Each group is the content between a "(" and its matching ")".
+// Leading args before the first "(" are returned separately as options.
+func splitByBrackets(args []string) (opts []string, groups [][]string) {
+	i := 0
+	for i < len(args) && args[i] != "(" {
+		opts = append(opts, args[i])
+		i++
+	}
+	for i < len(args) {
+		if args[i] != "(" {
+			break
+		}
+		i++ // skip "("
+		var group []string
+		for i < len(args) && args[i] != ")" {
+			group = append(group, args[i])
+			i++
+		}
+		if i < len(args) {
+			i++ // skip ")"
+		}
+		groups = append(groups, group)
+	}
+	return opts, groups
 }

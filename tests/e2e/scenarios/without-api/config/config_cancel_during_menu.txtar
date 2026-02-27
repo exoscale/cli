@@ -7,7 +7,7 @@ mkdir $HOME/.config/exoscale
 cp test-config.toml $HOME/.config/exoscale/exoscale.toml
 
 # Open config menu and cancel
-! execpty --stdin=inputs exo config
+! exec-pty --stdin=inputs ( exo config )
 stderr 'Error: Operation Cancelled'
 
 -- test-config.toml --
@@ -20,5 +20,6 @@ defaultaccount = "test"
   defaultzone = "ch-gva-2"
 
 -- inputs --
+@wait:Configured accounts
 @down
 @ctrl+c

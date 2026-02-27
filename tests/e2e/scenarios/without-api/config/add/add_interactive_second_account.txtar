@@ -6,7 +6,7 @@ mkdir -p .config/exoscale
 cp initial-config.toml .config/exoscale/exoscale.toml
 
 # Add second account interactively and decline to make it default
-execpty --stdin=inputs exo config add
+exec-pty --stdin=inputs ( exo config add )
 ! stdout 'No Exoscale CLI configuration found'
 
 # Verify both accounts exist
@@ -24,10 +24,15 @@ stdout 'SecondAccount'
 stdout 'EXOsecond456'
 
 -- inputs --
+@wait:[+] API Key:
 EXOsecond456
+@wait:[+] Secret Key:
 secretSecond456
+@wait:[+] Name:
 SecondAccount
+@wait:Default zone
 @enter
+@wait:[?] Set [
 n
 
 -- initial-config.toml --

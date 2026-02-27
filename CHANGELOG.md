@@ -7,10 +7,15 @@
 
 - `exo compute eip list` now shows the description & the management type of the EIP #803
 - sks: add `rotate-karpenter-credentials` command #797
+
+### Improvements
+
+- compute instance: enrich "not found" error with the zone searched and a hint to use -z #805
 - sks: add `active-nodepool-templates` command #797
 
 ### Bug fixes
 
+- fix(nlb): API error swallowed on load-balancer update (e.g. duplicate name conflict reported as "operation is nil") #806
 - fix(config): panic when used without a default account set #798
 
 ### Documentation
@@ -21,6 +26,8 @@
 
 - test(testscript): add PTY infrastructure for testing interactive flows and commands #800
 - test(testscript): add validation handling in PTY-based interactive flows #801
+- test(testscript): add API testscript runner with per-scenario resource lifecycle #804
+- test(testscript): make PTY inputs deterministic via event-driven @wait: synchronisation #804
 
 ## 1.93.0
 

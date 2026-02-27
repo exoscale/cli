@@ -2,7 +2,8 @@
 # Ctrl+D should exit gracefully with code 0 (not an error like Ctrl+C)
 
 # Attempt to add account and cancel with Ctrl+D - should exit gracefully
-execpty --stdin=inputs exo config add
+exec-pty --stdin=inputs ( exo config add )
 
 -- inputs --
+@wait:[+] API Key:
 @ctrl+d

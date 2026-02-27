@@ -3,12 +3,16 @@
 
 # Attempt to add account and cancel at zone selection
 # Wait for zone menu to appear (let API call fail first), then cancel
-! execpty --stdin=inputs exo config add
+! exec-pty --stdin=inputs ( exo config add )
 stderr 'Error: Operation Cancelled'
 
 -- inputs --
+@wait:[+] API Key:
 EXOtest123
+@wait:[+] Secret Key:
 secretTest456
+@wait:[+] Name:
 TestAccount
+@wait:Default zone
 @down
 @ctrl+c

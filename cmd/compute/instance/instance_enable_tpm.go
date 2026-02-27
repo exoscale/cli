@@ -45,7 +45,7 @@ func (c *instanceEnableTPMCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	instance, err := resp.FindListInstancesResponseInstances(c.Instance)
+	instance, err := findInstance(resp, c.Instance, string(c.Zone))
 	if err != nil {
 		return err
 	}

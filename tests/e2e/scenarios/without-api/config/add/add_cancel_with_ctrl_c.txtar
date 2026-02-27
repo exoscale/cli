@@ -2,8 +2,9 @@
 # Ctrl+C should show error message and exit with code 130
 
 # Attempt to add account and cancel with Ctrl+C
-! execpty --stdin=inputs exo config add
+! exec-pty --stdin=inputs ( exo config add )
 stderr 'Error: Operation Cancelled'
 
 -- inputs --
+@wait:[+] API Key:
 @ctrl+c
