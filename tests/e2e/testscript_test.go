@@ -144,13 +144,13 @@ func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan ptyInput) 
 }
 
 // cmdExecPTY mirrors the built-in exec but runs the binary inside a PTY.
-// Usage: exec-pty [ <binary> [args...] ] [ <stdin-file> ]
-// The first bracket group is the command; the second names a testscript file
+// Usage: exec-pty ( <binary> [args...] ) ( <stdin-file> )
+// The first group is the command; the second names a testscript file
 // containing input tokens, one per line.
 func cmdExecPTY(ts *testscript.TestScript, neg bool, args []string) {
 	_, groups := splitByBrackets(args)
 	if len(groups) != 2 {
-		ts.Fatalf("exec-pty: usage: exec-pty [ <binary> [args...] ] [ <stdin-file> ]")
+		ts.Fatalf("exec-pty: usage: exec-pty ( <binary> [args...] ) ( <stdin-file> )")
 	}
 	cmdArgs := groups[0]
 	if len(cmdArgs) == 0 {
@@ -252,23 +252,23 @@ func cmdExecPTY(ts *testscript.TestScript, neg bool, args []string) {
 	_, _ = fmt.Fprint(ts.Stdout(), out)
 }
 
-// splitByNamedBrackets parses named bracket groups of the form --name=[ args... ].
-// The "=[" must be attached to the flag name as a single token (no spaces).
+// splitByNamedBrackets parses named groups of the form --name=( args... ).
+// The "=(" must be attached to the flag name as a single token (no spaces).
 // Tokens that are not part of a named group are returned as opts.
 func splitByNamedBrackets(args []string) (opts []string, groups map[string][]string) {
 	groups = make(map[string][]string)
 	i := 0
 	for i < len(args) {
-		if strings.HasPrefix(args[i], "--") && strings.HasSuffix(args[i], "=[") {
-			name := args[i][2 : len(args[i])-2] // strip "--" prefix and "=[" suffix
+		if strings.HasPrefix(args[i], "--") && strings.HasSuffix(args[i], "=(") {
+			name := args[i][2 : len(args[i])-2] // strip "--" prefix and "=(" suffix
 			i++
 			var group []string
-			for i < len(args) && args[i] != "]" {
+			for i < len(args) && args[i] != ")" {
 				group = append(group, args[i])
 				i++
 			}
 			if i < len(args) {
-				i++ // skip "]"
+				i++ // skip ")"
 			}
 			groups[name] = group
 		} else {
@@ -279,27 +279,27 @@ func splitByNamedBrackets(args []string) (opts []string, groups map[string][]str
 	return opts, groups
 }
 
-// splitByBrackets splits args into a leading options slice and bracket-delimited
-// groups. Each group is the content between a "[" and its matching "]".
-// Leading args before the first "[" are returned separately as options.
+// splitByBrackets splits args into a leading options slice and paren-delimited
+// groups. Each group is the content between a "(" and its matching ")".
+// Leading args before the first "(" are returned separately as options.
 func splitByBrackets(args []string) (opts []string, groups [][]string) {
 	i := 0
-	for i < len(args) && args[i] != "[" {
+	for i < len(args) && args[i] != "(" {
 		opts = append(opts, args[i])
 		i++
 	}
 	for i < len(args) {
-		if args[i] != "[" {
+		if args[i] != "(" {
 			break
 		}
-		i++ // skip "["
+		i++ // skip "("
 		var group []string
-		for i < len(args) && args[i] != "]" {
+		for i < len(args) && args[i] != ")" {
 			group = append(group, args[i])
 			i++
 		}
 		if i < len(args) {
-			i++ // skip "]"
+			i++ // skip ")"
 		}
 		groups = append(groups, group)
 	}

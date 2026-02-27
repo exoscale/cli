@@ -6,7 +6,7 @@
 mkdir -p .config/exoscale
 
 # Run interactive config add with PTY support
-exec-pty [ exo config add ] [ inputs ]
+exec-pty ( exo config add ) ( inputs )
 stdout 'No Exoscale CLI configuration found'
 stdout '\[TestAccount\] as default account \(first account\)'
 

@@ -6,7 +6,7 @@ mkdir -p .config/exoscale
 cp initial-config.toml .config/exoscale/exoscale.toml
 
 # Add second account interactively and decline to make it default
-exec-pty [ exo config add ] [ inputs ]
+exec-pty ( exo config add ) ( inputs )
 ! stdout 'No Exoscale CLI configuration found'
 
 # Verify both accounts exist

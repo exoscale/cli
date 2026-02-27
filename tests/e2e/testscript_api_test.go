@@ -174,7 +174,7 @@ func buildPollEnv(ts *testscript.TestScript) []string {
 
 // cmdExecWait is a testscript custom command:
 //
-//	exec-wait [--set=VARNAME:jsonfield ...] --action=[ cmd... ] --polling=[ cmd... ] --predicate=[ cmd... ]
+//	exec-wait [--set=VARNAME:jsonfield ...] --action=( cmd... ) --polling=( cmd... ) --predicate=( cmd... )
 //
 // Runs the action once, optionally extracts JSON fields from its stdout into
 // testscript env vars (set=) and builds {VARNAME} substitutions for the polling
@@ -188,7 +188,7 @@ func cmdExecWait(ts *testscript.TestScript, neg bool, args []string) {
 	leadingOpts, groups := splitByNamedBrackets(args)
 	for _, name := range []string{"action", "polling", "predicate"} {
 		if _, ok := groups[name]; !ok {
-			ts.Fatalf("exec-wait: missing --%s=[ ... ] group", name)
+			ts.Fatalf("exec-wait: missing --%s=( ... ) group", name)
 		}
 	}
 	cmd1Args, cmd2Template, selectorArgs := groups["action"], groups["polling"], groups["predicate"]
