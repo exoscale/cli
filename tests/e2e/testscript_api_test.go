@@ -174,7 +174,7 @@ func buildPollEnv(ts *testscript.TestScript) []string {
 
 // cmdExecWait is a testscript custom command:
 //
-//	exec-wait [set=VARNAME:jsonfield ...] --action=[ cmd... ] --polling=[ cmd... ] --predicate=[ cmd... ]
+//	exec-wait [--set=VARNAME:jsonfield ...] --action=[ cmd... ] --polling=[ cmd... ] --predicate=[ cmd... ]
 //
 // Runs the action once, optionally extracts JSON fields from its stdout into
 // testscript env vars (set=) and builds {VARNAME} substitutions for the polling
@@ -197,10 +197,10 @@ func cmdExecWait(ts *testscript.TestScript, neg bool, args []string) {
 	var setVars []setVar
 
 	for _, opt := range leadingOpts {
-		if !strings.HasPrefix(opt, "set=") {
-			ts.Fatalf("exec-wait: unknown option %q (only set= is allowed outside groups)", opt)
+		if !strings.HasPrefix(opt, "--set=") {
+			ts.Fatalf("exec-wait: unknown option %q (only --set= is allowed outside groups)", opt)
 		}
-		kv := strings.TrimPrefix(opt, "set=")
+		kv := strings.TrimPrefix(opt, "--set=")
 		i := strings.IndexByte(kv, ':')
 		if i < 0 {
 			ts.Fatalf("exec-wait: invalid set= option %q, expected set=VARNAME:jsonfield", opt)
