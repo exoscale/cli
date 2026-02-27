@@ -1,0 +1,20 @@
+# Test: exo compute instance <action> returns enriched error when instance not found
+# Verifies that when an instance lookup fails, the error message includes the zone
+# that was searched and a hint to use -z.
+# No resources are created so no teardown is required.
+# TEST_ZONE is injected by the API test runner.
+
+# show: instance not found should mention zone and hint
+! exec exo --output-format json compute instance show nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# reboot: same helper, same enriched error
+! exec exo --output-format json compute instance reboot --force nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# stop: same helper, same enriched error
+! exec exo --output-format json compute instance stop --force nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
