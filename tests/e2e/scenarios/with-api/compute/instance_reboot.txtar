@@ -3,10 +3,10 @@
 # TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
 
 # Create the instance (sets INSTANCE_ID) and wait until running.
-exec-wait set=INSTANCE_ID:id [ exo --zone $TEST_ZONE --output-format json compute instance create cli-e2e-reboot-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10 ] [ exo --zone $TEST_ZONE --output-format json compute instance show {INSTANCE_ID} ] [ jq -e '.state == "running"' ]
+exec-wait set=INSTANCE_ID:id --action=[ exo --zone $TEST_ZONE --output-format json compute instance create cli-e2e-reboot-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10 ] --polling=[ exo --zone $TEST_ZONE --output-format json compute instance show {INSTANCE_ID} ] --predicate=[ jq -e '.state == "running"' ]
 
 # Reboot the instance and wait until it returns to running state.
-exec-wait [ exo --zone $TEST_ZONE compute instance reboot --force $INSTANCE_ID ] [ exo --zone $TEST_ZONE --output-format json compute instance show $INSTANCE_ID ] [ jq -e '.state == "running"' ]
+exec-wait --action=[ exo --zone $TEST_ZONE compute instance reboot --force $INSTANCE_ID ] --polling=[ exo --zone $TEST_ZONE --output-format json compute instance show $INSTANCE_ID ] --predicate=[ jq -e '.state == "running"' ]
 
 # Teardown: delete the instance.
 exec exo --zone $TEST_ZONE compute instance delete --force $INSTANCE_ID

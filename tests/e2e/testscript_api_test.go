@@ -174,30 +174,31 @@ func buildPollEnv(ts *testscript.TestScript) []string {
 
 // cmdExecWait is a testscript custom command:
 //
-//	exec-wait [set=VARNAME:jsonfield ...] [ cmd1... ] [ cmd2... ] [ selector... ]
+//	exec-wait [set=VARNAME:jsonfield ...] --action=[ cmd... ] --polling=[ cmd... ] --predicate=[ cmd... ]
 //
-// Runs cmd1 once, optionally extracts JSON fields from its output into
-// testscript env vars (set=) and builds {VARNAME} substitutions for cmd2.
-// Then polls cmd2 every 10 seconds, piping its stdout into the selector process.
-// The selector is any program that reads stdin and exits 0 when the condition
-// is met (e.g. `jq -e '.state == "running"'`, `grep -q running`).
-// Polling stops as soon as the selector exits 0.
+// Runs the action once, optionally extracts JSON fields from its stdout into
+// testscript env vars (set=) and builds {VARNAME} substitutions for the polling
+// command. Then polls every 10 seconds, piping polling stdout into the predicate
+// process. The predicate is any program that reads stdin and exits 0 when the
+// condition is met (e.g. `jq -e '.state == "running"'`, `grep -q running`).
 //
-// In cmd2 args, {VARNAME} tokens are replaced with values extracted by set=
-// after cmd1 runs, allowing cmd2 to reference IDs not yet known at parse time.
+// In polling args, {VARNAME} tokens are replaced with values extracted by set=
+// after the action runs, allowing polling to reference IDs not known at parse time.
 func cmdExecWait(ts *testscript.TestScript, neg bool, args []string) {
-	leadingOpts, groups := splitByBrackets(args)
-	if len(groups) != 3 {
-		ts.Fatalf("usage: exec-wait [set=VARNAME:jsonfield ...] [ cmd1... ] [ cmd2... ] [ selector... ]")
+	leadingOpts, groups := splitByNamedBrackets(args)
+	for _, name := range []string{"action", "polling", "predicate"} {
+		if _, ok := groups[name]; !ok {
+			ts.Fatalf("exec-wait: missing --%s=[ ... ] group", name)
+		}
 	}
-	cmd1Args, cmd2Template, selectorArgs := groups[0], groups[1], groups[2]
+	cmd1Args, cmd2Template, selectorArgs := groups["action"], groups["polling"], groups["predicate"]
 
 	type setVar struct{ varName, jsonField string }
 	var setVars []setVar
 
 	for _, opt := range leadingOpts {
 		if !strings.HasPrefix(opt, "set=") {
-			ts.Fatalf("exec-wait: unknown option %q (only set= is allowed before first [)", opt)
+			ts.Fatalf("exec-wait: unknown option %q (only set= is allowed outside groups)", opt)
 		}
 		kv := strings.TrimPrefix(opt, "set=")
 		i := strings.IndexByte(kv, ':')

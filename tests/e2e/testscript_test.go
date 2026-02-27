@@ -252,6 +252,33 @@ func cmdExecPTY(ts *testscript.TestScript, neg bool, args []string) {
 	_, _ = fmt.Fprint(ts.Stdout(), out)
 }
 
+// splitByNamedBrackets parses named bracket groups of the form --name=[ args... ].
+// The "=[" must be attached to the flag name as a single token (no spaces).
+// Tokens that are not part of a named group are returned as opts.
+func splitByNamedBrackets(args []string) (opts []string, groups map[string][]string) {
+	groups = make(map[string][]string)
+	i := 0
+	for i < len(args) {
+		if strings.HasPrefix(args[i], "--") && strings.HasSuffix(args[i], "=[") {
+			name := args[i][2 : len(args[i])-2] // strip "--" prefix and "=[" suffix
+			i++
+			var group []string
+			for i < len(args) && args[i] != "]" {
+				group = append(group, args[i])
+				i++
+			}
+			if i < len(args) {
+				i++ // skip "]"
+			}
+			groups[name] = group
+		} else {
+			opts = append(opts, args[i])
+			i++
+		}
+	}
+	return opts, groups
+}
+
 // splitByBrackets splits args into a leading options slice and bracket-delimited
 // groups. Each group is the content between a "[" and its matching "]".
 // Leading args before the first "[" are returned separately as options.
