@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -137,6 +138,8 @@ func cmdJSONSetenv(ts *testscript.TestScript, neg bool, args []string) {
 // buildPollEnv returns a copy of the process environment with the
 // testscript-isolated credentials and config directory substituted in, so that
 // poll subprocesses use the same identity as the rest of the scenario.
+// It also prepends the directory containing the exo binary to PATH so that
+// commands in exec-wait brackets can reference "exo" by name.
 func buildPollEnv(ts *testscript.TestScript) []string {
 	overrides := map[string]string{
 		"HOME":                ts.Getenv("HOME"),
@@ -157,6 +160,15 @@ func buildPollEnv(ts *testscript.TestScript) []string {
 	for k, v := range overrides {
 		env = append(env, k+"="+v)
 	}
+	// Prepend the exo binary directory so "exo" resolves in exec-wait bracket commands.
+	exoDir := filepath.Dir(exoBinary)
+	for i, kv := range env {
+		if strings.HasPrefix(kv, "PATH=") {
+			env[i] = "PATH=" + exoDir + ":" + kv[5:]
+			return env
+		}
+	}
+	env = append(env, "PATH="+exoDir)
 	return env
 }
 
@@ -198,9 +210,12 @@ func cmdExecWait(ts *testscript.TestScript, neg bool, args []string) {
 	pollEnv := buildPollEnv(ts)
 
 	// Run cmd1 once.
-	out, err := runCLIWithEnv(pollEnv, cmd1Args...)
-	if err != nil {
-		ts.Fatalf("exec-wait: cmd1 failed: %v\noutput: %s", err, out)
+	c1 := exec.Command(cmd1Args[0], cmd1Args[1:]...)
+	c1.Env = pollEnv
+	c1Out, c1Err := c1.CombinedOutput()
+	out := strings.TrimSpace(string(c1Out))
+	if c1Err != nil {
+		ts.Fatalf("exec-wait: cmd1 failed: %v\noutput: %s", c1Err, out)
 	}
 
 	// Extract set= vars and build {PLACEHOLDER} → value map.
@@ -226,9 +241,12 @@ func cmdExecWait(ts *testscript.TestScript, neg bool, args []string) {
 
 	// Poll: run cmd2, pipe its stdout into selector, stop when selector exits 0.
 	for {
-		cmd2Out, err := runCLIWithEnv(pollEnv, cmd2...)
-		if err != nil {
-			ts.Logf("exec-wait: cmd2 error (will retry): %v", err)
+		c2 := exec.Command(cmd2[0], cmd2[1:]...)
+		c2.Env = pollEnv
+		c2Out, c2Err := c2.CombinedOutput()
+		cmd2Out := strings.TrimSpace(string(c2Out))
+		if c2Err != nil {
+			ts.Logf("exec-wait: cmd2 error (will retry): %v", c2Err)
 			time.Sleep(10 * time.Second)
 			continue
 		}
