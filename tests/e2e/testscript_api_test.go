@@ -209,13 +209,15 @@ func cmdExecWait(ts *testscript.TestScript, neg bool, args []string) {
 
 	pollEnv := buildPollEnv(ts)
 
-	// Run cmd1 once.
+	// Run cmd1 once, capturing stdout only (stderr may contain spinner text).
 	c1 := exec.Command(cmd1Args[0], cmd1Args[1:]...)
 	c1.Env = pollEnv
-	c1Out, c1Err := c1.CombinedOutput()
-	out := strings.TrimSpace(string(c1Out))
+	var c1Stderr bytes.Buffer
+	c1.Stderr = &c1Stderr
+	c1Stdout, c1Err := c1.Output()
+	out := strings.TrimSpace(string(c1Stdout))
 	if c1Err != nil {
-		ts.Fatalf("exec-wait: cmd1 failed: %v\noutput: %s", c1Err, out)
+		ts.Fatalf("exec-wait: cmd1 failed: %v\nstderr: %s", c1Err, c1Stderr.String())
 	}
 
 	// Extract set= vars and build {PLACEHOLDER} → value map.
@@ -239,18 +241,20 @@ func cmdExecWait(ts *testscript.TestScript, neg bool, args []string) {
 		cmd2[i] = resolved
 	}
 
-	// Poll: run cmd2, pipe its stdout into selector, stop when selector exits 0.
+	// Poll: run cmd2 (stdout only), pipe into selector, stop when selector exits 0.
 	for {
 		c2 := exec.Command(cmd2[0], cmd2[1:]...)
 		c2.Env = pollEnv
-		c2Out, c2Err := c2.CombinedOutput()
-		cmd2Out := strings.TrimSpace(string(c2Out))
+		var c2Stderr bytes.Buffer
+		c2.Stderr = &c2Stderr
+		c2Stdout, c2Err := c2.Output()
 		if c2Err != nil {
-			ts.Logf("exec-wait: cmd2 error (will retry): %v", c2Err)
+			ts.Logf("exec-wait: cmd2 error (will retry): %v\nstderr: %s", c2Err, c2Stderr.String())
 			time.Sleep(10 * time.Second)
 			continue
 		}
 
+		cmd2Out := strings.TrimSpace(string(c2Stdout))
 		sel := exec.Command(selectorArgs[0], selectorArgs[1:]...)
 		sel.Stdin = bytes.NewBufferString(cmd2Out)
 		selOut, selErr := sel.CombinedOutput()
