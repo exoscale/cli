@@ -23,7 +23,7 @@ type APITestSuite struct {
 }
 
 // TestScriptsAPI runs testscript scenarios that require real API access.
-// Run with: go test -v -tags=api -timeout 30m
+// Run with: go test -v -tags=api -timeout 10m
 //
 // Required environment variables:
 //
@@ -135,23 +135,15 @@ func cmdJSONSetenv(ts *testscript.TestScript, neg bool, args []string) {
 
 // cmdWaitInstanceState is a testscript custom command:
 //
-//	wait-instance-state ZONE INSTANCE_ID TARGET_STATE [TIMEOUT_SECONDS]
+//	wait-instance-state ZONE INSTANCE_ID TARGET_STATE
 //
-// Polls `exo compute instance show` until the instance reaches TARGET_STATE
-// or the timeout elapses (default: 300 seconds). Fails the test on timeout.
+// Polls `exo compute instance show` every 10 seconds until the instance reaches
+// TARGET_STATE. The overall deadline is the test binary timeout (-timeout flag).
 func cmdWaitInstanceState(ts *testscript.TestScript, neg bool, args []string) {
-	if len(args) < 3 || len(args) > 4 {
-		ts.Fatalf("usage: wait-instance-state ZONE INSTANCE_ID TARGET_STATE [TIMEOUT_SECONDS]")
+	if len(args) != 3 {
+		ts.Fatalf("usage: wait-instance-state ZONE INSTANCE_ID TARGET_STATE")
 	}
 	zone, instanceID, targetState := args[0], args[1], args[2]
-	timeout := 300 * time.Second
-	if len(args) == 4 {
-		var secs int
-		if _, err := fmt.Sscan(args[3], &secs); err != nil {
-			ts.Fatalf("wait-instance-state: invalid timeout %q: %v", args[3], err)
-		}
-		timeout = time.Duration(secs) * time.Second
-	}
 
 	// Propagate the testscript-isolated environment so the poll command uses the
 	// same config directory and credentials as the rest of the scenario, not the
@@ -178,8 +170,7 @@ func cmdWaitInstanceState(ts *testscript.TestScript, neg bool, args []string) {
 		pollEnv = append(pollEnv, k+"="+v)
 	}
 
-	deadline := time.Now().Add(timeout)
-	for time.Now().Before(deadline) {
+	for {
 		out, err := runCLIWithEnv(pollEnv,
 			"--zone", zone,
 			"--output-format", "json",
@@ -188,21 +179,17 @@ func cmdWaitInstanceState(ts *testscript.TestScript, neg bool, args []string) {
 		)
 		if err != nil {
 			ts.Logf("wait-instance-state: poll error (will retry): %v", err)
-			time.Sleep(10 * time.Second)
-			continue
+		} else if state, err := parseJSONField(out, "state"); err != nil {
+			ts.Logf("wait-instance-state: could not parse state (will retry): %v", err)
+		} else {
+			ts.Logf("wait-instance-state: %s → %s (want: %s)", instanceID, state, targetState)
+			if state == targetState {
+				return
+			}
 		}
-		state, err := parseJSONField(out, "state")
-		if err != nil {
-			time.Sleep(10 * time.Second)
-			continue
-		}
-		ts.Logf("wait-instance-state: %s → %s (want: %s)", instanceID, state, targetState)
-		if state == targetState {
-			return
-		}
+
 		time.Sleep(10 * time.Second)
 	}
-	ts.Fatalf("wait-instance-state: timed out waiting for instance %s to reach state %q", instanceID, targetState)
 }
 
 // runCLI runs the exo binary with the given arguments and returns combined stdout+stderr.

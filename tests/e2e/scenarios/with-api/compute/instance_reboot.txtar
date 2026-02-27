@@ -9,9 +9,7 @@ exec exo --zone $TEST_ZONE --output-format json compute instance create cli-e2e-
 json-setenv INSTANCE_ID id stdout
 
 # Wait for the instance to be fully running before rebooting
-wait-instance-state $TEST_ZONE $INSTANCE_ID running 300
-
-# Verify it is running
+wait-instance-state $TEST_ZONE $INSTANCE_ID running
 exec exo --zone $TEST_ZONE --output-format json compute instance show $INSTANCE_ID
 stdout '"state"'
 
@@ -19,9 +17,7 @@ stdout '"state"'
 exec exo --zone $TEST_ZONE compute instance reboot --force $INSTANCE_ID
 
 # Wait for it to return to running state after reboot
-wait-instance-state $TEST_ZONE $INSTANCE_ID running 300
-
-# Confirm final state is running
+wait-instance-state $TEST_ZONE $INSTANCE_ID running
 exec exo --zone $TEST_ZONE --output-format json compute instance show $INSTANCE_ID
 stdout '"state"'
 
