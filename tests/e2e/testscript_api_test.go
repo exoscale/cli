@@ -3,6 +3,7 @@
 package e2e_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -61,9 +62,9 @@ func TestScriptsAPI(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Files: files,
 		Cmds: map[string]func(ts *testscript.TestScript, neg bool, args []string){
-			"execpty":             cmdExecPTY,
-			"json-setenv":         cmdJSONSetenv,
-			"wait-instance-state": cmdWaitInstanceState,
+			"execpty":     cmdExecPTY,
+			"exec-wait":   cmdExecWait,
+			"json-setenv": cmdJSONSetenv,
 		},
 		Setup: func(e *testscript.Env) error {
 			return setupAPITestEnv(e, suite)
@@ -133,63 +134,142 @@ func cmdJSONSetenv(ts *testscript.TestScript, neg bool, args []string) {
 	ts.Setenv(varName, val)
 }
 
-// cmdWaitInstanceState is a testscript custom command:
-//
-//	wait-instance-state ZONE INSTANCE_ID TARGET_STATE
-//
-// Polls `exo compute instance show` every 10 seconds until the instance reaches
-// TARGET_STATE. The overall deadline is the test binary timeout (-timeout flag).
-func cmdWaitInstanceState(ts *testscript.TestScript, neg bool, args []string) {
-	if len(args) != 3 {
-		ts.Fatalf("usage: wait-instance-state ZONE INSTANCE_ID TARGET_STATE")
-	}
-	zone, instanceID, targetState := args[0], args[1], args[2]
-
-	// Propagate the testscript-isolated environment so the poll command uses the
-	// same config directory and credentials as the rest of the scenario, not the
-	// real process environment.
-	// We filter the real env first: on Linux getenv() returns the first match,
-	// so simply appending overrides to os.Environ() would have no effect.
+// buildPollEnv returns a copy of the process environment with the
+// testscript-isolated credentials and config directory substituted in, so that
+// poll subprocesses use the same identity as the rest of the scenario.
+func buildPollEnv(ts *testscript.TestScript) []string {
 	overrides := map[string]string{
 		"HOME":                ts.Getenv("HOME"),
 		"XDG_CONFIG_HOME":     ts.Getenv("XDG_CONFIG_HOME"),
 		"EXOSCALE_API_KEY":    ts.Getenv("EXOSCALE_API_KEY"),
 		"EXOSCALE_API_SECRET": ts.Getenv("EXOSCALE_API_SECRET"),
 	}
-	pollEnv := make([]string, 0, len(os.Environ()))
+	env := make([]string, 0, len(os.Environ()))
 	for _, kv := range os.Environ() {
 		key := kv
 		if i := strings.IndexByte(kv, '='); i >= 0 {
 			key = kv[:i]
 		}
 		if _, overridden := overrides[key]; !overridden {
-			pollEnv = append(pollEnv, kv)
+			env = append(env, kv)
 		}
 	}
 	for k, v := range overrides {
-		pollEnv = append(pollEnv, k+"="+v)
+		env = append(env, k+"="+v)
+	}
+	return env
+}
+
+// cmdExecWait is a testscript custom command:
+//
+//	exec-wait [set=VARNAME:jsonfield ...] [ cmd1... ] [ cmd2... ] [ selector... ]
+//
+// Runs cmd1 once, optionally extracts JSON fields from its output into
+// testscript env vars (set=) and builds {VARNAME} substitutions for cmd2.
+// Then polls cmd2 every 10 seconds, piping its stdout into the selector process.
+// The selector is any program that reads stdin and exits 0 when the condition
+// is met (e.g. `jq -e '.state == "running"'`, `grep -q running`).
+// Polling stops as soon as the selector exits 0.
+//
+// In cmd2 args, {VARNAME} tokens are replaced with values extracted by set=
+// after cmd1 runs, allowing cmd2 to reference IDs not yet known at parse time.
+func cmdExecWait(ts *testscript.TestScript, neg bool, args []string) {
+	leadingOpts, groups := splitByBrackets(args)
+	if len(groups) != 3 {
+		ts.Fatalf("usage: exec-wait [set=VARNAME:jsonfield ...] [ cmd1... ] [ cmd2... ] [ selector... ]")
+	}
+	cmd1Args, cmd2Template, selectorArgs := groups[0], groups[1], groups[2]
+
+	type setVar struct{ varName, jsonField string }
+	var setVars []setVar
+
+	for _, opt := range leadingOpts {
+		if !strings.HasPrefix(opt, "set=") {
+			ts.Fatalf("exec-wait: unknown option %q (only set= is allowed before first [)", opt)
+		}
+		kv := strings.TrimPrefix(opt, "set=")
+		i := strings.IndexByte(kv, ':')
+		if i < 0 {
+			ts.Fatalf("exec-wait: invalid set= option %q, expected set=VARNAME:jsonfield", opt)
+		}
+		setVars = append(setVars, setVar{kv[:i], kv[i+1:]})
 	}
 
-	for {
-		out, err := runCLIWithEnv(pollEnv,
-			"--zone", zone,
-			"--output-format", "json",
-			"compute", "instance", "show",
-			instanceID,
-		)
+	pollEnv := buildPollEnv(ts)
+
+	// Run cmd1 once.
+	out, err := runCLIWithEnv(pollEnv, cmd1Args...)
+	if err != nil {
+		ts.Fatalf("exec-wait: cmd1 failed: %v\noutput: %s", err, out)
+	}
+
+	// Extract set= vars and build {PLACEHOLDER} → value map.
+	replacements := make(map[string]string, len(setVars))
+	for _, sv := range setVars {
+		val, err := parseJSONField(out, sv.jsonField)
 		if err != nil {
-			ts.Logf("wait-instance-state: poll error (will retry): %v", err)
-		} else if state, err := parseJSONField(out, "state"); err != nil {
-			ts.Logf("wait-instance-state: could not parse state (will retry): %v", err)
-		} else {
-			ts.Logf("wait-instance-state: %s → %s (want: %s)", instanceID, state, targetState)
-			if state == targetState {
-				return
-			}
+			ts.Fatalf("exec-wait: set=%s:%s: %v", sv.varName, sv.jsonField, err)
+		}
+		ts.Setenv(sv.varName, val)
+		replacements["{"+sv.varName+"}"] = val
+	}
+
+	// Resolve {PLACEHOLDER} tokens in the cmd2 template.
+	cmd2 := make([]string, len(cmd2Template))
+	for i, arg := range cmd2Template {
+		resolved := arg
+		for placeholder, val := range replacements {
+			resolved = strings.ReplaceAll(resolved, placeholder, val)
+		}
+		cmd2[i] = resolved
+	}
+
+	// Poll: run cmd2, pipe its stdout into selector, stop when selector exits 0.
+	for {
+		cmd2Out, err := runCLIWithEnv(pollEnv, cmd2...)
+		if err != nil {
+			ts.Logf("exec-wait: cmd2 error (will retry): %v", err)
+			time.Sleep(10 * time.Second)
+			continue
 		}
 
+		sel := exec.Command(selectorArgs[0], selectorArgs[1:]...)
+		sel.Stdin = bytes.NewBufferString(cmd2Out)
+		selOut, selErr := sel.CombinedOutput()
+		ts.Logf("exec-wait: selector output: %s", strings.TrimSpace(string(selOut)))
+		if selErr == nil {
+			return
+		}
+		ts.Logf("exec-wait: selector not satisfied (will retry): %v", selErr)
 		time.Sleep(10 * time.Second)
 	}
+}
+
+// splitByBrackets splits args into a leading options slice and bracket-delimited
+// groups. Each group is the content between a "[" and its matching "]".
+// Leading args before the first "[" are returned separately as options.
+func splitByBrackets(args []string) (opts []string, groups [][]string) {
+	i := 0
+	for i < len(args) && args[i] != "[" {
+		opts = append(opts, args[i])
+		i++
+	}
+	for i < len(args) {
+		if args[i] != "[" {
+			break
+		}
+		i++ // skip "["
+		var group []string
+		for i < len(args) && args[i] != "]" {
+			group = append(group, args[i])
+			i++
+		}
+		if i < len(args) {
+			i++ // skip "]"
+		}
+		groups = append(groups, group)
+	}
+	return opts, groups
 }
 
 // runCLI runs the exo binary with the given arguments and returns combined stdout+stderr.
