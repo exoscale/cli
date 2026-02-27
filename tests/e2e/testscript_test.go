@@ -144,22 +144,28 @@ func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan ptyInput) 
 }
 
 // cmdExecPTY mirrors the built-in exec but runs the binary inside a PTY.
-// Usage: exec-pty ( <binary> [args...] ) ( <stdin-file> )
-// The first group is the command; the second names a testscript file
-// containing input tokens, one per line.
+// Usage: exec-pty --stdin=<file> ( <binary> [args...] )
+// --stdin names a testscript file containing input tokens, one per line.
 func cmdExecPTY(ts *testscript.TestScript, neg bool, args []string) {
-	_, groups := splitByBrackets(args)
-	if len(groups) != 2 {
-		ts.Fatalf("exec-pty: usage: exec-pty ( <binary> [args...] ) ( <stdin-file> )")
+	opts, groups := splitByBrackets(args)
+	if len(groups) != 1 {
+		ts.Fatalf("exec-pty: usage: exec-pty --stdin=<file> ( <binary> [args...] )")
 	}
 	cmdArgs := groups[0]
 	if len(cmdArgs) == 0 {
 		ts.Fatalf("exec-pty: no binary specified")
 	}
-	if len(groups[1]) != 1 {
-		ts.Fatalf("exec-pty: stdin group must contain exactly one filename")
+
+	var stdinFile string
+	for _, o := range opts {
+		if v, ok := strings.CutPrefix(o, "--stdin="); ok {
+			stdinFile = v
+			break
+		}
 	}
-	stdinFile := groups[1][0]
+	if stdinFile == "" {
+		ts.Fatalf("exec-pty: usage: exec-pty --stdin=<file> ( <binary> [args...] )")
+	}
 
 	bin, err := exec.LookPath(cmdArgs[0])
 	ts.Check(err)

@@ -6,7 +6,7 @@ mkdir -p .config/exoscale
 cp initial-config.toml .config/exoscale/exoscale.toml
 
 # Try to add account with duplicate name, then provide unique name
-exec-pty ( exo config add ) ( inputs )
+exec-pty --stdin=inputs ( exo config add )
 stdout 'Name \[ExistingAccount\] already exist'
 stdout 'UniqueAccount'
 
