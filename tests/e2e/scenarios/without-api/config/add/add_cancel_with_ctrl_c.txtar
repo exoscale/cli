@@ -6,4 +6,5 @@
 stderr 'Error: Operation Cancelled'
 
 -- inputs --
+@wait:[+] API Key:
 @ctrl+c
