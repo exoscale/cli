@@ -1,0 +1,115 @@
+# Test: all 24 instance subcommands using findInstance produce enriched not-found errors
+# Companion to instance_not_found_error.txtar which covers show/reboot/stop.
+# This scenario exercises the remaining 21 commands to confirm that every
+# one of them surfaces the zone and the -z hint when the instance does not exist.
+# No resources are created so no teardown is required.
+
+# --- Actions that take only an instance name (+ optional --force) ---
+
+# start
+! exec exo compute instance start --force nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# delete (without --force: findInstance error is returned directly;
+# with --force the command prints a warning and exits 0 by design)
+! exec exo compute instance delete nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# update
+! exec exo compute instance update nonexistent-e2e-instance --name dummy
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# reset
+! exec exo compute instance reset --force nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# reset-password
+! exec exo compute instance reset-password nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# reveal-password
+! exec exo compute instance reveal-password nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# console-url
+! exec exo compute instance console-url nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# enable-tpm
+! exec exo compute instance enable-tpm --force nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# snapshot create
+! exec exo compute instance snapshot create nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# --- Actions that take an instance name + a second positional argument ---
+
+# scale (requires instance + type)
+! exec exo compute instance scale --force nonexistent-e2e-instance standard.small
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# resize-disk (requires instance + size)
+! exec exo compute instance resize-disk --force nonexistent-e2e-instance 20
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# snapshot revert (requires instance + snapshot-id)
+! exec exo compute instance snapshot revert --force nonexistent-e2e-instance 00000000-0000-0000-0000-000000000000
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# security-group add (requires instance + sg name)
+! exec exo compute instance security-group add nonexistent-e2e-instance default
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# security-group remove (requires instance + sg name)
+! exec exo compute instance security-group remove nonexistent-e2e-instance default
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# private-network attach (requires instance + pn name)
+! exec exo compute instance private-network attach nonexistent-e2e-instance dummy-pn
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# private-network detach (requires instance + pn name)
+! exec exo compute instance private-network detach nonexistent-e2e-instance dummy-pn
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# private-network update-ip (requires instance + pn name)
+! exec exo compute instance private-network update-ip nonexistent-e2e-instance dummy-pn
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# elastic-ip attach (requires instance + eip)
+! exec exo compute instance elastic-ip attach nonexistent-e2e-instance 1.2.3.4
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# elastic-ip detach (requires instance + eip)
+! exec exo compute instance elastic-ip detach nonexistent-e2e-instance 1.2.3.4
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# ssh (requires instance; will fail at instance lookup before attempting SSH)
+! exec exo compute instance ssh nonexistent-e2e-instance
+stderr 'not found in zone'
+stderr 'Hint: use -z'
+
+# scp (requires instance + source + target)
+! exec exo compute instance scp nonexistent-e2e-instance /dev/null /tmp/dummy
+stderr 'not found in zone'
+stderr 'Hint: use -z'
