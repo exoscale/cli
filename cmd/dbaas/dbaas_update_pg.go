@@ -117,6 +117,42 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGSharedBuffersPercentage)) {
+		databaseService.SharedBuffersPercentage = c.PGSharedBuffersPercentage
+		updated = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGSynchronousReplication)) {
+		databaseService.SynchronousReplication = v3.EnumPGSynchronousReplication(c.PGSynchronousReplication)
+		updated = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGTimescaledbSettings)) {
+		_, err := validateDatabaseServiceSettings(
+			c.PGTimescaledbSettings,
+			settingsSchema.Settings.Timescaledb,
+		)
+		if err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+		settings := &v3.JSONSchemaTimescaledb{}
+		if err = json.Unmarshal([]byte(c.PGTimescaledbSettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+		databaseService.TimescaledbSettings = settings
+		updated = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGVariant)) {
+		databaseService.Variant = v3.EnumPGVariant(c.PGVariant)
+		updated = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGWorkMem)) {
+		databaseService.WorkMem = c.PGWorkMem
+		updated = true
+	}
+
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGMigrationHost)) {
 		databaseService.Migration = &v3.UpdateDBAASServicePGRequestMigration{
 			Host: c.PGMigrationHost,

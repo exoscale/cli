@@ -105,6 +105,7 @@ var (
 		"pg",
 		"pgbouncer",
 		"pglookout",
+		"timescaledb",
 	}
 	valkeySettings = []string{"valkey"}
 )

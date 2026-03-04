@@ -119,6 +119,37 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 		databaseService.PGSettings = settings
 	}
 
+	if c.PGSharedBuffersPercentage != 0 {
+		databaseService.SharedBuffersPercentage = c.PGSharedBuffersPercentage
+	}
+
+	if c.PGSynchronousReplication != "" {
+		databaseService.SynchronousReplication = v3.EnumPGSynchronousReplication(c.PGSynchronousReplication)
+	}
+
+	if c.PGTimescaledbSettings != "" {
+		_, err := validateDatabaseServiceSettings(
+			c.PGTimescaledbSettings,
+			settingsSchema.Settings.Timescaledb,
+		)
+		if err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+		settings := &v3.JSONSchemaTimescaledb{}
+		if err = json.Unmarshal([]byte(c.PGTimescaledbSettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+		databaseService.TimescaledbSettings = settings
+	}
+
+	if c.PGVariant != "" {
+		databaseService.Variant = v3.EnumPGVariant(c.PGVariant)
+	}
+
+	if c.PGWorkMem != 0 {
+		databaseService.WorkMem = c.PGWorkMem
+	}
+
 	if c.PGMigrationHost != "" {
 		databaseService.Migration = &v3.CreateDBAASServicePGRequestMigration{
 			Host: c.PGMigrationHost,

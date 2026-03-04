@@ -87,24 +87,29 @@ type dbaasServiceCreateCmd struct {
 	MysqlBinlogRetentionPeriod int64    `cli-flag:"mysql-binlog-retention-period" cli-usage:"the minimum amount of time in seconds to keep binlog entries before deletion" cli-hidden:""`
 
 	// "pg" type specific flags
-	PGAdminPassword      string   `cli-flag:"pg-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
-	PGAdminUsername      string   `cli-flag:"pg-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
-	PGBackupSchedule     string   `cli-flag:"pg-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
-	PGBouncerSettings    string   `cli-flag:"pg-bouncer-settings" cli-usage:"PgBouncer configuration settings (JSON format)" cli-hidden:""`
-	PGForkFrom           string   `cli-flag:"pg-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
-	PGIPFilter           []string `cli-flag:"pg-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
-	PGLookoutSettings    string   `cli-flag:"pg-lookout-settings" cli-usage:"pglookout configuration settings (JSON format)" cli-hidden:""`
-	PGRecoveryBackupTime string   `cli-flag:"pg-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service" cli-hidden:""`
-	PGSettings           string   `cli-flag:"pg-settings" cli-usage:"PostgreSQL configuration settings (JSON format)" cli-hidden:""`
-	PGVersion            string   `cli-flag:"pg-version" cli-usage:"PostgreSQL major version" cli-hidden:""`
-	PGMigrationHost      string   `cli-flag:"pg-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
-	PGMigrationPort      int64    `cli-flag:"pg-migration-port" cli-usage:"port number of the source server where to migrate data from" cli-hidden:""`
-	PGMigrationPassword  string   `cli-flag:"pg-migration-password" cli-usage:"password for authenticating to the source server" cli-hidden:""`
-	PGMigrationSSL       bool     `cli-flag:"pg-migration-ssl" cli-usage:"connect to the source server using SSL" cli-hidden:""`
-	PGMigrationUsername  string   `cli-flag:"pg-migration-username" cli-usage:"username for authenticating to the source server" cli-hidden:""`
-	PGMigrationDBName    string   `cli-flag:"pg-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
-	PGMigrationMethod    string   `cli-flag:"pg-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
-	PGMigrationIgnoreDbs []string `cli-flag:"pg-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
+	PGAdminPassword           string   `cli-flag:"pg-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
+	PGAdminUsername           string   `cli-flag:"pg-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
+	PGBackupSchedule          string   `cli-flag:"pg-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
+	PGBouncerSettings         string   `cli-flag:"pg-bouncer-settings" cli-usage:"PgBouncer configuration settings (JSON format)" cli-hidden:""`
+	PGForkFrom                string   `cli-flag:"pg-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
+	PGIPFilter                []string `cli-flag:"pg-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	PGLookoutSettings         string   `cli-flag:"pg-lookout-settings" cli-usage:"pglookout configuration settings (JSON format)" cli-hidden:""`
+	PGRecoveryBackupTime      string   `cli-flag:"pg-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service" cli-hidden:""`
+	PGSettings                string   `cli-flag:"pg-settings" cli-usage:"PostgreSQL configuration settings (JSON format)" cli-hidden:""`
+	PGVersion                 string   `cli-flag:"pg-version" cli-usage:"PostgreSQL major version" cli-hidden:""`
+	PGMigrationHost           string   `cli-flag:"pg-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
+	PGMigrationPort           int64    `cli-flag:"pg-migration-port" cli-usage:"port number of the source server where to migrate data from" cli-hidden:""`
+	PGMigrationPassword       string   `cli-flag:"pg-migration-password" cli-usage:"password for authenticating to the source server" cli-hidden:""`
+	PGMigrationSSL            bool     `cli-flag:"pg-migration-ssl" cli-usage:"connect to the source server using SSL" cli-hidden:""`
+	PGMigrationUsername       string   `cli-flag:"pg-migration-username" cli-usage:"username for authenticating to the source server" cli-hidden:""`
+	PGMigrationDBName         string   `cli-flag:"pg-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
+	PGMigrationMethod         string   `cli-flag:"pg-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
+	PGMigrationIgnoreDbs      []string `cli-flag:"pg-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
+	PGSharedBuffersPercentage int64    `cli-flag:"pg-shared-buffers-percentage" cli-usage:"percentage of total RAM for shared memory buffers (valid range: 20-60)" cli-hidden:""`
+	PGSynchronousReplication  string   `cli-flag:"pg-synchronous-replication" cli-usage:"synchronous replication type (quorum or off)" cli-hidden:""`
+	PGTimescaledbSettings     string   `cli-flag:"pg-timescaledb-settings" cli-usage:"TimescaleDB extension configuration settings (JSON format)" cli-hidden:""`
+	PGVariant                 string   `cli-flag:"pg-variant" cli-usage:"PostgreSQL variant (timescale or aiven)" cli-hidden:""`
+	PGWorkMem                 int64    `cli-flag:"pg-work-mem" cli-usage:"maximum memory for query operations before writing to temporary disk files, in MB" cli-hidden:""`
 
 	// "valkey" type specific flags
 	ValkeyForkFrom           string   `cli-flag:"valkey-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
