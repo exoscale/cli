@@ -486,6 +486,50 @@ func (c Client) GetInferenceEngineHelp(ctx context.Context, opts ...GetInference
 	return bodyresp, nil
 }
 
+// List available instance types with authorization status based on GPU availability
+func (c Client) ListAIInstanceTypes(ctx context.Context) (*ListAIInstanceTypesResponse, error) {
+	path := "/ai/instance-type"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ListAIInstanceTypes: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ListAIInstanceTypes: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ListAIInstanceTypes: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "list-ai-instance-types")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ListAIInstanceTypes: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ListAIInstanceTypes: http response: %w", err)
+	}
+
+	bodyresp := new(ListAIInstanceTypesResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ListAIInstanceTypes: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 // FindListModelsResponseEntry attempts to find an ListModelsResponseEntry by nameOrID.
 func (l ListModelsResponse) FindListModelsResponseEntry(nameOrID string) (ListModelsResponseEntry, error) {
 	var result []ListModelsResponseEntry
