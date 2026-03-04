@@ -181,9 +181,9 @@ type CreateDeploymentRequest struct {
 	InferenceEngineParameters []string `json:"inference-engine-parameters,omitempty"`
 	// Inference engine version
 	InferenceEngineVersion InferenceEngineVersion `json:"inference-engine-version,omitempty"`
-	Model                  *ModelRef              `json:"model,omitempty"`
+	Model                  *ModelRef              `json:"model" validate:"required"`
 	// Deployment name
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
+	Name string `json:"name" validate:"required,gte=1"`
 	// Number of replicas (>=1)
 	Replicas int64 `json:"replicas" validate:"required,gte=1"`
 }
@@ -193,7 +193,7 @@ type CreateModelRequest struct {
 	// Huggingface Token
 	HuggingfaceToken string `json:"huggingface-token,omitempty"`
 	// Model name
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
+	Name string `json:"name" validate:"required,gte=1"`
 }
 
 // DBaaS plan backup config
@@ -2226,6 +2226,11 @@ type Event struct {
 	Zone string `json:"zone,omitempty"`
 }
 
+// GPU usage for all organizations
+type GetConfederatioUsageResponse struct {
+	OrganizationsUsages map[string]OrganizationUsage `json:"organizations_usages" validate:"required"`
+}
+
 // A single log entry
 type GetDeploymentLogsEntry struct {
 	// Log message content
@@ -2440,17 +2445,17 @@ type InstancePrivateNetworks struct {
 // Instance
 type Instance struct {
 	// Instance Anti-affinity Groups
-	AntiAffinityGroups []AntiAffinityGroupRef `json:"anti-affinity-groups,omitempty"`
+	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 	// Indicates if the instance will take application-consistent snapshots
 	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Instance creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Deploy target reference
-	DeployTarget *DeployTargetRef `json:"deploy-target,omitempty"`
+	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Instance disk size in GiB
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=51200"`
 	// Instance Elastic IPs
-	ElasticIPS []ElasticIPRef `json:"elastic-ips,omitempty"`
+	ElasticIPS []ElasticIP `json:"elastic-ips,omitempty"`
 	// Instance ID
 	ID UUID `json:"id,omitempty"`
 	// Compute instance type
@@ -2472,9 +2477,9 @@ type Instance struct {
 	// Indicates if the instance has secure boot enabled
 	SecurebootEnabled *bool `json:"secureboot-enabled,omitempty"`
 	// Instance Security Groups
-	SecurityGroups []SecurityGroupRef `json:"security-groups,omitempty"`
+	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
 	// Instance Snapshots
-	Snapshots []SnapshotRef `json:"snapshots,omitempty"`
+	Snapshots []Snapshot `json:"snapshots,omitempty"`
 	// SSH key
 	SSHKey *SSHKey `json:"ssh-key,omitempty"`
 	// Instance SSH Keys
@@ -2509,25 +2514,25 @@ const (
 // Instance Pool
 type InstancePool struct {
 	// Instance Pool Anti-affinity Groups
-	AntiAffinityGroups []AntiAffinityGroupRef `json:"anti-affinity-groups,omitempty"`
+	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 	// Enable application consistent snapshots
 	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Deploy target reference
-	DeployTarget *DeployTargetRef `json:"deploy-target,omitempty"`
+	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Instance Pool description
 	Description string `json:"description,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Instances disk size in GiB
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=51200"`
 	// Instances Elastic IPs
-	ElasticIPS []ElasticIPRef `json:"elastic-ips,omitempty"`
+	ElasticIPS []ElasticIP `json:"elastic-ips,omitempty"`
 	// Instance Pool ID
 	ID UUID `json:"id,omitempty"`
 	// The instances created by the Instance Pool will be prefixed with this value (default: pool)
 	InstancePrefix string `json:"instance-prefix,omitempty" validate:"omitempty,gte=1,lte=30"`
 	// Instance type reference
-	InstanceType *InstanceTypeRef `json:"instance-type,omitempty"`
+	InstanceType *InstanceType `json:"instance-type,omitempty"`
 	// Instances
-	Instances []InstanceRef `json:"instances,omitempty"`
+	Instances []Instance `json:"instances,omitempty"`
 	// Enable IPv6 for instances
 	Ipv6Enabled *bool  `json:"ipv6-enabled,omitempty"`
 	Labels      Labels `json:"labels,omitempty"`
@@ -2538,20 +2543,20 @@ type InstancePool struct {
 	// Instance Pool name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Instance Pool Private Networks
-	PrivateNetworks    []PrivateNetworkRef `json:"private-networks,omitempty"`
-	PublicIPAssignment PublicIPAssignment  `json:"public-ip-assignment,omitempty"`
+	PrivateNetworks    []PrivateNetwork   `json:"private-networks,omitempty"`
+	PublicIPAssignment PublicIPAssignment `json:"public-ip-assignment,omitempty"`
 	// Instance Pool Security Groups
-	SecurityGroups []SecurityGroupRef `json:"security-groups,omitempty"`
+	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
 	// Number of instances
 	Size int64 `json:"size,omitempty" validate:"omitempty,gt=0"`
 	// SSH key reference
-	SSHKey *SSHKeyRef `json:"ssh-key,omitempty"`
+	SSHKey *SSHKey `json:"ssh-key,omitempty"`
 	// Instances SSH keys
-	SSHKeys []SSHKeyRef `json:"ssh-keys,omitempty"`
+	SSHKeys []SSHKey `json:"ssh-keys,omitempty"`
 	// Instance Pool state
 	State InstancePoolState `json:"state,omitempty"`
 	// Template reference
-	Template *TemplateRef `json:"template,omitempty"`
+	Template *Template `json:"template,omitempty"`
 	// Instances Cloud-init user-data
 	UserData string `json:"user-data,omitempty" validate:"omitempty,gte=1"`
 }
@@ -2634,6 +2639,14 @@ type InstanceType struct {
 	Size InstanceTypeSize `json:"size,omitempty"`
 	// Instance Type available zones
 	Zones []ZoneName `json:"zones,omitempty"`
+}
+
+// Instance type with authorization status
+type InstanceTypeEntry struct {
+	// Whether this instance type is authorized based on server availability
+	Authorized *bool `json:"authorized,omitempty"`
+	// GPU family name
+	Family string `json:"family,omitempty"`
 }
 
 // Instance type reference
@@ -3816,6 +3829,11 @@ type KubeletImageGC struct {
 
 type Labels map[string]string
 
+// List of available instance types with authorization status
+type ListAIInstanceTypesResponse struct {
+	InstanceTypes []InstanceTypeEntry `json:"instance-types,omitempty"`
+}
+
 // AI model list
 type ListDeploymentsResponse struct {
 	Deployments []ListDeploymentsResponseEntry `json:"deployments,omitempty"`
@@ -4111,6 +4129,12 @@ type Organization struct {
 	Name string `json:"name,omitempty"`
 	// Organization postcode
 	Postcode string `json:"postcode,omitempty"`
+}
+
+// Organization GPU usage
+type OrganizationUsage struct {
+	// Total GPU count
+	Gpu int64 `json:"gpu" validate:"required,gte=0"`
 }
 
 // Private Network
@@ -4436,11 +4460,11 @@ type SKSNodepool struct {
 	// Nodepool addons
 	Addons []string `json:"addons,omitempty"`
 	// Nodepool Anti-affinity Groups
-	AntiAffinityGroups []AntiAffinityGroupRef `json:"anti-affinity-groups,omitempty"`
+	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 	// Nodepool creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Deploy target reference
-	DeployTarget *DeployTargetRef `json:"deploy-target,omitempty"`
+	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Nodepool description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=255"`
 	// Nodepool instances disk size in GiB
@@ -4448,31 +4472,31 @@ type SKSNodepool struct {
 	// Nodepool ID
 	ID UUID `json:"id,omitempty"`
 	// Target Instance Pool
-	InstancePool *InstancePoolRef `json:"instance-pool,omitempty"`
+	InstancePool *InstancePool `json:"instance-pool,omitempty"`
 	// The instances created by the Nodepool will be prefixed with this value (default: pool)
 	InstancePrefix string `json:"instance-prefix,omitempty" validate:"omitempty,gte=1,lte=30"`
 	// Instance type reference
-	InstanceType *InstanceTypeRef `json:"instance-type,omitempty"`
+	InstanceType *InstanceType `json:"instance-type,omitempty"`
 	// Kubelet image GC options
 	KubeletImageGC *KubeletImageGC   `json:"kubelet-image-gc,omitempty"`
 	Labels         SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Nodepool Private Networks
-	PrivateNetworks []PrivateNetworkRef `json:"private-networks,omitempty"`
+	PrivateNetworks []PrivateNetwork `json:"private-networks,omitempty"`
 	// Nodepool public IP assignment of the Instances:
 	// * IPv4 and IPv6 (`dual`) addressing.
 	// * IPv4 and IPv6 (`dual`) addressing.
 	PublicIPAssignment SKSNodepoolPublicIPAssignment `json:"public-ip-assignment,omitempty"`
 	// Nodepool Security Groups
-	SecurityGroups []SecurityGroupRef `json:"security-groups,omitempty"`
+	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
 	// Number of instances
 	Size int64 `json:"size,omitempty" validate:"omitempty,gte=0"`
 	// Nodepool state
 	State  SKSNodepoolState  `json:"state,omitempty"`
 	Taints SKSNodepoolTaints `json:"taints,omitempty"`
 	// Template reference
-	Template *TemplateRef `json:"template,omitempty"`
+	Template *Template `json:"template,omitempty"`
 	// Nodepool version
 	Version string `json:"version,omitempty"`
 }

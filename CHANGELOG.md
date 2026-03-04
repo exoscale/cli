@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- new command `exo ai deployment instance-type` that allows showing what GPU is usable in which zone
+
 ## 1.93.0
 
 ### Features
