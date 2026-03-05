@@ -4,7 +4,7 @@
 
 ### Features
 
-- new command `exo ai deployment instance-type` that allows showing what GPU is usable in which zone
+- new command `exo ai deployment instance-type` that allows showing what GPU is usable in which zone #809
 
 ## 1.93.0
 
