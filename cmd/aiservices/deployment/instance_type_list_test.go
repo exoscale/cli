@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"sort"
 	"testing"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -86,23 +85,14 @@ func TestInstanceTypeList(t *testing.T) {
 }
 
 func TestInstanceTypeListSortByZoneAndFamily(t *testing.T) {
-	trueVal := true
 	out := InstanceTypeListOutput{
-		{Family: "gpu-a100", Authorized: trueVal, Zone: "ch-gva-2"},
-		{Family: "gpu-a5000", Authorized: trueVal, Zone: "ch-dk-2"},
-		{Family: "gpu-a100", Authorized: trueVal, Zone: "ch-dk-2"},
-		{Family: "gpu-h100", Authorized: trueVal, Zone: "ch-gva-2"},
+		{Family: "gpu-a100", Authorized: true, Zone: "ch-gva-2"},
+		{Family: "gpu-a5000", Authorized: true, Zone: "ch-dk-2"},
+		{Family: "gpu-a100", Authorized: true, Zone: "ch-dk-2"},
+		{Family: "gpu-h100", Authorized: true, Zone: "ch-gva-2"},
 	}
 
-	sort.Slice(out, func(i, j int) bool {
-		if out[i].Zone < out[j].Zone {
-			return true
-		}
-		if out[i].Zone > out[j].Zone {
-			return false
-		}
-		return out[i].Family < out[j].Family
-	})
+	sortInstanceTypeListOutput(out)
 
 	if out[0].Zone != "ch-dk-2" || out[0].Family != "gpu-a100" {
 		t.Errorf("expected ch-dk-2/gpu-a100 first, got %s/%s", out[0].Zone, out[0].Family)
@@ -127,8 +117,8 @@ func TestInstanceTypeListUsesZone(t *testing.T) {
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("instance type list: %v", err)
 	}
-	if ts.zones == 0 {
-		t.Fatalf("expected zone list endpoint to be called")
+	if ts.zones != 1 {
+		t.Fatalf("expected zone list endpoint to be called exactly once, got %d", ts.zones)
 	}
 }
 

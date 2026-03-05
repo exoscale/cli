@@ -15,8 +15,8 @@ import (
 
 type InstanceTypeListItemOutput struct {
 	Family     string `json:"family"`
-	Authorized bool   `json:"authorized" outputLabel:"Authorized"`
-	Zone       string `json:"zone,omitempty"`
+	Authorized bool   `json:"authorized"`
+	Zone       string `json:"zone"`
 }
 
 type InstanceTypeListOutput []InstanceTypeListItemOutput
@@ -55,8 +55,8 @@ func (c *InstanceTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	out := make(InstanceTypeListOutput, 0)
 	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
-		c := client.WithEndpoint(zone.APIEndpoint)
-		resp, err := c.ListAIInstanceTypes(ctx)
+		zoneClient := client.WithEndpoint(zone.APIEndpoint)
+		resp, err := zoneClient.ListAIInstanceTypes(ctx)
 		if err != nil {
 			return err
 		}
@@ -76,6 +76,13 @@ func (c *InstanceTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return nil
 	})
 
+	sortInstanceTypeListOutput(out)
+
+	return c.OutputFunc(&out, err)
+}
+
+// sortInstanceTypeListOutput sorts by zone then by family alphabetically.
+func sortInstanceTypeListOutput(out InstanceTypeListOutput) {
 	sort.Slice(out, func(i, j int) bool {
 		if out[i].Zone < out[j].Zone {
 			return true
@@ -85,8 +92,6 @@ func (c *InstanceTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 		return out[i].Family < out[j].Family
 	})
-
-	return c.OutputFunc(&out, err)
 }
 
 func init() {
