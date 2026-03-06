@@ -1,0 +1,29 @@
+# Test: dbaas pg create/show/update/delete lifecycle with new config options
+# Full lifecycle: create a PG service with new flags, verify them in show output,
+# update some, then delete.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# Create a PG service with the new configuration options (disable termination protection for cleanup)
+exec exo --zone $TEST_ZONE --output-format json dbaas create pg hobbyist-2 cli-e2e-pg-$TEST_RUN_ID --pg-shared-buffers-percentage 25 --pg-synchronous-replication off --pg-work-mem 128 --termination-protection=false
+
+# Wait for the service to be running (PG provisioning can take 5-10 minutes)
+wait-dbaas-state $TEST_ZONE cli-e2e-pg-$TEST_RUN_ID running 600
+
+# Show the service and verify the new fields are present in JSON output
+exec exo --zone $TEST_ZONE --output-format json dbaas show cli-e2e-pg-$TEST_RUN_ID
+stdout '"shared_buffers_percentage"'
+stdout '"synchronous_replication"'
+stdout '"work_mem"'
+
+# Update: change work_mem
+exec exo --zone $TEST_ZONE dbaas update cli-e2e-pg-$TEST_RUN_ID --pg-work-mem 256 -f
+
+# Wait for the service to stabilise after update
+wait-dbaas-state $TEST_ZONE cli-e2e-pg-$TEST_RUN_ID running 600
+
+# Verify updated value
+exec exo --zone $TEST_ZONE --output-format json dbaas show cli-e2e-pg-$TEST_RUN_ID
+stdout '"work_mem"'
+
+# Teardown: delete the service
+exec exo --zone $TEST_ZONE dbaas delete -f cli-e2e-pg-$TEST_RUN_ID

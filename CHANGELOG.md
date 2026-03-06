@@ -5,6 +5,7 @@
 
 ### Features
 
+- dbaas: add missing PostgreSQL configuration options (`shared-buffers-percentage`, `synchronous-replication`, `timescaledb-settings`, `variant`, `work-mem`) #808
 - `exo compute eip list` now shows the description & the management type of the EIP #803
 - sks: add `rotate-karpenter-credentials` command #797
 - sks: add `active-nodepool-templates` command #797
@@ -20,6 +21,8 @@
 
 ### Testing
 
+- test(testscript): add without-api flag existence tests for new DBaaS PG config options #808
+- test(testscript): add with-api PG lifecycle test and `wait-dbaas-state` custom command #808
 - test(testscript): add PTY infrastructure for testing interactive flows and commands #800
 - test(testscript): add validation handling in PTY-based interactive flows #801
 - test(testscript): add API testscript runner with per-scenario resource lifecycle #804
