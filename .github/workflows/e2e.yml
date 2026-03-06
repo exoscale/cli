@@ -44,4 +44,4 @@ jobs:
           EXOSCALE_ZONE: ch-gva-2
         run: |
           cd tests/e2e
-          go test -v -tags=api -timeout 30m -run TestScriptsAPI
+          go test -v -tags=api -timeout 30m -run TestScriptsAPI 2>&1
