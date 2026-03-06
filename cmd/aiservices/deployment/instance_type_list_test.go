@@ -38,7 +38,7 @@ func newInstanceTypeListServer(t *testing.T) *instanceTypeListServer {
 	return ts
 }
 
-func instanceTypeSetup(t *testing.T, url string) func() {
+func instanceTypeSetup(t *testing.T, url string) {
 	exocmd.GContext = context.Background()
 	globalstate.Quiet = true
 	creds := credentials.NewStaticCredentials("key", "secret")
@@ -47,13 +47,12 @@ func instanceTypeSetup(t *testing.T, url string) func() {
 		t.Fatalf("new client: %v", err)
 	}
 	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(url))
-	return func() {}
 }
 
 func TestInstanceTypeList(t *testing.T) {
 	ts := newInstanceTypeListServer(t)
 	defer ts.server.Close()
-	defer instanceTypeSetup(t, ts.server.URL)()
+	instanceTypeSetup(t, ts.server.URL)
 
 	trueVal := true
 	falseVal := false
@@ -111,7 +110,7 @@ func TestInstanceTypeListSortByZoneAndFamily(t *testing.T) {
 func TestInstanceTypeListUsesZone(t *testing.T) {
 	ts := newInstanceTypeListServer(t)
 	defer ts.server.Close()
-	defer instanceTypeSetup(t, ts.server.URL)()
+	instanceTypeSetup(t, ts.server.URL)
 
 	cmd := &InstanceTypeListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Zone: v3.ZoneName("test-zone")}
 	if err := cmd.CmdRun(nil, nil); err != nil {
