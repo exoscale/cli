@@ -43,15 +43,19 @@ type dbServicePGUserShowOutput struct {
 }
 
 type dbServicePGShowOutput struct {
-	BackupSchedule  string                           `json:"backup_schedule"`
-	Components      []dbServicePGComponentShowOutput `json:"components"`
-	Databases       []string                         `json:"databases"`
-	ConnectionPools []dbServicePGConnectionPool      `json:"connection_pools"`
-	IPFilter        []string                         `json:"ip_filter"`
-	URI             string                           `json:"uri"`
-	URIParams       map[string]interface{}           `json:"uri_params"`
-	Users           []dbServicePGUserShowOutput      `json:"users"`
-	Version         string                           `json:"version"`
+	BackupSchedule          string                           `json:"backup_schedule"`
+	Components              []dbServicePGComponentShowOutput `json:"components"`
+	Databases               []string                         `json:"databases"`
+	ConnectionPools         []dbServicePGConnectionPool      `json:"connection_pools"`
+	IPFilter                []string                         `json:"ip_filter"`
+	SharedBuffersPercentage int64                            `json:"shared_buffers_percentage"`
+	SynchronousReplication  string                           `json:"synchronous_replication"`
+	TimescaledbSettings     *v3.JSONSchemaTimescaledb        `json:"timescaledb_settings,omitempty"`
+	URI                     string                           `json:"uri"`
+	URIParams               map[string]interface{}           `json:"uri_params"`
+	Users                   []dbServicePGUserShowOutput      `json:"users"`
+	Version                 string                           `json:"version"`
+	WorkMem                 int64                            `json:"work_mem"`
 }
 
 func formatDatabaseServicePGTable(t *table.Table, o *dbServicePGShowOutput) {
@@ -59,6 +63,16 @@ func formatDatabaseServicePGTable(t *table.Table, o *dbServicePGShowOutput) {
 	t.Append([]string{"Backup Schedule", o.BackupSchedule})
 	t.Append([]string{"URI", redactDatabaseServiceURI(o.URI)})
 	t.Append([]string{"IP Filter", strings.Join(o.IPFilter, ", ")})
+
+	if o.SharedBuffersPercentage > 0 {
+		t.Append([]string{"Shared Buffers Percentage", fmt.Sprintf("%d%%", o.SharedBuffersPercentage)})
+	}
+	if o.SynchronousReplication != "" {
+		t.Append([]string{"Synchronous Replication", o.SynchronousReplication})
+	}
+	if o.WorkMem > 0 {
+		t.Append([]string{"Work Mem", fmt.Sprintf("%d MB", o.WorkMem)})
+	}
 
 	t.Append([]string{"Components", func() string {
 		buf := bytes.NewBuffer(nil)
@@ -183,6 +197,11 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 			}
 		case "pglookout":
 			out, err = json.MarshalIndent(databaseService.PglookoutSettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
+		case "timescaledb":
+			out, err = json.MarshalIndent(databaseService.TimescaledbSettings, "", "  ")
 			if err != nil {
 				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
 			}
@@ -336,6 +355,11 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 			}(),
 
 			Version: databaseService.Version,
+
+			SharedBuffersPercentage: databaseService.SharedBuffersPercentage,
+			SynchronousReplication:  string(databaseService.SynchronousReplication),
+			TimescaledbSettings:     databaseService.TimescaledbSettings,
+			WorkMem:                 databaseService.WorkMem,
 		},
 	}
 

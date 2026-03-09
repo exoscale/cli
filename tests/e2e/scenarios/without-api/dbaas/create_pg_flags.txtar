@@ -1,0 +1,27 @@
+# Test: dbaas create --help-pg displays all PostgreSQL-specific flags
+# Verifies that the 5 new configuration flags (shared-buffers-percentage,
+# synchronous-replication, timescaledb-settings, variant, work-mem) are
+# properly registered and visible in the help output.
+
+exec exo dbaas create --help-pg
+stdout '--pg-shared-buffers-percentage'
+stdout '--pg-synchronous-replication'
+stdout '--pg-timescaledb-settings'
+stdout '--pg-variant'
+stdout '--pg-work-mem'
+
+# Also verify pre-existing flags are still present
+stdout '--pg-settings'
+stdout '--pg-bouncer-settings'
+stdout '--pg-ip-filter'
+stdout '--pg-version'
+stdout '--pg-backup-schedule'
+
+-- .config/exoscale/exoscale.toml --
+defaultaccount = "test"
+
+[[accounts]]
+name = "test"
+key = "EXO000000000000000000"
+secret = "dummy-secret-for-help-test"
+defaultZone = "ch-gva-2"
