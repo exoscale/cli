@@ -15,4 +15,3 @@ jobs:
             version: latest
             args: --timeout 4m
             only-new-issues: true
-

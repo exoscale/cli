@@ -11,6 +11,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
@@ -181,16 +182,23 @@ func promptAccountInformation() (*account.Account, error) {
 	account.Key = apiKey
 
 	// Prompt for Secret Key with validation
-	secretKey, err := readInputWithContext(ctx, reader, "Secret Key")
+	fd := int(os.Stdin.Fd())
+	fmt.Printf("[+] Secret Key: ") //nolint:errcheck
+	secretKeyBytes, err := term.ReadPassword(fd)
+	fmt.Println() //nolint:errcheck
 	if err != nil {
 		return nil, err
 	}
+	secretKey := strings.TrimSpace(string(secretKeyBytes))
 	for secretKey == "" {
 		fmt.Println("Secret Key cannot be empty")
-		secretKey, err = readInputWithContext(ctx, reader, "Secret Key")
+		fmt.Printf("[+] Secret Key: ") //nolint:errcheck
+		secretKeyBytes, err = term.ReadPassword(fd)
+		fmt.Println() //nolint:errcheck
 		if err != nil {
 			return nil, err
 		}
+		secretKey = strings.TrimSpace(string(secretKeyBytes))
 	}
 	account.Secret = secretKey
 
