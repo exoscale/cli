@@ -1,6 +1,6 @@
 module github.com/exoscale/cli
 
-go 1.24.13
+go 1.25.8
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.2.0
@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/aws/smithy-go v1.1.0
 	github.com/dustin/go-humanize v1.0.1
-	github.com/exoscale/egoscale/v3 v3.1.34-0.20260213122639-9470600ef920
+	github.com/exoscale/egoscale/v3 v3.1.34
 	github.com/exoscale/openapi-cli-generator v1.2.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/hashicorp/go-multierror v1.1.1
