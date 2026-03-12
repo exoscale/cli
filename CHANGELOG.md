@@ -7,6 +7,10 @@
 - dbaas: add missing PostgreSQL configuration options (`shared-buffers-percentage`, `synchronous-replication`, `timescaledb-settings`, `variant`, `work-mem`) #808
 - `exo compute eip list` now shows the description & the management type of the EIP #803
 - sks: add `rotate-karpenter-credentials` command #797
+
+### Improvements
+
+- compute instance: enrich "not found" error with the zone searched and a hint to use -z #805
 - sks: add `active-nodepool-templates` command #797
 - new command `exo ai deployment instance-type` that allows showing what GPU is usable in which zone #809
 

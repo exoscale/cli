@@ -54,9 +54,9 @@ func (c *instanceEIPAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	instance, err := instancesList.FindListInstancesResponseInstances(c.Instance)
+	instance, err := findInstance(instancesList, c.Instance, c.Zone)
 	if err != nil {
-		return fmt.Errorf("error retrieving Instance: %w", err)
+		return err
 	}
 
 	elasticIPs, err := client.ListElasticIPS(ctx)
