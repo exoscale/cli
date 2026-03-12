@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
@@ -128,6 +130,36 @@ func addConfigAccount(firstRun bool) error {
 	return saveConfig(filePath, &config)
 }
 
+// readPasswordInterruptible reads a password from the terminal (no echo) while
+// catching SIGINT (Ctrl+C). term.ReadPassword enables ISIG on the fd, which
+// would otherwise deliver SIGINT directly to the process and kill it before any
+// cancellation message can be printed. By intercepting the signal we can exit
+// gracefully with the expected "Error: Operation Cancelled" output.
+func readPasswordInterruptible() ([]byte, error) {
+	fd := int(os.Stdin.Fd())
+
+	sigCh := make(chan os.Signal, 1)
+	doneCh := make(chan struct{})
+	signal.Notify(sigCh, os.Interrupt)
+
+	go func() {
+		select {
+		case _, ok := <-sigCh:
+			if ok {
+				fmt.Println()
+				fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+				os.Exit(exocmd.ExitCodeInterrupt)
+			}
+		case <-doneCh:
+		}
+	}()
+
+	b, err := term.ReadPassword(fd)
+	signal.Stop(sigCh)
+	close(doneCh)
+	return b, err
+}
+
 // readInputWithContext reads a line from stdin with context cancellation support.
 // Returns io.EOF if Ctrl+C or Ctrl+D is pressed, allowing graceful cancellation.
 // Silent exit behavior matches promptui.Select's interrupt handling.
@@ -181,16 +213,22 @@ func promptAccountInformation() (*account.Account, error) {
 	account.Key = apiKey
 
 	// Prompt for Secret Key with validation
-	secretKey, err := readInputWithContext(ctx, reader, "Secret Key")
+	fmt.Printf("[+] Secret Key: ") //nolint:errcheck
+	secretKeyBytes, err := readPasswordInterruptible()
+	fmt.Println() //nolint:errcheck
 	if err != nil {
 		return nil, err
 	}
+	secretKey := strings.TrimSpace(string(secretKeyBytes))
 	for secretKey == "" {
 		fmt.Println("Secret Key cannot be empty")
-		secretKey, err = readInputWithContext(ctx, reader, "Secret Key")
+		fmt.Printf("[+] Secret Key: ") //nolint:errcheck
+		secretKeyBytes, err = readPasswordInterruptible()
+		fmt.Println() //nolint:errcheck
 		if err != nil {
 			return nil, err
 		}
+		secretKey = strings.TrimSpace(string(secretKeyBytes))
 	}
 	account.Secret = secretKey
 

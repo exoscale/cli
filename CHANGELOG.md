@@ -12,6 +12,8 @@
 
 ### Bug fixes
 
+- fix(config): secret key no longer shown in plain text during `exo config add` #810
+
 - fix(nlb): API error swallowed on load-balancer update (e.g. duplicate name conflict reported as "operation is nil") #806
 - fix(config): panic when used without a default account set #798
 
