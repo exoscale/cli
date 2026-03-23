@@ -478,7 +478,7 @@ You may only delegate subdomains (for example subdomain.yourdomain.com).`,
 		if err != nil {
 			return err
 		}
-		mailSrv, err := cmd.Flags().GetString("mail-server-host")
+		nameSrv, err := cmd.Flags().GetString("name-server")
 		if err != nil {
 			return err
 		}
@@ -491,7 +491,7 @@ You may only delegate subdomains (for example subdomain.yourdomain.com).`,
 			args[0],
 			name,
 			"NS",
-			mailSrv,
+			nameSrv,
 			int64(ttl),
 			nil,
 		)
