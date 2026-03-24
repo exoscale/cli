@@ -626,11 +626,15 @@ func (c *Client) EstimatePartSize(f *os.File) (int64, error) {
 		return 0, err
 	}
 
+	return estimateMultipartPartSize(size), nil
+}
+
+func estimateMultipartPartSize(size int64) int64 {
 	if size/int64(s3manager.DefaultUploadPartSize) >= int64(s3manager.MaxUploadParts) {
-		return (size / int64(s3manager.MaxUploadParts)) + 1, nil
+		return (size / int64(s3manager.MaxUploadParts)) + 1
 	}
 
-	return s3manager.DefaultUploadPartSize, nil
+	return s3manager.DefaultUploadPartSize
 }
 
 func computeSeekerLength(s io.Seeker) (int64, error) {
