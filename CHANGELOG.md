@@ -9,7 +9,7 @@
 - sks: add `rotate-karpenter-credentials` command #797
 - sks: add `active-nodepool-templates` command #797
 - new command `exo ai deployment instance-type` that allows showing what GPU is usable in which zone #809
-- new command `exo storage move` to move objects within or across buckets without downloading them locally
+- new command `exo storage move` to move objects within or across buckets without downloading them locally #814
 
 ### Bug fixes
 
