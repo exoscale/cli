@@ -44,6 +44,7 @@ type instanceCreateCmd struct {
 	Labels                map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	PrivateNetworks       []string          `cli-flag:"private-network" cli-usage:"instance Private Network NAME|ID (can be specified multiple times)"`
 	PublicIPAssignment    string            `cli-flag:"public-ip" cli-usage:"Configures public IP assignment of the Instances (none|inet4|dual). (default: inet4)"`
+	ReverseDNS            string            `cli-usage:"Reverse DNS Domain"`
 	SSHKeys               []string          `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on the instance (can be specified multiple times)"`
 	Protection            bool              `cli-flag:"protection" cli-usage:"enable delete protection"`
 	SecurityGroups        []string          `cli-flag:"security-group" cli-usage:"instance Security Group NAME|ID (can be specified multiple times)"`
@@ -252,6 +253,8 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 		instanceReq.ApplicationConsistentSnapshotEnabled = &c.AppConsistentSnapshot
 	}
 
+	updateRDNS := cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ReverseDNS))
+
 	var instanceID v3.UUID
 	utils.DecorateAsyncOperation(fmt.Sprintf("Creating instance %q...", c.Name), func() {
 		var op *v3.Operation
@@ -276,6 +279,17 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 				return
 			}
 			_, err = client.Wait(ctx, op)
+			if err != nil {
+				return
+			}
+		}
+
+		if updateRDNS {
+			op, err = client.UpdateReverseDNSInstance(ctx, instanceID, v3.UpdateReverseDNSInstanceRequest{DomainName: c.ReverseDNS})
+			if err != nil {
+				return
+			}
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 			if err != nil {
 				return
 			}
