@@ -75,14 +75,14 @@ func TestScriptsAPI(t *testing.T) {
 // setupAPITestEnv configures the testscript environment with API credentials
 // and run metadata. Each scenario creates and deletes its own resources.
 // Credentials are passed via env vars (EXOSCALE_API_KEY / EXOSCALE_API_SECRET)
-// so the CLI never reads or writes a config file during API tests, keeping
-// secrets off disk.
+// so the CLI can run during API tests without writing secrets to disk.
 func setupAPITestEnv(e *testscript.Env, suite *APITestSuite) error {
 	// Isolate HOME so no real config file is accidentally read.
 	e.Setenv("XDG_CONFIG_HOME", e.WorkDir+"/.config")
 	e.Setenv("HOME", e.WorkDir)
 
-	// API credentials — the CLI reads these directly, ignoring any config file.
+	// API credentials — the CLI reads these directly, allowing tests to run
+	// without a config file.
 	e.Setenv("EXOSCALE_API_KEY", os.Getenv("EXOSCALE_API_KEY"))
 	e.Setenv("EXOSCALE_API_SECRET", os.Getenv("EXOSCALE_API_SECRET"))
 
