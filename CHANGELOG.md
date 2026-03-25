@@ -9,7 +9,7 @@
 - sks: add `rotate-karpenter-credentials` command #797
 - sks: add `active-nodepool-templates` command #797
 - new command `exo ai deployment instance-type` that allows showing what GPU is usable in which zone #809
-- instance create: add support for setting a reverse dns with the `--reverse-dns` flag
+- instance create: add support for setting a reverse dns with the `--reverse-dns` flag #816
 
 ### Bug fixes
 
