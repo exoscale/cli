@@ -107,6 +107,120 @@ func init() {
 
 var ignoreClientBuild = false
 
+type envAccountOverrides struct {
+	apiEndpoint    string
+	apiEnvironment string
+	apiKey         string
+	apiSecret      string
+	sosEndpoint    string
+	clientTimeout  *int
+}
+
+func readEnvAccountOverrides() envAccountOverrides {
+	clientTimeoutFromEnv := readFromEnv("EXOSCALE_API_TIMEOUT")
+
+	overrides := envAccountOverrides{
+		apiEndpoint:    os.Getenv("EXOSCALE_API_ENDPOINT"),
+		apiEnvironment: readFromEnv("EXOSCALE_API_ENVIRONMENT"),
+		apiKey: readFromEnv(
+			"EXOSCALE_API_KEY",
+			"EXOSCALE_KEY",
+			"CLOUDSTACK_KEY",
+			"CLOUDSTACK_API_KEY",
+		),
+		apiSecret: readFromEnv(
+			"EXOSCALE_API_SECRET",
+			"EXOSCALE_SECRET",
+			"EXOSCALE_SECRET_KEY",
+			"CLOUDSTACK_SECRET",
+			"CLOUDSTACK_SECRET_KEY",
+		),
+		sosEndpoint: readFromEnv(
+			"EXOSCALE_STORAGE_API_ENDPOINT",
+			"EXOSCALE_SOS_ENDPOINT",
+		),
+	}
+
+	if clientTimeoutFromEnv != "" {
+		if t, err := strconv.Atoi(clientTimeoutFromEnv); err == nil {
+			overrides.clientTimeout = &t
+		}
+	}
+
+	return overrides
+}
+
+func (o envAccountOverrides) HasCredentials() bool {
+	return o.apiKey != "" && o.apiSecret != ""
+}
+
+func (o envAccountOverrides) Apply(acc *account.Account) {
+	if o.clientTimeout != nil {
+		acc.ClientTimeout = *o.clientTimeout
+	}
+
+	if !o.HasCredentials() {
+		return
+	}
+
+	acc.Key = o.apiKey
+	acc.Secret = o.apiSecret
+	acc.SecretCommand = nil
+
+	if o.apiEndpoint != "" {
+		acc.Endpoint = o.apiEndpoint
+	}
+
+	if o.apiEnvironment != "" {
+		acc.Environment = o.apiEnvironment
+	}
+
+	if o.sosEndpoint != "" {
+		acc.SosEndpoint = o.sosEndpoint
+	}
+}
+
+func useEnvOnlyAccount(overrides envAccountOverrides) {
+	envAccount := account.Account{
+		Name:        "<environment variables>",
+		DefaultZone: DefaultZone,
+		Environment: DefaultEnvironment,
+		SosEndpoint: DefaultSosEndpoint,
+	}
+	GConfigFilePath = "<environment variables>"
+	overrides.Apply(&envAccount)
+	account.GAllAccount = &account.Config{
+		DefaultAccount: envAccount.Name,
+		Accounts:       []account.Account{envAccount},
+	}
+	account.CurrentAccount = &account.GAllAccount.Accounts[0]
+}
+
+func finalizeCurrentAccount(overrides envAccountOverrides) {
+	if account.CurrentAccount.Environment == "" {
+		account.CurrentAccount.Environment = DefaultEnvironment
+	}
+
+	if account.CurrentAccount.DefaultZone == "" {
+		account.CurrentAccount.DefaultZone = DefaultZone
+	}
+
+	if globalstate.OutputFormat == "" {
+		if account.CurrentAccount.DefaultOutputFormat != "" {
+			globalstate.OutputFormat = account.CurrentAccount.DefaultOutputFormat
+		} else {
+			globalstate.OutputFormat = DefaultOutputFormat
+		}
+	}
+
+	if account.CurrentAccount.SosEndpoint == "" {
+		account.CurrentAccount.SosEndpoint = DefaultSosEndpoint
+	}
+
+	overrides.Apply(account.CurrentAccount)
+	account.CurrentAccount.SosEndpoint = strings.TrimRight(account.CurrentAccount.SosEndpoint, "/")
+}
+
 // initConfig reads in config file and ENV variables if set.
 func initConfig() { //nolint:gocyclo
 	envs := map[string]string{
@@ -127,63 +241,7 @@ func initConfig() { //nolint:gocyclo
 		}
 	}
 
-	sosEndpointFromEnv := readFromEnv(
-		"EXOSCALE_STORAGE_API_ENDPOINT",
-		"EXOSCALE_SOS_ENDPOINT",
-	)
-
-	apiEndpoint := os.Getenv("EXOSCALE_API_ENDPOINT")
-
-	apiKeyFromEnv := readFromEnv(
-		"EXOSCALE_API_KEY",
-		"EXOSCALE_KEY",
-		"CLOUDSTACK_KEY",
-		"CLOUDSTACK_API_KEY",
-	)
-
-	apiSecretFromEnv := readFromEnv(
-		"EXOSCALE_API_SECRET",
-		"EXOSCALE_SECRET",
-		"EXOSCALE_SECRET_KEY",
-		"CLOUDSTACK_SECRET",
-		"CLOUDSTACK_SECRET_KEY",
-	)
-
-	apiEnvironmentFromEnv := readFromEnv("EXOSCALE_API_ENVIRONMENT")
-
-	if apiKeyFromEnv != "" && apiSecretFromEnv != "" {
-		account.CurrentAccount.Name = "<environment variables>"
-		GConfigFilePath = "<environment variables>"
-		account.CurrentAccount.Key = apiKeyFromEnv
-		account.CurrentAccount.Secret = apiSecretFromEnv
-
-		if apiEndpoint != "" {
-			account.CurrentAccount.Endpoint = apiEndpoint
-		}
-
-		if apiEnvironmentFromEnv != "" {
-			account.CurrentAccount.Environment = apiEnvironmentFromEnv
-		}
-		if sosEndpointFromEnv != "" {
-			account.CurrentAccount.SosEndpoint = sosEndpointFromEnv
-		}
-
-		clientTimeoutFromEnv := readFromEnv("EXOSCALE_API_TIMEOUT")
-		if clientTimeoutFromEnv != "" {
-			if t, err := strconv.Atoi(clientTimeoutFromEnv); err == nil {
-				account.CurrentAccount.ClientTimeout = t
-			}
-		}
-
-		account.GAllAccount = &account.Config{
-			DefaultAccount: account.CurrentAccount.Name,
-			Accounts:       []account.Account{*account.CurrentAccount},
-		}
-
-		buildClient()
-
-		return
-	}
+	overrides := readEnvAccountOverrides()
 
 	config := &account.Config{}
 
@@ -235,6 +293,12 @@ func initConfig() { //nolint:gocyclo
 	nonCredentialCmds := []string{"config", "version", "status"}
 
 	if err := GConfig.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok && overrides.HasCredentials() {
+			useEnvOnlyAccount(overrides)
+			finalizeCurrentAccount(overrides)
+			return
+		}
+
 		if isNonCredentialCmd(nonCredentialCmds...) {
 			ignoreClientBuild = true
 			// Set GAllAccount with empty config so config commands can handle gracefully
@@ -327,36 +391,7 @@ func initConfig() { //nolint:gocyclo
 		log.Fatalf("error: could't find any configured account named %q", gAccountName)
 	}
 
-	if account.CurrentAccount.Environment == "" {
-		account.CurrentAccount.Environment = DefaultEnvironment
-	}
-
-	if account.CurrentAccount.DefaultZone == "" {
-		account.CurrentAccount.DefaultZone = DefaultZone
-	}
-
-	// if an output format isn't specified via cli argument, use
-	// the current account default format
-	if globalstate.OutputFormat == "" {
-		if account.CurrentAccount.DefaultOutputFormat != "" {
-			globalstate.OutputFormat = account.CurrentAccount.DefaultOutputFormat
-		} else {
-			globalstate.OutputFormat = DefaultOutputFormat
-		}
-	}
-
-	if account.CurrentAccount.SosEndpoint == "" {
-		account.CurrentAccount.SosEndpoint = DefaultSosEndpoint
-	}
-
-	clientTimeoutFromEnv := readFromEnv("EXOSCALE_API_TIMEOUT")
-	if clientTimeoutFromEnv != "" {
-		if t, err := strconv.Atoi(clientTimeoutFromEnv); err == nil {
-			account.CurrentAccount.ClientTimeout = t
-		}
-	}
-
-	account.CurrentAccount.SosEndpoint = strings.TrimRight(account.CurrentAccount.SosEndpoint, "/")
+	finalizeCurrentAccount(overrides)
 }
 
 func isNonCredentialCmd(cmds ...string) bool {
