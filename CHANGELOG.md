@@ -31,6 +31,11 @@
 - test(testscript): add API testscript runner with per-scenario resource lifecycle #804
 - test(testscript): make PTY inputs deterministic via event-driven @wait: synchronisation #804
 
+### Breaking changes
+
+- refacto(compute): display instance type memory using an IEC size instead of an SI size #818
+
+
 ## 1.93.0
 
 ### Features
