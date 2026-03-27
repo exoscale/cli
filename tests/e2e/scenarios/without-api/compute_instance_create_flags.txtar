@@ -1,0 +1,6 @@
+# Test: compute instance create --help shows the reverse DNS flag
+
+exec exo compute instance create --help
+stdout '--reverse-dns'
+stdout '--instance-type'
+stdout '--template'

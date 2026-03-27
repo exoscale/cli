@@ -9,6 +9,7 @@
 - sks: add `rotate-karpenter-credentials` command #797
 - sks: add `active-nodepool-templates` command #797
 - new command `exo ai deployment instance-type` that allows showing what GPU is usable in which zone #809
+- instance create: add support for setting a reverse dns with the `--reverse-dns` flag #816
 
 ### Bug fixes
 
@@ -30,6 +31,7 @@
 - test(testscript): add validation handling in PTY-based interactive flows #801
 - test(testscript): add API testscript runner with per-scenario resource lifecycle #804
 - test(testscript): make PTY inputs deterministic via event-driven @wait: synchronisation #804
+- test(testscript): add create reverse-DNS coverage for compute instances
 
 ### Breaking changes
 
