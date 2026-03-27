@@ -1156,6 +1156,70 @@ func (c Client) GetAPIKey(ctx context.Context, id string) (*IAMAPIKey, error) {
 	return bodyresp, nil
 }
 
+type AssumeRoleResponse struct {
+	Key    string `json:"key,omitempty"`
+	Name   string `json:"name,omitempty"`
+	OrgID  string `json:"org-id,omitempty"`
+	RoleID string `json:"role-id,omitempty"`
+	Secret string `json:"secret,omitempty"`
+}
+
+type AssumeRoleRequest struct {
+	// TTL in seconds for the generated access key (cannot exceed the max TTL defined in the targeted assume role)
+	Ttl int64 `json:"ttl,omitempty" validate:"omitempty,gt=0"`
+}
+
+// Request generation of key/secret allowing calls as of target role.
+func (c Client) AssumeRole(ctx context.Context, targetRoleID UUID, req AssumeRoleRequest) (*AssumeRoleResponse, error) {
+	path := fmt.Sprintf("/assume-role/%v", targetRoleID)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("AssumeRole: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("AssumeRole: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("AssumeRole: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("AssumeRole: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "assume-role")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("AssumeRole: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("AssumeRole: http response: %w", err)
+	}
+
+	bodyresp := new(AssumeRoleResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("AssumeRole: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 type ListBlockStorageVolumesResponse struct {
 	BlockStorageVolumes []BlockStorageVolume `json:"block-storage-volumes,omitempty"`
 }
@@ -9055,8 +9119,52 @@ func (c Client) StopDBAASValkeyMigration(ctx context.Context, name string) (*Ope
 	return bodyresp, nil
 }
 
+func (c Client) ListDBAASValkeyUsers(ctx context.Context, serviceName string) (*DBAASValkeyUsers, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v/user", serviceName)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ListDBAASValkeyUsers: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ListDBAASValkeyUsers: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ListDBAASValkeyUsers: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "list-dbaas-valkey-users")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ListDBAASValkeyUsers: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ListDBAASValkeyUsers: http response: %w", err)
+	}
+
+	bodyresp := new(DBAASValkeyUsers)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ListDBAASValkeyUsers: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 type CreateDBAASValkeyUserRequest struct {
-	Username DBAASUserUsername `json:"username" validate:"required,gte=1,lte=64"`
+	AccessControl *DBAASValkeyUserAccessControl `json:"access-control,omitempty"`
+	Username      DBAASUserUsername             `json:"username" validate:"required,gte=1,lte=64"`
 }
 
 func (c Client) CreateDBAASValkeyUser(ctx context.Context, serviceName string, req CreateDBAASValkeyUserRequest) (*Operation, error) {
@@ -9147,6 +9255,60 @@ func (c Client) DeleteDBAASValkeyUser(ctx context.Context, serviceName string, u
 	bodyresp := new(Operation)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASValkeyUser: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type UpdateDBAASValkeyUserAccessControlRequest struct {
+	AccessControl *DBAASValkeyUserAccessControl `json:"access-control,omitempty"`
+}
+
+func (c Client) UpdateDBAASValkeyUserAccessControl(ctx context.Context, serviceName string, username string, req UpdateDBAASValkeyUserAccessControlRequest) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v/user/%v", serviceName, username)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateDBAASValkeyUserAccessControl: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateDBAASValkeyUserAccessControl: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASValkeyUserAccessControl: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASValkeyUserAccessControl: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "update-dbaas-valkey-user-access-control")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateDBAASValkeyUserAccessControl: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASValkeyUserAccessControl: http response: %w", err)
+	}
+
+	bodyresp := new(Operation)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASValkeyUserAccessControl: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -11093,6 +11255,12 @@ func ListInstancesWithIPAddress(ipAddress string) ListInstancesOpt {
 	}
 }
 
+func ListInstancesWithLabels(labels string) ListInstancesOpt {
+	return func(q url.Values) {
+		q.Add("labels", fmt.Sprint(labels))
+	}
+}
+
 // List Compute instances
 func (c Client) ListInstances(ctx context.Context, opts ...ListInstancesOpt) (*ListInstancesResponse, error) {
 	path := "/instance"
@@ -12707,6 +12875,792 @@ func (c Client) RevertInstanceToSnapshot(ctx context.Context, instanceID UUID, r
 	bodyresp := new(Operation)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RevertInstanceToSnapshot: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// FindListKmsKeysResponseEntry attempts to find an ListKmsKeysResponseEntry by nameOrID.
+func (l ListKmsKeysResponse) FindListKmsKeysResponseEntry(nameOrID string) (ListKmsKeysResponseEntry, error) {
+	var result []ListKmsKeysResponseEntry
+	for i, elem := range l.KmsKeys {
+		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
+			result = append(result, l.KmsKeys[i])
+		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return ListKmsKeysResponseEntry{}, fmt.Errorf("%q too many found in ListKmsKeysResponse: %w", nameOrID, ErrConflict)
+	}
+
+	return ListKmsKeysResponseEntry{}, fmt.Errorf("%q not found in ListKmsKeysResponse: %w", nameOrID, ErrNotFound)
+}
+
+// List KMS Keys details for an organization in a given zone.
+func (c Client) ListKmsKeys(ctx context.Context) (*ListKmsKeysResponse, error) {
+	path := "/kms-key"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ListKmsKeys: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ListKmsKeys: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ListKmsKeys: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "list-kms-keys")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ListKmsKeys: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ListKmsKeys: http response: %w", err)
+	}
+
+	bodyresp := new(ListKmsKeysResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ListKmsKeys: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Create a KMS Key in a given zone with a given name.
+func (c Client) CreateKmsKey(ctx context.Context, req CreateKmsKeyRequest) (*CreateKmsKeyResponse, error) {
+	path := "/kms-key"
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("CreateKmsKey: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("CreateKmsKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("CreateKmsKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("CreateKmsKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "create-kms-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("CreateKmsKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("CreateKmsKey: http response: %w", err)
+	}
+
+	bodyresp := new(CreateKmsKeyResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("CreateKmsKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Retrieve KMS Key details.
+func (c Client) GetKmsKey(ctx context.Context, id UUID) (*GetKmsKeyResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v", id)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetKmsKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetKmsKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetKmsKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-kms-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetKmsKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetKmsKey: http response: %w", err)
+	}
+
+	bodyresp := new(GetKmsKeyResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetKmsKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Cancel the scheduled deletion of a KMS Key.
+func (c Client) CancelKmsKeyDeletion(ctx context.Context, id UUID) (*SuccessResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/cancel-deletion", id)
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("CancelKmsKeyDeletion: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("CancelKmsKeyDeletion: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("CancelKmsKeyDeletion: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "cancel-kms-key-deletion")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("CancelKmsKeyDeletion: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("CancelKmsKeyDeletion: http response: %w", err)
+	}
+
+	bodyresp := new(SuccessResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("CancelKmsKeyDeletion: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Decrypt a ciphertext.
+func (c Client) Decrypt(ctx context.Context, id UUID, req DecryptRequest) (*DecryptResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/decrypt", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("Decrypt: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("Decrypt: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("Decrypt: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("Decrypt: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "decrypt")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("Decrypt: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("Decrypt: http response: %w", err)
+	}
+
+	bodyresp := new(DecryptResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("Decrypt: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Disable a KMS Key
+func (c Client) DisableKmsKey(ctx context.Context, id UUID) (*SuccessResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/disable", id)
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("DisableKmsKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("DisableKmsKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("DisableKmsKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "disable-kms-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("DisableKmsKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("DisableKmsKey: http response: %w", err)
+	}
+
+	bodyresp := new(SuccessResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("DisableKmsKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Disable the periodic rotation of a KMS Key.
+func (c Client) DisableKmsKeyRotation(ctx context.Context, id UUID, req DisableKmsKeyRotationRequest) (*DisableKmsKeyRotationResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/disable-key-rotation", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("DisableKmsKeyRotation: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("DisableKmsKeyRotation: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("DisableKmsKeyRotation: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("DisableKmsKeyRotation: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "disable-kms-key-rotation")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("DisableKmsKeyRotation: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("DisableKmsKeyRotation: http response: %w", err)
+	}
+
+	bodyresp := new(DisableKmsKeyRotationResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("DisableKmsKeyRotation: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Enable a KMS Key"
+func (c Client) EnableKmsKey(ctx context.Context, id UUID) (*SuccessResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/enable", id)
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("EnableKmsKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("EnableKmsKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("EnableKmsKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "enable-kms-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("EnableKmsKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("EnableKmsKey: http response: %w", err)
+	}
+
+	bodyresp := new(SuccessResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("EnableKmsKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Enable the periodic rotation of a KMS Key.
+func (c Client) EnableKmsKeyRotation(ctx context.Context, id UUID, req EnableKmsKeyRotationRequest) (*EnableKmsKeyRotationResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/enable-key-rotation", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("EnableKmsKeyRotation: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("EnableKmsKeyRotation: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("EnableKmsKeyRotation: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("EnableKmsKeyRotation: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "enable-kms-key-rotation")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("EnableKmsKeyRotation: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("EnableKmsKeyRotation: http response: %w", err)
+	}
+
+	bodyresp := new(EnableKmsKeyRotationResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("EnableKmsKeyRotation: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Encrypt a plaintext.
+func (c Client) Encrypt(ctx context.Context, id UUID, req EncryptRequest) (*EncryptResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/encrypt", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("Encrypt: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("Encrypt: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("Encrypt: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("Encrypt: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "encrypt")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("Encrypt: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("Encrypt: http response: %w", err)
+	}
+
+	bodyresp := new(EncryptResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("Encrypt: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Generate a Data Encryption Key from a given KMS Key.
+func (c Client) GenerateDataKey(ctx context.Context, id UUID, req GenerateDataKeyRequest) (*GenerateDataKeyResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/generate-data-key", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("GenerateDataKey: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("GenerateDataKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GenerateDataKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GenerateDataKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "generate-data-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GenerateDataKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GenerateDataKey: http response: %w", err)
+	}
+
+	bodyresp := new(GenerateDataKeyResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GenerateDataKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// List all the key material versions of a KMS Key.
+func (c Client) ListKmsKeyRotations(ctx context.Context, id UUID) (*ListKmsKeyRotationsResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/list-key-rotations", id)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ListKmsKeyRotations: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ListKmsKeyRotations: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ListKmsKeyRotations: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "list-kms-key-rotations")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ListKmsKeyRotations: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ListKmsKeyRotations: http response: %w", err)
+	}
+
+	bodyresp := new(ListKmsKeyRotationsResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ListKmsKeyRotations: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Decrypts an existing ciphertext using its original key material and re-encrypts the underlying plaintext using a specified KMS key or the latest key material of the same KMS Key.
+func (c Client) ReEncrypt(ctx context.Context, id UUID, req ReEncryptRequest) (*ReEncryptResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/re-encrypt", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("ReEncrypt: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("ReEncrypt: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ReEncrypt: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ReEncrypt: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "re-encrypt")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ReEncrypt: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ReEncrypt: http response: %w", err)
+	}
+
+	bodyresp := new(ReEncryptResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ReEncrypt: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Replicate a KMS key to a target zone.
+func (c Client) ReplicateKmsKey(ctx context.Context, id UUID, req ReplicateKmsKeyRequest) (*Operation, error) {
+	path := fmt.Sprintf("/kms-key/%v/replicate", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("ReplicateKmsKey: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("ReplicateKmsKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ReplicateKmsKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ReplicateKmsKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "replicate-kms-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ReplicateKmsKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ReplicateKmsKey: http response: %w", err)
+	}
+
+	bodyresp := new(Operation)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ReplicateKmsKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Perform a manual rotation of the key material for a symmetric key.
+func (c Client) RotateKmsKey(ctx context.Context, id UUID) (*RotateKmsKeyResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/rotate", id)
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("RotateKmsKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("RotateKmsKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("RotateKmsKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "rotate-kms-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("RotateKmsKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("RotateKmsKey: http response: %w", err)
+	}
+
+	bodyresp := new(RotateKmsKeyResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("RotateKmsKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Schedule a KMS key for deletion after a delay.
+func (c Client) ScheduleKmsKeyDeletion(ctx context.Context, id UUID, req ScheduleKmsKeyDeletionRequest) (*SuccessResponse, error) {
+	path := fmt.Sprintf("/kms-key/%v/schedule-deletion", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("ScheduleKmsKeyDeletion: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("ScheduleKmsKeyDeletion: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ScheduleKmsKeyDeletion: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ScheduleKmsKeyDeletion: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "schedule-kms-key-deletion")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ScheduleKmsKeyDeletion: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ScheduleKmsKeyDeletion: http response: %w", err)
+	}
+
+	bodyresp := new(SuccessResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ScheduleKmsKeyDeletion: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
