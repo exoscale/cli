@@ -167,7 +167,7 @@ func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string
 			var apiErr smithy.APIError
 			if errors.As(err, &apiErr) {
 				if apiErr.ErrorCode() == "NotFound" {
-					fmt.Printf("⚠️ The object %s/%s does not exist. The Presigned URL will return 404 ⚠️\n\n", bucket, key)
+					fmt.Fprintf(os.Stderr, "The object %s/%s does not exist. The Presigned URL will return 404\n\n", bucket, key)
 				}
 			}
 		}
