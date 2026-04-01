@@ -16,12 +16,13 @@ import (
 )
 
 type iamRoleShowOutput struct {
-	ID          string            `json:"id"`
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Editable    bool              `json:"editable"`
-	Labels      map[string]string `json:"labels"`
-	Permissions []string          `json:"permission"`
+	ID            string            `json:"id"`
+	Name          string            `json:"name"`
+	Description   string            `json:"description"`
+	Editable      bool              `json:"editable"`
+	Labels        map[string]string `json:"labels"`
+	Permissions   []string          `json:"permission"`
+	MaxSessionTtl int64             `json:"max-session-ttl"`
 }
 
 func (o *iamRoleShowOutput) ToJSON()  { output.JSON(o) }
@@ -33,7 +34,8 @@ type iamRoleShowCmd struct {
 
 	_ bool `cli-cmd:"show"`
 
-	Policy bool `cli-flag:"policy" cli-usage:"Print IAM Role policy"`
+	Policy           bool `cli-flag:"policy" cli-usage:"Print IAM Role policy"`
+	AssumeRolePolicy bool `cli-flag:"assume-role-policy" cli-usage:"Print IAM Assume Role policy"`
 
 	Role string `cli-arg:"#" cli-usage:"ID|NAME"`
 }
@@ -104,13 +106,47 @@ func (c *iamRoleShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return c.OutputFunc(&out, nil)
 	}
 
+	if c.AssumeRolePolicy {
+
+		if role.AssumeRolePolicy == nil {
+			return nil
+		}
+
+		policy := role.AssumeRolePolicy
+
+		out := iamPolicyOutput{
+			DefaultServiceStrategy: string(policy.DefaultServiceStrategy),
+			Services:               map[string]iamPolicyServiceOutput{},
+		}
+
+		for name, service := range policy.Services {
+			rules := []iamPolicyServiceRuleOutput{}
+			if service.Type == "rules" {
+				for _, rule := range service.Rules {
+					rules = append(rules, iamPolicyServiceRuleOutput{
+						Action:     string(rule.Action),
+						Expression: rule.Expression,
+					})
+				}
+			}
+
+			out.Services[name] = iamPolicyServiceOutput{
+				Type:  string(service.Type),
+				Rules: rules,
+			}
+		}
+
+		return c.OutputFunc(&out, nil)
+	}
+
 	out := iamRoleShowOutput{
-		ID:          role.ID.String(),
-		Description: role.Description,
-		Editable:    utils.DefaultBool(role.Editable, false),
-		Labels:      role.Labels,
-		Name:        role.Name,
-		Permissions: role.Permissions,
+		ID:            role.ID.String(),
+		Description:   role.Description,
+		Editable:      utils.DefaultBool(role.Editable, false),
+		Labels:        role.Labels,
+		Name:          role.Name,
+		Permissions:   role.Permissions,
+		MaxSessionTtl: role.MaxSessionTtl,
 	}
 
 	return c.OutputFunc(&out, nil)
