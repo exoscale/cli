@@ -20,6 +20,7 @@ type testCLICmd struct {
 	Bool         bool
 	MultiStrings []string `cli-flag:"multi-string-value" cli-usage:"multiple strings"`
 	StringsMap   map[string]string
+	Deprecated   string `cli-flags:"deprecated" cli-deprecated:"use another flag instead"`
 
 	aliases []string                                 `cli:"-"`
 	short   string                                   `cli:"-"`
@@ -49,6 +50,7 @@ func Test_cliCommandFlagName(t *testing.T) {
 func Test_cliCommandFlagSet(t *testing.T) {
 	var (
 		testSingleStringValue       = "test"
+		testDeprecatedValue         = "deprecated"
 		testInt64Value        int64 = 42
 		testBoolValue               = true
 		testMultiStringsValue       = []string{"a", "b", "c"}
@@ -61,14 +63,17 @@ func Test_cliCommandFlagSet(t *testing.T) {
 		Bool:         testBoolValue,
 		MultiStrings: testMultiStringsValue,
 		StringsMap:   testStringsMap,
+		Deprecated:   testDeprecatedValue,
 	}
 
 	expected := pflag.NewFlagSet("", pflag.ExitOnError)
 	expected.StringP("single-string", "s", testSingleStringValue, "")
+	expected.StringP("deprecated", "", testDeprecatedValue, "")
 	expected.Int64P("int64", "i", testInt64Value, "")
 	expected.BoolP("bool", "", testBoolValue, "")
 	expected.StringSliceP("multi-string-value", "", testMultiStringsValue, "multiple strings")
 	expected.StringToStringP("strings-map", "", testStringsMap, "")
+	require.NoError(t, expected.MarkDeprecated("deprecated", "use another flag instead"))
 
 	actual, err := cliCommandFlagSet(cmd)
 	require.NoError(t, err)
@@ -100,6 +105,7 @@ func Test_cliCommandUse(t *testing.T) {
 func Test_cliCommandDefaultPreRun(t *testing.T) {
 	var (
 		testRequiredArg             = "required-arg"
+		testDeprecatedValue         = "deprecated"
 		testOptionalArgs            = []string{"optional-arg1", "optional-arg2"}
 		testSingleStringValue       = "test"
 		testInt64Value        int64 = 42
@@ -114,6 +120,7 @@ func Test_cliCommandDefaultPreRun(t *testing.T) {
 	testFlags.BoolP("bool", "", false, "")
 	testFlags.StringSliceP("multi-string-value", "", nil, "multiple strings")
 	testFlags.StringToStringP("strings-map", "", nil, "")
+	testFlags.StringP("deprecated", "", "", "")
 
 	type args struct {
 		cmd  *cobra.Command
@@ -182,6 +189,7 @@ func Test_cliCommandDefaultPreRun(t *testing.T) {
 					flags.BoolP("bool", "", testBoolValue, "")
 					flags.StringSliceP("multi-string-value", "", testMultiStringsValue, "")
 					flags.StringToStringP("strings-map", "", testStringsMap, "")
+					flags.StringP("deprecated", "", testDeprecatedValue, "")
 
 					testCmd := new(cobra.Command)
 					flags.VisitAll(func(flag *pflag.Flag) { testCmd.Flags().AddFlag(flag) })
@@ -192,6 +200,7 @@ func Test_cliCommandDefaultPreRun(t *testing.T) {
 			expected: &testCLICmd{
 				RequiredArg:  testRequiredArg,
 				SingleString: testSingleStringValue,
+				Deprecated:   testDeprecatedValue,
 				Int64:        testInt64Value,
 				Bool:         testBoolValue,
 				MultiStrings: testMultiStringsValue,

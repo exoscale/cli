@@ -2,6 +2,110 @@
 
 ## Unreleased
 
+### Features
+
+- dbaas: add missing PostgreSQL configuration options (`shared-buffers-percentage`, `synchronous-replication`, `timescaledb-settings`, `variant`, `work-mem`) #808
+- `exo compute eip list` now shows the description & the management type of the EIP #803
+- sks: add `rotate-karpenter-credentials` command #797
+- sks: add `active-nodepool-templates` command #797
+- new command `exo ai deployment instance-type` that allows showing what GPU is usable in which zone #809
+
+### Bug fixes
+
+- fix(config): secret key no longer shown in plain text during `exo config add` #810
+
+- fix(nlb): API error swallowed on load-balancer update (e.g. duplicate name conflict reported as "operation is nil") #806
+- fix(config): panic when used without a default account set #798
+- Fix bad flag ref in `dns add NS` #812
+
+### Documentation
+
+- docs(pr-template): clarify changelog update instructions #802
+
+### Testing
+
+- test(testscript): add without-api flag existence tests for new DBaaS PG config options #808
+- test(testscript): add with-api PG lifecycle test and `wait-dbaas-state` custom command #808
+- test(testscript): add PTY infrastructure for testing interactive flows and commands #800
+- test(testscript): add validation handling in PTY-based interactive flows #801
+- test(testscript): add API testscript runner with per-scenario resource lifecycle #804
+- test(testscript): make PTY inputs deterministic via event-driven @wait: synchronisation #804
+
+### Breaking changes
+
+- refacto(compute): display instance type memory using an IEC size instead of an SI size #818
+
+
+## 1.93.0
+
+### Features
+
+- new command `exo ai deployment update`
+- ability to set inference engine version on creation
+- when asking for `exo ai deployment create --inference-engine-parameter-help`, if you also define the inference engine version, it will show the parameters for that specific version
+
+### Improvements
+
+- `exo ai model list` and `exo ai deployment list` don't list in all zones like other commands do
+- `exo ai model download` is an alias for `exo ai model create`
+- `exo ai model show` and `exo ai model delete` behave like deployments, and be able to search models by name
+- `exo ai model show` and `exo ai model list` show model size in MiB/GiB
+
+
+## 1.92.0
+
+### Features
+ 
+- instance create: added support for the new --application-consistent-snapshot-enabled flag
+- instance update:  added support for the new --application-consistent-snapshot-enabled flag
+- instance show: now displays the Application Consistent Snapshot Enabled field
+- instance snapshot create: added support for the new --application-consistent-snapshot-enabled flag
+- instance snapshot show: now displays the Application Consistent Snapshot Enabled field
+- instance-template register: added support for the new --application-consistent-snapshot-enabled flag
+- instance-template show: now displays the Application Consistent Snapshot Enabled field
+- dedicated-inference/deployment logs: support for --tail
+
+### Bug fixes
+- fix(instance): create instance with an IPv6 #788
+- dedicated-inference/deployment logs: works again even without the --tail argument
+- fix cli doc generation #793
+
+## Features
+- feat(cli scaffold): allow deprecated flags #789 
+
+### Breaking changes
+- instance create: merge --ipv6 and --private-instance into --public-ip #788
+- nodepool: replace --ipv6 and --nodepool-ipv6 with --public-ip and --nodepool-public-ip #788
+
+## 1.91.0
+
+### Bug fixes
+
+- Allow downscaling InstancePool and NodePool to 0
+- Fix incorrect zone handing in instance snapshot list #787
+
+### Features
+
+- instance: expose a new `console-url` sub-command with a direct link to the VM console on the portal
+
+## 1.90.1
+
+### Bug fixes
+
+- Recover 'exo api' command registration removed by mistake #782
+
+## 1.90.0
+
+### Features
+
+- dedicated-inference: ability to define the inference engine parameters, and to have some help around that
+
+### Bug fixes
+
+- dedicated-inference: get deployment logs command fixed
+
+## 1.89.0
+
 ### Bug fixes
 
 - Fix a bug with setting config from scratch #767
@@ -13,6 +117,8 @@
 - chores: add git version/commit in user agent header #769
 - Prompting for validation before deleting deployments and models (dedicated-inference)
 - Ability to delete multiple deployments and models at once (dedicated-inference)
+- Add IPv6 public IP assignment support for SKS Nodepools #774
+- Avoid redundant calls to `list-zones` #775
 
 ## 1.88.0
 

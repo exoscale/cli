@@ -22,17 +22,18 @@ type instanceTemplateRegisterCmd struct {
 	URL      string `cli-arg:"#"`
 	Checksum string `cli-arg:"#"`
 
-	BootMode        string `cli-usage:"template boot mode (legacy|uefi)"`
-	Description     string `cli-usage:"template description"`
-	Build           string `cli-usage:"template build"`
-	Version         string `cli-usage:"template version"`
-	Maintainer      string `cli-usage:"template maintainer"`
-	DisablePassword bool   `cli-usage:"disable password-based authentication"`
-	DisableSSHKey   bool   `cli-flag:"disable-ssh-key" cli-usage:"disable SSH key-based authentication"`
-	FromSnapshot    string `cli-usage:"ID of a Compute instance snapshot to register as template"`
-	Timeout         int64  `cli-usage:"registration timeout duration in seconds"`
-	Username        string `cli-usage:"template default username"`
-	Zone            string `cli-short:"z" cli-usage:"zone to register the template into (default: current account's default zone)"`
+	AppConsistentSnapshotEnabled bool   `cli-flag:"application-consistent-snapshot-enabled" cli-usage:"template with support for application-consistent-snapshots"`
+	BootMode                     string `cli-usage:"template boot mode (legacy|uefi)"`
+	Description                  string `cli-usage:"template description"`
+	Build                        string `cli-usage:"template build"`
+	Version                      string `cli-usage:"template version"`
+	Maintainer                   string `cli-usage:"template maintainer"`
+	DisablePassword              bool   `cli-usage:"disable password-based authentication"`
+	DisableSSHKey                bool   `cli-flag:"disable-ssh-key" cli-usage:"disable SSH key-based authentication"`
+	FromSnapshot                 string `cli-usage:"ID of a Compute instance snapshot to register as template"`
+	Timeout                      int64  `cli-usage:"registration timeout duration in seconds"`
+	Username                     string `cli-usage:"template default username"`
+	Zone                         string `cli-short:"z" cli-usage:"zone to register the template into (default: current account's default zone)"`
 }
 
 func (c *instanceTemplateRegisterCmd) CmdAliases() []string { return exocmd.GCreateAlias }
@@ -84,16 +85,17 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 	sshKeyEnabled := !c.DisableSSHKey
 
 	templateRequest = v3.RegisterTemplateRequest{
-		Checksum:        c.Checksum,
-		DefaultUser:     c.Username,
-		Description:     c.Description,
-		Build:           c.Build,
-		Version:         c.Version,
-		Maintainer:      c.Maintainer,
-		Name:            c.Name,
-		PasswordEnabled: &passwordEnabled,
-		SSHKeyEnabled:   &sshKeyEnabled,
-		URL:             c.URL,
+		ApplicationConsistentSnapshotEnabled: &c.AppConsistentSnapshotEnabled,
+		Checksum:                             c.Checksum,
+		DefaultUser:                          c.Username,
+		Description:                          c.Description,
+		Build:                                c.Build,
+		Version:                              c.Version,
+		Maintainer:                           c.Maintainer,
+		Name:                                 c.Name,
+		PasswordEnabled:                      &passwordEnabled,
+		SSHKeyEnabled:                        &sshKeyEnabled,
+		URL:                                  c.URL,
 	}
 
 	if c.FromSnapshot != "" {
@@ -155,6 +157,7 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 		} else {
 			templateRequest.DefaultUser = srcTemplate.DefaultUser
 		}
+
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.BootMode)) {
@@ -180,22 +183,23 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 
 	if !globalstate.Quiet {
 		return c.OutputFunc(&instanceTemplateShowOutput{
-			ID:              template.ID.String(),
-			Zone:            c.Zone,
-			Family:          template.Family,
-			Name:            template.Name,
-			Description:     template.Description,
-			CreationDate:    template.CreatedAT.String(),
-			Visibility:      string(template.Visibility),
-			Size:            template.Size,
-			Version:         template.Version,
-			Build:           template.Build,
-			Maintainer:      template.Maintainer,
-			Checksum:        template.Checksum,
-			DefaultUser:     template.DefaultUser,
-			SSHKeyEnabled:   utils.DefaultBool(template.SSHKeyEnabled, false),
-			PasswordEnabled: utils.DefaultBool(template.PasswordEnabled, false),
-			BootMode:        string(template.BootMode),
+			ID:                           template.ID.String(),
+			Zone:                         c.Zone,
+			Family:                       template.Family,
+			Name:                         template.Name,
+			Description:                  template.Description,
+			CreationDate:                 template.CreatedAT.String(),
+			Visibility:                   string(template.Visibility),
+			Size:                         template.Size,
+			Version:                      template.Version,
+			Build:                        template.Build,
+			Maintainer:                   template.Maintainer,
+			Checksum:                     template.Checksum,
+			DefaultUser:                  template.DefaultUser,
+			SSHKeyEnabled:                utils.DefaultBool(template.SSHKeyEnabled, false),
+			PasswordEnabled:              utils.DefaultBool(template.PasswordEnabled, false),
+			BootMode:                     string(template.BootMode),
+			AppConsistentSnapshotEnabled: utils.DefaultBool(template.ApplicationConsistentSnapshotEnabled, false),
 		}, nil)
 	}
 

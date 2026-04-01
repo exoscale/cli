@@ -12,3 +12,4 @@ go.work
 .aptlydata
 .idea/
 .vscode/
+cli

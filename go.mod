@@ -1,6 +1,6 @@
 module github.com/exoscale/cli
 
-go 1.24.11
+go 1.26
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.2.0
@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/aws/smithy-go v1.1.0
 	github.com/dustin/go-humanize v1.0.1
-	github.com/exoscale/egoscale/v3 v3.1.31
+	github.com/exoscale/egoscale/v3 v3.1.35-0.20260331081148-08a321a16e52
 	github.com/exoscale/openapi-cli-generator v1.2.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/hashicorp/go-multierror v1.1.1
@@ -85,6 +85,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect

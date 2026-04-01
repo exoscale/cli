@@ -15,4 +15,7 @@ const (
 	DefaultZone               = "ch-dk-2"
 	DefaultOutputFormat       = "table"
 	DefaultClientTimeout      = 20
+
+	// Exit codes
+	ExitCodeInterrupt = 130 // SIGINT (Ctrl+C) - POSIX convention: 128 + signal_number (2)
 )

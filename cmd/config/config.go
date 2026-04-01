@@ -9,6 +9,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
@@ -32,6 +33,12 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 		log.Fatalf("remove ENV credentials variables to use %s", cmd.CalledAs())
 	}
 
+	// Check if running non-interactively (no TTY)
+	if !isTerminal(os.Stdin.Fd()) {
+		printNoConfigMessage()
+		return fmt.Errorf("interactive terminal required for config setup")
+	}
+
 	if exocmd.GConfigFilePath != "" && account.CurrentAccount.Key != "" {
 		accounts := listAccounts(defaultAccountMark)
 		accounts = append(accounts, newAccountLabel)
@@ -44,7 +51,11 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 		if err != nil {
 			switch err {
 			case promptui.ErrInterrupt:
-				return nil
+				fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+				os.Exit(exocmd.ExitCodeInterrupt)
+			case promptui.ErrEOF:
+				fmt.Fprintln(os.Stderr, "")
+				os.Exit(0)
 			default:
 				return fmt.Errorf("prompt failed: %s", err)
 			}
@@ -63,15 +74,7 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 		return nil
 	}
 
-	fmt.Println("No Exoscale CLI configuration found")
-
-	fmt.Print(`
-In order to set up your configuration profile, you will need to retrieve
-Exoscale API credentials from your organization's IAM:
-
-    https://portal.exoscale.com/iam/keys
-
-`)
+	printNoConfigMessage()
 	return addConfigAccount(true)
 }
 
@@ -157,7 +160,8 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 		return err
 	}
 
-	conf.DefaultAccount = exocmd.GConfig.Get("defaultAccount").(string)
+	// Safely get defaultAccount - may be empty/unset if user declined to set default
+	conf.DefaultAccount = exocmd.GConfig.GetString("defaultAccount")
 	if conf.DefaultAccount == "" {
 		fmt.Println("no default account set")
 	}
@@ -248,10 +252,33 @@ func chooseZone(client *v3.Client, zones []string) (string, error) {
 
 	_, result, err := prompt.Run()
 	if err != nil {
-		return "", fmt.Errorf("prompt failed: %w", err)
+		switch err {
+		case promptui.ErrInterrupt:
+			return "", promptui.ErrInterrupt // Propagate Ctrl+C
+		case promptui.ErrEOF:
+			return "", promptui.ErrEOF // Propagate Ctrl+D
+		default:
+			return "", fmt.Errorf("prompt failed: %w", err)
+		}
 	}
 
 	return result, nil
+}
+
+// isTerminal checks if the given file descriptor is a terminal
+func isTerminal(fd uintptr) bool {
+	return term.IsTerminal(int(fd))
+}
+
+func printNoConfigMessage() {
+	fmt.Print(`No Exoscale CLI configuration found
+
+In order to set up your configuration profile, you will need to retrieve
+Exoscale API credentials from your organization's IAM:
+
+    https://portal.exoscale.com/iam/keys
+
+`)
 }
 
 func init() {

@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/exoscale/cli/cmd"
+	_ "github.com/exoscale/cli/cmd/subcommands"
 )
 
 func main() {

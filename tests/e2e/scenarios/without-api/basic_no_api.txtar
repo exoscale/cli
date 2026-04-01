@@ -1,0 +1,22 @@
+# This test runs commands that don't need API access
+# Perfect for understanding how testscript works ~~
+
+# Test 1: Version command
+exec exo version
+stdout 'exo'
+! stderr .
+
+# Test 2: Help output
+exec exo --help
+stdout 'Usage:'
+stdout 'Available Commands:'
+! stderr 'error'
+
+# Test 3: Zone list (just checking command works)
+exec exo zone --help
+stdout 'zone'
+! stderr .
+
+# Test 4: Invalid command should fail
+! exec exo not-a-real-command
+stderr .

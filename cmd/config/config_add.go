@@ -2,10 +2,17 @@ package config
 
 import (
 	"bufio"
+	"context"
+	"errors"
 	"fmt"
+	"io"
 	"os"
+	"os/signal"
+	"strings"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
@@ -20,18 +27,65 @@ func init() {
 		Use:   "add",
 		Short: "Add a new account to configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Check if this is the first account
+			isFirstAccount := account.GAllAccount == nil || len(account.GAllAccount.Accounts) == 0
+
+			if isFirstAccount {
+				printNoConfigMessage()
+			}
+
 			newAccount, err := promptAccountInformation()
 			if err != nil {
+				// Handle cancellation gracefully
+				if errors.Is(err, context.Canceled) {
+					fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+					os.Exit(exocmd.ExitCodeInterrupt)
+				}
+				if err == io.EOF {
+					fmt.Fprintln(os.Stderr, "")
+					os.Exit(0)
+				}
 				return err
 			}
 
 			config := &account.Config{Accounts: []account.Account{*newAccount}}
-			if utils.AskQuestion(exocmd.GContext, "Set ["+newAccount.Name+"] as default account?") {
-				config.DefaultAccount = newAccount.Name
-				exocmd.GConfig.Set("defaultAccount", newAccount.Name)
+
+			// Get config file path, creating if this is the first account
+			filePath := exocmd.GConfig.ConfigFileUsed()
+			if isFirstAccount && filePath == "" {
+				if filePath, err = createConfigFile(exocmd.DefaultConfigFileName); err != nil {
+					return err
+				}
+				exocmd.GConfig.SetConfigFile(filePath)
 			}
 
-			return saveConfig(exocmd.GConfig.ConfigFileUsed(), config)
+			if isFirstAccount {
+				// First account: automatically set as default
+				config.DefaultAccount = newAccount.Name
+				exocmd.GConfig.Set("defaultAccount", newAccount.Name)
+				fmt.Printf("Set [%s] as default account (first account)\n", newAccount.Name)
+			} else {
+				// Additional account: ask user if it should be the new default
+				setDefault, err := askSetDefault(newAccount.Name)
+				if err != nil {
+					if errors.Is(err, promptui.ErrInterrupt) {
+						fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+						os.Exit(exocmd.ExitCodeInterrupt)
+					}
+					if err == promptui.ErrEOF {
+						fmt.Fprintln(os.Stderr, "")
+						os.Exit(0)
+					}
+					return err
+				}
+				if setDefault {
+					config.DefaultAccount = newAccount.Name
+					exocmd.GConfig.Set("defaultAccount", newAccount.Name)
+					fmt.Printf("Set [%s] as default account\n", newAccount.Name)
+				}
+			}
+
+			return saveConfig(filePath, config)
 		},
 	})
 }
@@ -54,6 +108,15 @@ func addConfigAccount(firstRun bool) error {
 
 	newAccount, err := promptAccountInformation()
 	if err != nil {
+		// Handle cancellation gracefully
+		if errors.Is(err, context.Canceled) {
+			fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+			os.Exit(exocmd.ExitCodeInterrupt)
+		}
+		if err == io.EOF {
+			fmt.Fprintln(os.Stderr, "")
+			os.Exit(0)
+		}
 		return err
 	}
 	config.DefaultAccount = newAccount.Name
@@ -67,6 +130,66 @@ func addConfigAccount(firstRun bool) error {
 	return saveConfig(filePath, &config)
 }
 
+// readPasswordInterruptible reads a password from the terminal (no echo) while
+// catching SIGINT (Ctrl+C). term.ReadPassword enables ISIG on the fd, which
+// would otherwise deliver SIGINT directly to the process and kill it before any
+// cancellation message can be printed. By intercepting the signal we can exit
+// gracefully with the expected "Error: Operation Cancelled" output.
+func readPasswordInterruptible() ([]byte, error) {
+	fd := int(os.Stdin.Fd())
+
+	sigCh := make(chan os.Signal, 1)
+	doneCh := make(chan struct{})
+	signal.Notify(sigCh, os.Interrupt)
+
+	go func() {
+		select {
+		case _, ok := <-sigCh:
+			if ok {
+				fmt.Println()
+				fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+				os.Exit(exocmd.ExitCodeInterrupt)
+			}
+		case <-doneCh:
+		}
+	}()
+
+	b, err := term.ReadPassword(fd)
+	signal.Stop(sigCh)
+	close(doneCh)
+	return b, err
+}
+
+// readInputWithContext reads a line from stdin with context cancellation support.
+// Returns io.EOF if Ctrl+C or Ctrl+D is pressed, allowing graceful cancellation.
+// Silent exit behavior matches promptui.Select's interrupt handling.
+func readInputWithContext(ctx context.Context, reader *bufio.Reader, prompt string) (string, error) {
+	fmt.Printf("[+] %s: ", prompt)
+
+	inputCh := make(chan struct {
+		value string
+		err   error
+	}, 1)
+
+	go func() {
+		value, err := reader.ReadString('\n')
+		inputCh <- struct {
+			value string
+			err   error
+		}{value, err}
+	}()
+
+	select {
+	case result := <-inputCh:
+		if result.err != nil {
+			return "", result.err
+		}
+		return strings.TrimSpace(result.value), nil
+	case <-ctx.Done():
+		return "", ctx.Err()
+	}
+}
+
 func promptAccountInformation() (*account.Account, error) {
 	var client *v3.Client
 
@@ -75,34 +198,53 @@ func promptAccountInformation() (*account.Account, error) {
 	reader := bufio.NewReader(os.Stdin)
 	account := &account.Account{}
 
-	apiKey, err := utils.ReadInput(ctx, reader, "API Key", account.Key)
+	// Prompt for API Key with validation
+	apiKey, err := readInputWithContext(ctx, reader, "API Key")
 	if err != nil {
 		return nil, err
 	}
-	if apiKey != account.Key {
-		account.Key = apiKey
+	for apiKey == "" {
+		fmt.Println("API Key cannot be empty")
+		apiKey, err = readInputWithContext(ctx, reader, "API Key")
+		if err != nil {
+			return nil, err
+		}
 	}
+	account.Key = apiKey
 
-	secret := account.APISecret()
-	secretShow := account.APISecret()
-	if secret != "" && len(secret) > 10 {
-		secretShow = secret[0:7] + "..."
-	}
-	secretKey, err := utils.ReadInput(ctx, reader, "Secret Key", secretShow)
+	// Prompt for Secret Key with validation
+	fmt.Printf("[+] Secret Key: ") //nolint:errcheck
+	secretKeyBytes, err := readPasswordInterruptible()
+	fmt.Println() //nolint:errcheck
 	if err != nil {
 		return nil, err
 	}
-	if secretKey != secret && secretKey != secretShow {
-		account.Secret = secretKey
+	secretKey := strings.TrimSpace(string(secretKeyBytes))
+	for secretKey == "" {
+		fmt.Println("Secret Key cannot be empty")
+		fmt.Printf("[+] Secret Key: ") //nolint:errcheck
+		secretKeyBytes, err = readPasswordInterruptible()
+		fmt.Println() //nolint:errcheck
+		if err != nil {
+			return nil, err
+		}
+		secretKey = strings.TrimSpace(string(secretKeyBytes))
 	}
+	account.Secret = secretKey
 
-	name, err := utils.ReadInput(ctx, reader, "Name", account.Name)
+	// Prompt for Name with validation
+	name, err := readInputWithContext(ctx, reader, "Name")
 	if err != nil {
 		return nil, err
 	}
-	if name != "" {
-		account.Name = name
+	for name == "" {
+		fmt.Println("Name cannot be empty")
+		name, err = readInputWithContext(ctx, reader, "Name")
+		if err != nil {
+			return nil, err
+		}
 	}
+	account.Name = name
 
 	for {
 		if a := getAccountByName(account.Name); a == nil {
@@ -126,9 +268,28 @@ func promptAccountInformation() (*account.Account, error) {
 	}
 	account.DefaultZone, err = chooseZone(client, nil)
 	if err != nil {
+		// Handle prompt cancellation
+		if err == promptui.ErrInterrupt {
+			fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+			os.Exit(exocmd.ExitCodeInterrupt)
+		}
+		if err == promptui.ErrEOF {
+			fmt.Fprintln(os.Stderr, "")
+			os.Exit(0)
+		}
+		// API error - try with fallback zones
 		for {
 			defaultZone, err := chooseZone(globalstate.EgoscaleV3Client, utils.AllZones)
 			if err != nil {
+				// Handle prompt cancellation in fallback
+				if err == promptui.ErrInterrupt {
+					fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+					os.Exit(exocmd.ExitCodeInterrupt)
+				}
+				if err == promptui.ErrEOF {
+					fmt.Fprintln(os.Stderr, "")
+					os.Exit(0)
+				}
 				return nil, err
 			}
 			if defaultZone != "" {
@@ -139,4 +300,47 @@ func promptAccountInformation() (*account.Account, error) {
 	}
 
 	return account, nil
+}
+
+// askSetDefault asks whether the new account should become the default.
+// Returns true for "y/Y/yes", false for anything else (empty = default No).
+//
+// This deliberately uses plain bufio line-based I/O rather than promptui.Prompt
+// (readline). promptui.Prompt defers its initial PTY render until the first
+// keystroke, which deadlocks the settle-based PTY test harness: the test waits
+// for output before sending input, but the prompt waits for input before
+// producing output. Plain bufio avoids readline entirely; the PTY line
+// discipline (cooked mode, restored by the preceding promptui.Select) handles
+// '\r' → '\n' translation for us.
+func askSetDefault(name string) (bool, error) {
+	fmt.Printf("[?] Set [%s] as default account? [y/N]: ", name)
+
+	ctx := exocmd.GContext
+	reader := bufio.NewReader(os.Stdin)
+
+	resultCh := make(chan struct {
+		value string
+		err   error
+	}, 1)
+	go func() {
+		value, err := reader.ReadString('\n')
+		resultCh <- struct {
+			value string
+			err   error
+		}{value, err}
+	}()
+
+	select {
+	case result := <-resultCh:
+		if result.err == io.EOF {
+			return false, io.EOF
+		}
+		if result.err != nil {
+			return false, result.err
+		}
+		lower := strings.ToLower(strings.TrimSpace(result.value))
+		return lower == "y" || lower == "yes", nil
+	case <-ctx.Done():
+		return false, ctx.Err()
+	}
 }

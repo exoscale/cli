@@ -10,6 +10,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/exoscale/egoscale/v3/credentials"
 )
@@ -64,10 +65,25 @@ func TestDeploymentList(t *testing.T) {
 	defer depSetup(t, ts.server.URL)()
 	now := time.Now()
 	ts.deployments = []v3.ListDeploymentsResponseEntry{
-		{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "d1", Status: v3.ListDeploymentsResponseEntryStatusReady, GpuType: "gpua5000", GpuCount: 1, Replicas: 2, ServiceLevel: "pro", DeploymentURL: "https://u", Model: &v3.ModelRef{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1"}, CreatedAT: now, UpdatedAT: now},
-		{ID: v3.UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), Name: "d2", Status: v3.ListDeploymentsResponseEntryStatusCreating, GpuType: "gpua5000", GpuCount: 2, Replicas: 1, ServiceLevel: "pro", DeploymentURL: "", Model: nil, CreatedAT: now, UpdatedAT: now},
+		{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "d1", State: v3.ListDeploymentsResponseEntryStateReady, GpuType: "gpua5000", GpuCount: 1, Replicas: 2, ServiceLevel: "pro", DeploymentURL: "https://u", Model: &v3.ModelRef{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1"}, CreatedAT: now, UpdatedAT: now},
+		{ID: v3.UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), Name: "d2", State: v3.ListDeploymentsResponseEntryStateCreating, GpuType: "gpua5000", GpuCount: 2, Replicas: 1, ServiceLevel: "pro", DeploymentURL: "", Model: nil, CreatedAT: now, UpdatedAT: now},
 	}
 	cmd := &DeploymentListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	cmd.OutputFunc = func(out output.Outputter, err error) error {
+		if err != nil {
+			return err
+		}
+		o := out.(*DeploymentListOutput)
+		if len(*o) != 2 {
+			t.Fatalf("expected 2 deployments, got %d", len(*o))
+		}
+		for _, d := range *o {
+			if d.Zone != "test-zone" {
+				t.Errorf("expected zone %q, got %q", "test-zone", d.Zone)
+			}
+		}
+		return nil
+	}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("deployment list: %v", err)
 	}

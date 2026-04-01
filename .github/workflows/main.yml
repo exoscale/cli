@@ -9,9 +9,14 @@ on:
     - 'bucket/**'
     tags-ignore:
     - 'v*' # Don't run CI tests on release tags
+  pull_request:
+    paths-ignore:
+    - '**.md'
+    - 'bucket/**'
 
 jobs:
   build:
+    name: Build + Run Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

@@ -16,14 +16,14 @@ type ModelDeleteCmd struct {
 
 	_ bool `cli-cmd:"delete"`
 
-	IDs   []string    `cli-arg:"#" cli-usage:"MODEL-ID (UUID)..."`
-	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone  v3.ZoneName `cli-short:"z" cli-usage:"zone"`
+	Models []string    `cli-arg:"#" cli-usage:"ID or NAME..."`
+	Force  bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone   v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *ModelDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
 func (c *ModelDeleteCmd) CmdShort() string     { return "Delete AI model" }
-func (c *ModelDeleteCmd) CmdLong() string      { return "This command deletes an AI model by its ID." }
+func (c *ModelDeleteCmd) CmdLong() string      { return "This command deletes an AI model by ID or name." }
 func (c *ModelDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
@@ -35,24 +35,30 @@ func (c *ModelDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
+	// Resolve model IDs using the SDK helper
+	list, err := client.ListModels(ctx)
+	if err != nil {
+		return err
+	}
+
 	modelsToDelete := []v3.UUID{}
-	for _, idStr := range c.IDs {
-		id, err := v3.ParseUUID(idStr)
+	for _, modelStr := range c.Models {
+		entry, err := list.FindListModelsResponseEntry(modelStr)
 		if err != nil {
 			if !c.Force {
-				return fmt.Errorf("invalid model ID %q: %w", idStr, err)
+				return err
 			}
-			fmt.Fprintf(os.Stderr, "warning: invalid model ID %q: %v\n", idStr, err)
+			fmt.Fprintf(os.Stderr, "warning: %s not found.\n", modelStr)
 			continue
 		}
 
 		if !c.Force {
-			if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete model %q?", idStr)) {
+			if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete model %q?", modelStr)) {
 				return nil
 			}
 		}
 
-		modelsToDelete = append(modelsToDelete, id)
+		modelsToDelete = append(modelsToDelete, entry.ID)
 	}
 
 	var fns []func() error

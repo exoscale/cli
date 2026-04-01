@@ -1,0 +1,34 @@
+# Test: exo compute load-balancer update handles API errors and succeeds on valid updates
+# Full lifecycle: create two NLBs, update name and description, test conflict error, delete both.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# Setup: create the primary NLB
+exec exo --output-format json compute load-balancer create ${TEST_RUN_ID}-nlb-a --zone ${TEST_ZONE}
+stdout ${TEST_RUN_ID}-nlb-a
+
+# Setup: create a second NLB whose name will be used for the conflict test
+exec exo --output-format json compute load-balancer create ${TEST_RUN_ID}-nlb-b --zone ${TEST_ZONE}
+stdout ${TEST_RUN_ID}-nlb-b
+
+# Update description and verify it is reflected in show output
+exec exo --output-format json compute load-balancer update ${TEST_RUN_ID}-nlb-a --description 'hello e2e' --zone ${TEST_ZONE}
+
+exec exo --output-format json compute load-balancer show ${TEST_RUN_ID}-nlb-a --zone ${TEST_ZONE}
+stdout 'hello e2e'
+
+# Update name and verify the NLB is reachable under the new name
+exec exo --output-format json compute load-balancer update ${TEST_RUN_ID}-nlb-a --name ${TEST_RUN_ID}-nlb-a-renamed --zone ${TEST_ZONE}
+
+exec exo --output-format json compute load-balancer show ${TEST_RUN_ID}-nlb-a-renamed --zone ${TEST_ZONE}
+stdout ${TEST_RUN_ID}-nlb-a-renamed
+
+# Rename back so teardown can reference it by the original name
+exec exo --output-format json compute load-balancer update ${TEST_RUN_ID}-nlb-a-renamed --name ${TEST_RUN_ID}-nlb-a --zone ${TEST_ZONE}
+
+# Conflict: renaming to an already-existing name must surface the API error, not "operation is nil"
+! exec exo --output-format json compute load-balancer update ${TEST_RUN_ID}-nlb-a --name ${TEST_RUN_ID}-nlb-b --zone ${TEST_ZONE}
+stderr 'already exists'
+
+# Teardown: delete both NLBs
+exec exo compute load-balancer delete --force ${TEST_RUN_ID}-nlb-a --zone ${TEST_ZONE}
+exec exo compute load-balancer delete --force ${TEST_RUN_ID}-nlb-b --zone ${TEST_ZONE}

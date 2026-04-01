@@ -98,6 +98,7 @@ func handleHTTPErrorResp(resp *http.Response) error {
 	if resp.StatusCode >= 400 && resp.StatusCode <= 599 {
 		var res struct {
 			Message string `json:"message"`
+			Error   string `json:"error"`
 		}
 
 		data, err := io.ReadAll(resp.Body)
@@ -113,12 +114,17 @@ func handleHTTPErrorResp(resp *http.Response) error {
 			res.Message = string(data)
 		}
 
-		err, ok := httpStatusCodeErrors[resp.StatusCode]
-		if ok {
-			return fmt.Errorf("%w: %s", err, res.Message)
+		message := res.Message
+		if message == "" && res.Error != "" {
+			message = res.Error
 		}
 
-		return fmt.Errorf("unmapped HTTP error: status code %d, message: %s", resp.StatusCode, res.Message)
+		err, ok := httpStatusCodeErrors[resp.StatusCode]
+		if ok {
+			return fmt.Errorf("%w: %s", err, message)
+		}
+
+		return fmt.Errorf("unmapped HTTP error: status code %d, message: %s", resp.StatusCode, message)
 	}
 
 	return nil

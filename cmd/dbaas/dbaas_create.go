@@ -27,6 +27,7 @@ type dbaasServiceCreateCmd struct {
 	HelpPg         bool `cli-usage:"show usage for flags specific to the pg type"`
 	HelpValkey     bool `cli-usage:"show usage for flags specific to the valkey type"`
 	HelpGrafana    bool `cli-usage:"show usage for flags specific to the grafana type"`
+	HelpThanos     bool `cli-usage:"show usage for flags specific to the thanos type"`
 
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
@@ -53,7 +54,7 @@ type dbaasServiceCreateCmd struct {
 
 	// "opensearch" type specific flags
 	OpensearchForkFromService                        string   `cli-flag:"opensearch-fork-from-service" cli-usage:"Service name" cli-hidden:""`
-	OpensearchIndexPatterns                          string   `cli-flag:"opensearch-index-patterns" cli-usage:"JSON Array of index patterns (https://openapi-v2.exoscale.com/#operation-get-dbaas-service-opensearch-200-index-patterns)" cli-hidden:""`
+	OpensearchIndexPatterns                          string   `cli-flag:"opensearch-index-patterns" cli-usage:"JSON Array of index patterns (https://community.exoscale.com/reference/api/_schemas/index-patterns/)" cli-hidden:""`
 	OpensearchIndexTemplateMappingNestedObjectsLimit int64    `cli-flag:"opensearch-index-template-mapping-nested-objects-limit" cli-usage:"The maximum number of nested cli-flag objects that a single document can contain across all nested types. Default is 10000." cli-hidden:""`
 	OpensearchIndexTemplateNumberOfReplicas          int64    `cli-flag:"opensearch-index-template-number-of-replicas" cli-usage:"The number of replicas each primary shard has." cli-hidden:""`
 	OpensearchIndexTemplateNumberOfShards            int64    `cli-flag:"opensearch-index-template-number-of-shards" cli-usage:"The number of primary shards that an index should have." cli-hidden:""`
@@ -86,24 +87,29 @@ type dbaasServiceCreateCmd struct {
 	MysqlBinlogRetentionPeriod int64    `cli-flag:"mysql-binlog-retention-period" cli-usage:"the minimum amount of time in seconds to keep binlog entries before deletion" cli-hidden:""`
 
 	// "pg" type specific flags
-	PGAdminPassword      string   `cli-flag:"pg-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
-	PGAdminUsername      string   `cli-flag:"pg-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
-	PGBackupSchedule     string   `cli-flag:"pg-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
-	PGBouncerSettings    string   `cli-flag:"pg-bouncer-settings" cli-usage:"PgBouncer configuration settings (JSON format)" cli-hidden:""`
-	PGForkFrom           string   `cli-flag:"pg-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
-	PGIPFilter           []string `cli-flag:"pg-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
-	PGLookoutSettings    string   `cli-flag:"pg-lookout-settings" cli-usage:"pglookout configuration settings (JSON format)" cli-hidden:""`
-	PGRecoveryBackupTime string   `cli-flag:"pg-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service" cli-hidden:""`
-	PGSettings           string   `cli-flag:"pg-settings" cli-usage:"PostgreSQL configuration settings (JSON format)" cli-hidden:""`
-	PGVersion            string   `cli-flag:"pg-version" cli-usage:"PostgreSQL major version" cli-hidden:""`
-	PGMigrationHost      string   `cli-flag:"pg-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
-	PGMigrationPort      int64    `cli-flag:"pg-migration-port" cli-usage:"port number of the source server where to migrate data from" cli-hidden:""`
-	PGMigrationPassword  string   `cli-flag:"pg-migration-password" cli-usage:"password for authenticating to the source server" cli-hidden:""`
-	PGMigrationSSL       bool     `cli-flag:"pg-migration-ssl" cli-usage:"connect to the source server using SSL" cli-hidden:""`
-	PGMigrationUsername  string   `cli-flag:"pg-migration-username" cli-usage:"username for authenticating to the source server" cli-hidden:""`
-	PGMigrationDBName    string   `cli-flag:"pg-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
-	PGMigrationMethod    string   `cli-flag:"pg-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
-	PGMigrationIgnoreDbs []string `cli-flag:"pg-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
+	PGAdminPassword           string   `cli-flag:"pg-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
+	PGAdminUsername           string   `cli-flag:"pg-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
+	PGBackupSchedule          string   `cli-flag:"pg-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
+	PGBouncerSettings         string   `cli-flag:"pg-bouncer-settings" cli-usage:"PgBouncer configuration settings (JSON format)" cli-hidden:""`
+	PGForkFrom                string   `cli-flag:"pg-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
+	PGIPFilter                []string `cli-flag:"pg-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	PGLookoutSettings         string   `cli-flag:"pg-lookout-settings" cli-usage:"pglookout configuration settings (JSON format)" cli-hidden:""`
+	PGRecoveryBackupTime      string   `cli-flag:"pg-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service" cli-hidden:""`
+	PGSettings                string   `cli-flag:"pg-settings" cli-usage:"PostgreSQL configuration settings (JSON format)" cli-hidden:""`
+	PGVersion                 string   `cli-flag:"pg-version" cli-usage:"PostgreSQL major version" cli-hidden:""`
+	PGMigrationHost           string   `cli-flag:"pg-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
+	PGMigrationPort           int64    `cli-flag:"pg-migration-port" cli-usage:"port number of the source server where to migrate data from" cli-hidden:""`
+	PGMigrationPassword       string   `cli-flag:"pg-migration-password" cli-usage:"password for authenticating to the source server" cli-hidden:""`
+	PGMigrationSSL            bool     `cli-flag:"pg-migration-ssl" cli-usage:"connect to the source server using SSL" cli-hidden:""`
+	PGMigrationUsername       string   `cli-flag:"pg-migration-username" cli-usage:"username for authenticating to the source server" cli-hidden:""`
+	PGMigrationDBName         string   `cli-flag:"pg-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
+	PGMigrationMethod         string   `cli-flag:"pg-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
+	PGMigrationIgnoreDbs      []string `cli-flag:"pg-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
+	PGSharedBuffersPercentage int64    `cli-flag:"pg-shared-buffers-percentage" cli-usage:"percentage of total RAM for shared memory buffers (valid range: 20-60)" cli-hidden:""`
+	PGSynchronousReplication  string   `cli-flag:"pg-synchronous-replication" cli-usage:"synchronous replication type (quorum or off)" cli-hidden:""`
+	PGTimescaledbSettings     string   `cli-flag:"pg-timescaledb-settings" cli-usage:"TimescaleDB extension configuration settings (JSON format)" cli-hidden:""`
+	PGVariant                 string   `cli-flag:"pg-variant" cli-usage:"PostgreSQL variant (timescale or aiven)" cli-hidden:""`
+	PGWorkMem                 int64    `cli-flag:"pg-work-mem" cli-usage:"maximum memory for query operations before writing to temporary disk files, in MB" cli-hidden:""`
 
 	// "valkey" type specific flags
 	ValkeyForkFrom           string   `cli-flag:"valkey-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
@@ -118,6 +124,10 @@ type dbaasServiceCreateCmd struct {
 	ValkeyMigrationDBName    string   `cli-flag:"valkey-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
 	ValkeyMigrationMethod    string   `cli-flag:"valkey-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
 	ValkeyMigrationIgnoreDbs []string `cli-flag:"valkey-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
+
+	// "thanos" type specific flags
+	ThanosIPFilter []string `cli-flag:"thanos-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	ThanosSettings string   `cli-flag:"thanos-settings" cli-usage:"Thanos configuration settings (JSON format)" cli-hidden:""`
 }
 
 func (c *dbaasServiceCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
@@ -154,6 +164,9 @@ func (c *dbaasServiceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 	case cmd.Flags().Changed("help-valkey"):
 		exocmd.CmdShowHelpFlags(cmd.Flags(), "valkey-")
 		os.Exit(0)
+	case cmd.Flags().Changed("help-thanos"):
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "thanos-")
+		os.Exit(0)
 	}
 
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
@@ -184,6 +197,8 @@ func (c *dbaasServiceCreateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 		return c.createPG(cmd, args)
 	case "valkey":
 		return c.createValkey(cmd, args)
+	case "thanos":
+		return c.createThanos(cmd, args)
 	default:
 		return fmt.Errorf("unsupported service type %q", c.Type)
 	}

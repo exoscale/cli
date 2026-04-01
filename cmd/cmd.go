@@ -208,7 +208,9 @@ func MustCLICommandFlagName(c cliCommand, field interface{}) string {
 //   - cli-usage:"<usage help>": an optional string to use as flag usage
 //     help message. For positional arguments, this field is used as argument
 //     label for the "use" command help.
-//   - cli-hidden:"": mark the corresponding flag "hidden".
+//   - cli-hidden:"": mark the corresponding flag "hidden"
+//   - cli-deprecated:"<deprecation message>": mark the corresponding flag as hidden
+//     and display the deprecation message when used.
 func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 	fs := pflag.NewFlagSet("", pflag.ExitOnError)
 	cv := reflect.ValueOf(c)
@@ -245,6 +247,11 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 		flagUsage := ""
 		if v, ok := cTypeField.Tag.Lookup("cli-usage"); ok {
 			flagUsage = v
+		}
+
+		var deprecatedMsg *string
+		if v, ok := cTypeField.Tag.Lookup("cli-deprecated"); ok {
+			deprecatedMsg = &v
 		}
 
 		flagDefaultValue := cv.Field(i).Interface()
@@ -284,6 +291,13 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 
 		default:
 			return nil, cliCommandImplemError{fmt.Sprintf("unsupported type %s", t)}
+		}
+		if deprecatedMsg != nil {
+			if err := fs.MarkDeprecated(flagName, *deprecatedMsg); err != nil {
+				return nil, cliCommandImplemError{
+					reason: fmt.Sprintf("unable to deprecate flag: %s, err: %s", flagName, err.Error()),
+				}
+			}
 		}
 
 		if _, ok := cTypeField.Tag.Lookup("cli-hidden"); ok {

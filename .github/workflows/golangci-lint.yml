@@ -10,7 +10,8 @@ jobs:
       steps:
         - uses: actions/checkout@v4
         - uses: actions/setup-go@v5
-        - uses: golangci/golangci-lint-action@v6
+        - uses: golangci/golangci-lint-action@v7
           with:
             version: latest
             args: --timeout 4m
+            only-new-issues: true

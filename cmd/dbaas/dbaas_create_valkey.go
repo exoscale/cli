@@ -100,7 +100,7 @@ func (c *dbaasServiceCreateCmd) createValkey(_ *cobra.Command, _ []string) error
 		return err
 	}
 
-	utils.DecorateAsyncOperation(fmt.Sprintf("Creating DBaaS Datadog external Endpoint %q", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating DBaaS Valkey service %q", c.Name), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 

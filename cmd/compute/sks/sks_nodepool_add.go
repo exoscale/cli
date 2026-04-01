@@ -2,6 +2,7 @@ package sks
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -43,6 +44,7 @@ type sksNodepoolAddCmd struct {
 	StorageLvm           bool     `cli-usage:"Create nodes with non-standard partitioning for persistent storage"`
 	Taints               []string `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
 	Zone                 string   `cli-short:"z" cli-usage:"SKS cluster zone"`
+	PublicIPAssignment   string   `cli-flag:"public-ip" cli-usage:"Configures public IP assignment of the Instances (inet4|dual). (default: inet4)"`
 }
 
 func (c *sksNodepoolAddCmd) CmdAliases() []string { return nil }
@@ -86,30 +88,38 @@ func (c *sksNodepoolAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			return fmt.Errorf("label: %w", err)
 		}
 	}
+	publicIPAssignment := v3.CreateSKSNodepoolRequestPublicIPAssignmentInet4
+	if c.PublicIPAssignment != "" {
+		if !slices.Contains([]v3.CreateSKSNodepoolRequestPublicIPAssignment{
+			v3.CreateSKSNodepoolRequestPublicIPAssignmentInet4, v3.CreateSKSNodepoolRequestPublicIPAssignmentDual,
+		}, v3.CreateSKSNodepoolRequestPublicIPAssignment(c.PublicIPAssignment)) {
+			return fmt.Errorf("error invalid public-ip: %s", c.PublicIPAssignment)
+		}
+		publicIPAssignment = v3.CreateSKSNodepoolRequestPublicIPAssignment(c.PublicIPAssignment)
+	}
 
-	nodepoolReq, err := createNodepoolRequest(
-		ctx,
-		client,
-		CreateNodepoolOpts{
-			Name:               c.Name,
-			Description:        c.Description,
-			DiskSize:           c.DiskSize,
-			InstancePrefix:     c.InstancePrefix,
-			Size:               c.Size,
-			InstanceType:       c.InstanceType,
-			Labels:             labels,
-			AntiAffinityGroups: c.AntiAffinityGroups,
-			DeployTarget:       c.DeployTarget,
-			PrivateNetworks:    c.PrivateNetworks,
-			SecurityGroups:     c.SecurityGroups,
-			Taints:             c.Taints,
-			KubeletImageGC: &v3.KubeletImageGC{
-				MinAge:        c.ImageGcMinAge,
-				LowThreshold:  c.ImageGcLowThreshold,
-				HighThreshold: c.ImageGcHighThreshold,
-			},
+	opts := CreateNodepoolOpts{
+		Name:               c.Name,
+		Description:        c.Description,
+		DiskSize:           c.DiskSize,
+		InstancePrefix:     c.InstancePrefix,
+		Size:               c.Size,
+		InstanceType:       c.InstanceType,
+		Labels:             labels,
+		AntiAffinityGroups: c.AntiAffinityGroups,
+		DeployTarget:       c.DeployTarget,
+		PrivateNetworks:    c.PrivateNetworks,
+		SecurityGroups:     c.SecurityGroups,
+		Taints:             c.Taints,
+		KubeletImageGC: &v3.KubeletImageGC{
+			MinAge:        c.ImageGcMinAge,
+			LowThreshold:  c.ImageGcLowThreshold,
+			HighThreshold: c.ImageGcHighThreshold,
 		},
-	)
+		PublicIPAssignment: publicIPAssignment,
+	}
+
+	nodepoolReq, err := createNodepoolRequest(ctx, client, opts)
 	if err != nil {
 		return err
 	}

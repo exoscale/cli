@@ -86,6 +86,12 @@ type AntiAffinityGroup struct {
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 }
 
+// Anti-affinity group reference
+type AntiAffinityGroupRef struct {
+	// Anti-affinity group ID
+	ID UUID `json:"id,omitempty"`
+}
+
 type BlockStorageSnapshotState string
 
 const (
@@ -119,7 +125,7 @@ type BlockStorageSnapshot struct {
 }
 
 // Target block storage snapshot
-type BlockStorageSnapshotTarget struct {
+type BlockStorageSnapshotRef struct {
 	// Block storage snapshot ID
 	ID UUID `json:"id,omitempty"`
 }
@@ -160,7 +166,7 @@ type BlockStorageVolume struct {
 }
 
 // Target block storage volume
-type BlockStorageVolumeTarget struct {
+type BlockStorageVolumeRef struct {
 	// Block storage volume ID
 	ID UUID `json:"id,omitempty"`
 }
@@ -168,14 +174,60 @@ type BlockStorageVolumeTarget struct {
 // Deployment an AI model onto a set of GPUs
 type CreateDeploymentRequest struct {
 	// Number of GPUs (1-8)
-	GpuCount int64 `json:"gpu-count" validate:"required,gt=0"`
+	GpuCount int64 `json:"gpu-count" validate:"required,gte=1"`
 	// GPU type family (e.g., gpua5000, gpu3080ti)
-	GpuType string    `json:"gpu-type" validate:"required"`
-	Model   *ModelRef `json:"model,omitempty"`
+	GpuType string `json:"gpu-type" validate:"required"`
+	// Optional extra inference engine server CLI args
+	InferenceEngineParameters []string `json:"inference-engine-parameters,omitempty"`
+	// Inference engine version
+	InferenceEngineVersion InferenceEngineVersion `json:"inference-engine-version,omitempty"`
+	Model                  *ModelRef              `json:"model" validate:"required"`
 	// Deployment name
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
+	Name string `json:"name" validate:"required,gte=1"`
 	// Number of replicas (>=1)
-	Replicas int64 `json:"replicas" validate:"required,gt=0"`
+	Replicas int64 `json:"replicas" validate:"required,gte=1"`
+}
+
+type CreateKmsKeyRequestUsage string
+
+const (
+	CreateKmsKeyRequestUsageEncryptDecrypt CreateKmsKeyRequestUsage = "encrypt-decrypt"
+)
+
+type CreateKmsKeyRequest struct {
+	Description string                   `json:"description" validate:"required"`
+	MultiZone   *bool                    `json:"multi-zone" validate:"required"`
+	Name        string                   `json:"name" validate:"required"`
+	Usage       CreateKmsKeyRequestUsage `json:"usage" validate:"required"`
+}
+
+type CreateKmsKeyResponseSource string
+
+const (
+	CreateKmsKeyResponseSourceExoscaleKms CreateKmsKeyResponseSource = "exoscale-kms"
+)
+
+type CreateKmsKeyResponseStatus string
+
+const (
+	CreateKmsKeyResponseStatusEnabled         CreateKmsKeyResponseStatus = "enabled"
+	CreateKmsKeyResponseStatusDisabled        CreateKmsKeyResponseStatus = "disabled"
+	CreateKmsKeyResponseStatusPendingDeletion CreateKmsKeyResponseStatus = "pending-deletion"
+)
+
+type CreateKmsKeyResponse struct {
+	CreatedAT   time.Time                  `json:"created-at" validate:"required"`
+	Description string                     `json:"description" validate:"required"`
+	ID          UUID                       `json:"id" validate:"required"`
+	MultiZone   *bool                      `json:"multi-zone" validate:"required"`
+	Name        string                     `json:"name" validate:"required"`
+	OriginZone  string                     `json:"origin-zone" validate:"required"`
+	Policy      string                     `json:"policy" validate:"required"`
+	Revision    *RevisionStamp             `json:"revision" validate:"required"`
+	Source      CreateKmsKeyResponseSource `json:"source" validate:"required"`
+	Status      CreateKmsKeyResponseStatus `json:"status" validate:"required"`
+	StatusSince time.Time                  `json:"status-since" validate:"required"`
+	Usage       string                     `json:"usage" validate:"required"`
 }
 
 // AI model
@@ -183,7 +235,7 @@ type CreateModelRequest struct {
 	// Huggingface Token
 	HuggingfaceToken string `json:"huggingface-token,omitempty"`
 	// Model name
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
+	Name string `json:"name" validate:"required,gte=1"`
 }
 
 // DBaaS plan backup config
@@ -738,6 +790,8 @@ type DBAASMigrationStatus struct {
 }
 
 type DBAASMysqlDatabaseName string
+
+type DBAASMysqlUserPassword string
 
 type DBAASNodeStateRole string
 
@@ -1581,6 +1635,12 @@ type DBAASServiceThanosPrometheusURI struct {
 	Port int64  `json:"port,omitempty" validate:"omitempty,gte=0,lte=65535"`
 }
 
+type DBAASServiceThanosUsers struct {
+	Password string `json:"password,omitempty"`
+	Type     string `json:"type,omitempty"`
+	Username string `json:"username,omitempty"`
+}
+
 type DBAASServiceThanos struct {
 	// List of backups for the service
 	Backups []DBAASServiceBackup `json:"backups,omitempty"`
@@ -1594,6 +1654,8 @@ type DBAASServiceThanos struct {
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
 	// Service integrations
 	Integrations []DBAASIntegration `json:"integrations,omitempty"`
+	// Allowed CIDR address blocks for incoming connections
+	IPFilter []string `json:"ip-filter,omitempty"`
 	// Automatic maintenance settings
 	Maintenance *DBAASServiceMaintenance `json:"maintenance,omitempty"`
 	Name        DBAASServiceName         `json:"name" validate:"required,gte=0,lte=63"`
@@ -1623,6 +1685,8 @@ type DBAASServiceThanos struct {
 	URI string `json:"uri,omitempty"`
 	// service_uri parameterized into key-value pairs
 	URIParams map[string]any `json:"uri-params,omitempty"`
+	// List of service users
+	Users []DBAASServiceThanosUsers `json:"users,omitempty"`
 	// The zone where the service is running
 	Zone string `json:"zone,omitempty"`
 }
@@ -1817,6 +1881,14 @@ type DBAASUserPostgresSecrets struct {
 	Username string `json:"username,omitempty"`
 }
 
+// Thanos User secrets
+type DBAASUserThanosSecrets struct {
+	// Thanos password
+	Password string `json:"password,omitempty"`
+	// Thanos username
+	Username string `json:"username,omitempty"`
+}
+
 type DBAASUserUsername string
 
 // Valkey User secrets
@@ -1825,6 +1897,36 @@ type DBAASUserValkeySecrets struct {
 	Password string `json:"password,omitempty"`
 	// Valkey username
 	Username string `json:"username,omitempty"`
+}
+
+type DBAASValkeyUser struct {
+	AccessControl *DBAASValkeyUserAccessControl `json:"access-control,omitempty"`
+	Type          string                        `json:"type,omitempty"`
+	Username      DBAASUserUsername             `json:"username" validate:"required,gte=1,lte=64"`
+}
+
+type DBAASValkeyUserAccessControl struct {
+	// Use +@<category> to allow and -@<category> to disallow. Separate entries with a single space. Example: +@all -@dangerous.
+	Categories []string `json:"categories,omitempty"`
+	// Patterns use standard glob syntax and must be separated by a single space. Example: ~* &events.
+	Channels []string `json:"channels,omitempty"`
+	// Use +<command> to allow and -<command> to disallow. You can also use @<category>. Separate entries with a single space. Example: +@all -flushall.
+	Commands []string `json:"commands,omitempty"`
+	// Patterns use standard glob syntax and must be separated by a single space. Example: cache:* session:*.
+	Keys []string `json:"keys,omitempty"`
+}
+
+type DBAASValkeyUsers struct {
+	Users []DBAASValkeyUser `json:"users,omitempty"`
+}
+
+type DecryptRequest struct {
+	Ciphertext        byte  `json:"ciphertext" validate:"required"`
+	EncryptionContext *byte `json:"encryption-context,omitempty"`
+}
+
+type DecryptResponse struct {
+	Plaintext byte `json:"plaintext" validate:"required"`
 }
 
 // Model is in use: deletion forbidden
@@ -1850,6 +1952,20 @@ type DeployTarget struct {
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Deploy Target type
 	Type DeployTargetType `json:"type,omitempty"`
+}
+
+// Deploy target reference
+type DeployTargetRef struct {
+	// Deploy target ID
+	ID UUID `json:"id,omitempty"`
+}
+
+type DisableKmsKeyRotationRequest struct {
+	ID UUID `json:"id" validate:"required"`
+}
+
+type DisableKmsKeyRotationResponse struct {
+	Rotation *KeyRotationConfig `json:"rotation" validate:"required"`
 }
 
 // DNS domain
@@ -1959,6 +2075,30 @@ type ElasticIPHealthcheck struct {
 	TlsSNI string `json:"tls-sni,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// An endpoint to use for the health check, for example '/status'
 	URI string `json:"uri,omitempty" validate:"omitempty,gte=1,lte=255"`
+}
+
+// Elastic IP reference
+type ElasticIPRef struct {
+	// Elastic IP ID
+	ID UUID `json:"id,omitempty"`
+}
+
+type EnableKmsKeyRotationRequest struct {
+	ID             UUID `json:"id" validate:"required"`
+	RotationPeriod int  `json:"rotation-period,omitempty" validate:"omitempty,gte=90,lte=2560"`
+}
+
+type EnableKmsKeyRotationResponse struct {
+	Rotation *KeyRotationConfig `json:"rotation" validate:"required"`
+}
+
+type EncryptRequest struct {
+	EncryptionContext *byte `json:"encryption-context,omitempty"`
+	Plaintext         byte  `json:"plaintext" validate:"required"`
+}
+
+type EncryptResponse struct {
+	Ciphertext byte `json:"ciphertext" validate:"required"`
 }
 
 type EnumComponentRoute string
@@ -2144,10 +2284,21 @@ type EnvProduct struct {
 	Value string `json:"value,omitempty"`
 }
 
-// Error
+type ErrorResponseErrors struct {
+	Detail   string `json:"detail,omitempty"`
+	Location string `json:"location,omitempty"`
+	Path     string `json:"path,omitempty"`
+	Pointer  string `json:"pointer,omitempty"`
+}
+
+// RFC 9457 Problem Details error response
 type ErrorResponse struct {
-	// Error description
-	Error string `json:"error,omitempty"`
+	Detail   string                `json:"detail" validate:"required"`
+	Errors   []ErrorResponseErrors `json:"errors,omitempty"`
+	Instance string                `json:"instance,omitempty"`
+	Status   int                   `json:"status" validate:"required,gte=100,lte=599"`
+	Title    string                `json:"title" validate:"required"`
+	Type     string                `json:"type" validate:"required"`
 }
 
 // A notable Mutation Event which happened on the infrastructure
@@ -2184,15 +2335,51 @@ type Event struct {
 	Zone string `json:"zone,omitempty"`
 }
 
-type GetDeploymentLogsResponse string
-
-type GetDeploymentResponseStatus string
+type GenerateDataKeyRequestKeySpec string
 
 const (
-	GetDeploymentResponseStatusReady     GetDeploymentResponseStatus = "ready"
-	GetDeploymentResponseStatusCreating  GetDeploymentResponseStatus = "creating"
-	GetDeploymentResponseStatusError     GetDeploymentResponseStatus = "error"
-	GetDeploymentResponseStatusDeploying GetDeploymentResponseStatus = "deploying"
+	GenerateDataKeyRequestKeySpecAES256 GenerateDataKeyRequestKeySpec = "AES-256"
+)
+
+type GenerateDataKeyRequest struct {
+	BytesCount        int                           `json:"bytes-count,omitempty" validate:"omitempty,gte=1,lte=1024"`
+	EncryptionContext *byte                         `json:"encryption-context,omitempty"`
+	KeySpec           GenerateDataKeyRequestKeySpec `json:"key-spec,omitempty"`
+}
+
+type GenerateDataKeyResponse struct {
+	Ciphertext byte `json:"ciphertext" validate:"required"`
+	Plaintext  byte `json:"plaintext" validate:"required"`
+}
+
+// GPU usage for all organizations
+type GetConfederatioUsageResponse struct {
+	OrganizationsUsages map[string]OrganizationUsage `json:"organizations_usages" validate:"required"`
+}
+
+// A single log entry
+type GetDeploymentLogsEntry struct {
+	// Log message content
+	Message string `json:"message,omitempty"`
+	// Node identifier
+	Node string `json:"node,omitempty"`
+	// Timestamp of the log entry
+	Time string `json:"time,omitempty"`
+}
+
+// Deployment logs
+type GetDeploymentLogsResponse struct {
+	// List of log entries
+	Logs []GetDeploymentLogsEntry `json:"logs,omitempty"`
+}
+
+type GetDeploymentResponseState string
+
+const (
+	GetDeploymentResponseStateReady     GetDeploymentResponseState = "ready"
+	GetDeploymentResponseStateCreating  GetDeploymentResponseState = "creating"
+	GetDeploymentResponseStateError     GetDeploymentResponseState = "error"
+	GetDeploymentResponseStateDeploying GetDeploymentResponseState = "deploying"
 )
 
 // AI deployment
@@ -2202,31 +2389,76 @@ type GetDeploymentResponse struct {
 	// Deployment URL (nullable)
 	DeploymentURL string `json:"deployment-url,omitempty"`
 	// Number of GPUs
-	GpuCount int64 `json:"gpu-count,omitempty" validate:"omitempty,gt=0"`
+	GpuCount int64 `json:"gpu-count,omitempty" validate:"omitempty,gte=1"`
 	// GPU type family
 	GpuType string `json:"gpu-type,omitempty" validate:"omitempty,gte=1"`
 	// Deployment ID
-	ID    UUID      `json:"id,omitempty"`
-	Model *ModelRef `json:"model,omitempty"`
+	ID UUID `json:"id,omitempty"`
+	// Optional extra inference engine server CLI args
+	InferenceEngineParameters []string `json:"inference-engine-parameters,omitempty"`
+	// Inference engine version
+	InferenceEngineVersion InferenceEngineVersion `json:"inference-engine-version,omitempty"`
+	Model                  *ModelRef              `json:"model,omitempty"`
 	// Deployment name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
 	// Number of replicas (>=0)
 	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gte=0"`
 	// Service level
 	ServiceLevel string `json:"service-level,omitempty" validate:"omitempty,gte=1"`
-	// Deployment status
-	Status GetDeploymentResponseStatus `json:"status,omitempty"`
+	// Deployment state
+	State GetDeploymentResponseState `json:"state,omitempty"`
+	// Deployment state details
+	StateDetails string `json:"state-details,omitempty"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
 }
 
-type GetModelResponseStatus string
+// List of allowed inference-engine parameters
+type GetInferenceEngineHelpResponse struct {
+	Parameters []InferenceEngineParameterEntry `json:"parameters,omitempty"`
+}
+
+type GetKmsKeyResponseSource string
 
 const (
-	GetModelResponseStatusReady       GetModelResponseStatus = "ready"
-	GetModelResponseStatusCreating    GetModelResponseStatus = "creating"
-	GetModelResponseStatusDownloading GetModelResponseStatus = "downloading"
-	GetModelResponseStatusError       GetModelResponseStatus = "error"
+	GetKmsKeyResponseSourceExoscaleKms GetKmsKeyResponseSource = "exoscale-kms"
+)
+
+type GetKmsKeyResponseStatus string
+
+const (
+	GetKmsKeyResponseStatusEnabled         GetKmsKeyResponseStatus = "enabled"
+	GetKmsKeyResponseStatusDisabled        GetKmsKeyResponseStatus = "disabled"
+	GetKmsKeyResponseStatusPendingDeletion GetKmsKeyResponseStatus = "pending-deletion"
+)
+
+type GetKmsKeyResponse struct {
+	CreatedAT      time.Time               `json:"created-at" validate:"required"`
+	Description    string                  `json:"description" validate:"required"`
+	ID             UUID                    `json:"id" validate:"required"`
+	Material       *KeyMaterial            `json:"material" validate:"required"`
+	MultiZone      *bool                   `json:"multi-zone" validate:"required"`
+	Name           string                  `json:"name" validate:"required"`
+	OriginZone     string                  `json:"origin-zone" validate:"required"`
+	Policy         string                  `json:"policy" validate:"required"`
+	Replicas       []string                `json:"replicas" validate:"required"`
+	ReplicasStatus []ReplicaState          `json:"replicas-status,omitempty"`
+	Revision       *RevisionStamp          `json:"revision" validate:"required"`
+	Rotation       *KeyRotationConfig      `json:"rotation" validate:"required"`
+	Source         GetKmsKeyResponseSource `json:"source" validate:"required"`
+	Status         GetKmsKeyResponseStatus `json:"status" validate:"required"`
+	StatusSince    time.Time               `json:"status-since" validate:"required"`
+	Usage          string                  `json:"usage" validate:"required"`
+}
+
+type GetModelResponseState string
+
+const (
+	GetModelResponseStateReady       GetModelResponseState = "ready"
+	GetModelResponseStateCreating    GetModelResponseState = "creating"
+	GetModelResponseStateDownloading GetModelResponseState = "downloading"
+	GetModelResponseStateError       GetModelResponseState = "error"
+	GetModelResponseStateCreated     GetModelResponseState = "created"
 )
 
 // AI model
@@ -2239,10 +2471,16 @@ type GetModelResponse struct {
 	ModelSize int64 `json:"model-size,omitempty" validate:"omitempty,gte=0"`
 	// Model name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
-	// Model status
-	Status GetModelResponseStatus `json:"status,omitempty"`
+	// Model state
+	State GetModelResponseState `json:"state,omitempty"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
+}
+
+// GPU usage for an organization
+type GetOrganizationUsageResponse struct {
+	// Total GPU count
+	Gpu int64 `json:"gpu,omitempty" validate:"omitempty,gte=0"`
 }
 
 // IAM API Key
@@ -2284,6 +2522,8 @@ type IAMPolicy struct {
 
 // IAM Role
 type IAMRole struct {
+	// Policy
+	AssumeRolePolicy *IAMPolicy `json:"assume-role-policy,omitempty"`
 	// IAM Role description
 	Description string `json:"description,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// IAM Role mutability
@@ -2291,6 +2531,8 @@ type IAMRole struct {
 	// IAM Role ID
 	ID     UUID   `json:"id,omitempty"`
 	Labels Labels `json:"labels,omitempty"`
+	// Maximum TTL requester is allowed to ask for when assuming a role
+	MaxSessionTtl int64 `json:"max-session-ttl,omitempty" validate:"omitempty,gt=0"`
 	// IAM Role name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// IAM Role permissions
@@ -2325,6 +2567,34 @@ type IAMServicePolicyRule struct {
 	Resources  []string                   `json:"resources,omitempty"`
 }
 
+// inference-engine parameter definition
+type InferenceEngineParameterEntry struct {
+	// Allowed values
+	AllowedValues []string `json:"allowed-values,omitempty"`
+	// Default value if nothing is specified
+	Default string `json:"default,omitempty"`
+	// Parameter description
+	Description string `json:"description,omitempty"`
+	// Flag name
+	Flags []string `json:"flags,omitempty"`
+	// Parameter name
+	Name string `json:"name,omitempty"`
+	// Section
+	Section string `json:"section,omitempty"`
+	// Parameter type
+	Type string `json:"type,omitempty"`
+}
+
+// Inference engine version
+type InferenceEngineVersion string
+
+const (
+	InferenceEngineVersion0120 InferenceEngineVersion = "0.12.0"
+	InferenceEngineVersion0151 InferenceEngineVersion = "0.15.1"
+	InferenceEngineVersion0160 InferenceEngineVersion = "0.16.0"
+	InferenceEngineVersion0170 InferenceEngineVersion = "0.17.0"
+)
+
 // Private Network
 type InstancePrivateNetworks struct {
 	// Private Network ID
@@ -2341,7 +2611,7 @@ type Instance struct {
 	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Instance creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
-	// Deploy target
+	// Deploy target reference
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Instance disk size in GiB
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=51200"`
@@ -2406,7 +2676,9 @@ const (
 type InstancePool struct {
 	// Instance Pool Anti-affinity Groups
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
-	// Deploy target
+	// Enable application consistent snapshots
+	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
+	// Deploy target reference
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Instance Pool description
 	Description string `json:"description,omitempty" validate:"omitempty,gte=1,lte=255"`
@@ -2418,7 +2690,7 @@ type InstancePool struct {
 	ID UUID `json:"id,omitempty"`
 	// The instances created by the Instance Pool will be prefixed with this value (default: pool)
 	InstancePrefix string `json:"instance-prefix,omitempty" validate:"omitempty,gte=1,lte=30"`
-	// Compute instance type
+	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
 	// Instances
 	Instances []Instance `json:"instances,omitempty"`
@@ -2438,16 +2710,28 @@ type InstancePool struct {
 	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
 	// Number of instances
 	Size int64 `json:"size,omitempty" validate:"omitempty,gt=0"`
-	// SSH key
+	// SSH key reference
 	SSHKey *SSHKey `json:"ssh-key,omitempty"`
 	// Instances SSH keys
 	SSHKeys []SSHKey `json:"ssh-keys,omitempty"`
 	// Instance Pool state
 	State InstancePoolState `json:"state,omitempty"`
-	// Instance template
+	// Template reference
 	Template *Template `json:"template,omitempty"`
 	// Instances Cloud-init user-data
 	UserData string `json:"user-data,omitempty" validate:"omitempty,gte=1"`
+}
+
+// Target Instance Pool
+type InstancePoolRef struct {
+	// Instance Pool ID
+	ID UUID `json:"id,omitempty"`
+}
+
+// Target Instance
+type InstanceRef struct {
+	// Instance ID
+	ID UUID `json:"id,omitempty"`
 }
 
 type InstanceState string
@@ -2463,12 +2747,6 @@ const (
 	InstanceStateError      InstanceState = "error"
 	InstanceStateDestroyed  InstanceState = "destroyed"
 )
-
-// Target Instance
-type InstanceTarget struct {
-	// Instance ID
-	ID UUID `json:"id,omitempty"`
-}
 
 type InstanceTypeFamily string
 
@@ -2522,6 +2800,20 @@ type InstanceType struct {
 	Size InstanceTypeSize `json:"size,omitempty"`
 	// Instance Type available zones
 	Zones []ZoneName `json:"zones,omitempty"`
+}
+
+// Instance type with authorization status
+type InstanceTypeEntry struct {
+	// Whether this instance type is authorized based on server availability
+	Authorized *bool `json:"authorized,omitempty"`
+	// GPU family name
+	Family string `json:"family,omitempty"`
+}
+
+// Instance type reference
+type InstanceTypeRef struct {
+	// Instance type ID
+	ID UUID `json:"id,omitempty"`
 }
 
 type JSONSchemaGrafanaAlertingErrorORTimeout string
@@ -3689,6 +3981,19 @@ type JSONSchemaValkey struct {
 	Timeout int `json:"timeout,omitempty" validate:"omitempty,gte=0,lte=3.1536e+07"`
 }
 
+type KeyMaterial struct {
+	Automatic *bool     `json:"automatic" validate:"required"`
+	CreatedAT time.Time `json:"created-at" validate:"required"`
+	Version   int       `json:"version" validate:"required"`
+}
+
+type KeyRotationConfig struct {
+	Automatic      *bool     `json:"automatic" validate:"required"`
+	ManualCount    int       `json:"manual-count" validate:"required"`
+	NextAT         time.Time `json:"next-at" validate:"required"`
+	RotationPeriod int       `json:"rotation-period" validate:"required"`
+}
+
 // Kubelet image GC options
 type KubeletImageGC struct {
 	HighThreshold int64  `json:"high-threshold,omitempty" validate:"omitempty,gte=0"`
@@ -3698,18 +4003,23 @@ type KubeletImageGC struct {
 
 type Labels map[string]string
 
+// List of available instance types with authorization status
+type ListAIInstanceTypesResponse struct {
+	InstanceTypes []InstanceTypeEntry `json:"instance-types,omitempty"`
+}
+
 // AI model list
 type ListDeploymentsResponse struct {
 	Deployments []ListDeploymentsResponseEntry `json:"deployments,omitempty"`
 }
 
-type ListDeploymentsResponseEntryStatus string
+type ListDeploymentsResponseEntryState string
 
 const (
-	ListDeploymentsResponseEntryStatusReady     ListDeploymentsResponseEntryStatus = "ready"
-	ListDeploymentsResponseEntryStatusCreating  ListDeploymentsResponseEntryStatus = "creating"
-	ListDeploymentsResponseEntryStatusError     ListDeploymentsResponseEntryStatus = "error"
-	ListDeploymentsResponseEntryStatusDeploying ListDeploymentsResponseEntryStatus = "deploying"
+	ListDeploymentsResponseEntryStateReady     ListDeploymentsResponseEntryState = "ready"
+	ListDeploymentsResponseEntryStateCreating  ListDeploymentsResponseEntryState = "creating"
+	ListDeploymentsResponseEntryStateError     ListDeploymentsResponseEntryState = "error"
+	ListDeploymentsResponseEntryStateDeploying ListDeploymentsResponseEntryState = "deploying"
 )
 
 // AI deployment
@@ -3719,7 +4029,7 @@ type ListDeploymentsResponseEntry struct {
 	// Deployment URL (nullable)
 	DeploymentURL string `json:"deployment-url,omitempty"`
 	// Number of GPUs
-	GpuCount int64 `json:"gpu-count,omitempty" validate:"omitempty,gt=0"`
+	GpuCount int64 `json:"gpu-count,omitempty" validate:"omitempty,gte=1"`
 	// GPU type family
 	GpuType string `json:"gpu-type,omitempty" validate:"omitempty,gte=1"`
 	// Deployment ID
@@ -3731,10 +4041,55 @@ type ListDeploymentsResponseEntry struct {
 	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gte=0"`
 	// Service level
 	ServiceLevel string `json:"service-level,omitempty" validate:"omitempty,gte=1"`
-	// Deployment status
-	Status ListDeploymentsResponseEntryStatus `json:"status,omitempty"`
+	// Deployment state
+	State ListDeploymentsResponseEntryState `json:"state,omitempty"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
+}
+
+type ListKmsKeyRotationsResponse struct {
+	Rotations []ListKmsKeyRotationsResponseEntry `json:"rotations" validate:"required"`
+}
+
+type ListKmsKeyRotationsResponseEntry struct {
+	Automatic *bool     `json:"automatic" validate:"required"`
+	RotatedAT time.Time `json:"rotated-at" validate:"required"`
+	Version   int       `json:"version" validate:"required"`
+}
+
+type ListKmsKeysResponse struct {
+	KmsKeys []ListKmsKeysResponseEntry `json:"kms-keys" validate:"required"`
+}
+
+type ListKmsKeysResponseEntrySource string
+
+const (
+	ListKmsKeysResponseEntrySourceExoscaleKms ListKmsKeysResponseEntrySource = "exoscale-kms"
+)
+
+type ListKmsKeysResponseEntryStatus string
+
+const (
+	ListKmsKeysResponseEntryStatusEnabled         ListKmsKeysResponseEntryStatus = "enabled"
+	ListKmsKeysResponseEntryStatusDisabled        ListKmsKeysResponseEntryStatus = "disabled"
+	ListKmsKeysResponseEntryStatusPendingDeletion ListKmsKeysResponseEntryStatus = "pending-deletion"
+)
+
+type ListKmsKeysResponseEntry struct {
+	CreatedAT   time.Time                      `json:"created-at" validate:"required"`
+	Description string                         `json:"description" validate:"required"`
+	ID          UUID                           `json:"id" validate:"required"`
+	Material    *KeyMaterial                   `json:"material" validate:"required"`
+	MultiZone   *bool                          `json:"multi-zone" validate:"required"`
+	Name        string                         `json:"name" validate:"required"`
+	OriginZone  string                         `json:"origin-zone" validate:"required"`
+	Replicas    []string                       `json:"replicas" validate:"required"`
+	Revision    *RevisionStamp                 `json:"revision" validate:"required"`
+	Rotation    *KeyRotationConfig             `json:"rotation" validate:"required"`
+	Source      ListKmsKeysResponseEntrySource `json:"source" validate:"required"`
+	Status      ListKmsKeysResponseEntryStatus `json:"status" validate:"required"`
+	StatusSince time.Time                      `json:"status-since" validate:"required"`
+	Usage       string                         `json:"usage" validate:"required"`
 }
 
 // AI model list
@@ -3742,13 +4097,14 @@ type ListModelsResponse struct {
 	Models []ListModelsResponseEntry `json:"models,omitempty"`
 }
 
-type ListModelsResponseEntryStatus string
+type ListModelsResponseEntryState string
 
 const (
-	ListModelsResponseEntryStatusReady       ListModelsResponseEntryStatus = "ready"
-	ListModelsResponseEntryStatusCreating    ListModelsResponseEntryStatus = "creating"
-	ListModelsResponseEntryStatusDownloading ListModelsResponseEntryStatus = "downloading"
-	ListModelsResponseEntryStatusError       ListModelsResponseEntryStatus = "error"
+	ListModelsResponseEntryStateReady       ListModelsResponseEntryState = "ready"
+	ListModelsResponseEntryStateCreating    ListModelsResponseEntryState = "creating"
+	ListModelsResponseEntryStateDownloading ListModelsResponseEntryState = "downloading"
+	ListModelsResponseEntryStateError       ListModelsResponseEntryState = "error"
+	ListModelsResponseEntryStateCreated     ListModelsResponseEntryState = "created"
 )
 
 // AI model
@@ -3761,8 +4117,8 @@ type ListModelsResponseEntry struct {
 	ModelSize int64 `json:"model-size,omitempty" validate:"omitempty,gte=0"`
 	// Model name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
-	// Model status
-	Status ListModelsResponseEntryStatus `json:"status,omitempty"`
+	// Model state
+	State ListModelsResponseEntryState `json:"state,omitempty"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
 }
@@ -3974,6 +4330,12 @@ type Operation struct {
 	State OperationState `json:"state,omitempty"`
 }
 
+type OperationResourceRef struct {
+	Command string `json:"command" validate:"required"`
+	ID      UUID   `json:"id" validate:"required"`
+	Link    string `json:"link,omitempty"`
+}
+
 // Organization
 type Organization struct {
 	// Organization address
@@ -3992,6 +4354,12 @@ type Organization struct {
 	Name string `json:"name,omitempty"`
 	// Organization postcode
 	Postcode string `json:"postcode,omitempty"`
+}
+
+// Organization GPU usage
+type OrganizationUsage struct {
+	// Total GPU count
+	Gpu int64 `json:"gpu" validate:"required,gte=0"`
 }
 
 // Private Network
@@ -4037,6 +4405,12 @@ type PrivateNetworkOptions struct {
 	Routers []net.IP `json:"routers,omitempty"`
 }
 
+// Private network reference
+type PrivateNetworkRef struct {
+	// Private network ID
+	ID UUID `json:"id,omitempty"`
+}
+
 type PublicIPAssignment string
 
 const (
@@ -4053,6 +4427,46 @@ type Quota struct {
 	Resource string `json:"resource,omitempty"`
 	// Resource Usage
 	Usage int64 `json:"usage,omitempty"`
+}
+
+type ReEncryptRequestDestination struct {
+	// Optional encryption context appended to the AAD.
+	EncryptionContext *byte `json:"encryption-context,omitempty"`
+	// The ID of the target key.
+	Key UUID `json:"key" validate:"required"`
+}
+
+type ReEncryptRequestSource struct {
+	Ciphertext byte `json:"ciphertext" validate:"required"`
+	// Optional encryption context appended to the AAD.
+	EncryptionContext *byte `json:"encryption-context,omitempty"`
+	// The ID of the source key.
+	Key UUID `json:"key" validate:"required"`
+}
+
+type ReEncryptRequest struct {
+	Destination *ReEncryptRequestDestination `json:"destination" validate:"required"`
+	Source      *ReEncryptRequestSource      `json:"source" validate:"required"`
+}
+
+type ReEncryptResponse struct {
+	Ciphertext byte `json:"ciphertext" validate:"required"`
+}
+
+type ReplicaFailure struct {
+	AttemptedWatermark int       `json:"attempted-watermark" validate:"required"`
+	Error              string    `json:"error" validate:"required"`
+	FailedAT           time.Time `json:"failed-at" validate:"required"`
+}
+
+type ReplicaState struct {
+	LastAppliedWatermark int             `json:"last-applied-watermark" validate:"required"`
+	LastFailure          *ReplicaFailure `json:"last-failure,omitempty"`
+	Zone                 string          `json:"zone" validate:"required"`
+}
+
+type ReplicateKmsKeyRequest struct {
+	Zone string `json:"zone" validate:"required"`
 }
 
 // Resource
@@ -4072,10 +4486,24 @@ type ReverseDNSRecord struct {
 	DomainName DomainName `json:"domain-name,omitempty" validate:"omitempty,gte=1,lte=253"`
 }
 
+type RevisionStamp struct {
+	AT  time.Time `json:"at" validate:"required"`
+	Seq int       `json:"seq" validate:"required,gte=0"`
+}
+
+type RotateKmsKeyResponse struct {
+	Rotation *KeyRotationConfig `json:"rotation" validate:"required"`
+}
+
 // Scale AI deployment
 type ScaleDeploymentRequest struct {
 	// Number of replicas (>=0)
 	Replicas int64 `json:"replicas" validate:"required,gte=0"`
+}
+
+type ScheduleKmsKeyDeletionRequest struct {
+	// Number of days to wait until deletion is final.
+	DelayDays int `json:"delay-days,omitempty" validate:"omitempty,gte=7,lte=30"`
 }
 
 // Security Group
@@ -4090,6 +4518,12 @@ type SecurityGroup struct {
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Security Group rules
 	Rules []SecurityGroupRule `json:"rules,omitempty"`
+}
+
+// Security group reference
+type SecurityGroupRef struct {
+	// Security group ID
+	ID UUID `json:"id,omitempty"`
 }
 
 type SecurityGroupResourceVisibility string
@@ -4265,6 +4699,12 @@ type SKSClusterDeprecatedResource struct {
 
 type SKSClusterLabels map[string]string
 
+// SKS cluster reference
+type SKSClusterRef struct {
+	// SKS cluster ID
+	ID UUID `json:"id,omitempty"`
+}
+
 // Kubeconfig request for a SKS cluster
 type SKSKubeconfigRequest struct {
 	// List of roles. The certificate present in the Kubeconfig will have these roles set in the Org field.
@@ -4302,7 +4742,7 @@ type SKSNodepool struct {
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 	// Nodepool creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
-	// Deploy target
+	// Deploy target reference
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Nodepool description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=255"`
@@ -4310,11 +4750,11 @@ type SKSNodepool struct {
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=20,lte=51200"`
 	// Nodepool ID
 	ID UUID `json:"id,omitempty"`
-	// Instance Pool
+	// Target Instance Pool
 	InstancePool *InstancePool `json:"instance-pool,omitempty"`
 	// The instances created by the Nodepool will be prefixed with this value (default: pool)
 	InstancePrefix string `json:"instance-prefix,omitempty" validate:"omitempty,gte=1,lte=30"`
-	// Compute instance type
+	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
 	// Kubelet image GC options
 	KubeletImageGC *KubeletImageGC   `json:"kubelet-image-gc,omitempty"`
@@ -4330,11 +4770,11 @@ type SKSNodepool struct {
 	// Nodepool Security Groups
 	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
 	// Number of instances
-	Size int64 `json:"size,omitempty" validate:"omitempty,gt=0"`
+	Size int64 `json:"size,omitempty" validate:"omitempty,gte=0"`
 	// Nodepool state
 	State  SKSNodepoolState  `json:"state,omitempty"`
 	Taints SKSNodepoolTaints `json:"taints,omitempty"`
-	// Instance template
+	// Template reference
 	Template *Template `json:"template,omitempty"`
 	// Nodepool version
 	Version string `json:"version,omitempty"`
@@ -4418,6 +4858,12 @@ type Snapshot struct {
 	State SnapshotState `json:"state,omitempty"`
 }
 
+// Snapshot reference
+type SnapshotRef struct {
+	// Snapshot ID
+	ID UUID `json:"id,omitempty"`
+}
+
 // SOS Bucket usage
 type SOSBucketUsage struct {
 	// SOS Bucket creation date
@@ -4437,6 +4883,22 @@ type SSHKey struct {
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 }
 
+// SSH key reference
+type SSHKeyRef struct {
+	// SSH key name
+	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
+}
+
+type SuccessResponseStatus string
+
+const (
+	SuccessResponseStatusSuccess SuccessResponseStatus = "success"
+)
+
+type SuccessResponse struct {
+	Status SuccessResponseStatus `json:"status" validate:"required"`
+}
+
 type TemplateBootMode string
 
 const (
@@ -4453,6 +4915,8 @@ const (
 
 // Instance template
 type Template struct {
+	// Template with Qemu Guest Agent installed for application consistent snapshot
+	ApplicationConsistentSnapshotEnabled *bool `json:"application-consistent-snapshot-enabled,omitempty"`
 	// Boot mode (default: legacy)
 	BootMode TemplateBootMode `json:"boot-mode,omitempty"`
 	// Template build
@@ -4487,6 +4951,22 @@ type Template struct {
 	Visibility TemplateVisibility `json:"visibility,omitempty"`
 	// Zones availability
 	Zones []ZoneName `json:"zones,omitempty"`
+}
+
+// Template reference
+type TemplateRef struct {
+	// Template ID
+	ID UUID `json:"id,omitempty"`
+}
+
+// Update AI deployment
+type UpdateDeploymentRequest struct {
+	// Optional extra inference engine server CLI args
+	InferenceEngineParameters []string `json:"inference-engine-parameters,omitempty"`
+	// Inference engine version
+	InferenceEngineVersion InferenceEngineVersion `json:"inference-engine-version,omitempty"`
+	// Deployment name
+	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
 }
 
 // User
@@ -4526,3 +5006,7 @@ const (
 	ZoneNameATVie2 ZoneName = "at-vie-2"
 	ZoneNameHrZag1 ZoneName = "hr-zag-1"
 )
+
+type InstanceTarget = InstanceRef
+type BlockStorageSnapshotTarget = BlockStorageSnapshotRef
+type BlockStorageVolumeTarget = BlockStorageVolumeRef

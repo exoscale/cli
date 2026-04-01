@@ -48,7 +48,7 @@ func newDepActionsServer(t *testing.T) *depActionsServer {
 		if len(parts) == 1 && r.Method == http.MethodGet {
 			for _, d := range ts.deployments {
 				if string(d.ID) == id {
-					resp := v3.GetDeploymentResponse{ID: d.ID, Name: d.Name, Status: v3.GetDeploymentResponseStatus(d.Status), GpuType: d.GpuType, GpuCount: d.GpuCount, Replicas: d.Replicas, ServiceLevel: d.ServiceLevel, DeploymentURL: d.DeploymentURL, Model: d.Model, CreatedAT: d.CreatedAT, UpdatedAT: d.UpdatedAT}
+					resp := v3.GetDeploymentResponse{ID: d.ID, Name: d.Name, State: v3.GetDeploymentResponseState(d.State), GpuType: d.GpuType, GpuCount: d.GpuCount, Replicas: d.Replicas, ServiceLevel: d.ServiceLevel, DeploymentURL: d.DeploymentURL, Model: d.Model, CreatedAT: d.CreatedAT, UpdatedAT: d.UpdatedAT}
 					writeJSON(t, w, http.StatusOK, resp)
 					return
 				}
@@ -72,7 +72,12 @@ func newDepActionsServer(t *testing.T) *depActionsServer {
 			return
 		}
 		if len(parts) == 2 && parts[1] == "logs" && r.Method == http.MethodGet {
-			writeJSON(t, w, http.StatusOK, v3.GetDeploymentLogsResponse("l1\nl2"))
+			writeJSON(t, w, http.StatusOK, v3.GetDeploymentLogsResponse{
+				Logs: []v3.GetDeploymentLogsEntry{
+					{Message: "l1"},
+					{Message: "l2"},
+				},
+			})
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)

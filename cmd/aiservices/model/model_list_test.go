@@ -11,6 +11,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/exoscale/egoscale/v3/credentials"
 )
@@ -39,7 +40,7 @@ func newModelListTestServer(t *testing.T) *modelListTestServer {
 		if r.Method == http.MethodGet {
 			for _, m := range ts.models {
 				if string(m.ID) == id {
-					writeJSON(t, w, http.StatusOK, v3.GetModelResponse{ID: m.ID, Name: m.Name, Status: v3.GetModelResponseStatus(m.Status), ModelSize: m.ModelSize, CreatedAT: m.CreatedAT, UpdatedAT: m.UpdatedAT})
+					writeJSON(t, w, http.StatusOK, v3.GetModelResponse{ID: m.ID, Name: m.Name, State: v3.GetModelResponseState(m.State), ModelSize: m.ModelSize, CreatedAT: m.CreatedAT, UpdatedAT: m.UpdatedAT})
 					return
 				}
 			}
@@ -77,10 +78,31 @@ func TestModelList(t *testing.T) {
 	defer setupModelList(t, ts)()
 	now := time.Now()
 	ts.models = []v3.ListModelsResponseEntry{
-		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", Status: v3.ListModelsResponseEntryStatusReady, ModelSize: 0, CreatedAT: now, UpdatedAT: now},
-		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", Status: v3.ListModelsResponseEntryStatusCreating, ModelSize: 1234, CreatedAT: now, UpdatedAT: now},
+		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", State: v3.ListModelsResponseEntryStateReady, ModelSize: 0, CreatedAT: now, UpdatedAT: now},
+		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", State: v3.ListModelsResponseEntryStateCreating, ModelSize: 1024 * 1024 * 1024, CreatedAT: now, UpdatedAT: now},
 	}
 	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	cmd.OutputFunc = func(out output.Outputter, err error) error {
+		if err != nil {
+			return err
+		}
+		o := out.(*ModelListOutput)
+		if len(*o) != 2 {
+			t.Fatalf("expected 2 models, got %d", len(*o))
+		}
+		for _, m := range *o {
+			if m.Zone != "test-zone" {
+				t.Errorf("expected zone %q, got %q", "test-zone", m.Zone)
+			}
+			if m.Name == "m1" && m.ModelSize != "" {
+				t.Errorf("expected m1 size empty, got %q", m.ModelSize)
+			}
+			if m.Name == "m2" && m.ModelSize != "1.0 GiB" {
+				t.Errorf("expected m2 size 1.0 GiB, got %q", m.ModelSize)
+			}
+		}
+		return nil
+	}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("model list: %v", err)
 	}
@@ -95,5 +117,34 @@ func TestModelListUsesZone(t *testing.T) {
 	}
 	if ts.zoneListCount.Load() == 0 {
 		t.Fatalf("expected zone list endpoint to be called")
+	}
+}
+
+func TestModelListOutput_ToJSON(t *testing.T) {
+	ts := newModelListTestServer(t)
+	defer setupModelList(t, ts)()
+	now := time.Now()
+	ts.models = []v3.ListModelsResponseEntry{
+		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", State: v3.ListModelsResponseEntryStateReady, ModelSize: 1000, CreatedAT: now, UpdatedAT: now},
+		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", State: v3.ListModelsResponseEntryStateCreating, ModelSize: 0, CreatedAT: now, UpdatedAT: now},
+	}
+	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	cmd.OutputFunc = func(out output.Outputter, err error) error {
+		if err != nil {
+			return err
+		}
+		out.ToJSON()
+		return nil
+	}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("model list: %v", err)
+	}
+}
+
+func TestModelListCmd_CmdShort(t *testing.T) {
+	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	short := cmd.CmdShort()
+	if short == "" {
+		t.Fatal("CmdShort() returned empty string")
 	}
 }

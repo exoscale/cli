@@ -1,0 +1,18 @@
+# Test config commands when config file exists but is empty
+
+# Config show should fail with helpful message when config file is empty
+! exec exo config show
+stderr 'no accounts configured'
+stderr 'exo config add'
+
+# Config set should also fail gracefully
+! exec exo config set test-account
+stderr 'no accounts configured'
+stderr 'exo config add'
+
+# Other commands requiring default account should fail with helpful message
+! exec exo compute instance list
+stderr 'no accounts'
+
+-- .config/exoscale/exoscale.toml --
+# Empty config file
