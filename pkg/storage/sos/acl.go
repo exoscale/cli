@@ -250,8 +250,14 @@ func storageACLGranteeToS3(v string) *s3types.Grantee {
 	}
 }
 
-// storageACLToCopyObject updates the object to be copied with S3 ACL information.
-func storageACLToCopyObject(acl *s3.GetObjectAclOutput, o *s3.CopyObjectInput) {
+type objectACLGrants struct {
+	GrantRead        *string
+	GrantReadACP     *string
+	GrantWriteACP    *string
+	GrantFullControl *string
+}
+
+func storageACLToGrants(acl *s3.GetObjectAclOutput) objectACLGrants {
 	s3GranteeToString := func(g *s3types.Grantee) *string {
 		if g.Type == s3types.TypeCanonicalUser {
 			return aws.String("id=" + aws.ToString(g.ID))
@@ -268,24 +274,45 @@ func storageACLToCopyObject(acl *s3.GetObjectAclOutput, o *s3.CopyObjectInput) {
 		return nil
 	}
 
-	o.GrantFullControl = aws.String("id=" + aws.ToString(acl.Owner.ID))
+	grants := objectACLGrants{
+		GrantFullControl: aws.String("id=" + aws.ToString(acl.Owner.ID)),
+	}
 
 	for _, grant := range acl.Grants {
 		switch grant.Permission {
 		case s3types.PermissionRead:
-			o.GrantRead = s3GranteeToString(grant.Grantee)
+			grants.GrantRead = s3GranteeToString(grant.Grantee)
 
 		// Write permission is not supported on S3 objects:
 		// https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#permissions
 
 		case s3types.PermissionReadAcp:
-			o.GrantReadACP = s3GranteeToString(grant.Grantee)
+			grants.GrantReadACP = s3GranteeToString(grant.Grantee)
 
 		case s3types.PermissionWriteAcp:
-			o.GrantWriteACP = s3GranteeToString(grant.Grantee)
+			grants.GrantWriteACP = s3GranteeToString(grant.Grantee)
 
 		case s3types.PermissionFullControl:
-			o.GrantFullControl = s3GranteeToString(grant.Grantee)
+			grants.GrantFullControl = s3GranteeToString(grant.Grantee)
 		}
 	}
+
+	return grants
+}
+
+// storageACLToCopyObject updates the object to be copied with S3 ACL information.
+func storageACLToCopyObject(acl *s3.GetObjectAclOutput, o *s3.CopyObjectInput) {
+	grants := storageACLToGrants(acl)
+	o.GrantRead = grants.GrantRead
+	o.GrantReadACP = grants.GrantReadACP
+	o.GrantWriteACP = grants.GrantWriteACP
+	o.GrantFullControl = grants.GrantFullControl
+}
+
+func storageACLToCreateMultipartUpload(acl *s3.GetObjectAclOutput, o *s3.CreateMultipartUploadInput) {
+	grants := storageACLToGrants(acl)
+	o.GrantRead = grants.GrantRead
+	o.GrantReadACP = grants.GrantReadACP
+	o.GrantWriteACP = grants.GrantWriteACP
+	o.GrantFullControl = grants.GrantFullControl
 }
