@@ -1,0 +1,14 @@
+# Test: exo compute instance create supports --reverse-dns
+# Full lifecycle: create a dedicated instance with reverse DNS, verify it, then delete it.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+exec exo --zone $TEST_ZONE --output-format json compute instance create cli-e2e-rdns-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10 --reverse-dns rdns-$TEST_RUN_ID.example.org
+
+json-setenv INSTANCE_ID id stdout
+
+wait-instance-state $TEST_ZONE $INSTANCE_ID running 300
+
+exec exo --zone $TEST_ZONE --output-format json compute instance show $INSTANCE_ID
+stdout '"reverse_dns":"rdns-[a-z0-9-]+\.example\.org\."'
+
+exec exo --zone $TEST_ZONE compute instance delete --force $INSTANCE_ID
