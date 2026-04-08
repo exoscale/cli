@@ -203,6 +203,9 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 
 	if updated {
 		op, err := client.UpdateSKSNodepool(ctx, cluster.ID, nodepool.ID, updateReq)
+		if err != nil {
+			return err
+		}
 		utils.DecorateAsyncOperation(fmt.Sprintf("Updating Nodepool %q...", c.Nodepool), func() {
 			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
