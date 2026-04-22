@@ -806,3 +806,18 @@ func (o *ShowObjectOutput) ToTable() {
 		return buf.String()
 	}()})
 }
+
+func IsTraversalPath(key string) bool {
+	path := strings.Split(key, "/")
+
+	traversal := -1
+	for _, elem := range path {
+		if elem == ".." {
+			traversal -= 1
+		} else {
+			traversal += 1
+		}
+	}
+
+	return traversal < 0
+}

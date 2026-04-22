@@ -95,7 +95,12 @@ Examples:
 
 		objects := make([]*s3types.Object, 0)
 		if err := storage.ForEachObject(exocmd.GContext, bucket, prefix, recursive, func(o *s3types.Object) error {
-			objects = append(objects, o)
+
+			if o.Key != nil && !sos.IsTraversalPath(*o.Key) {
+				objects = append(objects, o)
+			} else if o.Key != nil {
+				fmt.Printf("warning: Skipping file %s. File references a parent directory\n", *o.Key)
+			}
 			return nil
 		}); err != nil {
 			return fmt.Errorf("error listing objects: %s", err)
