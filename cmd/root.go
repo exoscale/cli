@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -75,10 +76,51 @@ func Execute(version, commit string) {
 	GContext = ctx
 
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", formatError(err))
 
 		os.Exit(1) //nolint:gocritic
 	}
+}
+
+// formatError extracts the most informative message from an error chain.
+// When the error wraps an egoscale HTTP sentinel (e.g. v3.ErrConflict), it
+// returns the layer that contains both the HTTP status and the server message
+// (e.g. "Conflict: Usage of resource 'gpu' has been exceeded.") instead of
+// the full SDK call-site prefix.
+func formatError(err error) string {
+	// Walk the chain looking for the layer whose direct unwrapped cause is a
+	// bare HTTP sentinel. That layer's message is "StatusText: server message"
+	// (e.g. "Conflict: Usage of resource 'gpu' has been exceeded.") — more
+	// user-friendly than the full SDK call-site prefix.
+	cur := err
+	for cur != nil {
+		if isHTTPSentinel(errors.Unwrap(cur)) {
+			return cur.Error()
+		}
+		cur = errors.Unwrap(cur)
+	}
+	return err.Error()
+}
+
+func isHTTPSentinel(err error) bool {
+	if err == nil {
+		return false
+	}
+	return err == v3.ErrBadRequest ||
+		err == v3.ErrUnauthorized ||
+		err == v3.ErrPaymentRequired ||
+		err == v3.ErrForbidden ||
+		err == v3.ErrNotFound ||
+		err == v3.ErrMethodNotAllowed ||
+		err == v3.ErrConflict ||
+		err == v3.ErrGone ||
+		err == v3.ErrUnprocessableEntity ||
+		err == v3.ErrTooManyRequests ||
+		err == v3.ErrInternalServerError ||
+		err == v3.ErrNotImplemented ||
+		err == v3.ErrBadGateway ||
+		err == v3.ErrServiceUnavailable ||
+		err == v3.ErrGatewayTimeout
 }
 
 func init() {

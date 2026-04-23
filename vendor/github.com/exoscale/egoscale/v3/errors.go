@@ -97,8 +97,15 @@ var httpStatusCodeErrors = map[int]error{
 func handleHTTPErrorResp(resp *http.Response) error {
 	if resp.StatusCode >= 400 && resp.StatusCode <= 599 {
 		var res struct {
+			// Simple error formats
 			Message string `json:"message"`
 			Error   string `json:"error"`
+			// RFC 7807 Problem Details format
+			Title  string `json:"title"`
+			Errors []struct {
+				Detail   string `json:"detail"`
+				Location string `json:"location"`
+			} `json:"errors"`
 		}
 
 		data, err := io.ReadAll(resp.Body)
@@ -117,6 +124,16 @@ func handleHTTPErrorResp(resp *http.Response) error {
 		message := res.Message
 		if message == "" && res.Error != "" {
 			message = res.Error
+		}
+		if message == "" && res.Title != "" {
+			message = res.Title
+			for _, e := range res.Errors {
+				if e.Location != "" {
+					message += fmt.Sprintf("\n  - %s: %s", e.Location, e.Detail)
+				} else {
+					message += fmt.Sprintf("\n  - %s", e.Detail)
+				}
+			}
 		}
 
 		err, ok := httpStatusCodeErrors[resp.StatusCode]
