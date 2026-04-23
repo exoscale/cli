@@ -806,3 +806,8 @@ func (o *ShowObjectOutput) ToTable() {
 		return buf.String()
 	}()})
 }
+
+func IsTraversalPath(key string) bool {
+	cleaned := path.Clean(key)
+	return strings.HasPrefix(cleaned, "..")
+}

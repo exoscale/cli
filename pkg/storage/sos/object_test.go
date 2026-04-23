@@ -578,3 +578,37 @@ func TestUploadFiles(t *testing.T) {
 		})
 	}
 }
+
+func Test_IsTraversalPath(t *testing.T) {
+	tests := []struct {
+		path   string
+		expect bool
+	}{
+		{
+			path:   "test.txt",
+			expect: false,
+		},
+		{
+			path:   "../test.txt",
+			expect: true,
+		},
+		{
+			path:   "a/b/../../../test.text",
+			expect: true,
+		},
+		{
+			path:   "a/b/../../test.txt",
+			expect: false,
+		},
+		{
+			path:   "../a/b/test.txt",
+			expect: true,
+		},
+	}
+
+	for _, ut := range tests {
+		t.Run(ut.path, func(t *testing.T) {
+			assert.Equal(t, ut.expect, sos.IsTraversalPath(ut.path))
+		})
+	}
+}
