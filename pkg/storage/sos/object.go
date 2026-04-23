@@ -808,16 +808,6 @@ func (o *ShowObjectOutput) ToTable() {
 }
 
 func IsTraversalPath(key string) bool {
-	path := strings.Split(key, "/")
-
-	traversal := -1
-	for _, elem := range path {
-		if elem == ".." {
-			traversal -= 1
-		} else {
-			traversal += 1
-		}
-	}
-
-	return traversal < 0
+	cleaned := path.Clean(key)
+	return strings.HasPrefix(cleaned, "..")
 }

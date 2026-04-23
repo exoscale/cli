@@ -600,6 +600,10 @@ func Test_IsTraversalPath(t *testing.T) {
 			path:   "a/b/../../test.txt",
 			expect: false,
 		},
+		{
+			path:   "../a/b/test.txt",
+			expect: true,
+		},
 	}
 
 	for _, ut := range tests {
