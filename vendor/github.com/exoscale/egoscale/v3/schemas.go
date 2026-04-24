@@ -74,6 +74,26 @@ type AccessKeyResource struct {
 	ResourceType AccessKeyResourceResourceType `json:"resource-type,omitempty"`
 }
 
+// AI API key metadata (without value)
+type AIAPIKey struct {
+	// Creation timestamp
+	CreatedAT time.Time `json:"created-at,omitempty"`
+	// AI API key ID
+	ID UUID `json:"id,omitempty"`
+	// Human-readable name for the AI API key
+	Name string `json:"name,omitempty"`
+	// Organization UUID that owns this key
+	OrgUuid UUID `json:"org-uuid,omitempty"`
+	// Key scope: 'public' for all deployments, or a specific deployment UUID
+	Scope string `json:"scope,omitempty"`
+	// Last update timestamp
+	UpdatedAT time.Time `json:"updated-at,omitempty"`
+}
+
+// AI API key with plaintext value
+type AIAPIKeyWithValue struct {
+}
+
 // Anti-affinity Group
 type AntiAffinityGroup struct {
 	// Anti-affinity Group description
@@ -171,6 +191,14 @@ type BlockStorageVolumeRef struct {
 	ID UUID `json:"id,omitempty"`
 }
 
+// Request to create a new AI API key
+type CreateAIAPIKeyRequest struct {
+	// Human-readable name for the AI API key
+	Name string `json:"name" validate:"required"`
+	// Key scope: 'public' for all deployments, or a specific deployment UUID
+	Scope string `json:"scope" validate:"required"`
+}
+
 // Deployment an AI model onto a set of GPUs
 type CreateDeploymentRequest struct {
 	// Number of GPUs (1-8)
@@ -222,11 +250,9 @@ type CreateKmsKeyResponse struct {
 	MultiZone   *bool                      `json:"multi-zone" validate:"required"`
 	Name        string                     `json:"name" validate:"required"`
 	OriginZone  string                     `json:"origin-zone" validate:"required"`
-	Policy      string                     `json:"policy" validate:"required"`
 	Revision    *RevisionStamp             `json:"revision" validate:"required"`
 	Source      CreateKmsKeyResponseSource `json:"source" validate:"required"`
 	Status      CreateKmsKeyResponseStatus `json:"status" validate:"required"`
-	StatusSince time.Time                  `json:"status-since" validate:"required"`
 	Usage       string                     `json:"usage" validate:"required"`
 }
 
@@ -1921,12 +1947,12 @@ type DBAASValkeyUsers struct {
 }
 
 type DecryptRequest struct {
-	Ciphertext        byte  `json:"ciphertext" validate:"required"`
-	EncryptionContext *byte `json:"encryption-context,omitempty"`
+	Ciphertext        []byte  `json:"ciphertext" validate:"required"`
+	EncryptionContext *[]byte `json:"encryption-context,omitempty"`
 }
 
 type DecryptResponse struct {
-	Plaintext byte `json:"plaintext" validate:"required"`
+	Plaintext []byte `json:"plaintext" validate:"required"`
 }
 
 // Model is in use: deletion forbidden
@@ -1958,10 +1984,6 @@ type DeployTarget struct {
 type DeployTargetRef struct {
 	// Deploy target ID
 	ID UUID `json:"id,omitempty"`
-}
-
-type DisableKmsKeyRotationRequest struct {
-	ID UUID `json:"id" validate:"required"`
 }
 
 type DisableKmsKeyRotationResponse struct {
@@ -2084,8 +2106,7 @@ type ElasticIPRef struct {
 }
 
 type EnableKmsKeyRotationRequest struct {
-	ID             UUID `json:"id" validate:"required"`
-	RotationPeriod int  `json:"rotation-period,omitempty" validate:"omitempty,gte=90,lte=2560"`
+	RotationPeriod int `json:"rotation-period,omitempty" validate:"omitempty,gte=90,lte=2560"`
 }
 
 type EnableKmsKeyRotationResponse struct {
@@ -2093,12 +2114,12 @@ type EnableKmsKeyRotationResponse struct {
 }
 
 type EncryptRequest struct {
-	EncryptionContext *byte `json:"encryption-context,omitempty"`
-	Plaintext         byte  `json:"plaintext" validate:"required"`
+	EncryptionContext *[]byte `json:"encryption-context,omitempty"`
+	Plaintext         []byte  `json:"plaintext" validate:"required"`
 }
 
 type EncryptResponse struct {
-	Ciphertext byte `json:"ciphertext" validate:"required"`
+	Ciphertext []byte `json:"ciphertext" validate:"required"`
 }
 
 type EnumComponentRoute string
@@ -2335,6 +2356,20 @@ type Event struct {
 	Zone string `json:"zone,omitempty"`
 }
 
+type ForbiddenOperationResponseCode string
+
+const (
+	ForbiddenOperationResponseCodeForbiddenOperation ForbiddenOperationResponseCode = "forbidden_operation"
+)
+
+// Forbidden operation response
+type ForbiddenOperationResponse struct {
+	// Machine-readable forbidden error code
+	Code ForbiddenOperationResponseCode `json:"code" validate:"required"`
+	// Forbidden error message
+	Error string `json:"error" validate:"required"`
+}
+
 type GenerateDataKeyRequestKeySpec string
 
 const (
@@ -2343,13 +2378,13 @@ const (
 
 type GenerateDataKeyRequest struct {
 	BytesCount        int                           `json:"bytes-count,omitempty" validate:"omitempty,gte=1,lte=1024"`
-	EncryptionContext *byte                         `json:"encryption-context,omitempty"`
+	EncryptionContext *[]byte                       `json:"encryption-context,omitempty"`
 	KeySpec           GenerateDataKeyRequestKeySpec `json:"key-spec,omitempty"`
 }
 
 type GenerateDataKeyResponse struct {
-	Ciphertext byte `json:"ciphertext" validate:"required"`
-	Plaintext  byte `json:"plaintext" validate:"required"`
+	Ciphertext []byte `json:"ciphertext" validate:"required"`
+	Plaintext  []byte `json:"plaintext" validate:"required"`
 }
 
 // GPU usage for all organizations
@@ -2440,7 +2475,6 @@ type GetKmsKeyResponse struct {
 	MultiZone      *bool                   `json:"multi-zone" validate:"required"`
 	Name           string                  `json:"name" validate:"required"`
 	OriginZone     string                  `json:"origin-zone" validate:"required"`
-	Policy         string                  `json:"policy" validate:"required"`
 	Replicas       []string                `json:"replicas" validate:"required"`
 	ReplicasStatus []ReplicaState          `json:"replicas-status,omitempty"`
 	Revision       *RevisionStamp          `json:"revision" validate:"required"`
@@ -2593,6 +2627,9 @@ const (
 	InferenceEngineVersion0151 InferenceEngineVersion = "0.15.1"
 	InferenceEngineVersion0160 InferenceEngineVersion = "0.16.0"
 	InferenceEngineVersion0170 InferenceEngineVersion = "0.17.0"
+	InferenceEngineVersion0180 InferenceEngineVersion = "0.18.0"
+	InferenceEngineVersion0181 InferenceEngineVersion = "0.18.1"
+	InferenceEngineVersion0190 InferenceEngineVersion = "0.19.0"
 )
 
 // Private Network
@@ -4003,6 +4040,11 @@ type KubeletImageGC struct {
 
 type Labels map[string]string
 
+// List of AI API keys
+type ListAIAPIKeysResponse struct {
+	AIAPIKeys []AIAPIKey `json:"ai-api-keys" validate:"required"`
+}
+
 // List of available instance types with authorization status
 type ListAIInstanceTypesResponse struct {
 	InstanceTypes []InstanceTypeEntry `json:"instance-types,omitempty"`
@@ -4431,15 +4473,15 @@ type Quota struct {
 
 type ReEncryptRequestDestination struct {
 	// Optional encryption context appended to the AAD.
-	EncryptionContext *byte `json:"encryption-context,omitempty"`
+	EncryptionContext *[]byte `json:"encryption-context,omitempty"`
 	// The ID of the target key.
 	Key UUID `json:"key" validate:"required"`
 }
 
 type ReEncryptRequestSource struct {
-	Ciphertext byte `json:"ciphertext" validate:"required"`
+	Ciphertext []byte `json:"ciphertext" validate:"required"`
 	// Optional encryption context appended to the AAD.
-	EncryptionContext *byte `json:"encryption-context,omitempty"`
+	EncryptionContext *[]byte `json:"encryption-context,omitempty"`
 	// The ID of the source key.
 	Key UUID `json:"key" validate:"required"`
 }
@@ -4450,7 +4492,13 @@ type ReEncryptRequest struct {
 }
 
 type ReEncryptResponse struct {
-	Ciphertext byte `json:"ciphertext" validate:"required"`
+	Ciphertext []byte `json:"ciphertext" validate:"required"`
+}
+
+// Response from bundle recompute operation
+type RecomputeBundleResponse struct {
+	// Status message describing the result
+	Message string `json:"message" validate:"required"`
 }
 
 type ReplicaFailure struct {
@@ -4664,6 +4712,8 @@ type SKSCluster struct {
 	Cni SKSClusterCni `json:"cni,omitempty"`
 	// Cluster creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
+	// Cluster default Security Group ID
+	DefaultSecurityGroupID *UUID `json:"default-security-group-id,omitempty"`
 	// Cluster description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=255"`
 	// Indicates whether to deploy the Kubernetes network proxy.
@@ -4892,7 +4942,8 @@ type SSHKeyRef struct {
 type SuccessResponseStatus string
 
 const (
-	SuccessResponseStatusSuccess SuccessResponseStatus = "success"
+	SuccessResponseStatusSuccess          SuccessResponseStatus = "success"
+	SuccessResponseStatusTargetRegistered SuccessResponseStatus = "target-registered"
 )
 
 type SuccessResponse struct {
@@ -4957,6 +5008,14 @@ type Template struct {
 type TemplateRef struct {
 	// Template ID
 	ID UUID `json:"id,omitempty"`
+}
+
+// Request to update an AI API key (at least one property required)
+type UpdateAIAPIKeyRequest struct {
+	// Human-readable name for the AI API key
+	Name string `json:"name,omitempty"`
+	// Key scope: 'public' for all deployments, or a specific deployment UUID
+	Scope string `json:"scope,omitempty"`
 }
 
 // Update AI deployment

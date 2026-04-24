@@ -12,6 +12,307 @@ import (
 	"time"
 )
 
+// FindAIAPIKey attempts to find an AIAPIKey by nameOrID.
+func (l ListAIAPIKeysResponse) FindAIAPIKey(nameOrID string) (AIAPIKey, error) {
+	var result []AIAPIKey
+	for i, elem := range l.AIAPIKeys {
+		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
+			result = append(result, l.AIAPIKeys[i])
+		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return AIAPIKey{}, fmt.Errorf("%q too many found in ListAIAPIKeysResponse: %w", nameOrID, ErrConflict)
+	}
+
+	return AIAPIKey{}, fmt.Errorf("%q not found in ListAIAPIKeysResponse: %w", nameOrID, ErrNotFound)
+}
+
+// List AI API keys for an organization
+func (c Client) ListAIAPIKeys(ctx context.Context) (*ListAIAPIKeysResponse, error) {
+	path := "/ai/ai-api-key"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ListAIAPIKeys: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ListAIAPIKeys: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ListAIAPIKeys: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "list-ai-api-keys")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ListAIAPIKeys: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ListAIAPIKeys: http response: %w", err)
+	}
+
+	bodyresp := new(ListAIAPIKeysResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ListAIAPIKeys: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Create a new AI API key
+func (c Client) CreateAIAPIKey(ctx context.Context, req CreateAIAPIKeyRequest) (*AIAPIKeyWithValue, error) {
+	path := "/ai/ai-api-key"
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("CreateAIAPIKey: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("CreateAIAPIKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("CreateAIAPIKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("CreateAIAPIKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "create-ai-api-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("CreateAIAPIKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("CreateAIAPIKey: http response: %w", err)
+	}
+
+	bodyresp := new(AIAPIKeyWithValue)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("CreateAIAPIKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type DeleteAIAPIKeyResponse struct {
+	Deleted *bool `json:"deleted" validate:"required"`
+}
+
+// Delete AI API key
+func (c Client) DeleteAIAPIKey(ctx context.Context, id UUID) (*DeleteAIAPIKeyResponse, error) {
+	path := fmt.Sprintf("/ai/ai-api-key/%v", id)
+
+	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteAIAPIKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("DeleteAIAPIKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("DeleteAIAPIKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "delete-ai-api-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteAIAPIKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("DeleteAIAPIKey: http response: %w", err)
+	}
+
+	bodyresp := new(DeleteAIAPIKeyResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("DeleteAIAPIKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Get AI API key metadata
+func (c Client) GetAIAPIKey(ctx context.Context, id UUID) (*AIAPIKey, error) {
+	path := fmt.Sprintf("/ai/ai-api-key/%v", id)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetAIAPIKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetAIAPIKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetAIAPIKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-ai-api-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetAIAPIKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetAIAPIKey: http response: %w", err)
+	}
+
+	bodyresp := new(AIAPIKey)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetAIAPIKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Update AI API key name and/or scope
+func (c Client) UpdateAIAPIKey(ctx context.Context, id UUID, req UpdateAIAPIKeyRequest) (*AIAPIKey, error) {
+	path := fmt.Sprintf("/ai/ai-api-key/%v", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateAIAPIKey: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "PATCH", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateAIAPIKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("UpdateAIAPIKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("UpdateAIAPIKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "update-ai-api-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateAIAPIKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("UpdateAIAPIKey: http response: %w", err)
+	}
+
+	bodyresp := new(AIAPIKey)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("UpdateAIAPIKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Rotate AI API key value
+func (c Client) RotateAIAPIKey(ctx context.Context, id UUID) (*AIAPIKeyWithValue, error) {
+	path := fmt.Sprintf("/ai/ai-api-key/%v/rotate", id)
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("RotateAIAPIKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("RotateAIAPIKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("RotateAIAPIKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "rotate-ai-api-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("RotateAIAPIKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("RotateAIAPIKey: http response: %w", err)
+	}
+
+	bodyresp := new(AIAPIKeyWithValue)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("RotateAIAPIKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 // FindListDeploymentsResponseEntry attempts to find an ListDeploymentsResponseEntry by nameOrID.
 func (l ListDeploymentsResponse) FindListDeploymentsResponseEntry(nameOrID string) (ListDeploymentsResponseEntry, error) {
 	var result []ListDeploymentsResponseEntry
@@ -31,8 +332,16 @@ func (l ListDeploymentsResponse) FindListDeploymentsResponseEntry(nameOrID strin
 	return ListDeploymentsResponseEntry{}, fmt.Errorf("%q not found in ListDeploymentsResponse: %w", nameOrID, ErrNotFound)
 }
 
+type ListDeploymentsOpt func(url.Values)
+
+func ListDeploymentsWithVisibility(visibility string) ListDeploymentsOpt {
+	return func(q url.Values) {
+		q.Add("visibility", fmt.Sprint(visibility))
+	}
+}
+
 // List Deployments
-func (c Client) ListDeployments(ctx context.Context) (*ListDeploymentsResponse, error) {
+func (c Client) ListDeployments(ctx context.Context, opts ...ListDeploymentsOpt) (*ListDeploymentsResponse, error) {
 	path := "/ai/deployment"
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
@@ -41,6 +350,14 @@ func (c Client) ListDeployments(ctx context.Context) (*ListDeploymentsResponse, 
 	}
 
 	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if len(opts) > 0 {
+		q := request.URL.Query()
+		for _, opt := range opts {
+			opt(q)
+		}
+		request.URL.RawQuery = q.Encode()
+	}
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
 		return nil, fmt.Errorf("ListDeployments: execute request editors: %w", err)
@@ -549,8 +866,16 @@ func (l ListModelsResponse) FindListModelsResponseEntry(nameOrID string) (ListMo
 	return ListModelsResponseEntry{}, fmt.Errorf("%q not found in ListModelsResponse: %w", nameOrID, ErrNotFound)
 }
 
+type ListModelsOpt func(url.Values)
+
+func ListModelsWithVisibility(visibility string) ListModelsOpt {
+	return func(q url.Values) {
+		q.Add("visibility", fmt.Sprint(visibility))
+	}
+}
+
 // List Models
-func (c Client) ListModels(ctx context.Context) (*ListModelsResponse, error) {
+func (c Client) ListModels(ctx context.Context, opts ...ListModelsOpt) (*ListModelsResponse, error) {
 	path := "/ai/model"
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
@@ -559,6 +884,14 @@ func (c Client) ListModels(ctx context.Context) (*ListModelsResponse, error) {
 	}
 
 	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if len(opts) > 0 {
+		q := request.URL.Query()
+		for _, opt := range opts {
+			opt(q)
+		}
+		request.URL.RawQuery = q.Encode()
+	}
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
 		return nil, fmt.Errorf("ListModels: execute request editors: %w", err)
@@ -13178,22 +13511,15 @@ func (c Client) DisableKmsKey(ctx context.Context, id UUID) (*SuccessResponse, e
 }
 
 // Disable the periodic rotation of a KMS Key.
-func (c Client) DisableKmsKeyRotation(ctx context.Context, id UUID, req DisableKmsKeyRotationRequest) (*DisableKmsKeyRotationResponse, error) {
+func (c Client) DisableKmsKeyRotation(ctx context.Context, id UUID) (*DisableKmsKeyRotationResponse, error) {
 	path := fmt.Sprintf("/kms-key/%v/disable-key-rotation", id)
 
-	body, err := prepareJSONBody(req)
-	if err != nil {
-		return nil, fmt.Errorf("DisableKmsKeyRotation: prepare Json body: %w", err)
-	}
-
-	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("DisableKmsKeyRotation: new request: %w", err)
 	}
 
 	request.Header.Add("User-Agent", c.getUserAgent())
-
-	request.Header.Add("Content-Type", "application/json")
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
 		return nil, fmt.Errorf("DisableKmsKeyRotation: execute request editors: %w", err)
@@ -13521,7 +13847,7 @@ func (c Client) ReEncrypt(ctx context.Context, id UUID, req ReEncryptRequest) (*
 }
 
 // Replicate a KMS key to a target zone.
-func (c Client) ReplicateKmsKey(ctx context.Context, id UUID, req ReplicateKmsKeyRequest) (*Operation, error) {
+func (c Client) ReplicateKmsKey(ctx context.Context, id UUID, req ReplicateKmsKeyRequest) (*SuccessResponse, error) {
 	path := fmt.Sprintf("/kms-key/%v/replicate", id)
 
 	body, err := prepareJSONBody(req)
@@ -13563,7 +13889,7 @@ func (c Client) ReplicateKmsKey(ctx context.Context, id UUID, req ReplicateKmsKe
 		return nil, fmt.Errorf("ReplicateKmsKey: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := new(SuccessResponse)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ReplicateKmsKey: prepare Json response: %w", err)
 	}

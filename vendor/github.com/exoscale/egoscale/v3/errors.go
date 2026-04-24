@@ -94,18 +94,41 @@ var httpStatusCodeErrors = map[int]error{
 	http.StatusNetworkAuthenticationRequired: ErrNetworkAuthenticationRequired,
 }
 
+// APIError is the structured error returned for HTTP 4xx/5xx responses.
+// It wraps the HTTP sentinel error (e.g. ErrNotFound) so that errors.Is
+// checks against sentinels continue to work unchanged.
+type APIError struct {
+	// sentinel is the mapped HTTP status error (e.g. ErrNotFound).
+	sentinel error
+	// Message is the plain server message (from "message" or "error" fields).
+	Message string
+	// Title is the RFC 9457 "title" field.
+	Title string
+	// Detail is the RFC 9457 "detail" field.
+	Detail string
+	// Errors holds the RFC 9457 "errors" entries.
+	Errors []APIErrorEntry
+}
+
+// APIErrorEntry is one item from the RFC 9457 "errors" array.
+// Location is a JSONPath expression (e.g. "$['some-field']") when the server
+// provides field-level detail; it is empty for plain string error entries.
+type APIErrorEntry struct {
+	Detail   string
+	Location string
+}
+
+func (e *APIError) Error() string { return e.sentinel.Error() }
+func (e *APIError) Unwrap() error { return e.sentinel }
+
 func handleHTTPErrorResp(resp *http.Response) error {
 	if resp.StatusCode >= 400 && resp.StatusCode <= 599 {
 		var res struct {
-			// Simple error formats
-			Message string `json:"message"`
-			Error   string `json:"error"`
-			// RFC 7807 Problem Details format
-			Title  string `json:"title"`
-			Errors []struct {
-				Detail   string `json:"detail"`
-				Location string `json:"location"`
-			} `json:"errors"`
+			Message string          `json:"message"`
+			Error   string          `json:"error"`
+			Title   string          `json:"title"`
+			Detail  string          `json:"detail"`
+			Errors  json.RawMessage `json:"errors"`
 		}
 
 		data, err := io.ReadAll(resp.Body)
@@ -121,27 +144,52 @@ func handleHTTPErrorResp(resp *http.Response) error {
 			res.Message = string(data)
 		}
 
-		message := res.Message
-		if message == "" && res.Error != "" {
-			message = res.Error
-		}
-		if message == "" && res.Title != "" {
-			message = res.Title
-			for _, e := range res.Errors {
-				if e.Location != "" {
-					message += fmt.Sprintf("\n  - %s: %s", e.Location, e.Detail)
-				} else {
-					message += fmt.Sprintf("\n  - %s", e.Detail)
-				}
-			}
+		sentinel, ok := httpStatusCodeErrors[resp.StatusCode]
+		if !ok {
+			sentinel = fmt.Errorf("HTTP error %d", resp.StatusCode)
 		}
 
-		err, ok := httpStatusCodeErrors[resp.StatusCode]
-		if ok {
-			return fmt.Errorf("%w: %s", err, message)
+		apiErr := &APIError{
+			sentinel: sentinel,
+			Message:  res.Message,
+			Title:    res.Title,
+			Detail:   res.Detail,
 		}
+		if res.Message == "" && res.Error != "" {
+			apiErr.Message = res.Error
+		}
+		apiErr.Errors = parseErrorEntries(res.Errors)
 
-		return fmt.Errorf("unmapped HTTP error: status code %d, message: %s", resp.StatusCode, message)
+		return apiErr
+	}
+
+	return nil
+}
+
+func parseErrorEntries(raw json.RawMessage) []APIErrorEntry {
+	if len(raw) == 0 {
+		return nil
+	}
+
+	var objErrors []struct {
+		Detail   string `json:"detail"`
+		Location string `json:"location"`
+	}
+	if json.Unmarshal(raw, &objErrors) == nil && len(objErrors) > 0 {
+		entries := make([]APIErrorEntry, len(objErrors))
+		for i, e := range objErrors {
+			entries[i] = APIErrorEntry{Detail: e.Detail, Location: e.Location}
+		}
+		return entries
+	}
+
+	var strErrors []string
+	if json.Unmarshal(raw, &strErrors) == nil {
+		entries := make([]APIErrorEntry, len(strErrors))
+		for i, e := range strErrors {
+			entries[i] = APIErrorEntry{Detail: e}
+		}
+		return entries
 	}
 
 	return nil
