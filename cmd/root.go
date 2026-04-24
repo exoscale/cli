@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -10,6 +11,7 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -82,45 +84,64 @@ func Execute(version, commit string) {
 	}
 }
 
-// formatError extracts the most informative message from an error chain.
-// When the error wraps an egoscale HTTP sentinel (e.g. v3.ErrConflict), it
-// returns the layer that contains both the HTTP status and the server message
-// (e.g. "Conflict: Usage of resource 'gpu' has been exceeded.") instead of
-// the full SDK call-site prefix.
+var jsonPathFieldRe = regexp.MustCompile(`\$\['([^']+)'\]`)
+
+// formatError renders a user-friendly message from an error. When the chain
+// contains a *v3.APIError it formats the structured server response; otherwise
+// it falls back to the raw error string.
 func formatError(err error) string {
-	// Walk the chain looking for the layer whose direct unwrapped cause is a
-	// bare HTTP sentinel. That layer's message is "StatusText: server message"
-	// (e.g. "Conflict: Usage of resource 'gpu' has been exceeded.") — more
-	// user-friendly than the full SDK call-site prefix.
-	cur := err
-	for cur != nil {
-		if isHTTPSentinel(errors.Unwrap(cur)) {
-			return cur.Error()
-		}
-		cur = errors.Unwrap(cur)
+	var apiErr *v3.APIError
+	if !errors.As(err, &apiErr) {
+		return err.Error()
 	}
-	return err.Error()
+
+	// Prefer the specific "detail" message, fall back to "title".
+	lead := apiErr.Detail
+	if lead == "" {
+		lead = apiErr.Title
+	}
+	if lead == "" {
+		// Simple message/error format — just the status text and message.
+		if apiErr.Message != "" {
+			return apiErr.Unwrap().Error() + ": " + apiErr.Message
+		}
+		return apiErr.Unwrap().Error()
+	}
+
+	msg := apiErr.Unwrap().Error() + ": " + lead
+	for _, e := range apiErr.Errors {
+		field := formatFieldName(e.Location)
+		detail := formatDetail(e.Detail)
+		if field != "" {
+			msg += fmt.Sprintf("\n  - %s: %s", field, detail)
+		} else {
+			msg += fmt.Sprintf("\n  - %s", detail)
+		}
+	}
+	return msg
 }
 
-func isHTTPSentinel(err error) bool {
-	if err == nil {
-		return false
+// formatFieldName turns a JSONPath location like $['inference-engine-version']
+// into a CLI flag name like --inference-engine-version.
+func formatFieldName(location string) string {
+	m := jsonPathFieldRe.FindStringSubmatch(location)
+	if len(m) < 2 {
+		return location
 	}
-	return err == v3.ErrBadRequest ||
-		err == v3.ErrUnauthorized ||
-		err == v3.ErrPaymentRequired ||
-		err == v3.ErrForbidden ||
-		err == v3.ErrNotFound ||
-		err == v3.ErrMethodNotAllowed ||
-		err == v3.ErrConflict ||
-		err == v3.ErrGone ||
-		err == v3.ErrUnprocessableEntity ||
-		err == v3.ErrTooManyRequests ||
-		err == v3.ErrInternalServerError ||
-		err == v3.ErrNotImplemented ||
-		err == v3.ErrBadGateway ||
-		err == v3.ErrServiceUnavailable ||
-		err == v3.ErrGatewayTimeout
+	return "--" + m[1]
+}
+
+// formatDetail rewrites technical validation messages into plain English.
+func formatDetail(detail string) string {
+	const enumPrefix = "does not have a value in the enumeration "
+	if after, ok := strings.CutPrefix(detail, enumPrefix); ok {
+		after = strings.TrimSpace(after)
+		var values []string
+		if err := json.Unmarshal([]byte(after), &values); err == nil && len(values) > 0 {
+			return "invalid value; valid values are: " + strings.Join(values, ", ")
+		}
+	}
+	return detail
 }
 
 func init() {
