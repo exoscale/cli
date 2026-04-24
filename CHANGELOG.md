@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Features
+### Improvements
+### Bug fixes
+
+## 1.94.1
+
+### Bug fixes
+- fix: prevent traversal path during sos download #823
+
 ## 1.94.0
 
 ### Features
@@ -22,7 +33,6 @@
 - fix(nlb): API error swallowed on load-balancer update (e.g. duplicate name conflict reported as "operation is nil") #806
 - fix(config): panic when used without a default account set #798
 - Fix bad flag ref in `dns add NS` #812
-- fix: prevent traversal path during sos download #823
 
 ### Documentation
 
