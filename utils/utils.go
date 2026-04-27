@@ -11,6 +11,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/hashicorp/go-multierror"
 
@@ -234,6 +237,47 @@ func ForEveryZone(zones []v3.Zone, f func(zone v3.Zone) error) error {
 	}
 
 	return meg.Wait().ErrorOrNil()
+}
+
+// ForEveryZoneAsync runs f concurrently per zone with a per-zone timeout
+// derived from ctx. Per-zone errors are buffered into sink as warnings
+// and never abort the other zones. Returns the number of zones that
+// failed.
+//
+// If showSpinner is true, a single rotating glyph is drawn on stderr
+// for the full duration of the fanout (until every zone has either
+// returned or timed out). Silent on non-TTY stderr and under
+// globalstate.Quiet, so callers can pass true unconditionally.
+func ForEveryZoneAsync(
+	ctx context.Context,
+	zones []v3.Zone,
+	timeout time.Duration,
+	sink *WarningSink,
+	showSpinner bool,
+	f func(ctx context.Context, zone v3.Zone) error,
+) int {
+	if showSpinner {
+		spinner := NewSpinner()
+		spinner.Start()
+		defer spinner.Stop()
+	}
+
+	var wg sync.WaitGroup
+	var failed atomic.Int32
+	for _, zone := range zones {
+		wg.Add(1)
+		go func(zone v3.Zone) {
+			defer wg.Done()
+			zCtx, cancel := context.WithTimeout(ctx, timeout)
+			defer cancel()
+			if err := f(zCtx, zone); err != nil {
+				failed.Add(1)
+				sink.Add("zone %s: %v", zone.Name, err)
+			}
+		}(zone)
+	}
+	wg.Wait()
+	return int(failed.Load())
 }
 
 // ParseInstanceType returns an v3.InstanceType with family and name.

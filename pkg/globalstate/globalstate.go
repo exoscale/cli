@@ -1,6 +1,8 @@
 package globalstate
 
 import (
+	"time"
+
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -10,4 +12,5 @@ var (
 	Quiet                 bool
 	ConfigFolder          string
 	GitVersion, GitCommit string
+	RequestTimeout        time.Duration
 )

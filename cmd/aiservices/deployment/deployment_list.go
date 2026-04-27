@@ -1,7 +1,10 @@
 package deployment
 
 import (
+	"context"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -13,14 +16,14 @@ import (
 )
 
 type DeploymentListItemOutput struct {
-	ID        v3.UUID                              `json:"id"`
-	Name      string                               `json:"name"`
-	Zone      v3.ZoneName                          `json:"zone"`
-	State     v3.ListDeploymentsResponseEntryState `json:"state" outputLabel:"Status"`
-	GPUType   string                               `json:"gpu_type"`
-	GPUCount  int64                                `json:"gpu_count"`
-	Replicas  int64                                `json:"replicas"`
-	ModelName string                               `json:"model_name"`
+	ID        v3.UUID                              `json:"id" outputWidth:"36"`
+	Name      string                               `json:"name" outputWidth:"38"`
+	Zone      v3.ZoneName                          `json:"zone" outputWidth:"8"`
+	State     v3.ListDeploymentsResponseEntryState `json:"state" outputLabel:"Status" outputWidth:"6"`
+	GPUType   string                               `json:"gpu_type" outputWidth:"9"`
+	GPUCount  int64                                `json:"gpu_count" outputWidth:"9"`
+	Replicas  int64                                `json:"replicas" outputWidth:"8"`
+	ModelName string                               `json:"model_name" outputWidth:"38"`
 }
 
 type DeploymentListOutput []DeploymentListItemOutput
@@ -43,12 +46,17 @@ func (c *DeploymentListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists AI deployments.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&DeploymentListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&DeploymentListItemOutput{}), ", "))
 }
 func (c *DeploymentListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
+
 func (c *DeploymentListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return runDeploymentList(c, os.Stdout, os.Stderr)
+}
+
+func runDeploymentList(c *DeploymentListCmd, stdout, stderr io.Writer) error {
 	ctx := exocmd.GContext
 	client := globalstate.EgoscaleV3Client
 
@@ -57,35 +65,46 @@ func (c *DeploymentListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	out := make(DeploymentListOutput, 0)
-	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
-		c := client.WithEndpoint(zone.APIEndpoint)
-		resp, err := c.ListDeployments(ctx)
-		if err != nil {
-			return err
-		}
+	sink := utils.NewWarningSinkTo(stderr)
+	stopSig := sink.InstallSignalFlush(ctx)
+	defer stopSig()
+	defer sink.Flush()
 
-		for _, d := range resp.Deployments {
-			var modelName string
-			if d.Model != nil {
-				modelName = d.Model.Name
+	streamer := output.NewStreamer(DeploymentListItemOutput{}, stdout)
+	defer func() { _ = streamer.Close() }()
+
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
+		func(ctx context.Context, zone v3.Zone) error {
+			zc := client.WithEndpoint(zone.APIEndpoint)
+			resp, err := zc.ListDeployments(ctx)
+			if err != nil {
+				return err
 			}
-			out = append(out, DeploymentListItemOutput{
-				ID:        d.ID,
-				Name:      d.Name,
-				Zone:      zone.Name,
-				State:     d.State,
-				GPUType:   d.GpuType,
-				GPUCount:  d.GpuCount,
-				Replicas:  d.Replicas,
-				ModelName: modelName,
-			})
-		}
+			for _, d := range resp.Deployments {
+				var modelName string
+				if d.Model != nil {
+					modelName = d.Model.Name
+				}
+				if err := streamer.Push(DeploymentListItemOutput{
+					ID:        d.ID,
+					Name:      d.Name,
+					Zone:      zone.Name,
+					State:     d.State,
+					GPUType:   d.GpuType,
+					GPUCount:  d.GpuCount,
+					Replicas:  d.Replicas,
+					ModelName: modelName,
+				}); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 
-		return nil
-	})
-
-	return c.OutputFunc(&out, err)
+	if failed > 0 {
+		return fmt.Errorf("%d zone(s) failed", failed)
+	}
+	return nil
 }
 
 func init() {
