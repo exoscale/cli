@@ -171,9 +171,8 @@ func (s *tableStreamer) writeBorder() {
 }
 
 // writeRow writes "│ cell1 │ cell2 │" with one-space padding on each
-// side. Cells longer than the configured width expand the cell rather
-// than wrap or truncate, mirroring SetAutoWrapText(false) on the
-// existing table.
+// side. Values longer than the configured column width are truncated
+// with a trailing ellipsis so cells stay aligned across rows.
 func (s *tableStreamer) writeRow(cells []string) {
 	var b strings.Builder
 	b.WriteString("│")
@@ -182,12 +181,31 @@ func (s *tableStreamer) writeRow(cells []string) {
 		if i < len(s.widths) {
 			w = s.widths[i]
 		}
-		// Pad right to at least w; if c is wider, the cell expands.
+		c = truncateCell(c, w)
 		fmt.Fprintf(&b, " %-*s ", w, c)
 		b.WriteString("│")
 	}
 	b.WriteString("\n")
 	_, _ = s.w.Write([]byte(b.String()))
+}
+
+// truncateCell shortens s to fit in w runes, replacing the trailing
+// rune with '…' when truncation occurs. w<=0 returns s unchanged so
+// the column expands like before (matches old behavior for fields
+// without an outputWidth tag and a header narrower than
+// defaultTableMinWidth).
+func truncateCell(s string, w int) string {
+	if w <= 0 {
+		return s
+	}
+	rs := []rune(s)
+	if len(rs) <= w {
+		return s
+	}
+	if w == 1 {
+		return "…"
+	}
+	return string(rs[:w-1]) + "…"
 }
 
 func (s *tableStreamer) Close() error {

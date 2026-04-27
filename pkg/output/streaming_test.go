@@ -150,6 +150,63 @@ func TestStreamingTableEmpty(t *testing.T) {
 	}
 }
 
+func TestStreamingTable_TruncatesLongValues(t *testing.T) {
+	defer withFormat(t, "")()
+	type row struct {
+		Name string `outputWidth:"6"`
+	}
+	var buf bytes.Buffer
+	s := NewStreamer(row{}, &buf)
+	if err := s.Push(row{Name: "abcdefghij"}); err != nil { // 10 runes into width 6
+		t.Fatalf("push: %v", err)
+	}
+	if err := s.Close(); err != nil {
+		t.Fatalf("close: %v", err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "│ abcde… │") {
+		t.Errorf("expected truncated cell with ellipsis, got:\n%s", out)
+	}
+}
+
+func TestStreamingTable_TruncationIsRuneSafe(t *testing.T) {
+	defer withFormat(t, "")()
+	type row struct {
+		Name string `outputWidth:"4"`
+	}
+	var buf bytes.Buffer
+	s := NewStreamer(row{}, &buf)
+	// 5 runes (each multi-byte) → must not chop a rune in half.
+	if err := s.Push(row{Name: "éèàçü"}); err != nil {
+		t.Fatalf("push: %v", err)
+	}
+	if err := s.Close(); err != nil {
+		t.Fatalf("close: %v", err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "│ éèà… │") {
+		t.Errorf("expected rune-safe truncation, got:\n%s", out)
+	}
+}
+
+func TestStreamingTable_FitsExactlyNoEllipsis(t *testing.T) {
+	defer withFormat(t, "")()
+	type row struct {
+		Name string `outputWidth:"4"`
+	}
+	var buf bytes.Buffer
+	s := NewStreamer(row{}, &buf)
+	if err := s.Push(row{Name: "abcd"}); err != nil { // exactly 4 runes
+		t.Fatalf("push: %v", err)
+	}
+	if err := s.Close(); err != nil {
+		t.Fatalf("close: %v", err)
+	}
+	if strings.Contains(buf.String(), "…") {
+		t.Errorf("exact-fit value must not be truncated, got:\n%s", buf.String())
+	}
+}
+
 func TestStreamingTable_OutputWidthTag(t *testing.T) {
 	defer withFormat(t, "")()
 	type narrowRow struct {
