@@ -3,7 +3,11 @@
 ## Unreleased
 
 ### Features
+
 ### Improvements
+
+- Made cli more resilient to zone failures, and streams output while waiting for slow zones to responds #826
+
 ### Bug fixes
 
 ## 1.94.2
