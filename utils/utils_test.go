@@ -64,6 +64,20 @@ func TestWarningSink_ConcurrentAdd(t *testing.T) {
 	}
 }
 
+func TestSpinner_StartStopOnNonTTYIsNoop(t *testing.T) {
+	var buf bytes.Buffer
+	// Real Spinner with a non-TTY writer: Start should be a silent
+	// no-op so scripted runs don't get spinner spam.
+	s := NewSpinner()
+	s.SetWriter(&buf)
+	s.Start()
+	time.Sleep(50 * time.Millisecond)
+	s.Stop()
+	if buf.Len() != 0 {
+		t.Errorf("non-TTY spinner should produce no output, got %q", buf.String())
+	}
+}
+
 func TestWarningSink_FlushIsIdempotent(t *testing.T) {
 	var buf bytes.Buffer
 	s := NewWarningSinkTo(&buf)
@@ -111,7 +125,7 @@ func TestForEveryZoneAsync_FastZoneNotBlockedBySlow(t *testing.T) {
 	sink := NewWarningSinkTo(&buf)
 
 	start := time.Now()
-	failed := ForEveryZoneAsync(context.Background(), zones, timeout, sink,
+	failed := ForEveryZoneAsync(context.Background(), zones, timeout, sink, false,
 		func(ctx context.Context, zone v3.Zone) error {
 			zc := client.WithEndpoint(zone.APIEndpoint)
 			_, err := zc.ListDeployments(ctx)
@@ -163,4 +177,3 @@ func TestWarningSink_SignalFlush(t *testing.T) {
 	cancel()
 	assert.Contains(t, buf.String(), "from-signal")
 }
-

@@ -73,7 +73,7 @@ func runDeploymentList(c *DeploymentListCmd, stdout, stderr io.Writer) error {
 	streamer := output.NewStreamer(DeploymentListItemOutput{}, stdout)
 	defer func() { _ = streamer.Close() }()
 
-	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink,
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
 		func(ctx context.Context, zone v3.Zone) error {
 			zc := client.WithEndpoint(zone.APIEndpoint)
 			resp, err := zc.ListDeployments(ctx)
