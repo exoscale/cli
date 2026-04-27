@@ -4,132 +4,198 @@ package s3
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	s3cust "github.com/aws/aws-sdk-go-v2/service/s3/internal/customizations"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go/middleware"
+	"github.com/aws/smithy-go/ptr"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"time"
 )
 
-// Uploads a part by copying data from an existing object as data source. You
-// specify the data source by adding the request header x-amz-copy-source in your
-// request and a byte range by adding the request header x-amz-copy-source-range in
-// your request. The minimum allowable part size for a multipart upload is 5 MB.
-// For more information about multipart upload limits, go to Quick Facts
-// (https://docs.aws.amazon.com/AmazonS3/latest/dev/qfacts.html) in the Amazon
-// Simple Storage Service Developer Guide. Instead of using an existing object as
-// part data, you might use the UploadPart
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html) operation
-// and provide data in your request. You must initiate a multipart upload before
-// you can upload any part. In response to your initiate request. Amazon S3 returns
-// a unique identifier, the upload ID, that you must include in your upload part
-// request. For more information about using the UploadPartCopy operation, see the
-// following:
+// Uploads a part by copying data from an existing object as data source. To
+// specify the data source, you add the request header x-amz-copy-source in your
+// request. To specify a byte range, you add the request header
+// x-amz-copy-source-range in your request.
 //
-// * For conceptual information about multipart uploads, see Uploading
-// Objects Using Multipart Upload
-// (https://docs.aws.amazon.com/AmazonS3/latest/dev/uploadobjusingmpu.html) in the
-// Amazon Simple Storage Service Developer Guide.
+// For information about maximum and minimum part sizes and other multipart upload
+// specifications, see [Multipart upload limits]in the Amazon S3 User Guide.
 //
-// * For information about
-// permissions required to use the multipart upload API, see Multipart Upload API
-// and Permissions
-// (https://docs.aws.amazon.com/AmazonS3/latest/dev/mpuAndPermissions.html) in the
-// Amazon Simple Storage Service Developer Guide.
+// Instead of copying data from an existing object as part data, you might use the [UploadPart]
+// action to upload new data as a part of an object in your request.
 //
-// * For information about copying
-// objects using a single atomic operation vs. the multipart upload, see Operations
-// on Objects
-// (https://docs.aws.amazon.com/AmazonS3/latest/dev/ObjectOperations.html) in the
-// Amazon Simple Storage Service Developer Guide.
+// You must initiate a multipart upload before you can upload any part. In
+// response to your initiate request, Amazon S3 returns the upload ID, a unique
+// identifier that you must include in your upload part request.
 //
-// * For information about using
-// server-side encryption with customer-provided encryption keys with the
-// UploadPartCopy operation, see CopyObject
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html) and
-// UploadPart
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html).
+// For conceptual information about multipart uploads, see [Uploading Objects Using Multipart Upload] in the Amazon S3 User
+// Guide. For information about copying objects using a single atomic action vs. a
+// multipart upload, see [Operations on Objects]in the Amazon S3 User Guide.
 //
-// Note the
-// following additional considerations about the request headers
-// x-amz-copy-source-if-match, x-amz-copy-source-if-none-match,
-// x-amz-copy-source-if-unmodified-since, and
-// x-amz-copy-source-if-modified-since:
+// Directory buckets - For directory buckets, you must make requests for this API
+// operation to the Zonal endpoint. These endpoints support virtual-hosted-style
+// requests in the format
+// https://amzn-s3-demo-bucket.s3express-zone-id.region-code.amazonaws.com/key-name
+// . Path-style requests are not supported. For more information about endpoints
+// in Availability Zones, see [Regional and Zonal endpoints for directory buckets in Availability Zones]in the Amazon S3 User Guide. For more information
+// about endpoints in Local Zones, see [Concepts for directory buckets in Local Zones]in the Amazon S3 User Guide.
 //
-// * Consideration 1 - If both of the
-// x-amz-copy-source-if-match and x-amz-copy-source-if-unmodified-since headers are
-// present in the request as follows: x-amz-copy-source-if-match condition
-// evaluates to true, and; x-amz-copy-source-if-unmodified-since condition
-// evaluates to false; Amazon S3 returns 200 OK and copies the data.
+// Authentication and authorization All UploadPartCopy requests must be
+// authenticated and signed by using IAM credentials (access key ID and secret
+// access key for the IAM identities). All headers with the x-amz- prefix,
+// including x-amz-copy-source , must be signed. For more information, see [REST Authentication].
 //
-// *
-// Consideration 2 - If both of the x-amz-copy-source-if-none-match and
-// x-amz-copy-source-if-modified-since headers are present in the request as
-// follows: x-amz-copy-source-if-none-match condition evaluates to false, and;
-// x-amz-copy-source-if-modified-since condition evaluates to true; Amazon S3
-// returns 412 Precondition Failed response code.
+// Directory buckets - You must use IAM credentials to authenticate and authorize
+// your access to the UploadPartCopy API operation, instead of using the temporary
+// security credentials through the CreateSession API operation.
 //
-// Versioning If your bucket has
-// versioning enabled, you could have multiple versions of the same object. By
-// default, x-amz-copy-source identifies the current version of the object to copy.
-// If the current version is a delete marker and you don't specify a versionId in
-// the x-amz-copy-source, Amazon S3 returns a 404 error, because the object does
-// not exist. If you specify versionId in the x-amz-copy-source and the versionId
-// is a delete marker, Amazon S3 returns an HTTP 400 error, because you are not
-// allowed to specify a delete marker as a version for the x-amz-copy-source. You
-// can optionally specify a specific version of the source object to copy by adding
-// the versionId subresource as shown in the following example: x-amz-copy-source:
-// /bucket/object?versionId=version id Special Errors
+// Amazon Web Services CLI or SDKs handles authentication and authorization on
+// your behalf.
 //
-// * Code: NoSuchUpload
+// Permissions You must have READ access to the source object and WRITE access to
+// the destination bucket.
 //
-// *
-// Cause: The specified multipart upload does not exist. The upload ID might be
-// invalid, or the multipart upload might have been aborted or completed.
+//   - General purpose bucket permissions - You must have the permissions in a
+//     policy based on the bucket types of your source bucket and destination bucket in
+//     an UploadPartCopy operation.
 //
-// * HTTP
-// Status Code: 404 Not Found
+//   - If the source object is in a general purpose bucket, you must have the
+//     s3:GetObject permission to read the source object that is being copied.
 //
-// * Code: InvalidRequest
+//   - If the destination bucket is a general purpose bucket, you must have the
+//     s3:PutObject permission to write the object copy to the destination bucket.
 //
-// * Cause: The specified copy
-// source is not supported as a byte-range copy source.
+//   - To perform a multipart upload with encryption using an Key Management
+//     Service key, the requester must have permission to the kms:Decrypt and
+//     kms:GenerateDataKey actions on the key. The requester must also have
+//     permissions for the kms:GenerateDataKey action for the CreateMultipartUpload
+//     API. Then, the requester needs permissions for the kms:Decrypt action on the
+//     UploadPart and UploadPartCopy APIs. These permissions are required because
+//     Amazon S3 must decrypt and read data from the encrypted file parts before it
+//     completes the multipart upload. For more information about KMS permissions, see [Protecting data using server-side encryption with KMS]
+//     in the Amazon S3 User Guide. For information about the permissions required to
+//     use the multipart upload API, see [Multipart upload and permissions]and [Multipart upload API and permissions]in the Amazon S3 User Guide.
 //
-// * HTTP Status Code: 400
-// Bad Request
+//   - Directory bucket permissions - You must have permissions in a bucket policy
+//     or an IAM identity-based policy based on the source and destination bucket types
+//     in an UploadPartCopy operation.
 //
-// Related Resources
+//   - If the source object that you want to copy is in a directory bucket, you
+//     must have the s3express:CreateSession permission in the Action element of a
+//     policy to read the object. If no session mode is specified, the session will be
+//     created with the maximum allowable privilege, attempting ReadWrite first, then
+//     ReadOnly if ReadWrite is not permitted. If you want to explicitly restrict the
+//     access to be read-only, you can set the s3express:SessionMode condition key to
+//     ReadOnly on the copy source bucket.
 //
-// * CreateMultipartUpload
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html)
+//   - If the copy destination is a directory bucket, you must have the
+//     s3express:CreateSession permission in the Action element of a policy to write
+//     the object to the destination. The s3express:SessionMode condition key cannot
+//     be set to ReadOnly on the copy destination.
 //
-// *
-// UploadPart
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html)
+// If the object is encrypted with SSE-KMS, you must also have the
 //
-// *
-// CompleteMultipartUpload
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_CompleteMultipartUpload.html)
+//	kms:GenerateDataKey and kms:Decrypt permissions in IAM identity-based policies
+//	and KMS key policies for the KMS key.
 //
-// *
-// AbortMultipartUpload
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_AbortMultipartUpload.html)
+// For example policies, see [Example bucket policies for S3 Express One Zone]and [Amazon Web Services Identity and Access Management (IAM) identity-based policies for S3 Express One Zone]in the Amazon S3 User Guide.
 //
-// *
-// ListParts
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListParts.html)
+// Encryption
+//   - General purpose buckets - For information about using server-side
+//     encryption with customer-provided encryption keys with the UploadPartCopy
+//     operation, see [CopyObject]and [UploadPart].
 //
-// *
-// ListMultipartUploads
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListMultipartUploads.html)
+// If you have server-side encryption with customer-provided keys (SSE-C) blocked
+//
+//	for your general purpose bucket, you will get an HTTP 403 Access Denied error
+//	when you specify the SSE-C request headers while writing new data to your
+//	bucket. For more information, see [Blocking or unblocking SSE-C for a general purpose bucket].
+//
+//	- Directory buckets - For directory buckets, there are only two supported
+//	options for server-side encryption: server-side encryption with Amazon S3
+//	managed keys (SSE-S3) ( AES256 ) and server-side encryption with KMS keys
+//	(SSE-KMS) ( aws:kms ). For more information, see [Protecting data with server-side encryption]in the Amazon S3 User Guide.
+//
+// For directory buckets, when you perform a CreateMultipartUpload operation and an
+//
+//	UploadPartCopy operation, the request headers you provide in the
+//	CreateMultipartUpload request must match the default encryption configuration
+//	of the destination bucket.
+//
+// S3 Bucket Keys aren't supported, when you copy SSE-KMS encrypted objects from
+//
+//	general purpose buckets to directory buckets, from directory buckets to general
+//	purpose buckets, or between directory buckets, through [UploadPartCopy]. In this case, Amazon
+//	S3 makes a call to KMS every time a copy request is made for a KMS-encrypted
+//	object.
+//
+// Special errors
+//
+//   - Error Code: NoSuchUpload
+//
+//   - Description: The specified multipart upload does not exist. The upload ID
+//     might be invalid, or the multipart upload might have been aborted or completed.
+//
+//   - HTTP Status Code: 404 Not Found
+//
+//   - Error Code: InvalidRequest
+//
+//   - Description: The specified copy source is not supported as a byte-range
+//     copy source.
+//
+//   - HTTP Status Code: 400 Bad Request
+//
+// HTTP Host header syntax  Directory buckets - The HTTP Host header syntax is
+// Bucket-name.s3express-zone-id.region-code.amazonaws.com .
+//
+// The following operations are related to UploadPartCopy :
+//
+// [CreateMultipartUpload]
+//
+// [UploadPart]
+//
+// [CompleteMultipartUpload]
+//
+// [AbortMultipartUpload]
+//
+// [ListParts]
+//
+// [ListMultipartUploads]
+//
+// You must URL encode any signed header values that contain spaces. For example,
+// if your header value is my file.txt , containing two spaces after my , you must
+// URL encode this value to my%20%20file.txt .
+//
+// [Uploading Objects Using Multipart Upload]: https://docs.aws.amazon.com/AmazonS3/latest/dev/uploadobjusingmpu.html
+// [Concepts for directory buckets in Local Zones]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-lzs-for-directory-buckets.html
+// [ListParts]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListParts.html
+// [UploadPart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html
+// [Protecting data using server-side encryption with KMS]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html
+// [CopyObject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html
+// [Multipart upload and permissions]: https://docs.aws.amazon.com/AmazonS3/latest/dev/mpuAndPermissions.html
+// [Multipart upload API and permissions]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html#mpuAndPermissions
+// [CompleteMultipartUpload]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CompleteMultipartUpload.html
+// [CreateMultipartUpload]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
+// [Multipart upload limits]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html
+// [Amazon Web Services Identity and Access Management (IAM) identity-based policies for S3 Express One Zone]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-express-security-iam-identity-policies.html
+// [AbortMultipartUpload]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_AbortMultipartUpload.html
+// [REST Authentication]: https://docs.aws.amazon.com/AmazonS3/latest/dev/RESTAuthentication.html
+// [Example bucket policies for S3 Express One Zone]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-express-security-iam-example-bucket-policies.html
+// [Operations on Objects]: https://docs.aws.amazon.com/AmazonS3/latest/dev/ObjectOperations.html
+// [ListMultipartUploads]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListMultipartUploads.html
+// [Regional and Zonal endpoints for directory buckets in Availability Zones]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/endpoint-directory-buckets-AZ.html
+//
+// [Blocking or unblocking SSE-C for a general purpose bucket]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/blocking-unblocking-s3-c-encryption-gpb.html
+// [UploadPartCopy]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPartCopy.html
+// [Protecting data with server-side encryption]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-express-serv-side-encryption.html
 func (c *Client) UploadPartCopy(ctx context.Context, params *UploadPartCopyInput, optFns ...func(*Options)) (*UploadPartCopyOutput, error) {
 	if params == nil {
 		params = &UploadPartCopyInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "UploadPartCopy", params, optFns, addOperationUploadPartCopyMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "UploadPartCopy", params, optFns, c.addOperationUploadPartCopyMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -141,59 +207,100 @@ func (c *Client) UploadPartCopy(ctx context.Context, params *UploadPartCopyInput
 
 type UploadPartCopyInput struct {
 
-	// The bucket name. When using this API with an access point, you must direct
+	// The bucket name.
+	//
+	// Directory buckets - When you use this operation with a directory bucket, you
+	// must use virtual-hosted-style requests in the format
+	// Bucket-name.s3express-zone-id.region-code.amazonaws.com . Path-style requests
+	// are not supported. Directory bucket names must be unique in the chosen Zone
+	// (Availability Zone or Local Zone). Bucket names must follow the format
+	// bucket-base-name--zone-id--x-s3 (for example,
+	// amzn-s3-demo-bucket--usw2-az1--x-s3 ). For information about bucket naming
+	// restrictions, see [Directory bucket naming rules]in the Amazon S3 User Guide.
+	//
+	// Copying objects across different Amazon Web Services Regions isn't supported
+	// when the source or destination bucket is in Amazon Web Services Local Zones. The
+	// source and destination buckets must have the same parent Amazon Web Services
+	// Region. Otherwise, you get an HTTP 400 Bad Request error with the error code
+	// InvalidRequest .
+	//
+	// Access points - When you use this action with an access point for general
+	// purpose buckets, you must provide the alias of the access point in place of the
+	// bucket name or specify the access point ARN. When you use this action with an
+	// access point for directory buckets, you must provide the access point name in
+	// place of the bucket name. When using the access point ARN, you must direct
 	// requests to the access point hostname. The access point hostname takes the form
 	// AccessPointName-AccountId.s3-accesspoint.Region.amazonaws.com. When using this
-	// operation with an access point through the AWS SDKs, you provide the access
-	// point ARN in place of the bucket name. For more information about access point
-	// ARNs, see Using Access Points
-	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/using-access-points.html) in
-	// the Amazon Simple Storage Service Developer Guide. When using this API with
-	// Amazon S3 on Outposts, you must direct requests to the S3 on Outposts hostname.
-	// The S3 on Outposts hostname takes the form
-	// AccessPointName-AccountId.outpostID.s3-outposts.Region.amazonaws.com. When using
-	// this operation using S3 on Outposts through the AWS SDKs, you provide the
-	// Outposts bucket ARN in place of the bucket name. For more information about S3
-	// on Outposts ARNs, see Using S3 on Outposts
-	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/S3onOutposts.html) in the
-	// Amazon Simple Storage Service Developer Guide.
+	// action with an access point through the Amazon Web Services SDKs, you provide
+	// the access point ARN in place of the bucket name. For more information about
+	// access point ARNs, see [Using access points]in the Amazon S3 User Guide.
+	//
+	// Object Lambda access points are not supported by directory buckets.
+	//
+	// S3 on Outposts - When you use this action with S3 on Outposts, you must direct
+	// requests to the S3 on Outposts hostname. The S3 on Outposts hostname takes the
+	// form AccessPointName-AccountId.outpostID.s3-outposts.Region.amazonaws.com . When
+	// you use this action with S3 on Outposts, the destination bucket must be the
+	// Outposts access point ARN or the access point alias. For more information about
+	// S3 on Outposts, see [What is S3 on Outposts?]in the Amazon S3 User Guide.
+	//
+	// [Directory bucket naming rules]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/directory-bucket-naming-rules.html
+	// [What is S3 on Outposts?]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3onOutposts.html
+	// [Using access points]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-access-points.html
 	//
 	// This member is required.
 	Bucket *string
 
-	// Specifies the source object for the copy operation. You specify the value in one
-	// of two formats, depending on whether you want to access the source object
-	// through an access point
-	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/access-points.html):
+	// Specifies the source object for the copy operation. You specify the value in
+	// one of two formats, depending on whether you want to access the source object
+	// through an [access point]:
 	//
-	// * For
-	// objects not accessed through an access point, specify the name of the source
-	// bucket and key of the source object, separated by a slash (/). For example, to
-	// copy the object reports/january.pdf from the bucket awsexamplebucket, use
-	// awsexamplebucket/reports/january.pdf. The value must be URL encoded.
+	//   - For objects not accessed through an access point, specify the name of the
+	//   source bucket and key of the source object, separated by a slash (/). For
+	//   example, to copy the object reports/january.pdf from the bucket
+	//   awsexamplebucket , use awsexamplebucket/reports/january.pdf . The value must
+	//   be URL-encoded.
 	//
-	// * For
-	// objects accessed through access points, specify the Amazon Resource Name (ARN)
-	// of the object as accessed through the access point, in the format
-	// arn:aws:s3:::accesspoint//object/. For example, to copy the object
-	// reports/january.pdf through access point my-access-point owned by account
-	// 123456789012 in Region us-west-2, use the URL encoding of
-	// arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point/object/reports/january.pdf.
-	// The value must be URL encoded. Amazon S3 supports copy operations using access
-	// points only when the source and destination buckets are in the same AWS Region.
+	//   - For objects accessed through access points, specify the Amazon Resource
+	//   Name (ARN) of the object as accessed through the access point, in the format
+	//   arn:aws:s3:::accesspoint//object/ . For example, to copy the object
+	//   reports/january.pdf through access point my-access-point owned by account
+	//   123456789012 in Region us-west-2 , use the URL encoding of
+	//   arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point/object/reports/january.pdf
+	//   . The value must be URL encoded.
+	//
+	//   - Amazon S3 supports copy operations using Access points only when the source
+	//   and destination buckets are in the same Amazon Web Services Region.
+	//
+	//   - Access points are not supported by directory buckets.
+	//
 	// Alternatively, for objects accessed through Amazon S3 on Outposts, specify the
-	// ARN of the object as accessed in the format
-	// arn:aws:s3-outposts:::outpost//object/. For example, to copy the object
-	// reports/january.pdf through outpost my-outpost owned by account 123456789012 in
-	// Region us-west-2, use the URL encoding of
-	// arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/object/reports/january.pdf.
-	// The value must be URL encoded.
+	//   ARN of the object as accessed in the format
+	//   arn:aws:s3-outposts:::outpost//object/ . For example, to copy the object
+	//   reports/january.pdf through outpost my-outpost owned by account 123456789012
+	//   in Region us-west-2 , use the URL encoding of
+	//   arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/object/reports/january.pdf
+	//   . The value must be URL-encoded.
 	//
-	// To copy a specific version of an object, append
-	// ?versionId= to the value (for example,
-	// awsexamplebucket/reports/january.pdf?versionId=QUpfdndhfd8438MNFDN93jdnJFkdmqnh893).
-	// If you don't specify a version ID, Amazon S3 copies the latest version of the
-	// source object.
+	// If your bucket has versioning enabled, you could have multiple versions of the
+	// same object. By default, x-amz-copy-source identifies the current version of
+	// the source object to copy. To copy a specific version of the source object to
+	// copy, append ?versionId= to the x-amz-copy-source request header (for example,
+	// x-amz-copy-source:
+	// /awsexamplebucket/reports/january.pdf?versionId=QUpfdndhfd8438MNFDN93jdnJFkdmqnh893
+	// ).
+	//
+	// If the current version is a delete marker and you don't specify a versionId in
+	// the x-amz-copy-source request header, Amazon S3 returns a 404 Not Found error,
+	// because the object does not exist. If you specify versionId in the
+	// x-amz-copy-source and the versionId is a delete marker, Amazon S3 returns an
+	// HTTP 400 Bad Request error, because you are not allowed to specify a delete
+	// marker as a version for the x-amz-copy-source .
+	//
+	// Directory buckets - S3 Versioning isn't enabled and supported for directory
+	// buckets.
+	//
+	// [access point]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-points.html
 	//
 	// This member is required.
 	CopySource *string
@@ -207,7 +314,7 @@ type UploadPartCopyInput struct {
 	// 10,000.
 	//
 	// This member is required.
-	PartNumber int32
+	PartNumber *int32
 
 	// Upload ID identifying the multipart upload whose part is being copied.
 	//
@@ -215,15 +322,55 @@ type UploadPartCopyInput struct {
 	UploadId *string
 
 	// Copies the object if its entity tag (ETag) matches the specified tag.
+	//
+	// If both of the x-amz-copy-source-if-match and
+	// x-amz-copy-source-if-unmodified-since headers are present in the request as
+	// follows:
+	//
+	// x-amz-copy-source-if-match condition evaluates to true , and;
+	//
+	// x-amz-copy-source-if-unmodified-since condition evaluates to false ;
+	//
+	// Amazon S3 returns 200 OK and copies the data.
 	CopySourceIfMatch *string
 
 	// Copies the object if it has been modified since the specified time.
+	//
+	// If both of the x-amz-copy-source-if-none-match and
+	// x-amz-copy-source-if-modified-since headers are present in the request as
+	// follows:
+	//
+	// x-amz-copy-source-if-none-match condition evaluates to false , and;
+	//
+	// x-amz-copy-source-if-modified-since condition evaluates to true ;
+	//
+	// Amazon S3 returns 412 Precondition Failed response code.
 	CopySourceIfModifiedSince *time.Time
 
 	// Copies the object if its entity tag (ETag) is different than the specified ETag.
+	//
+	// If both of the x-amz-copy-source-if-none-match and
+	// x-amz-copy-source-if-modified-since headers are present in the request as
+	// follows:
+	//
+	// x-amz-copy-source-if-none-match condition evaluates to false , and;
+	//
+	// x-amz-copy-source-if-modified-since condition evaluates to true ;
+	//
+	// Amazon S3 returns 412 Precondition Failed response code.
 	CopySourceIfNoneMatch *string
 
 	// Copies the object if it hasn't been modified since the specified time.
+	//
+	// If both of the x-amz-copy-source-if-match and
+	// x-amz-copy-source-if-unmodified-since headers are present in the request as
+	// follows:
+	//
+	// x-amz-copy-source-if-match condition evaluates to true , and;
+	//
+	// x-amz-copy-source-if-unmodified-since condition evaluates to false ;
+	//
+	// Amazon S3 returns 200 OK and copies the data.
 	CopySourceIfUnmodifiedSince *time.Time
 
 	// The range of bytes to copy from the source object. The range value must use the
@@ -234,39 +381,53 @@ type UploadPartCopyInput struct {
 	CopySourceRange *string
 
 	// Specifies the algorithm to use when decrypting the source object (for example,
-	// AES256).
+	// AES256 ).
+	//
+	// This functionality is not supported when the source object is in a directory
+	// bucket.
 	CopySourceSSECustomerAlgorithm *string
 
 	// Specifies the customer-provided encryption key for Amazon S3 to use to decrypt
 	// the source object. The encryption key provided in this header must be one that
 	// was used when the source object was created.
+	//
+	// This functionality is not supported when the source object is in a directory
+	// bucket.
 	CopySourceSSECustomerKey *string
 
 	// Specifies the 128-bit MD5 digest of the encryption key according to RFC 1321.
 	// Amazon S3 uses this header for a message integrity check to ensure that the
 	// encryption key was transmitted without error.
+	//
+	// This functionality is not supported when the source object is in a directory
+	// bucket.
 	CopySourceSSECustomerKeyMD5 *string
 
-	// The account id of the expected destination bucket owner. If the destination
-	// bucket is owned by a different account, the request will fail with an HTTP 403
-	// (Access Denied) error.
+	// The account ID of the expected destination bucket owner. If the account ID that
+	// you provide does not match the actual owner of the destination bucket, the
+	// request fails with the HTTP status code 403 Forbidden (access denied).
 	ExpectedBucketOwner *string
 
-	// The account id of the expected source bucket owner. If the source bucket is
-	// owned by a different account, the request will fail with an HTTP 403 (Access
-	// Denied) error.
+	// The account ID of the expected source bucket owner. If the account ID that you
+	// provide does not match the actual owner of the source bucket, the request fails
+	// with the HTTP status code 403 Forbidden (access denied).
 	ExpectedSourceBucketOwner *string
 
 	// Confirms that the requester knows that they will be charged for the request.
-	// Bucket owners need not specify this parameter in their requests. For information
-	// about downloading objects from requester pays buckets, see Downloading Objects
-	// in Requestor Pays Buckets
-	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/ObjectsinRequesterPaysBuckets.html)
-	// in the Amazon S3 Developer Guide.
+	// Bucket owners need not specify this parameter in their requests. If either the
+	// source or destination S3 bucket has Requester Pays enabled, the requester will
+	// pay for the corresponding charges. For information about downloading objects
+	// from Requester Pays buckets, see [Downloading Objects in Requester Pays Buckets]in the Amazon S3 User Guide.
+	//
+	// This functionality is not supported for directory buckets.
+	//
+	// [Downloading Objects in Requester Pays Buckets]: https://docs.aws.amazon.com/AmazonS3/latest/dev/ObjectsinRequesterPaysBuckets.html
 	RequestPayer types.RequestPayer
 
-	// Specifies the algorithm to use to when encrypting the object (for example,
-	// AES256).
+	// Specifies the algorithm to use when encrypting the object (for example, AES256).
+	//
+	// This functionality is not supported when the destination bucket is a directory
+	// bucket.
 	SSECustomerAlgorithm *string
 
 	// Specifies the customer-provided encryption key for Amazon S3 to use in
@@ -275,54 +436,87 @@ type UploadPartCopyInput struct {
 	// appropriate for use with the algorithm specified in the
 	// x-amz-server-side-encryption-customer-algorithm header. This must be the same
 	// encryption key specified in the initiate multipart upload request.
+	//
+	// This functionality is not supported when the destination bucket is a directory
+	// bucket.
 	SSECustomerKey *string
 
 	// Specifies the 128-bit MD5 digest of the encryption key according to RFC 1321.
 	// Amazon S3 uses this header for a message integrity check to ensure that the
 	// encryption key was transmitted without error.
+	//
+	// This functionality is not supported when the destination bucket is a directory
+	// bucket.
 	SSECustomerKeyMD5 *string
+
+	noSmithyDocumentSerde
+}
+
+func (in *UploadPartCopyInput) bindEndpointParams(p *EndpointParameters) {
+
+	p.Bucket = in.Bucket
+	p.DisableS3ExpressSessionAuth = ptr.Bool(true)
 }
 
 type UploadPartCopyOutput struct {
 
 	// Indicates whether the multipart upload uses an S3 Bucket Key for server-side
-	// encryption with AWS KMS (SSE-KMS).
-	BucketKeyEnabled bool
+	// encryption with Key Management Service (KMS) keys (SSE-KMS).
+	BucketKeyEnabled *bool
 
 	// Container for all response elements.
 	CopyPartResult *types.CopyPartResult
 
-	// The version of the source object that was copied, if you have enabled versioning
-	// on the source bucket.
+	// The version of the source object that was copied, if you have enabled
+	// versioning on the source bucket.
+	//
+	// This functionality is not supported when the source object is in a directory
+	// bucket.
 	CopySourceVersionId *string
 
 	// If present, indicates that the requester was successfully charged for the
-	// request.
+	// request. For more information, see [Using Requester Pays buckets for storage transfers and usage]in the Amazon Simple Storage Service user
+	// guide.
+	//
+	// This functionality is not supported for directory buckets.
+	//
+	// [Using Requester Pays buckets for storage transfers and usage]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/RequesterPaysBuckets.html
 	RequestCharged types.RequestCharged
 
-	// If server-side encryption with a customer-provided encryption key was requested,
-	// the response will include this header confirming the encryption algorithm used.
+	// If server-side encryption with a customer-provided encryption key was
+	// requested, the response will include this header to confirm the encryption
+	// algorithm that's used.
+	//
+	// This functionality is not supported for directory buckets.
 	SSECustomerAlgorithm *string
 
-	// If server-side encryption with a customer-provided encryption key was requested,
-	// the response will include this header to provide round-trip message integrity
-	// verification of the customer-provided encryption key.
+	// If server-side encryption with a customer-provided encryption key was
+	// requested, the response will include this header to provide the round-trip
+	// message integrity verification of the customer-provided encryption key.
+	//
+	// This functionality is not supported for directory buckets.
 	SSECustomerKeyMD5 *string
 
-	// If present, specifies the ID of the AWS Key Management Service (AWS KMS)
-	// symmetric customer managed customer master key (CMK) that was used for the
-	// object.
+	// If present, indicates the ID of the KMS key that was used for object encryption.
 	SSEKMSKeyId *string
 
-	// The server-side encryption algorithm used when storing this object in Amazon S3
-	// (for example, AES256, aws:kms).
+	// The server-side encryption algorithm used when you store this object in Amazon
+	// S3 or Amazon FSx.
+	//
+	// When accessing data stored in Amazon FSx file systems using S3 access points,
+	// the only valid server side encryption option is aws:fsx .
 	ServerSideEncryption types.ServerSideEncryption
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationUploadPartCopyMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationUploadPartCopyMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsRestxml_serializeOpUploadPartCopy{}, middleware.After)
 	if err != nil {
 		return err
@@ -331,40 +525,62 @@ func addOperationUploadPartCopyMiddlewares(stack *middleware.Stack, options Opti
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "UploadPartCopy"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options, c); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
+	if err = addSpanRetryLoop(stack, options); err != nil {
 		return err
 	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addPutBucketContextMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpUploadPartCopyValidationMiddleware(stack); err != nil {
@@ -374,6 +590,9 @@ func addOperationUploadPartCopyMiddlewares(stack *middleware.Stack, options Opti
 		return err
 	}
 	if err = addMetadataRetrieverMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addUploadPartCopyUpdateEndpoint(stack, options); err != nil {
@@ -394,14 +613,35 @@ func addOperationUploadPartCopyMiddlewares(stack *middleware.Stack, options Opti
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSerializeImmutableHostnameBucketMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptors(stack, options); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (v *UploadPartCopyInput) bucket() (string, bool) {
+	if v.Bucket == nil {
+		return "", false
+	}
+	return *v.Bucket, true
 }
 
 func newServiceMetadataMiddleware_opUploadPartCopy(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "s3",
 		OperationName: "UploadPartCopy",
 	}
 }
@@ -421,12 +661,13 @@ func addUploadPartCopyUpdateEndpoint(stack *middleware.Stack, options Options) e
 		Accessor: s3cust.UpdateEndpointParameterAccessor{
 			GetBucketFromInput: getUploadPartCopyBucketMember,
 		},
-		UsePathStyle:            options.UsePathStyle,
-		UseAccelerate:           options.UseAccelerate,
-		SupportsAccelerate:      true,
-		EndpointResolver:        options.EndpointResolver,
-		EndpointResolverOptions: options.EndpointOptions,
-		UseDualstack:            options.UseDualstack,
-		UseARNRegion:            options.UseARNRegion,
+		UsePathStyle:                   options.UsePathStyle,
+		UseAccelerate:                  options.UseAccelerate,
+		SupportsAccelerate:             true,
+		TargetS3ObjectLambda:           false,
+		EndpointResolver:               options.EndpointResolver,
+		EndpointResolverOptions:        options.EndpointOptions,
+		UseARNRegion:                   options.UseARNRegion,
+		DisableMultiRegionAccessPoints: options.DisableMultiRegionAccessPoints,
 	})
 }

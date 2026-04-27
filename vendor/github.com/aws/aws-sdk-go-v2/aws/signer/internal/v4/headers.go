@@ -2,18 +2,20 @@ package v4
 
 // IgnoredHeaders is a list of headers that are ignored during signing
 var IgnoredHeaders = Rules{
-	Blacklist{
+	ExcludeList{
 		MapRule{
-			"Authorization":   struct{}{},
-			"User-Agent":      struct{}{},
-			"X-Amzn-Trace-Id": struct{}{},
+			"Authorization":     struct{}{},
+			"User-Agent":        struct{}{},
+			"X-Amzn-Trace-Id":   struct{}{},
+			"Expect":            struct{}{},
+			"Transfer-Encoding": struct{}{},
 		},
 	},
 }
 
-// RequiredSignedHeaders is a whitelist for Build canonical headers.
+// RequiredSignedHeaders is a allow list for Build canonical headers.
 var RequiredSignedHeaders = Rules{
-	Whitelist{
+	AllowList{
 		MapRule{
 			"Cache-Control":                         struct{}{},
 			"Content-Disposition":                   struct{}{},
@@ -44,9 +46,9 @@ var RequiredSignedHeaders = Rules{
 			"X-Amz-Grant-Write-Acp":                                       struct{}{},
 			"X-Amz-Metadata-Directive":                                    struct{}{},
 			"X-Amz-Mfa":                                                   struct{}{},
-			"X-Amz-Request-Payer":                                         struct{}{},
 			"X-Amz-Server-Side-Encryption":                                struct{}{},
 			"X-Amz-Server-Side-Encryption-Aws-Kms-Key-Id":                 struct{}{},
+			"X-Amz-Server-Side-Encryption-Context":                        struct{}{},
 			"X-Amz-Server-Side-Encryption-Customer-Algorithm":             struct{}{},
 			"X-Amz-Server-Side-Encryption-Customer-Key":                   struct{}{},
 			"X-Amz-Server-Side-Encryption-Customer-Key-Md5":               struct{}{},
@@ -56,12 +58,13 @@ var RequiredSignedHeaders = Rules{
 			"X-Amz-Tagging":                                               struct{}{},
 		},
 	},
+	Patterns{"X-Amz-Object-Lock-"},
 	Patterns{"X-Amz-Meta-"},
 }
 
-// AllowedQueryHoisting is a whitelist for Build query headers. The boolean value
+// AllowedQueryHoisting is a allowed list for Build query headers. The boolean value
 // represents whether or not it is a pattern.
 var AllowedQueryHoisting = InclusiveRules{
-	Blacklist{RequiredSignedHeaders},
+	ExcludeList{RequiredSignedHeaders},
 	Patterns{"X-Amz-"},
 }

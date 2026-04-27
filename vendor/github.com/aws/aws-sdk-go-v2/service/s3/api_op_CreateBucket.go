@@ -4,110 +4,152 @@ package s3
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	s3cust "github.com/aws/aws-sdk-go-v2/service/s3/internal/customizations"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go/middleware"
+	"github.com/aws/smithy-go/ptr"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Creates a new S3 bucket. To create a bucket, you must register with Amazon S3
-// and have a valid AWS Access Key ID to authenticate requests. Anonymous requests
-// are never allowed to create buckets. By creating the bucket, you become the
-// bucket owner. Not every string is an acceptable bucket name. For information
-// about bucket naming restrictions, see Working with Amazon S3 buckets
-// (https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html). If you want
-// to create an Amazon S3 on Outposts bucket, see Create Bucket
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateBucket.html).
-// By default, the bucket is created in the US East (N. Virginia) Region. You can
-// optionally specify a Region in the request body. You might choose a Region to
-// optimize latency, minimize costs, or address regulatory requirements. For
-// example, if you reside in Europe, you will probably find it advantageous to
-// create buckets in the Europe (Ireland) Region. For more information, see
-// Accessing a bucket
-// (https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html#access-bucket-intro).
-// If you send your create bucket request to the s3.amazonaws.com endpoint, the
-// request goes to the us-east-1 Region. Accordingly, the signature calculations in
-// Signature Version 4 must use us-east-1 as the Region, even if the location
-// constraint in the request specifies another Region where the bucket is to be
-// created. If you create a bucket in a Region other than US East (N. Virginia),
-// your application must be able to handle 307 redirect. For more information, see
-// Virtual hosting of buckets
-// (https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html). When
-// creating a bucket using this operation, you can optionally specify the accounts
-// or groups that should be granted specific permissions on the bucket. There are
-// two ways to grant the appropriate permissions using the request headers.
+// This action creates an Amazon S3 bucket. To create an Amazon S3 on Outposts
+// bucket, see [CreateBucket]CreateBucket .
 //
-// *
-// Specify a canned ACL using the x-amz-acl request header. Amazon S3 supports a
-// set of predefined ACLs, known as canned ACLs. Each canned ACL has a predefined
-// set of grantees and permissions. For more information, see Canned ACL
-// (https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#CannedACL).
+// Creates a new S3 bucket. To create a bucket, you must set up Amazon S3 and have
+// a valid Amazon Web Services Access Key ID to authenticate requests. Anonymous
+// requests are never allowed to create buckets. By creating the bucket, you become
+// the bucket owner.
 //
-// *
-// Specify access permissions explicitly using the x-amz-grant-read,
-// x-amz-grant-write, x-amz-grant-read-acp, x-amz-grant-write-acp, and
-// x-amz-grant-full-control headers. These headers map to the set of permissions
-// Amazon S3 supports in an ACL. For more information, see Access control list
-// (ACL) overview
-// (https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html). You specify
-// each grantee as a type=value pair, where the type is one of the following:
+// There are two types of buckets: general purpose buckets and directory buckets.
+// For more information about these bucket types, see [Creating, configuring, and working with Amazon S3 buckets]in the Amazon S3 User Guide.
 //
-// * id
-// – if the value specified is the canonical user ID of an AWS account
+// General purpose buckets exist in a global namespace, which means that each
+// bucket name must be unique across all Amazon Web Services accounts in all the
+// Amazon Web Services Regions within a partition. A partition is a grouping of
+// Regions. Amazon Web Services currently has four partitions: aws (Standard
+// Regions), aws-cn (China Regions), aws-us-gov (Amazon Web Services GovCloud
+// (US)), and aws-eusc (European Sovereign Cloud). When you create a general
+// purpose bucket, you can choose to create a bucket in the shared global namespace
+// or you can choose to create a bucket in your account regional namespace. Your
+// account regional namespace is a subdivision of the global namespace that only
+// your account can create buckets in. For more information on account regional
+// namespaces, see [Namespaces for general purpose buckets].
 //
-// * uri – if
-// you are granting permissions to a predefined group
+//   - General purpose buckets - If you send your CreateBucket request to the
+//     s3.amazonaws.com global endpoint, the request goes to the us-east-1 Region. So
+//     the signature calculations in Signature Version 4 must use us-east-1 as the
+//     Region, even if the location constraint in the request specifies another Region
+//     where the bucket is to be created. If you create a bucket in a Region other than
+//     US East (N. Virginia), your application must be able to handle 307 redirect. For
+//     more information, see [Virtual hosting of buckets]in the Amazon S3 User Guide.
 //
-// * emailAddress – if the
-// value specified is the email address of an AWS account Using email addresses to
-// specify a grantee is only supported in the following AWS Regions:
+//   - Directory buckets - For directory buckets, you must make requests for this
+//     API operation to the Regional endpoint. These endpoints support path-style
+//     requests in the format
+//     https://s3express-control.region-code.amazonaws.com/bucket-name .
+//     Virtual-hosted-style requests aren't supported. For more information about
+//     endpoints in Availability Zones, see [Regional and Zonal endpoints for directory buckets in Availability Zones]in the Amazon S3 User Guide. For more
+//     information about endpoints in Local Zones, see [Concepts for directory buckets in Local Zones]in the Amazon S3 User Guide.
 //
-// * US East (N.
-// Virginia)
+// Permissions
 //
-// * US West (N. California)
+//   - General purpose bucket permissions - In addition to the s3:CreateBucket
+//     permission, the following permissions are required in a policy when your
+//     CreateBucket request includes specific headers:
 //
-// * US West (Oregon)
+//   - Access control lists (ACLs) - In your CreateBucket request, if you specify
+//     an access control list (ACL) and set it to public-read , public-read-write ,
+//     authenticated-read , or if you explicitly specify any other custom ACLs, both
+//     s3:CreateBucket and s3:PutBucketAcl permissions are required. In your
+//     CreateBucket request, if you set the ACL to private , or if you don't specify
+//     any ACLs, only the s3:CreateBucket permission is required.
 //
-// * Asia Pacific
-// (Singapore)
+//   - Object Lock - In your CreateBucket request, if you set
+//     x-amz-bucket-object-lock-enabled to true, the
+//     s3:PutBucketObjectLockConfiguration and s3:PutBucketVersioning permissions are
+//     required.
 //
-// * Asia Pacific (Sydney)
+//   - S3 Object Ownership - If your CreateBucket request includes the
+//     x-amz-object-ownership header, then the s3:PutBucketOwnershipControls
+//     permission is required.
 //
-// * Asia Pacific (Tokyo)
+// To set an ACL on a bucket as part of a CreateBucket request, you must explicitly
 //
-// * Europe
-// (Ireland)
+//	set S3 Object Ownership for the bucket to a different value than the default,
+//	BucketOwnerEnforced . Additionally, if your desired bucket ACL grants public
+//	access, you must first create the bucket (without the bucket ACL) and then
+//	explicitly disable Block Public Access on the bucket before using PutBucketAcl
+//	to set the ACL. If you try to create a bucket with a public ACL, the request
+//	will fail.
 //
-// * South America (São Paulo)
+// For the majority of modern use cases in S3, we recommend that you keep all
 //
-// For a list of all the Amazon S3
-// supported Regions and endpoints, see Regions and Endpoints
-// (https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region) in the AWS
-// General Reference.
+//	Block Public Access settings enabled and keep ACLs disabled. If you would like
+//	to share data with users outside of your account, you can use bucket policies as
+//	needed. For more information, see [Controlling ownership of objects and disabling ACLs for your bucket]and [Blocking public access to your Amazon S3 storage]in the Amazon S3 User Guide.
 //
-// For example, the following x-amz-grant-read header grants
-// the AWS accounts identified by account IDs permissions to read object data and
-// its metadata: x-amz-grant-read: id="11112222333", id="444455556666"
+//	- S3 Block Public Access - If your specific use case requires granting public
+//	access to your S3 resources, you can disable Block Public Access. Specifically,
+//	you can create a new bucket with Block Public Access enabled, then separately
+//	call the [DeletePublicAccessBlock]DeletePublicAccessBlock API. To use this operation, you must have the
+//	s3:PutBucketPublicAccessBlock permission. For more information about S3 Block
+//	Public Access, see [Blocking public access to your Amazon S3 storage]in the Amazon S3 User Guide.
 //
-// You can use
-// either a canned ACL or specify access permissions explicitly. You cannot do
-// both. The following operations are related to CreateBucket:
+//	- Directory bucket permissions - You must have the s3express:CreateBucket
+//	permission in an IAM identity-based policy instead of a bucket policy.
+//	Cross-account access to this API operation isn't supported. This operation can
+//	only be performed by the Amazon Web Services account that owns the resource. For
+//	more information about directory bucket policies and permissions, see [Amazon Web Services Identity and Access Management (IAM) for S3 Express One Zone]in the
+//	Amazon S3 User Guide.
 //
-// * PutObject
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html)
+// The permissions for ACLs, Object Lock, S3 Object Ownership, and S3 Block Public
 //
-// *
-// DeleteBucket
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucket.html)
+//	Access are not supported for directory buckets. For directory buckets, all Block
+//	Public Access settings are enabled at the bucket level and S3 Object Ownership
+//	is set to Bucket owner enforced (ACLs disabled). These settings can't be
+//	modified.
+//
+// For more information about permissions for creating and working with directory
+//
+//	buckets, see [Directory buckets]in the Amazon S3 User Guide. For more information about
+//	supported S3 features for directory buckets, see [Features of S3 Express One Zone]in the Amazon S3 User Guide.
+//
+// HTTP Host header syntax  Directory buckets - The HTTP Host header syntax is
+// s3express-control.region-code.amazonaws.com .
+//
+// The following operations are related to CreateBucket :
+//
+// [PutObject]
+//
+// [DeleteBucket]
+//
+// You must URL encode any signed header values that contain spaces. For example,
+// if your header value is my file.txt , containing two spaces after my , you must
+// URL encode this value to my%20%20file.txt .
+//
+// [Creating, configuring, and working with Amazon S3 buckets]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-buckets-s3.html
+// [Concepts for directory buckets in Local Zones]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-lzs-for-directory-buckets.html
+// [PutObject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html
+// [Namespaces for general purpose buckets]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/gpbucketnamespaces.html
+// [DeleteBucket]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucket.html
+// [CreateBucket]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateBucket.html
+// [Virtual hosting of buckets]: https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html
+// [Regional and Zonal endpoints for directory buckets in Availability Zones]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/endpoint-directory-buckets-AZ.html
+//
+// [DeletePublicAccessBlock]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeletePublicAccessBlock.html
+// [Directory buckets]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/directory-buckets-overview.html
+// [Features of S3 Express One Zone]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-express-one-zone.html#s3-express-features
+// [Amazon Web Services Identity and Access Management (IAM) for S3 Express One Zone]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-express-security-iam.html
+// [Controlling ownership of objects and disabling ACLs for your bucket]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html
+// [Blocking public access to your Amazon S3 storage]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html
 func (c *Client) CreateBucket(ctx context.Context, params *CreateBucketInput, optFns ...func(*Options)) (*CreateBucketOutput, error) {
 	if params == nil {
 		params = &CreateBucketInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "CreateBucket", params, optFns, addOperationCreateBucketMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "CreateBucket", params, optFns, c.addOperationCreateBucketMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -121,47 +163,148 @@ type CreateBucketInput struct {
 
 	// The name of the bucket to create.
 	//
+	// General purpose buckets - For information about bucket naming restrictions, see [Bucket naming rules]
+	// in the Amazon S3 User Guide.
+	//
+	// Directory buckets - When you use this operation with a directory bucket, you
+	// must use path-style requests in the format
+	// https://s3express-control.region-code.amazonaws.com/bucket-name .
+	// Virtual-hosted-style requests aren't supported. Directory bucket names must be
+	// unique in the chosen Zone (Availability Zone or Local Zone). Bucket names must
+	// also follow the format bucket-base-name--zone-id--x-s3 (for example,
+	// DOC-EXAMPLE-BUCKET--usw2-az1--x-s3 ). For information about bucket naming
+	// restrictions, see [Directory bucket naming rules]in the Amazon S3 User Guide
+	//
+	// [Directory bucket naming rules]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/directory-bucket-naming-rules.html
+	// [Bucket naming rules]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
+	//
 	// This member is required.
 	Bucket *string
 
 	// The canned ACL to apply to the bucket.
+	//
+	// This functionality is not supported for directory buckets.
 	ACL types.BucketCannedACL
+
+	// Specifies the namespace where you want to create your general purpose bucket.
+	// When you create a general purpose bucket, you can choose to create a bucket in
+	// the shared global namespace or you can choose to create a bucket in your account
+	// regional namespace. Your account regional namespace is a subdivision of the
+	// global namespace that only your account can create buckets in. For more
+	// information on bucket namespaces, see [Namespaces for general purpose buckets].
+	//
+	// General purpose buckets in your account regional namespace must follow a
+	// specific naming convention. These buckets consist of a bucket name prefix that
+	// you create, and a suffix that contains your 12-digit Amazon Web Services Account
+	// ID, the Amazon Web Services Region code, and ends with -an . Bucket names must
+	// follow the format bucket-name-prefix-accountId-region-an (for example,
+	// amzn-s3-demo-bucket-111122223333-us-west-2-an ). For information about bucket
+	// naming restrictions, see [Account regional namespace naming rules]in the Amazon S3 User Guide.
+	//
+	// This functionality is not supported for directory buckets.
+	//
+	// [Account regional namespace naming rules]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html#account-regional-naming-rules
+	// [Namespaces for general purpose buckets]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/gpbucketnamespaces.html
+	BucketNamespace types.BucketNamespace
 
 	// The configuration information for the bucket.
 	CreateBucketConfiguration *types.CreateBucketConfiguration
 
 	// Allows grantee the read, write, read ACP, and write ACP permissions on the
 	// bucket.
+	//
+	// This functionality is not supported for directory buckets.
 	GrantFullControl *string
 
 	// Allows grantee to list the objects in the bucket.
+	//
+	// This functionality is not supported for directory buckets.
 	GrantRead *string
 
 	// Allows grantee to read the bucket ACL.
+	//
+	// This functionality is not supported for directory buckets.
 	GrantReadACP *string
 
-	// Allows grantee to create, overwrite, and delete any object in the bucket.
+	// Allows grantee to create new objects in the bucket.
+	//
+	// For the bucket and object owners of existing objects, also allows deletions and
+	// overwrites of those objects.
+	//
+	// This functionality is not supported for directory buckets.
 	GrantWrite *string
 
 	// Allows grantee to write the ACL for the applicable bucket.
+	//
+	// This functionality is not supported for directory buckets.
 	GrantWriteACP *string
 
 	// Specifies whether you want S3 Object Lock to be enabled for the new bucket.
-	ObjectLockEnabledForBucket bool
+	//
+	// This functionality is not supported for directory buckets.
+	ObjectLockEnabledForBucket *bool
+
+	// The container element for object ownership for a bucket's ownership controls.
+	//
+	// BucketOwnerPreferred - Objects uploaded to the bucket change ownership to the
+	// bucket owner if the objects are uploaded with the bucket-owner-full-control
+	// canned ACL.
+	//
+	// ObjectWriter - The uploading account will own the object if the object is
+	// uploaded with the bucket-owner-full-control canned ACL.
+	//
+	// BucketOwnerEnforced - Access control lists (ACLs) are disabled and no longer
+	// affect permissions. The bucket owner automatically owns and has full control
+	// over every object in the bucket. The bucket only accepts PUT requests that don't
+	// specify an ACL or specify bucket owner full control ACLs (such as the predefined
+	// bucket-owner-full-control canned ACL or a custom ACL in XML format that grants
+	// the same permissions).
+	//
+	// By default, ObjectOwnership is set to BucketOwnerEnforced and ACLs are
+	// disabled. We recommend keeping ACLs disabled, except in uncommon use cases where
+	// you must control access for each object individually. For more information about
+	// S3 Object Ownership, see [Controlling ownership of objects and disabling ACLs for your bucket]in the Amazon S3 User Guide.
+	//
+	// This functionality is not supported for directory buckets. Directory buckets
+	// use the bucket owner enforced setting for S3 Object Ownership.
+	//
+	// [Controlling ownership of objects and disabling ACLs for your bucket]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html
+	ObjectOwnership types.ObjectOwnership
+
+	noSmithyDocumentSerde
+}
+
+func (in *CreateBucketInput) bindEndpointParams(p *EndpointParameters) {
+
+	p.Bucket = in.Bucket
+	p.UseS3ExpressControlEndpoint = ptr.Bool(true)
+	p.DisableAccessPoints = ptr.Bool(true)
 }
 
 type CreateBucketOutput struct {
 
-	// Specifies the Region where the bucket will be created. If you are creating a
-	// bucket on the US East (N. Virginia) Region (us-east-1), you do not need to
-	// specify the location.
+	// The Amazon Resource Name (ARN) of the S3 bucket. ARNs uniquely identify Amazon
+	// Web Services resources across all of Amazon Web Services.
+	//
+	// This parameter is only supported for S3 directory buckets. For more
+	// information, see [Using tags with directory buckets].
+	//
+	// [Using tags with directory buckets]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/directory-buckets-tagging.html
+	BucketArn *string
+
+	// A forward slash followed by the name of the bucket.
 	Location *string
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationCreateBucketMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationCreateBucketMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsRestxml_serializeOpCreateBucket{}, middleware.After)
 	if err != nil {
 		return err
@@ -170,40 +313,62 @@ func addOperationCreateBucketMiddlewares(stack *middleware.Stack, options Option
 	if err != nil {
 		return err
 	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "CreateBucket"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
+		return err
+	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options, c); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
+	if err = addSpanRetryLoop(stack, options); err != nil {
 		return err
 	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addPutBucketContextMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCreateBucketValidationMiddleware(stack); err != nil {
@@ -213,6 +378,9 @@ func addOperationCreateBucketMiddlewares(stack *middleware.Stack, options Option
 		return err
 	}
 	if err = addMetadataRetrieverMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addCreateBucketUpdateEndpoint(stack, options); err != nil {
@@ -230,14 +398,35 @@ func addOperationCreateBucketMiddlewares(stack *middleware.Stack, options Option
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSerializeImmutableHostnameBucketMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptors(stack, options); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (v *CreateBucketInput) bucket() (string, bool) {
+	if v.Bucket == nil {
+		return "", false
+	}
+	return *v.Bucket, true
 }
 
 func newServiceMetadataMiddleware_opCreateBucket(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "s3",
 		OperationName: "CreateBucket",
 	}
 }
@@ -257,12 +446,13 @@ func addCreateBucketUpdateEndpoint(stack *middleware.Stack, options Options) err
 		Accessor: s3cust.UpdateEndpointParameterAccessor{
 			GetBucketFromInput: getCreateBucketBucketMember,
 		},
-		UsePathStyle:            options.UsePathStyle,
-		UseAccelerate:           options.UseAccelerate,
-		SupportsAccelerate:      false,
-		EndpointResolver:        options.EndpointResolver,
-		EndpointResolverOptions: options.EndpointOptions,
-		UseDualstack:            options.UseDualstack,
-		UseARNRegion:            options.UseARNRegion,
+		UsePathStyle:                   options.UsePathStyle,
+		UseAccelerate:                  options.UseAccelerate,
+		SupportsAccelerate:             false,
+		TargetS3ObjectLambda:           false,
+		EndpointResolver:               options.EndpointResolver,
+		EndpointResolverOptions:        options.EndpointOptions,
+		UseARNRegion:                   options.UseARNRegion,
+		DisableMultiRegionAccessPoints: options.DisableMultiRegionAccessPoints,
 	})
 }
