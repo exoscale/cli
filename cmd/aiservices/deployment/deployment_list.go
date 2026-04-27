@@ -3,6 +3,7 @@ package deployment
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -51,14 +52,11 @@ func (c *DeploymentListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-// listDeploymentsRunner is overridden in tests to redirect output.
-var listDeploymentsRunner = runDeploymentList
-
 func (c *DeploymentListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	return listDeploymentsRunner(c, os.Stdout, os.Stderr)
+	return runDeploymentList(c, os.Stdout, os.Stderr)
 }
 
-func runDeploymentList(c *DeploymentListCmd, stdout, stderr *os.File) error {
+func runDeploymentList(c *DeploymentListCmd, stdout, stderr io.Writer) error {
 	ctx := exocmd.GContext
 	client := globalstate.EgoscaleV3Client
 
