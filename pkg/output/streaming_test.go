@@ -116,16 +116,59 @@ func TestStreamingTable(t *testing.T) {
 
 	out := buf.String()
 	lines := strings.Split(strings.TrimSuffix(out, "\n"), "\n")
-	if len(lines) != 3 {
-		t.Fatalf("want 3 lines (header, sep, row), got %d:\n%s", len(lines), out)
+	// Expected: top border, header, header-sep, row, bottom border = 5 lines.
+	if len(lines) != 5 {
+		t.Fatalf("want 5 lines (top, header, sep, row, bottom), got %d:\n%s", len(lines), out)
 	}
-	for _, want := range []string{"Name", "Zone", "N"} {
-		if !strings.Contains(lines[0], want) {
-			t.Errorf("header missing %q: %q", want, lines[0])
+	for _, want := range []string{"NAME", "ZONE", "N"} {
+		if !strings.Contains(lines[1], want) {
+			t.Errorf("header missing %q: %q", want, lines[1])
 		}
 	}
-	if !strings.Contains(lines[2], "a") || !strings.Contains(lines[2], "z1") {
-		t.Errorf("row missing fields: %q", lines[2])
+	if !strings.Contains(lines[3], "a") || !strings.Contains(lines[3], "z1") {
+		t.Errorf("row missing fields: %q", lines[3])
+	}
+	for _, idx := range []int{0, 2, 4} {
+		if !strings.HasPrefix(lines[idx], "┼") {
+			t.Errorf("line %d should start with ┼, got %q", idx, lines[idx])
+		}
+	}
+	if !strings.HasPrefix(lines[1], "│") || !strings.HasPrefix(lines[3], "│") {
+		t.Errorf("header/row should start with │")
+	}
+}
+
+func TestStreamingTableEmpty(t *testing.T) {
+	defer withFormat(t, "")()
+	var buf bytes.Buffer
+	s := NewStreamer(streamRow{}, &buf)
+	if err := s.Close(); err != nil {
+		t.Fatalf("close: %v", err)
+	}
+	if buf.Len() != 0 {
+		t.Fatalf("empty stream should produce no output, got %q", buf.String())
+	}
+}
+
+func TestStreamingTable_OutputWidthTag(t *testing.T) {
+	defer withFormat(t, "")()
+	type narrowRow struct {
+		ID   string `outputWidth:"4"`
+		Name string `outputWidth:"6"`
+	}
+	var buf bytes.Buffer
+	s := NewStreamer(narrowRow{}, &buf)
+	if err := s.Push(narrowRow{ID: "x", Name: "y"}); err != nil {
+		t.Fatalf("push: %v", err)
+	}
+	if err := s.Close(); err != nil {
+		t.Fatalf("close: %v", err)
+	}
+	// Border with widths 4 and 6 → content runs of 6 and 8 dashes
+	// (width + 2 padding spaces).
+	wantBorder := "┼" + strings.Repeat("─", 6) + "┼" + strings.Repeat("─", 8) + "┼"
+	if !strings.Contains(buf.String(), wantBorder) {
+		t.Errorf("expected border %q in output:\n%s", wantBorder, buf.String())
 	}
 }
 

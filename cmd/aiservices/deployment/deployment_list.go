@@ -16,14 +16,14 @@ import (
 )
 
 type DeploymentListItemOutput struct {
-	ID        v3.UUID                              `json:"id"`
-	Name      string                               `json:"name"`
-	Zone      v3.ZoneName                          `json:"zone"`
-	State     v3.ListDeploymentsResponseEntryState `json:"state" outputLabel:"Status"`
-	GPUType   string                               `json:"gpu_type"`
-	GPUCount  int64                                `json:"gpu_count"`
-	Replicas  int64                                `json:"replicas"`
-	ModelName string                               `json:"model_name"`
+	ID        v3.UUID                              `json:"id" outputWidth:"36"`
+	Name      string                               `json:"name" outputWidth:"38"`
+	Zone      v3.ZoneName                          `json:"zone" outputWidth:"8"`
+	State     v3.ListDeploymentsResponseEntryState `json:"state" outputLabel:"Status" outputWidth:"6"`
+	GPUType   string                               `json:"gpu_type" outputWidth:"9"`
+	GPUCount  int64                                `json:"gpu_count" outputWidth:"9"`
+	Replicas  int64                                `json:"replicas" outputWidth:"8"`
+	ModelName string                               `json:"model_name" outputWidth:"38"`
 }
 
 type DeploymentListOutput []DeploymentListItemOutput

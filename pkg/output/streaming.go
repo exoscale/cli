@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 	"text/template"
@@ -89,28 +90,67 @@ func (s *textStreamer) Close() error { return nil }
 
 // --- table ---
 
+// Default minimum content width when neither the outputWidth tag nor the
+// header label hints at something better. Wide enough for short status
+// codes; long values just expand the cell.
+const defaultTableMinWidth = 12
+
 type tableStreamer struct {
 	mu      sync.Mutex
 	w       io.Writer
 	headers []string
-	widths  []int
+	widths  []int // content widths; cell visual width is widths[i]+2
 	started bool
+	closed  bool
 }
 
 func newTableStreamer(rowType any, w io.Writer) *tableStreamer {
-	headers := outputTableHeaders(rowKindOf(rowType))
-	widths := make([]int, len(headers))
-	for i, h := range headers {
-		widths[i] = len(h)
+	t := rowKindOf(rowType)
+	headers := outputTableHeaders(t)
+	widths := tableColumnWidths(t, headers)
+	// Match tablewriter's auto-format: uppercase headers.
+	for i := range headers {
+		headers[i] = strings.ToUpper(headers[i])
 	}
 	return &tableStreamer{w: w, headers: headers, widths: widths}
+}
+
+// tableColumnWidths derives a content width per column from the
+// outputWidth struct tag, falling back to max(header length,
+// defaultTableMinWidth).
+func tableColumnWidths(t reflect.Type, headers []string) []int {
+	widths := make([]int, len(headers))
+	col := 0
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		if l, ok := f.Tag.Lookup("output"); ok && l == "-" {
+			continue
+		}
+		if w, ok := f.Tag.Lookup("outputWidth"); ok {
+			if n, err := strconv.Atoi(w); err == nil && n > 0 {
+				widths[col] = n
+				col++
+				continue
+			}
+		}
+		hw := len(headers[col])
+		if hw > defaultTableMinWidth {
+			widths[col] = hw
+		} else {
+			widths[col] = defaultTableMinWidth
+		}
+		col++
+	}
+	return widths
 }
 
 func (s *tableStreamer) Push(row any) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if !s.started {
-		s.writeHeader()
+		s.writeBorder()
+		s.writeRow(s.headers)
+		s.writeBorder()
 		s.started = true
 	}
 	cells := outputTableRow(reflect.Indirect(reflect.ValueOf(row)))
@@ -118,28 +158,50 @@ func (s *tableStreamer) Push(row any) error {
 	return nil
 }
 
-func (s *tableStreamer) writeHeader() {
-	s.writeRow(s.headers)
-	sep := make([]string, len(s.headers))
-	for i, w := range s.widths {
-		sep[i] = strings.Repeat("─", w)
+// writeBorder writes a "┼───┼───┼" line spanning all columns.
+func (s *tableStreamer) writeBorder() {
+	var b strings.Builder
+	b.WriteString("┼")
+	for _, w := range s.widths {
+		b.WriteString(strings.Repeat("─", w+2))
+		b.WriteString("┼")
 	}
-	s.writeRow(sep)
+	b.WriteString("\n")
+	_, _ = s.w.Write([]byte(b.String()))
 }
 
+// writeRow writes "│ cell1 │ cell2 │" with one-space padding on each
+// side. Cells longer than the configured width expand the cell rather
+// than wrap or truncate, mirroring SetAutoWrapText(false) on the
+// existing table.
 func (s *tableStreamer) writeRow(cells []string) {
-	parts := make([]string, len(cells))
+	var b strings.Builder
+	b.WriteString("│")
 	for i, c := range cells {
 		w := 0
 		if i < len(s.widths) {
 			w = s.widths[i]
 		}
-		parts[i] = fmt.Sprintf("%-*s", w, c)
+		// Pad right to at least w; if c is wider, the cell expands.
+		fmt.Fprintf(&b, " %-*s ", w, c)
+		b.WriteString("│")
 	}
-	fmt.Fprintln(s.w, strings.Join(parts, "  "))
+	b.WriteString("\n")
+	_, _ = s.w.Write([]byte(b.String()))
 }
 
-func (s *tableStreamer) Close() error { return nil }
+func (s *tableStreamer) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return nil
+	}
+	s.closed = true
+	if s.started {
+		s.writeBorder()
+	}
+	return nil
+}
 
 // --- json ---
 
