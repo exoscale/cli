@@ -6,6 +6,11 @@
 ### Improvements
 ### Bug fixes
 
+## 1.94.2
+
+### Bug fixes
+- fix: Improved error reporting for Dedicated Inference #825
+
 ## 1.94.1
 
 ### Bug fixes
@@ -33,7 +38,6 @@
 - fix(nlb): API error swallowed on load-balancer update (e.g. duplicate name conflict reported as "operation is nil") #806
 - fix(config): panic when used without a default account set #798
 - Fix bad flag ref in `dns add NS` #812
-- Improved error reporting for Dedicated Inference #825
 
 ### Documentation
 
