@@ -1,7 +1,9 @@
 package deployment
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -43,12 +45,20 @@ func (c *DeploymentListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists AI deployments.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&DeploymentListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&DeploymentListItemOutput{}), ", "))
 }
 func (c *DeploymentListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
+
+// listDeploymentsRunner is overridden in tests to redirect output.
+var listDeploymentsRunner = runDeploymentList
+
 func (c *DeploymentListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return listDeploymentsRunner(c, os.Stdout, os.Stderr)
+}
+
+func runDeploymentList(c *DeploymentListCmd, stdout, stderr *os.File) error {
 	ctx := exocmd.GContext
 	client := globalstate.EgoscaleV3Client
 
@@ -57,35 +67,46 @@ func (c *DeploymentListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	out := make(DeploymentListOutput, 0)
-	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
-		c := client.WithEndpoint(zone.APIEndpoint)
-		resp, err := c.ListDeployments(ctx)
-		if err != nil {
-			return err
-		}
+	sink := utils.NewWarningSinkTo(stderr)
+	stopSig := sink.InstallSignalFlush(ctx)
+	defer stopSig()
+	defer sink.Flush()
 
-		for _, d := range resp.Deployments {
-			var modelName string
-			if d.Model != nil {
-				modelName = d.Model.Name
+	streamer := output.NewStreamer(DeploymentListItemOutput{}, stdout)
+	defer func() { _ = streamer.Close() }()
+
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink,
+		func(ctx context.Context, zone v3.Zone) error {
+			zc := client.WithEndpoint(zone.APIEndpoint)
+			resp, err := zc.ListDeployments(ctx)
+			if err != nil {
+				return err
 			}
-			out = append(out, DeploymentListItemOutput{
-				ID:        d.ID,
-				Name:      d.Name,
-				Zone:      zone.Name,
-				State:     d.State,
-				GPUType:   d.GpuType,
-				GPUCount:  d.GpuCount,
-				Replicas:  d.Replicas,
-				ModelName: modelName,
-			})
-		}
+			for _, d := range resp.Deployments {
+				var modelName string
+				if d.Model != nil {
+					modelName = d.Model.Name
+				}
+				if err := streamer.Push(DeploymentListItemOutput{
+					ID:        d.ID,
+					Name:      d.Name,
+					Zone:      zone.Name,
+					State:     d.State,
+					GPUType:   d.GpuType,
+					GPUCount:  d.GpuCount,
+					Replicas:  d.Replicas,
+					ModelName: modelName,
+				}); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 
-		return nil
-	})
-
-	return c.OutputFunc(&out, err)
+	if failed > 0 {
+		return fmt.Errorf("%d zone(s) failed", failed)
+	}
+	return nil
 }
 
 func init() {
