@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +11,7 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -75,10 +78,70 @@ func Execute(version, commit string) {
 	GContext = ctx
 
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", formatError(err))
 
 		os.Exit(1) //nolint:gocritic
 	}
+}
+
+var jsonPathFieldRe = regexp.MustCompile(`\$\['([^']+)'\]`)
+
+// formatError renders a user-friendly message from an error. When the chain
+// contains a *v3.APIError it formats the structured server response; otherwise
+// it falls back to the raw error string.
+func formatError(err error) string {
+	var apiErr *v3.APIError
+	if !errors.As(err, &apiErr) {
+		return err.Error()
+	}
+
+	// Prefer the specific "detail" message, fall back to "title".
+	lead := apiErr.Detail
+	if lead == "" {
+		lead = apiErr.Title
+	}
+	if lead == "" {
+		// Simple message/error format — just the status text and message.
+		if apiErr.Message != "" {
+			return apiErr.Unwrap().Error() + ": " + apiErr.Message
+		}
+		return apiErr.Unwrap().Error()
+	}
+
+	msg := apiErr.Unwrap().Error() + ": " + lead
+	for _, e := range apiErr.Errors {
+		field := formatFieldName(e.Location)
+		detail := formatDetail(e.Detail)
+		if field != "" {
+			msg += fmt.Sprintf("\n  - %s: %s", field, detail)
+		} else {
+			msg += fmt.Sprintf("\n  - %s", detail)
+		}
+	}
+	return msg
+}
+
+// formatFieldName turns a JSONPath location like $['inference-engine-version']
+// into a CLI flag name like --inference-engine-version.
+func formatFieldName(location string) string {
+	m := jsonPathFieldRe.FindStringSubmatch(location)
+	if len(m) < 2 {
+		return location
+	}
+	return "--" + m[1]
+}
+
+// formatDetail rewrites technical validation messages into plain English.
+func formatDetail(detail string) string {
+	const enumPrefix = "does not have a value in the enumeration "
+	if after, ok := strings.CutPrefix(detail, enumPrefix); ok {
+		after = strings.TrimSpace(after)
+		var values []string
+		if err := json.Unmarshal([]byte(after), &values); err == nil && len(values) > 0 {
+			return "invalid value; valid values are: " + strings.Join(values, ", ")
+		}
+	}
+	return detail
 }
 
 func init() {
