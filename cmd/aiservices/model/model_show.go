@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -29,8 +30,9 @@ type ModelShowCmd struct {
 
 	_ bool `cli-cmd:"show"`
 
-	Model string      `cli-arg:"#" cli-usage:"ID or NAME"`
-	Zone  v3.ZoneName `cli-short:"z" cli-usage:"zone"`
+	Model      string                               `cli-arg:"#" cli-usage:"ID or NAME"`
+	Zone       v3.ZoneName                          `cli-short:"z" cli-usage:"zone"`
+	Visibility v3.ListModelsResponseEntryVisibility `cli-usage:"Model visibility: public or private"`
 }
 
 func (c *ModelShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
@@ -50,7 +52,16 @@ func (c *ModelShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	// Resolve model ID using the SDK helper
-	list, err := client.ListModels(ctx)
+	var listOpts []v3.ListModelsOpt
+	if c.Visibility != "" &&
+		c.Visibility != v3.ListModelsResponseEntryVisibilityPublic &&
+		c.Visibility != v3.ListModelsResponseEntryVisibilityPrivate {
+		return fmt.Errorf("invalid --visibility %q: must be 'public' or 'private'", c.Visibility)
+	}
+	if c.Visibility != "" {
+		listOpts = append(listOpts, v3.ListModelsWithVisibility(string(c.Visibility)))
+	}
+	list, err := client.ListModels(ctx, listOpts...)
 	if err != nil {
 		return err
 	}

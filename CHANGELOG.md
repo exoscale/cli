@@ -17,6 +17,7 @@
 - NLB: Add ipv6 support- #910
 - Show VPC & KMS quotas
 - vpc: Add support for VPC dhcp options (dns/ntp servers and domain search list) (#912)
+- AI: Add `exo ai api-key` create/list/show/update/revoke commands (#828)
 
 ### Bug fixes
 

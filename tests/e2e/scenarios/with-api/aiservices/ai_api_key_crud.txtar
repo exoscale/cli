@@ -1,0 +1,45 @@
+# AI API key lifecycle: create -> list -> show -> revoke.
+# Keys live on the zone endpoint, list crawls all zones by default.
+
+# Create a key with access to all public models
+exec exo --output-format json ai api-key create $TEST_RUN_ID-ai-key --all-models > create.json
+json-setenv AI_API_KEY_ID id create.json
+stdout create.json "value"
+stdout create.json "all_models"
+
+# The new key shows up in the list
+exec exo --output-format json ai api-key list > list.json
+stdout list.json $AI_API_KEY_ID
+
+# Show the key by ID
+exec exo --output-format json ai api-key show $AI_API_KEY_ID > show.json
+stdout show.json $AI_API_KEY_ID
+
+# Flag variant: create a second key with no access flags
+exec exo --output-format json ai api-key create $TEST_RUN_ID-ai-key-2 > create2.json
+json-setenv AI_API_KEY_ID2 id create2.json
+stdout create2.json "value"
+
+# Both keys are listed
+exec exo --output-format json ai api-key list > list2.json
+stdout list2.json $AI_API_KEY_ID
+stdout list2.json $AI_API_KEY_ID2
+# Rows are sorted by name (active keys first, revoked at the bottom)
+stdout list2.json "ai-key.,.*ai-key-2"
+
+# Zone filter limits the crawl to the test zone
+exec exo --output-format json ai api-key list -z $TEST_ZONE > list3.json
+stdout list3.json $AI_API_KEY_ID
+
+# Showing an unknown key fails
+! exec exo --output-format json ai api-key show 00000000-0000-0000-0000-000000000000
+stderr 'not found in ListAIAPIKeysResponse'
+
+# Revoke both keys (force skips the confirmation prompt)
+exec exo ai api-key revoke -f $AI_API_KEY_ID $AI_API_KEY_ID2
+stdout 'revoked'
+
+# Revoked keys remain listed with a revoked_at stamp
+exec exo --output-format json ai api-key list > list4.json
+stdout list4.json $AI_API_KEY_ID
+stdout list4.json "revoked_at"
