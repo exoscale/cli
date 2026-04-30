@@ -39,6 +39,7 @@ var GRemoveAlias = []string{"rm"}
 var GDeleteAlias = []string{"del"}
 var GShowAlias = []string{"get"}
 var GCreateAlias = []string{"add"}
+var GUpdateAlias = []string{"set"}
 
 var RootCmd = &cobra.Command{
 	Use:           "exo",
