@@ -714,7 +714,8 @@ func TestDeleteObjectVersions_ComplianceLock(t *testing.T) {
 	deleted, errs := drainDeleteObjectVersions(client.DeleteObjectVersions(context.Background(), bucket, "/"))
 	assert.Empty(t, deleted)
 	assert.Len(t, errs, 1)
-	assert.Contains(t, errs[0].Error(), "delete error:")
+	assert.Contains(t, errs[0].Error(), "ObjectLocked")
+	assert.Contains(t, errs[0].Error(), "locked-obj")
 	// Without the fix these would keep climbing; with the fix exactly one
 	// list+delete attempt is made before giving up.
 	assert.Equal(t, 1, listCalls, "should stop after first failed batch")

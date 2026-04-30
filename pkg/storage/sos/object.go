@@ -97,7 +97,12 @@ func (c *Client) DeleteObjectVersions(ctx context.Context, bucket, prefix string
 				deletedChan <- deleted
 			}
 			for _, derror := range deleteResult.Errors {
-				errChan <- fmt.Errorf("delete error: %v", derror)
+				errChan <- fmt.Errorf("failed to delete %s (version %s): %s (%s)",
+					aws.ToString(derror.Key),
+					aws.ToString(derror.VersionId),
+					aws.ToString(derror.Message),
+					aws.ToString(derror.Code),
+				)
 			}
 
 			// If no objects were successfully deleted (e.g. all are compliance-locked),
