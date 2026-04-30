@@ -52,6 +52,18 @@ func newAPIKeyHelperServer(t *testing.T) *apikeyHelperServer {
 			})
 			return
 		}
+		if r.Method == http.MethodPost && strings.HasSuffix(path, "/reveal") {
+			id := strings.TrimSuffix(path, "/reveal")
+			writeJSON(t, w, http.StatusOK, v3.AIAPIKeyWithValue{
+				ID:        v3.UUID(id),
+				Name:      "key",
+				Scope:     "public",
+				CreatedAT: time.Now(),
+				UpdatedAT: time.Now(),
+				Value:     "exo_ai_revealed_value",
+			})
+			return
+		}
 		id := path
 		switch r.Method {
 		case http.MethodGet:
