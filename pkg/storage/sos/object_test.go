@@ -612,3 +612,167 @@ func Test_IsTraversalPath(t *testing.T) {
 		})
 	}
 }
+
+// drainDeleteObjectVersions collects all results from the channels returned by
+// DeleteObjectVersions and returns the deleted objects and errors.
+func drainDeleteObjectVersions(deletedChan <-chan types.DeletedObject, errChan <-chan error) ([]types.DeletedObject, []error) {
+	var deleted []types.DeletedObject
+	var errs []error
+	for deletedChan != nil || errChan != nil {
+		select {
+		case d, ok := <-deletedChan:
+			if !ok {
+				deletedChan = nil
+				continue
+			}
+			deleted = append(deleted, d)
+		case e, ok := <-errChan:
+			if !ok {
+				errChan = nil
+				continue
+			}
+			errs = append(errs, e)
+		}
+	}
+	return deleted, errs
+}
+
+func TestDeleteObjectVersions_HappyPath(t *testing.T) {
+	bucket := "test-bucket"
+	listCalls := 0
+
+	client := sos.Client{
+		S3Client: &MockS3API{
+			mockListObjectVersions: func(_ context.Context, params *s3.ListObjectVersionsInput, _ ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
+				listCalls++
+				if listCalls > 1 {
+					// Second call: nothing left.
+					return &s3.ListObjectVersionsOutput{}, nil
+				}
+				return &s3.ListObjectVersionsOutput{
+					IsTruncated: false,
+					Versions: []types.ObjectVersion{
+						{Key: aws.String("obj1"), VersionId: aws.String("v1")},
+						{Key: aws.String("obj2"), VersionId: aws.String("v2")},
+					},
+				}, nil
+			},
+			mockDeleteObjects: func(_ context.Context, params *s3.DeleteObjectsInput, _ ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error) {
+				return &s3.DeleteObjectsOutput{
+					Deleted: []types.DeletedObject{
+						{Key: aws.String("obj1"), VersionId: aws.String("v1")},
+						{Key: aws.String("obj2"), VersionId: aws.String("v2")},
+					},
+				}, nil
+			},
+		},
+	}
+
+	deleted, errs := drainDeleteObjectVersions(client.DeleteObjectVersions(context.Background(), bucket, "/"))
+	assert.Empty(t, errs)
+	assert.Len(t, deleted, 2)
+	assert.Equal(t, 2, listCalls, "should list twice: once for the batch, once to confirm empty")
+}
+
+// TestDeleteObjectVersions_ComplianceLock reproduces the customer bug: objects
+// under compliance retention cause DeleteObjects to return per-object errors
+// with an empty Deleted slice. Before the fix the goroutine looped forever
+// re-listing the same objects.
+func TestDeleteObjectVersions_ComplianceLock(t *testing.T) {
+	bucket := "locked-bucket"
+	listCalls := 0
+	deleteCalls := 0
+
+	client := sos.Client{
+		S3Client: &MockS3API{
+			mockListObjectVersions: func(_ context.Context, _ *s3.ListObjectVersionsInput, _ ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
+				listCalls++
+				return &s3.ListObjectVersionsOutput{
+					IsTruncated: false,
+					Versions: []types.ObjectVersion{
+						{Key: aws.String("locked-obj"), VersionId: aws.String("v1")},
+					},
+				}, nil
+			},
+			mockDeleteObjects: func(_ context.Context, _ *s3.DeleteObjectsInput, _ ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error) {
+				deleteCalls++
+				// S3 returns HTTP 200 but with a per-object error; Deleted is empty.
+				return &s3.DeleteObjectsOutput{
+					Errors: []types.Error{
+						{
+							Key:       aws.String("locked-obj"),
+							VersionId: aws.String("v1"),
+							Code:      aws.String("ObjectLocked"),
+							Message:   aws.String("Object is under compliance retention"),
+						},
+					},
+				}, nil
+			},
+		},
+	}
+
+	deleted, errs := drainDeleteObjectVersions(client.DeleteObjectVersions(context.Background(), bucket, "/"))
+	assert.Empty(t, deleted)
+	assert.Len(t, errs, 1)
+	assert.Contains(t, errs[0].Error(), "delete error:")
+	// Without the fix these would keep climbing; with the fix exactly one
+	// list+delete attempt is made before giving up.
+	assert.Equal(t, 1, listCalls, "should stop after first failed batch")
+	assert.Equal(t, 1, deleteCalls, "should stop after first failed batch")
+}
+
+// TestDeleteObjectVersions_Pagination verifies that a truncated
+// ListObjectVersions response is followed up with the correct KeyMarker and
+// VersionIdMarker on the next call. Before the fix pagination markers were
+// never forwarded, so only the first page was ever processed.
+func TestDeleteObjectVersions_Pagination(t *testing.T) {
+	bucket := "big-bucket"
+	listCalls := 0
+
+	client := sos.Client{
+		S3Client: &MockS3API{
+			mockListObjectVersions: func(_ context.Context, params *s3.ListObjectVersionsInput, _ ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
+				listCalls++
+				switch listCalls {
+				case 1:
+					// First page: truncated.
+					assert.Empty(t, aws.ToString(params.KeyMarker))
+					assert.Empty(t, aws.ToString(params.VersionIdMarker))
+					return &s3.ListObjectVersionsOutput{
+						IsTruncated:         true,
+						NextKeyMarker:       aws.String("obj1"),
+						NextVersionIdMarker: aws.String("v1"),
+						Versions: []types.ObjectVersion{
+							{Key: aws.String("obj1"), VersionId: aws.String("v1")},
+						},
+					}, nil
+				case 2:
+					// Second page: markers must be set.
+					assert.Equal(t, "obj1", aws.ToString(params.KeyMarker))
+					assert.Equal(t, "v1", aws.ToString(params.VersionIdMarker))
+					return &s3.ListObjectVersionsOutput{
+						IsTruncated: false,
+						Versions: []types.ObjectVersion{
+							{Key: aws.String("obj2"), VersionId: aws.String("v2")},
+						},
+					}, nil
+				default:
+					// Third call: empty, signals end.
+					return &s3.ListObjectVersionsOutput{}, nil
+				}
+			},
+			mockDeleteObjects: func(_ context.Context, params *s3.DeleteObjectsInput, _ ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error) {
+				deleted := make([]types.DeletedObject, 0, len(params.Delete.Objects))
+				for _, o := range params.Delete.Objects {
+					deleted = append(deleted, types.DeletedObject{Key: o.Key, VersionId: o.VersionId})
+				}
+				return &s3.DeleteObjectsOutput{Deleted: deleted}, nil
+			},
+		},
+	}
+
+	deleted, errs := drainDeleteObjectVersions(client.DeleteObjectVersions(context.Background(), bucket, "/"))
+	assert.Empty(t, errs)
+	assert.Len(t, deleted, 2, "both pages should be processed")
+	assert.Equal(t, 3, listCalls, "should call list three times: page1, page2, confirm empty")
+}
