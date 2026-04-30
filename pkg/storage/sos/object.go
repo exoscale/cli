@@ -49,12 +49,21 @@ func (c *Client) DeleteObjectVersions(ctx context.Context, bucket, prefix string
 		defer close(errChan)
 
 		batchSize := int32(1000)
+		var keyMarker, versionIDMarker string
 		for {
-			list, err := c.S3Client.ListObjectVersions(ctx, &s3.ListObjectVersionsInput{
+			input := &s3.ListObjectVersionsInput{
 				Bucket:  &bucket,
 				MaxKeys: batchSize,
 				Prefix:  &prefix,
-			})
+			}
+			if keyMarker != "" {
+				input.KeyMarker = &keyMarker
+			}
+			if versionIDMarker != "" {
+				input.VersionIdMarker = &versionIDMarker
+			}
+
+			list, err := c.S3Client.ListObjectVersions(ctx, input)
 			if err != nil {
 				errChan <- err
 				return
@@ -89,6 +98,23 @@ func (c *Client) DeleteObjectVersions(ctx context.Context, bucket, prefix string
 			}
 			for _, derror := range deleteResult.Errors {
 				errChan <- fmt.Errorf("delete error: %v", derror)
+			}
+
+			// If no objects were successfully deleted (e.g. all are compliance-locked),
+			// stop to avoid looping forever on the same objects.
+			if len(deleteResult.Deleted) == 0 {
+				return
+			}
+
+			// Advance pagination only when the list was truncated; otherwise the next
+			// ListObjectVersions call from the top of the loop is sufficient (deleted
+			// objects from this batch will no longer appear).
+			if list.IsTruncated {
+				keyMarker = aws.ToString(list.NextKeyMarker)
+				versionIDMarker = aws.ToString(list.NextVersionIdMarker)
+			} else {
+				keyMarker = ""
+				versionIDMarker = ""
 			}
 		}
 	}()

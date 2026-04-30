@@ -80,21 +80,26 @@ var storagePurgeCmd = &cobra.Command{
 
 		deletedChan, errChan := storage.DeleteObjectVersions(exocmd.GContext, bucket, prefix)
 
-		for {
+		for deletedChan != nil || errChan != nil {
 			select {
 			case err, ok := <-errChan:
-				if ok {
-					fmt.Printf("Error happened: %v\n", err)
-				} else {
-					fmt.Println("Purge completed")
-					return nil
+				if !ok {
+					errChan = nil
+					continue
 				}
-			case deletedElt := <-deletedChan:
+				fmt.Printf("Error: %v\n", err)
+			case deletedElt, ok := <-deletedChan:
+				if !ok {
+					deletedChan = nil
+					continue
+				}
 				if verbose {
 					fmt.Println("deleted:", aws.ToString(deletedElt.Key))
 				}
 			}
 		}
+		fmt.Println("Purge completed")
+		return nil
 	},
 }
 
