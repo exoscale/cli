@@ -268,9 +268,14 @@ func ForEveryZoneAsync(
 		wg.Add(1)
 		go func(zone v3.Zone) {
 			defer wg.Done()
-			zCtx, cancel := context.WithTimeout(ctx, timeout)
-			defer cancel()
-			if err := f(zCtx, zone); err != nil {
+			if timeout > 0 {
+				zCtx, cancel := context.WithTimeout(ctx, timeout)
+				defer cancel()
+				if err := f(zCtx, zone); err != nil {
+					failed.Add(1)
+					sink.Add("zone %s: %v", zone.Name, err)
+				}
+			} else if err := f(ctx, zone); err != nil {
 				failed.Add(1)
 				sink.Add("zone %s: %v", zone.Name, err)
 			}

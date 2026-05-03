@@ -46,6 +46,12 @@ var RootCmd = &cobra.Command{
 	Short:         "Manage your Exoscale infrastructure easily",
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
+		if globalstate.RequestTimeout != -time.Second && globalstate.RequestTimeout <= 0 {
+			return fmt.Errorf("--timeout must be a positive duration (e.g. 15s), or -1s to disable")
+		}
+		return nil
+	},
 }
 
 var versionCmd = &cobra.Command{
@@ -159,7 +165,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&globalstate.OutputFormat, "output-format", "O", "", "Output format (table|json|text), see \"exo output --help\" for more information")
 	RootCmd.PersistentFlags().StringVar(&output.GOutputTemplate, "output-template", "", "Template to use if output format is \"text\"")
 	RootCmd.PersistentFlags().BoolVarP(&globalstate.Quiet, "quiet", "Q", false, "Quiet mode (disable non-essential command output)")
-	RootCmd.PersistentFlags().DurationVar(&globalstate.RequestTimeout, "timeout", 15*time.Second, "Per-zone timeout for list operations [env EXOSCALE_TIMEOUT]")
+	RootCmd.PersistentFlags().DurationVar(&globalstate.RequestTimeout, "timeout", 15*time.Second, "Per-zone timeout for list operations; -1s disables timeout [env EXOSCALE_TIMEOUT]")
 	RootCmd.AddCommand(versionCmd)
 
 	// Don't attempt to load client configuration in testing mode.
