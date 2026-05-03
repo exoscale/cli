@@ -1,13 +1,10 @@
 package utils
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 )
 
 // WarningSink buffers per-zone warnings so they don't interleave with
@@ -54,30 +51,5 @@ func (s *WarningSink) Flush() {
 	s.mu.Unlock()
 	for _, m := range msgs {
 		fmt.Fprintf(s.out, "warning: %s\n", m)
-	}
-}
-
-// InstallSignalFlush installs a SIGINT/SIGTERM handler that flushes the
-// sink before the process exits. Returns a cancel function that the
-// caller should defer to remove the handler.
-func (s *WarningSink) InstallSignalFlush(ctx context.Context) func() {
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	done := make(chan struct{})
-	go func() {
-		select {
-		case sig := <-ch:
-			s.Flush()
-			signal.Stop(ch)
-			// Re-raise so the default handler terminates the process
-			// with the conventional exit code.
-			_ = syscall.Kill(syscall.Getpid(), sig.(syscall.Signal))
-		case <-ctx.Done():
-		case <-done:
-		}
-	}()
-	return func() {
-		signal.Stop(ch)
-		close(done)
 	}
 }

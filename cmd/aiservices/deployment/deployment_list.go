@@ -66,8 +66,6 @@ func runDeploymentList(c *DeploymentListCmd, stdout, stderr io.Writer) error {
 	}
 
 	sink := utils.NewWarningSinkTo(stderr)
-	stopSig := sink.InstallSignalFlush(ctx)
-	defer stopSig()
 	defer sink.Flush()
 
 	streamer := output.NewStreamer(DeploymentListItemOutput{}, stdout)

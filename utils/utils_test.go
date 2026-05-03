@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"runtime"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -148,32 +147,4 @@ func TestForEveryZoneAsync_FastZoneNotBlockedBySlow(t *testing.T) {
 
 	sink.Flush()
 	assert.Contains(t, buf.String(), "zone slow")
-}
-
-func TestWarningSink_SignalFlush(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("SIGINT semantics differ on Windows")
-	}
-
-	var buf bytes.Buffer
-	s := NewWarningSinkTo(&buf)
-	s.Add("from-signal")
-
-	// Cancel via context so the goroutine exits before re-raising
-	// SIGINT into the test runner. We only assert that the signal path
-	// reaches Flush; we don't actually deliver the signal to avoid
-	// killing the test process.
-	ctx, cancel := context.WithCancel(context.Background())
-	stop := s.InstallSignalFlush(ctx)
-	defer stop()
-
-	// Simulate the signal path manually: send SIGINT, but stop the
-	// listener immediately afterwards so the re-raise is suppressed.
-	// Easier: just synthesize the Flush directly — InstallSignalFlush's
-	// guarantee is "Flush is called on signal", which we cover by
-	// testing Flush() and signal.Notify wiring separately.
-	s.Flush()
-
-	cancel()
-	assert.Contains(t, buf.String(), "from-signal")
 }
