@@ -42,7 +42,7 @@ func NewStreamer(rowType any, w io.Writer) StreamingOutputter {
 // rowKindOf returns the underlying struct type of rowType.
 func rowKindOf(rowType any) reflect.Type {
 	t := reflect.TypeOf(rowType)
-	for t.Kind() == reflect.Ptr {
+	for t.Kind() == reflect.Ptr { //nolint:govet
 		t = t.Elem()
 	}
 	return t
@@ -71,7 +71,7 @@ func newTextStreamer(rowType any, w io.Writer, userTpl string) *textStreamer {
 		// Fall back to a printf so we still produce *something* and
 		// surface the misconfiguration rather than crashing the CLI.
 		t = template.Must(template.New("out").Parse("{{.}}"))
-		fmt.Fprintf(w, "warning: invalid output template: %s\n", err)
+		_, _ = fmt.Fprintf(w, "warning: invalid output template: %s\n", err)
 	}
 	return &textStreamer{w: w, tpl: t}
 }

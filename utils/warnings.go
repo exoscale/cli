@@ -50,6 +50,6 @@ func (s *WarningSink) Flush() {
 	s.msgs = nil
 	s.mu.Unlock()
 	for _, m := range msgs {
-		fmt.Fprintf(s.out, "warning: %s\n", m)
+		_, _ = fmt.Fprintf(s.out, "warning: %s\n", m)
 	}
 }

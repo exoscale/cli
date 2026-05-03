@@ -78,14 +78,14 @@ func (s *Spinner) run() {
 		// Single char + \r: occupies col 0, cursor returns to col 0.
 		// Any subsequent stdout byte at col 0 overwrites the glyph
 		// cleanly, so streamed rows don't leave caption ghosts.
-		fmt.Fprintf(s.w, "%c\r", spinnerFrames[frame%len(spinnerFrames)])
+		_, _ = fmt.Fprintf(s.w, "%c\r", spinnerFrames[frame%len(spinnerFrames)])
 	}
 	draw()
 	for {
 		select {
 		case <-s.stop:
 			// Wipe col 0 with a space, then return to col 0.
-			fmt.Fprint(s.w, " \r")
+			_, _ = fmt.Fprint(s.w, " \r")
 			return
 		case <-ticker.C:
 			frame++
