@@ -26,13 +26,12 @@ func newAPIKeyHelperServer(t *testing.T) *apikeyHelperServer {
 		case http.MethodGet:
 			writeJSON(t, w, http.StatusOK, v3.ListAIAPIKeysResponse{AIAPIKeys: ts.keys})
 		case http.MethodPost:
-			writeJSON(t, w, http.StatusOK, v3.AIAPIKeyWithValue{
+			writeJSON(t, w, http.StatusOK, v3.AIAPIKey{
 				ID:        v3.UUID("new-key-id"),
 				Name:      "new-key",
 				Scope:     "public",
 				CreatedAT: time.Now(),
 				UpdatedAT: time.Now(),
-				Value:     "exo_ai_test_value",
 			})
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -42,25 +41,15 @@ func newAPIKeyHelperServer(t *testing.T) *apikeyHelperServer {
 		path := r.URL.Path[len("/ai/api-key/"):]
 		if r.Method == http.MethodPost && strings.HasSuffix(path, "/rotate") {
 			id := strings.TrimSuffix(path, "/rotate")
-			writeJSON(t, w, http.StatusOK, v3.AIAPIKeyWithValue{
-				ID:        v3.UUID(id),
-				Name:      "key",
-				Scope:     "public",
-				CreatedAT: time.Now(),
-				UpdatedAT: time.Now(),
-				Value:     "exo_ai_rotated_value",
+			writeJSON(t, w, http.StatusOK, v3.AIAPIKeyValue{
+				Value: "exo_ai_rotated_value",
 			})
 			return
 		}
-		if r.Method == http.MethodPost && strings.HasSuffix(path, "/reveal") {
+		if r.Method == http.MethodGet && strings.HasSuffix(path, "/reveal") {
 			id := strings.TrimSuffix(path, "/reveal")
-			writeJSON(t, w, http.StatusOK, v3.AIAPIKeyWithValue{
-				ID:        v3.UUID(id),
-				Name:      "key",
-				Scope:     "public",
-				CreatedAT: time.Now(),
-				UpdatedAT: time.Now(),
-				Value:     "exo_ai_revealed_value",
+			writeJSON(t, w, http.StatusOK, v3.AIAPIKeyValue{
+				Value: "exo_ai_revealed_value",
 			})
 			return
 		}

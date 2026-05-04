@@ -49,11 +49,10 @@ func (c *AIAPIKeyCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		fmt.Fprintf(os.Stderr, "Store this API key value securely.\n\n")
+		fmt.Fprintf(os.Stderr, "Use 'reveal' command to get the API key value.\n\n")
 		fmt.Fprintf(os.Stdout, "ID:    %s\n", resp.ID)
 		fmt.Fprintf(os.Stdout, "Name:  %s\n", resp.Name)
 		fmt.Fprintf(os.Stdout, "Scope: %s\n", resp.Scope)
-		fmt.Fprintf(os.Stdout, "Value: %s\n", resp.Value)
 	}
 	return nil
 }
