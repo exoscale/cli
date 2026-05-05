@@ -130,11 +130,10 @@ func addConfigAccount(firstRun bool) error {
 	return saveConfig(filePath, &config)
 }
 
-// readPasswordInterruptible reads a password from the terminal (no echo) while
-// catching SIGINT (Ctrl+C). term.ReadPassword enables ISIG on the fd, which
-// would otherwise deliver SIGINT directly to the process and kill it before any
-// cancellation message can be printed. By intercepting the signal we can exit
-// gracefully with the expected "Error: Operation Cancelled" output.
+// readPasswordInterruptible reads a password with no echo, intercepting SIGINT
+// so the process can print "Error: Operation Cancelled" before exiting.
+// (term.ReadPassword enables ISIG, which would otherwise deliver the signal
+// directly and kill the process before anything is printed.)
 func readPasswordInterruptible() ([]byte, error) {
 	fd := int(os.Stdin.Fd())
 
@@ -160,15 +159,13 @@ func readPasswordInterruptible() ([]byte, error) {
 	return b, err
 }
 
-// readInputWithContext reads a line from stdin with context cancellation support.
-// Returns io.EOF if Ctrl+C or Ctrl+D is pressed, allowing graceful cancellation.
-// Silent exit behavior matches promptui.Select's interrupt handling.
+// readInputWithContext reads a line from stdin, exiting on Ctrl+C.
+// SIGINT is caught directly rather than relying on Execute()'s cancel goroutine,
+// which can lag on loaded runners.
 func readInputWithContext(ctx context.Context, reader *bufio.Reader, prompt string) (string, error) {
 	fmt.Printf("[+] %s: ", prompt)
 
-	// Catch SIGINT directly so Ctrl+C during a plain-text prompt is handled
-	// synchronously. Without this, the handler relies on Execute()'s signal
-	// goroutine eventually calling cancel(), which can lag on loaded CI runners.
+	// Catch SIGINT directly so Ctrl+C is handled synchronously.
 	sigCh := make(chan os.Signal, 1)
 	doneCh := make(chan struct{})
 	signal.Notify(sigCh, os.Interrupt)
