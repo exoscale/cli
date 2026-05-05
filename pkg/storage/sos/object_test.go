@@ -613,8 +613,6 @@ func Test_IsTraversalPath(t *testing.T) {
 	}
 }
 
-// drainDeleteObjectVersions collects all results from the channels returned by
-// DeleteObjectVersions and returns the deleted objects and errors.
 func drainDeleteObjectVersions(deletedChan <-chan types.DeletedObject, errChan <-chan error) ([]types.DeletedObject, []error) {
 	var deleted []types.DeletedObject
 	var errs []error
@@ -674,10 +672,6 @@ func TestDeleteObjectVersions_HappyPath(t *testing.T) {
 	assert.Equal(t, 2, listCalls, "should list twice: once for the batch, once to confirm empty")
 }
 
-// TestDeleteObjectVersions_ComplianceLock reproduces the customer bug: objects
-// under compliance retention cause DeleteObjects to return per-object errors
-// with an empty Deleted slice. Before the fix the goroutine looped forever
-// re-listing the same objects.
 func TestDeleteObjectVersions_ComplianceLock(t *testing.T) {
 	bucket := "locked-bucket"
 	listCalls := 0
@@ -696,7 +690,6 @@ func TestDeleteObjectVersions_ComplianceLock(t *testing.T) {
 			},
 			mockDeleteObjects: func(_ context.Context, _ *s3.DeleteObjectsInput, _ ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error) {
 				deleteCalls++
-				// S3 returns HTTP 200 but with a per-object error; Deleted is empty.
 				return &s3.DeleteObjectsOutput{
 					Errors: []types.Error{
 						{
@@ -716,16 +709,10 @@ func TestDeleteObjectVersions_ComplianceLock(t *testing.T) {
 	assert.Len(t, errs, 1)
 	assert.Contains(t, errs[0].Error(), "ObjectLocked")
 	assert.Contains(t, errs[0].Error(), "locked-obj")
-	// Without the fix these would keep climbing; with the fix exactly one
-	// list+delete attempt is made before giving up.
 	assert.Equal(t, 1, listCalls, "should stop after first failed batch")
 	assert.Equal(t, 1, deleteCalls, "should stop after first failed batch")
 }
 
-// TestDeleteObjectVersions_Pagination verifies that a truncated
-// ListObjectVersions response is followed up with the correct KeyMarker and
-// VersionIdMarker on the next call. Before the fix pagination markers were
-// never forwarded, so only the first page was ever processed.
 func TestDeleteObjectVersions_Pagination(t *testing.T) {
 	bucket := "big-bucket"
 	listCalls := 0
@@ -736,7 +723,6 @@ func TestDeleteObjectVersions_Pagination(t *testing.T) {
 				listCalls++
 				switch listCalls {
 				case 1:
-					// First page: truncated.
 					assert.Empty(t, aws.ToString(params.KeyMarker))
 					assert.Empty(t, aws.ToString(params.VersionIdMarker))
 					return &s3.ListObjectVersionsOutput{
@@ -748,7 +734,6 @@ func TestDeleteObjectVersions_Pagination(t *testing.T) {
 						},
 					}, nil
 				case 2:
-					// Second page: markers must be set.
 					assert.Equal(t, "obj1", aws.ToString(params.KeyMarker))
 					assert.Equal(t, "v1", aws.ToString(params.VersionIdMarker))
 					return &s3.ListObjectVersionsOutput{
@@ -758,7 +743,6 @@ func TestDeleteObjectVersions_Pagination(t *testing.T) {
 						},
 					}, nil
 				default:
-					// Third call: empty, signals end.
 					return &s3.ListObjectVersionsOutput{}, nil
 				}
 			},

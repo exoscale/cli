@@ -105,15 +105,11 @@ func (c *Client) DeleteObjectVersions(ctx context.Context, bucket, prefix string
 				)
 			}
 
-			// If no objects were successfully deleted (e.g. all are compliance-locked),
-			// stop to avoid looping forever on the same objects.
+			// No progress means all objects are protected; stop to avoid looping forever.
 			if len(deleteResult.Deleted) == 0 {
 				return
 			}
 
-			// Advance pagination only when the list was truncated; otherwise the next
-			// ListObjectVersions call from the top of the loop is sufficient (deleted
-			// objects from this batch will no longer appear).
 			if list.IsTruncated {
 				keyMarker = aws.ToString(list.NextKeyMarker)
 				versionIDMarker = aws.ToString(list.NextVersionIdMarker)
