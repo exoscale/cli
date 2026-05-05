@@ -166,6 +166,28 @@ func readPasswordInterruptible() ([]byte, error) {
 func readInputWithContext(ctx context.Context, reader *bufio.Reader, prompt string) (string, error) {
 	fmt.Printf("[+] %s: ", prompt)
 
+	// Catch SIGINT directly so Ctrl+C during a plain-text prompt is handled
+	// synchronously. Without this, the handler relies on Execute()'s signal
+	// goroutine eventually calling cancel(), which can lag on loaded CI runners.
+	sigCh := make(chan os.Signal, 1)
+	doneCh := make(chan struct{})
+	signal.Notify(sigCh, os.Interrupt)
+	defer func() {
+		signal.Stop(sigCh)
+		close(doneCh)
+	}()
+	go func() {
+		select {
+		case _, ok := <-sigCh:
+			if ok {
+				fmt.Println()
+				fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+				os.Exit(exocmd.ExitCodeInterrupt)
+			}
+		case <-doneCh:
+		}
+	}()
+
 	inputCh := make(chan struct {
 		value string
 		err   error
