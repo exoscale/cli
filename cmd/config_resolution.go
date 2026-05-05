@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"cmp"
 	"fmt"
 	"os"
 	"strconv"
@@ -104,40 +105,16 @@ func resolve(env envSources, file fileSources) account.Account {
 		acc = *file.profile
 	}
 
-	// Built-in defaults for any field not set by the profile.
-	if acc.Environment == "" {
-		acc.Environment = DefaultEnvironment
-	}
-	if acc.DefaultZone == "" {
-		acc.DefaultZone = DefaultZone
-	}
-	if acc.SosEndpoint == "" {
-		acc.SosEndpoint = DefaultSosEndpoint
-	}
-
-	// Env overrides.
-	if env.zone != "" {
-		acc.DefaultZone = env.zone
-	}
-	if env.apiEndpoint != "" {
-		acc.Endpoint = env.apiEndpoint
-	}
-	if env.apiEnvironment != "" {
-		acc.Environment = env.apiEnvironment
-	}
-	if env.sosEndpoint != "" {
-		acc.SosEndpoint = env.sosEndpoint
-	}
+	acc.Environment = cmp.Or(env.apiEnvironment, acc.Environment, DefaultEnvironment)
+	acc.DefaultZone = cmp.Or(env.zone, acc.DefaultZone, DefaultZone)
+	acc.SosEndpoint = strings.TrimRight(cmp.Or(env.sosEndpoint, acc.SosEndpoint, DefaultSosEndpoint), "/")
+	acc.Endpoint = cmp.Or(env.apiEndpoint, acc.Endpoint)
 	if env.clientTimeout != nil {
 		acc.ClientTimeout = *env.clientTimeout
 	}
 	if env.hasCredentials() {
-		acc.Key = env.apiKey
-		acc.Secret = env.apiSecret
-		acc.SecretCommand = nil
+		acc.Key, acc.Secret, acc.SecretCommand = env.apiKey, env.apiSecret, nil
 	}
-
-	acc.SosEndpoint = strings.TrimRight(acc.SosEndpoint, "/")
 
 	return acc
 }
