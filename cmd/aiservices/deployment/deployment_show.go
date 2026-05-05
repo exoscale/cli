@@ -1,6 +1,7 @@
 package deployment
 
 import (
+	"strings"
 	"time"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -11,20 +12,21 @@ import (
 )
 
 type DeploymentShowOutput struct {
-	ID                     v3.UUID                       `json:"id"`
-	Name                   string                        `json:"name"`
-	State                  v3.GetDeploymentResponseState `json:"state" outputLabel:"Status"`
-	StateDetails           string                        `json:"state_details" outputLabel:"Status Details"`
-	GPUType                string                        `json:"gpu_type"`
-	GPUCount               int64                         `json:"gpu_count"`
-	Replicas               int64                         `json:"replicas"`
-	InferenceEngineVersion string                        `json:"inference_engine_version" outputLabel:"Inference Engine Version"`
-	ServiceLevel           string                        `json:"service_level"`
-	DeploymentURL          string                        `json:"deployment_url"`
-	ModelID                v3.UUID                       `json:"model_id"`
-	ModelName              string                        `json:"model_name"`
-	CreatedAt              string                        `json:"created_at"`
-	UpdatedAt              string                        `json:"updated_at"`
+	ID                        v3.UUID                       `json:"id"`
+	Name                      string                        `json:"name"`
+	State                     v3.GetDeploymentResponseState `json:"state" outputLabel:"Status"`
+	StateDetails              string                        `json:"state_details" outputLabel:"Status Details"`
+	GPUType                   string                        `json:"gpu_type"`
+	GPUCount                  int64                         `json:"gpu_count"`
+	Replicas                  int64                         `json:"replicas"`
+	InferenceEngineParameters string                        `json:"inference_engine_parameters" outputLabel:"Inference Engine Parameters"`
+	InferenceEngineVersion    string                        `json:"inference_engine_version" outputLabel:"Inference Engine Version"`
+	ServiceLevel              string                        `json:"service_level"`
+	DeploymentURL             string                        `json:"deployment_url"`
+	ModelID                   v3.UUID                       `json:"model_id"`
+	ModelName                 string                        `json:"model_name"`
+	CreatedAt                 string                        `json:"created_at"`
+	UpdatedAt                 string                        `json:"updated_at"`
 }
 
 func (o *DeploymentShowOutput) ToJSON()  { output.JSON(o) }
@@ -80,20 +82,21 @@ func (c *DeploymentShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	out := &DeploymentShowOutput{
-		ID:                     resp.ID,
-		Name:                   resp.Name,
-		State:                  resp.State,
-		StateDetails:           resp.StateDetails,
-		GPUType:                resp.GpuType,
-		GPUCount:               resp.GpuCount,
-		Replicas:               resp.Replicas,
-		InferenceEngineVersion: string(resp.InferenceEngineVersion),
-		ServiceLevel:           resp.ServiceLevel,
-		DeploymentURL:          resp.DeploymentURL,
-		ModelID:                modelID,
-		ModelName:              modelName,
-		CreatedAt:              resp.CreatedAT.Format(time.RFC3339),
-		UpdatedAt:              resp.UpdatedAT.Format(time.RFC3339),
+		ID:                        resp.ID,
+		Name:                      resp.Name,
+		State:                     resp.State,
+		StateDetails:              resp.StateDetails,
+		GPUType:                   resp.GpuType,
+		GPUCount:                  resp.GpuCount,
+		Replicas:                  resp.Replicas,
+		InferenceEngineParameters: strings.Join(resp.InferenceEngineParameters, " "),
+		InferenceEngineVersion:    string(resp.InferenceEngineVersion),
+		ServiceLevel:              resp.ServiceLevel,
+		DeploymentURL:             resp.DeploymentURL,
+		ModelID:                   modelID,
+		ModelName:                 modelName,
+		CreatedAt:                 resp.CreatedAT.Format(time.RFC3339),
+		UpdatedAt:                 resp.UpdatedAT.Format(time.RFC3339),
 	}
 	return c.OutputFunc(out, nil)
 }
