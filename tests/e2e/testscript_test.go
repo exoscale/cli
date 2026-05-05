@@ -139,8 +139,11 @@ func runInPTY(ts *testscript.TestScript, cmd *exec.Cmd, inputs <-chan ptyInput) 
 	}
 
 	_ = cmd.Wait()
+	// Drain before closing ptm: prevents a data-loss race with the collector goroutine.
+	// Child exit closes the slave fd, ptm.Read returns EIO, and <-outCh unblocks safely.
+	out := <-outCh
 	_ = ptm.Close()
-	return <-outCh
+	return out
 }
 
 // cmdExecPTY mirrors the built-in exec but runs the binary inside a PTY.
