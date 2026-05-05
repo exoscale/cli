@@ -18,7 +18,7 @@ import (
 
 type sksNodepoolListItemOutput struct {
 	ID      v3.UUID     `json:"id" outputWidth:"36"`
-	Name    string      `json:"name" outputWidth:"38"`
+	Name    string      `json:"name" outputWidth:"70"`
 	Cluster string      `json:"cluster" outputWidth:"38"`
 	Size    int64       `json:"size" outputWidth:"4"`
 	State   string      `json:"state" outputWidth:"12"`

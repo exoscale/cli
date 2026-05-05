@@ -17,7 +17,7 @@ import (
 
 type DeploymentListItemOutput struct {
 	ID        v3.UUID                              `json:"id" outputWidth:"36"`
-	Name      string                               `json:"name" outputWidth:"38"`
+	Name      string                               `json:"name" outputWidth:"70"`
 	Zone      v3.ZoneName                          `json:"zone" outputWidth:"8"`
 	State     v3.ListDeploymentsResponseEntryState `json:"state" outputLabel:"Status" outputWidth:"6"`
 	GPUType   string                               `json:"gpu_type" outputWidth:"9"`

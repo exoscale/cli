@@ -18,7 +18,7 @@ import (
 
 type ModelListItemOutput struct {
 	ID        v3.UUID                         `json:"id" outputWidth:"36"`
-	Name      string                          `json:"name" outputWidth:"38"`
+	Name      string                          `json:"name" outputWidth:"70"`
 	Zone      v3.ZoneName                     `json:"zone" outputWidth:"8"`
 	State     v3.ListModelsResponseEntryState `json:"state" outputLabel:"Status" outputWidth:"14"`
 	ModelSize string                          `json:"model_size" outputLabel:"Size" outputWidth:"12"`

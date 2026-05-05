@@ -19,7 +19,7 @@ import (
 type elasticIPListItemOutput struct {
 	ID          v3.UUID     `json:"id" outputWidth:"36"`
 	IPAddress   string      `json:"ip_address" outputWidth:"18"`
-	Description string      `json:"description" outputWidth:"40"`
+	Description string      `json:"description" outputWidth:"70"`
 	Type        string      `json:"type" outputWidth:"10"`
 	Zone        v3.ZoneName `json:"zone" outputWidth:"8"`
 }

@@ -19,7 +19,7 @@ import (
 type deployTargetListItemOutput struct {
 	Zone v3.ZoneName `json:"zone" outputWidth:"8"`
 	ID   v3.UUID     `json:"id" outputWidth:"36"`
-	Name string      `json:"name" outputWidth:"38"`
+	Name string      `json:"name" outputWidth:"70"`
 	Type string      `json:"type" outputWidth:"16"`
 }
 

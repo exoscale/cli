@@ -18,7 +18,7 @@ import (
 
 type instancePoolListItemOutput struct {
 	ID    v3.UUID     `json:"id" outputWidth:"36"`
-	Name  string      `json:"name" outputWidth:"38"`
+	Name  string      `json:"name" outputWidth:"70"`
 	Zone  v3.ZoneName `json:"zone" outputWidth:"8"`
 	Size  int64       `json:"size" outputWidth:"4"`
 	State string      `json:"state" outputWidth:"12"`

@@ -18,7 +18,7 @@ import (
 
 type privateNetworkListItemOutput struct {
 	ID   v3.UUID     `json:"id" outputWidth:"36"`
-	Name string      `json:"name" outputWidth:"38"`
+	Name string      `json:"name" outputWidth:"70"`
 	Zone v3.ZoneName `json:"zone" outputWidth:"8"`
 }
 

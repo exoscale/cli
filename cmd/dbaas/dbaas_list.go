@@ -17,7 +17,7 @@ import (
 )
 
 type dbaasServiceListItemOutput struct {
-	Name string      `json:"name" outputWidth:"38"`
+	Name string      `json:"name" outputWidth:"70"`
 	Type string      `json:"type" outputWidth:"16"`
 	Plan string      `json:"plan" outputWidth:"16"`
 	Zone v3.ZoneName `json:"zone" outputWidth:"8"`
