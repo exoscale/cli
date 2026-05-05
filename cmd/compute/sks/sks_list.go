@@ -1,7 +1,9 @@
 package sks
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -15,17 +17,11 @@ import (
 )
 
 type sksClusterListItemOutput struct {
-	ID           v3.UUID     `json:"id"`
-	Name         string      `json:"name"`
-	Zone         v3.ZoneName `json:"zone"`
-	AuditEnabled bool        `json:"audit_enabled"`
+	ID           v3.UUID     `json:"id" outputWidth:"36"`
+	Name         string      `json:"name" outputWidth:"38"`
+	Zone         v3.ZoneName `json:"zone" outputWidth:"8"`
+	AuditEnabled bool        `json:"audit_enabled" outputWidth:"11"`
 }
-
-type sksClusterListOutput []sksClusterListItemOutput
-
-func (o *sksClusterListOutput) ToJSON()  { output.JSON(o) }
-func (o *sksClusterListOutput) ToText()  { output.Text(o) }
-func (o *sksClusterListOutput) ToTable() { output.Table(o) }
 
 type sksListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -51,6 +47,10 @@ func (c *sksListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return runSksList(c, os.Stdout, os.Stderr)
+}
+
+func runSksList(c *sksListCmd, stdout, stderr io.Writer) error {
 	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
@@ -68,45 +68,38 @@ func (c *sksListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		zones = []v3.Zone{{APIEndpoint: endpoint}}
 	}
 
-	out := make(sksClusterListOutput, 0)
-	res := make(chan sksClusterListItemOutput)
-	done := make(chan struct{})
+	sink := utils.NewWarningSinkTo(stderr)
+	defer sink.Flush()
 
-	go func() {
-		for cluster := range res {
-			out = append(out, cluster)
-		}
-		done <- struct{}{}
-	}()
-	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
-		c := client.WithEndpoint((zone.APIEndpoint))
-		resp, err := c.ListSKSClusters(ctx)
-		if err != nil {
-			return fmt.Errorf("unable to list SKS clusters in zone %s: %w", zone, err)
-		}
+	streamer := output.NewStreamer(sksClusterListItemOutput{}, stdout)
+	defer func() { _ = streamer.Close() }()
 
-		for _, cluster := range resp.SKSClusters {
-			res <- sksClusterListItemOutput{
-				ID:   cluster.ID,
-				Name: cluster.Name,
-				Zone: zone.Name,
-				AuditEnabled: func() bool {
-					return cluster.Audit != nil && cluster.Audit.Enabled != nil && *cluster.Audit.Enabled
-				}(),
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
+		func(ctx context.Context, zone v3.Zone) error {
+			zc := client.WithEndpoint(zone.APIEndpoint)
+			resp, err := zc.ListSKSClusters(ctx)
+			if err != nil {
+				return fmt.Errorf("unable to list SKS clusters in zone %s: %w", zone, err)
 			}
-		}
+			for _, cluster := range resp.SKSClusters {
+				if err := streamer.Push(sksClusterListItemOutput{
+					ID:   cluster.ID,
+					Name: cluster.Name,
+					Zone: zone.Name,
+					AuditEnabled: func() bool {
+						return cluster.Audit != nil && cluster.Audit.Enabled != nil && *cluster.Audit.Enabled
+					}(),
+				}); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 
-		return nil
-	})
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr,
-			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
+	if failed > 0 {
+		return fmt.Errorf("%d zone(s) failed", failed)
 	}
-
-	close(res)
-	<-done
-
-	return c.OutputFunc(&out, nil)
+	return nil
 }
 
 func init() {

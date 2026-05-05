@@ -1,7 +1,9 @@
 package instance_pool
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -15,18 +17,12 @@ import (
 )
 
 type instancePoolListItemOutput struct {
-	ID    v3.UUID     `json:"id"`
-	Name  string      `json:"name"`
-	Zone  v3.ZoneName `json:"zone"`
-	Size  int64       `json:"size"`
-	State string      `json:"state"`
+	ID    v3.UUID     `json:"id" outputWidth:"36"`
+	Name  string      `json:"name" outputWidth:"38"`
+	Zone  v3.ZoneName `json:"zone" outputWidth:"8"`
+	Size  int64       `json:"size" outputWidth:"4"`
+	State string      `json:"state" outputWidth:"12"`
 }
-
-type instancePoolListOutput []instancePoolListItemOutput
-
-func (o *instancePoolListOutput) ToJSON()  { output.JSON(o) }
-func (o *instancePoolListOutput) ToText()  { output.Text(o) }
-func (o *instancePoolListOutput) ToTable() { output.Table(o) }
 
 type instancePoolListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -52,6 +48,10 @@ func (c *instancePoolListCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *instancePoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return runInstancePoolList(c, os.Stdout, os.Stderr)
+}
+
+func runInstancePoolList(c *instancePoolListCmd, stdout, stderr io.Writer) error {
 	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
@@ -60,45 +60,37 @@ func (c *instancePoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	out := make(instancePoolListOutput, 0)
-	res := make(chan instancePoolListItemOutput)
-	done := make(chan struct{})
+	sink := utils.NewWarningSinkTo(stderr)
+	defer sink.Flush()
 
-	go func() {
-		for instancePool := range res {
-			out = append(out, instancePool)
-		}
-		done <- struct{}{}
-	}()
-	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
-		c := client.WithEndpoint(zone.APIEndpoint)
-		list, err := c.ListInstancePools(ctx)
+	streamer := output.NewStreamer(instancePoolListItemOutput{}, stdout)
+	defer func() { _ = streamer.Close() }()
 
-		if err != nil {
-			return fmt.Errorf("unable to list Instance Pools in zone %s: %w", zone, err)
-		}
-
-		for _, i := range list.InstancePools {
-			res <- instancePoolListItemOutput{
-				ID:    i.ID,
-				Name:  i.Name,
-				Zone:  zone.Name,
-				Size:  i.Size,
-				State: string(i.State),
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
+		func(ctx context.Context, zone v3.Zone) error {
+			zc := client.WithEndpoint(zone.APIEndpoint)
+			list, err := zc.ListInstancePools(ctx)
+			if err != nil {
+				return fmt.Errorf("unable to list Instance Pools in zone %s: %w", zone, err)
 			}
-		}
+			for _, i := range list.InstancePools {
+				if err := streamer.Push(instancePoolListItemOutput{
+					ID:    i.ID,
+					Name:  i.Name,
+					Zone:  zone.Name,
+					Size:  i.Size,
+					State: string(i.State),
+				}); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 
-		return nil
-	})
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr,
-			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
+	if failed > 0 {
+		return fmt.Errorf("%d zone(s) failed", failed)
 	}
-
-	close(res)
-	<-done
-
-	return c.OutputFunc(&out, nil)
+	return nil
 }
 
 func init() {

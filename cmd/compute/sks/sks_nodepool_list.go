@@ -1,7 +1,9 @@
 package sks
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -15,19 +17,13 @@ import (
 )
 
 type sksNodepoolListItemOutput struct {
-	ID      v3.UUID     `json:"id"`
-	Name    string      `json:"name"`
-	Cluster string      `json:"cluster"`
-	Size    int64       `json:"size"`
-	State   string      `json:"state"`
-	Zone    v3.ZoneName `json:"zone"`
+	ID      v3.UUID     `json:"id" outputWidth:"36"`
+	Name    string      `json:"name" outputWidth:"38"`
+	Cluster string      `json:"cluster" outputWidth:"38"`
+	Size    int64       `json:"size" outputWidth:"4"`
+	State   string      `json:"state" outputWidth:"12"`
+	Zone    v3.ZoneName `json:"zone" outputWidth:"8"`
 }
-
-type sksNodepoolListOutput []sksNodepoolListItemOutput
-
-func (o *sksNodepoolListOutput) ToJSON()  { output.JSON(o) }
-func (o *sksNodepoolListOutput) ToText()  { output.Text(o) }
-func (o *sksNodepoolListOutput) ToTable() { output.Table(o) }
 
 type sksNodepoolListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -53,6 +49,10 @@ func (c *sksNodepoolListCmd) CmdPreRun(cmd *cobra.Command, args []string) error 
 }
 
 func (c *sksNodepoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return runSksNodepoolList(c, os.Stdout, os.Stderr)
+}
+
+func runSksNodepoolList(c *sksNodepoolListCmd, stdout, stderr io.Writer) error {
 	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
@@ -70,49 +70,40 @@ func (c *sksNodepoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		zones = []v3.Zone{{APIEndpoint: endpoint}}
 	}
 
-	out := make(sksNodepoolListOutput, 0)
-	res := make(chan sksNodepoolListItemOutput)
-	done := make(chan struct{})
+	sink := utils.NewWarningSinkTo(stderr)
+	defer sink.Flush()
 
-	go func() {
-		for cluster := range res {
-			out = append(out, cluster)
-		}
-		done <- struct{}{}
-	}()
-	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
+	streamer := output.NewStreamer(sksNodepoolListItemOutput{}, stdout)
+	defer func() { _ = streamer.Close() }()
 
-		c := client.WithEndpoint((zone.APIEndpoint))
-		listResp, err := c.ListSKSClusters(ctx)
-		if err != nil {
-			return fmt.Errorf("unable to list SKS clusters in zone %s: %w", zone, err)
-		}
-
-		for _, cluster := range listResp.SKSClusters {
-			for _, np := range cluster.Nodepools {
-				res <- sksNodepoolListItemOutput{
-					ID:      np.ID,
-					Name:    np.Name,
-					Cluster: cluster.Name,
-					Size:    np.Size,
-					State:   string(np.State),
-					Zone:    zone.Name,
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
+		func(ctx context.Context, zone v3.Zone) error {
+			zc := client.WithEndpoint(zone.APIEndpoint)
+			listResp, err := zc.ListSKSClusters(ctx)
+			if err != nil {
+				return fmt.Errorf("unable to list SKS clusters in zone %s: %w", zone, err)
+			}
+			for _, cluster := range listResp.SKSClusters {
+				for _, np := range cluster.Nodepools {
+					if err := streamer.Push(sksNodepoolListItemOutput{
+						ID:      np.ID,
+						Name:    np.Name,
+						Cluster: cluster.Name,
+						Size:    np.Size,
+						State:   string(np.State),
+						Zone:    zone.Name,
+					}); err != nil {
+						return err
+					}
 				}
 			}
-		}
+			return nil
+		})
 
-		return nil
-	})
-
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr,
-			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
+	if failed > 0 {
+		return fmt.Errorf("%d zone(s) failed", failed)
 	}
-
-	close(res)
-	<-done
-
-	return c.OutputFunc(&out, nil)
+	return nil
 }
 
 func init() {

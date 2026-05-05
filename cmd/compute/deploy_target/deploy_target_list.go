@@ -1,7 +1,9 @@
 package deploy_target
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -15,17 +17,11 @@ import (
 )
 
 type deployTargetListItemOutput struct {
-	Zone v3.ZoneName `json:"zone"`
-	ID   v3.UUID     `json:"id"`
-	Name string      `json:"name"`
-	Type string      `json:"type"`
+	Zone v3.ZoneName `json:"zone" outputWidth:"8"`
+	ID   v3.UUID     `json:"id" outputWidth:"36"`
+	Name string      `json:"name" outputWidth:"38"`
+	Type string      `json:"type" outputWidth:"16"`
 }
-
-type deployTargetListOutput []deployTargetListItemOutput
-
-func (o *deployTargetListOutput) ToJSON()  { output.JSON(o) }
-func (o *deployTargetListOutput) ToText()  { output.Text(o) }
-func (o *deployTargetListOutput) ToTable() { output.Table(o) }
 
 type deployTargetListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -43,7 +39,7 @@ func (c *deployTargetListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists existing Deploy Targets.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&deployTargetListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&deployTargetListItemOutput{}), ", "))
 }
 
 func (c *deployTargetListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -51,6 +47,10 @@ func (c *deployTargetListCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *deployTargetListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return runDeployTargetList(c, os.Stdout, os.Stderr)
+}
+
+func runDeployTargetList(c *deployTargetListCmd, stdout, stderr io.Writer) error {
 	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
@@ -59,44 +59,36 @@ func (c *deployTargetListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	out := make(deployTargetListOutput, 0)
-	res := make(chan deployTargetListItemOutput)
-	done := make(chan struct{})
+	sink := utils.NewWarningSinkTo(stderr)
+	defer sink.Flush()
 
-	go func() {
-		for dt := range res {
-			out = append(out, dt)
-		}
-		done <- struct{}{}
-	}()
+	streamer := output.NewStreamer(deployTargetListItemOutput{}, stdout)
+	defer func() { _ = streamer.Close() }()
 
-	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
-		c := client.WithEndpoint(zone.APIEndpoint)
-		list, err := c.ListDeployTargets(ctx)
-		if err != nil {
-			return fmt.Errorf("unable to list Deploy Targets in zone %s: %w", zone, err)
-		}
-
-		for _, dt := range list.DeployTargets {
-			res <- deployTargetListItemOutput{
-				ID:   dt.ID,
-				Name: dt.Name,
-				Type: string(dt.Type),
-				Zone: zone.Name,
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
+		func(ctx context.Context, zone v3.Zone) error {
+			zc := client.WithEndpoint(zone.APIEndpoint)
+			list, err := zc.ListDeployTargets(ctx)
+			if err != nil {
+				return fmt.Errorf("unable to list Deploy Targets in zone %s: %w", zone, err)
 			}
-		}
+			for _, dt := range list.DeployTargets {
+				if err := streamer.Push(deployTargetListItemOutput{
+					ID:   dt.ID,
+					Name: dt.Name,
+					Type: string(dt.Type),
+					Zone: zone.Name,
+				}); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 
-		return nil
-	})
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr,
-			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
+	if failed > 0 {
+		return fmt.Errorf("%d zone(s) failed", failed)
 	}
-
-	close(res)
-	<-done
-
-	return c.OutputFunc(&out, nil)
+	return nil
 }
 
 func init() {

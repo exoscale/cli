@@ -1,7 +1,9 @@
 package elastic_ip
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -15,18 +17,12 @@ import (
 )
 
 type elasticIPListItemOutput struct {
-	ID          v3.UUID     `json:"id"`
-	IPAddress   string      `json:"ip_address"`
-	Description string      `json:"description"`
-	Type        string      `json:"type"`
-	Zone        v3.ZoneName `json:"zone"`
+	ID          v3.UUID     `json:"id" outputWidth:"36"`
+	IPAddress   string      `json:"ip_address" outputWidth:"18"`
+	Description string      `json:"description" outputWidth:"40"`
+	Type        string      `json:"type" outputWidth:"10"`
+	Zone        v3.ZoneName `json:"zone" outputWidth:"8"`
 }
-
-type elasticIPListOutput []elasticIPListItemOutput
-
-func (o *elasticIPListOutput) ToJSON()  { output.JSON(o) }
-func (o *elasticIPListOutput) ToText()  { output.Text(o) }
-func (o *elasticIPListOutput) ToTable() { output.Table(o) }
 
 type elasticIPListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -52,6 +48,10 @@ func (c *elasticIPListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *elasticIPListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return runElasticIPList(c, os.Stdout, os.Stderr)
+}
+
+func runElasticIPList(c *elasticIPListCmd, stdout, stderr io.Writer) error {
 	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
@@ -60,51 +60,43 @@ func (c *elasticIPListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	out := make(elasticIPListOutput, 0)
-	res := make(chan elasticIPListItemOutput)
-	done := make(chan struct{})
+	sink := utils.NewWarningSinkTo(stderr)
+	defer sink.Flush()
 
-	go func() {
-		for nlb := range res {
-			out = append(out, nlb)
-		}
-		done <- struct{}{}
-	}()
-	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
-		c := client.WithEndpoint(zone.APIEndpoint)
-		list, err := c.ListElasticIPS(ctx)
+	streamer := output.NewStreamer(elasticIPListItemOutput{}, stdout)
+	defer func() { _ = streamer.Close() }()
 
-		if err != nil {
-			return fmt.Errorf("unable to list Elastic IP addresses in zone %s: %w", zone, err)
-		}
-
-		if list != nil {
-			for _, e := range list.ElasticIPS {
-				eipType := "Manual"
-				if e.Healthcheck != nil {
-					eipType = "Managed"
-				}
-				res <- elasticIPListItemOutput{
-					ID:          e.ID,
-					IPAddress:   e.IP,
-					Description: e.Description,
-					Type:        eipType,
-					Zone:        zone.Name,
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
+		func(ctx context.Context, zone v3.Zone) error {
+			zc := client.WithEndpoint(zone.APIEndpoint)
+			list, err := zc.ListElasticIPS(ctx)
+			if err != nil {
+				return fmt.Errorf("unable to list Elastic IP addresses in zone %s: %w", zone, err)
+			}
+			if list != nil {
+				for _, e := range list.ElasticIPS {
+					eipType := "Manual"
+					if e.Healthcheck != nil {
+						eipType = "Managed"
+					}
+					if err := streamer.Push(elasticIPListItemOutput{
+						ID:          e.ID,
+						IPAddress:   e.IP,
+						Description: e.Description,
+						Type:        eipType,
+						Zone:        zone.Name,
+					}); err != nil {
+						return err
+					}
 				}
 			}
+			return nil
+		})
 
-		}
-		return nil
-	})
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr,
-			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
+	if failed > 0 {
+		return fmt.Errorf("%d zone(s) failed", failed)
 	}
-
-	close(res)
-	<-done
-
-	return c.OutputFunc(&out, nil)
+	return nil
 }
 
 func init() {
