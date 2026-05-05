@@ -1,0 +1,20 @@
+# Test EXOSCALE_ZONE overrides the default zone from the config profile
+
+env EXOSCALE_API_KEY=EXOenv1234
+env EXOSCALE_API_SECRET=envsecret5678
+env EXOSCALE_ZONE=ch-gva-2
+env EXOSCALE_CONFIG=test-config.toml
+
+exec exo config show
+stdout 'test-account'
+stdout 'ch-gva-2'
+! stdout 'de-fra-1'
+
+-- test-config.toml --
+defaultaccount = "test-account"
+
+[[accounts]]
+name = "test-account"
+key = "EXOconfig1234"
+secret = "configsecret1234"
+defaultZone = "de-fra-1"

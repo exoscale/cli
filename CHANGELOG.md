@@ -10,14 +10,20 @@
 
 ### Bug fixes
 
+- fix(config): `--config` flag now takes precedence over `EXOSCALE_CONFIG` env var as expected #830
+- feat(config): `EXOSCALE_ZONE` env var overrides the default zone from the config profile #830
+- refactor(config): separate config source loading from resolution into an explicit, testable merge function #830
+
 ## 1.94.2
 
 ### Bug fixes
+
 - fix: Improved error reporting for Dedicated Inference #825
 
 ## 1.94.1
 
 ### Bug fixes
+
 - fix: prevent traversal path during sos download #823
 
 ## 1.94.0

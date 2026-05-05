@@ -1,0 +1,25 @@
+# Test --config flag takes precedence over EXOSCALE_CONFIG env var
+
+env EXOSCALE_CONFIG=env-config.toml
+
+exec exo --config flag-config.toml config show
+stdout 'flag-account'
+! stdout 'env-account'
+
+-- flag-config.toml --
+defaultaccount = "flag-account"
+
+[[accounts]]
+name = "flag-account"
+key = "EXOflag1234"
+secret = "flagsecret1234"
+defaultZone = "ch-gva-2"
+
+-- env-config.toml --
+defaultaccount = "env-account"
+
+[[accounts]]
+name = "env-account"
+key = "EXOenv1234"
+secret = "envsecret1234"
+defaultZone = "de-fra-1"
