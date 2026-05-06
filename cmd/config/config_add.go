@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -130,39 +131,51 @@ func addConfigAccount(firstRun bool) error {
 	return saveConfig(filePath, &config)
 }
 
-// readPasswordInterruptible reads a password from the terminal (no echo) while
-// catching SIGINT (Ctrl+C). term.ReadPassword enables ISIG on the fd, which
-// would otherwise deliver SIGINT directly to the process and kill it before any
-// cancellation message can be printed. By intercepting the signal we can exit
-// gracefully with the expected "Error: Operation Cancelled" output.
-func readPasswordInterruptible() ([]byte, error) {
-	fd := int(os.Stdin.Fd())
+// readPasswordInterruptible reads a password with no echo, exiting gracefully
+// on Ctrl+C. Three timing paths for SIGINT are covered:
+//  1. sigCh fires first (Go runtime delivers signal before unix.Read returns).
+//  2. unix.Read is interrupted first (returns syscall.EINTR).
+//  3. ctx.Done fires first (cobra's handler cancelled the context first).
+func readPasswordInterruptible(ctx context.Context) ([]byte, error) {
+	type result struct {
+		b   []byte
+		err error
+	}
 
 	sigCh := make(chan os.Signal, 1)
-	doneCh := make(chan struct{})
 	signal.Notify(sigCh, os.Interrupt)
+	defer signal.Stop(sigCh)
 
+	resultCh := make(chan result, 1)
 	go func() {
-		select {
-		case _, ok := <-sigCh:
-			if ok {
-				fmt.Println()
-				fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-				os.Exit(exocmd.ExitCodeInterrupt)
-			}
-		case <-doneCh:
-		}
+		b, err := term.ReadPassword(int(os.Stdin.Fd()))
+		resultCh <- result{b, err}
 	}()
 
-	b, err := term.ReadPassword(fd)
-	signal.Stop(sigCh)
-	close(doneCh)
-	return b, err
+	select {
+	case r := <-resultCh:
+		// term.ReadPassword returns syscall.EINTR when unix.Read is interrupted by SIGINT.
+		if errors.Is(r.err, syscall.EINTR) {
+			fmt.Println()
+			fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+			os.Exit(exocmd.ExitCodeInterrupt)
+		}
+		return r.b, r.err
+	case <-sigCh:
+		fmt.Println()
+		fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+		os.Exit(exocmd.ExitCodeInterrupt)
+	case <-ctx.Done():
+		fmt.Println()
+		fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
+		os.Exit(exocmd.ExitCodeInterrupt)
+	}
+	panic("unreachable")
 }
 
-// readInputWithContext reads a line from stdin with context cancellation support.
-// Returns io.EOF if Ctrl+C or Ctrl+D is pressed, allowing graceful cancellation.
-// Silent exit behavior matches promptui.Select's interrupt handling.
+// readInputWithContext reads a line from stdin with context cancellation
+// support. Returns ctx.Err() when the context is done (e.g. on SIGINT);
+// the caller is responsible for printing any message and exiting.
 func readInputWithContext(ctx context.Context, reader *bufio.Reader, prompt string) (string, error) {
 	fmt.Printf("[+] %s: ", prompt)
 
@@ -214,7 +227,7 @@ func promptAccountInformation() (*account.Account, error) {
 
 	// Prompt for Secret Key with validation
 	fmt.Printf("[+] Secret Key: ") //nolint:errcheck
-	secretKeyBytes, err := readPasswordInterruptible()
+	secretKeyBytes, err := readPasswordInterruptible(ctx)
 	fmt.Println() //nolint:errcheck
 	if err != nil {
 		return nil, err
@@ -223,7 +236,7 @@ func promptAccountInformation() (*account.Account, error) {
 	for secretKey == "" {
 		fmt.Println("Secret Key cannot be empty")
 		fmt.Printf("[+] Secret Key: ") //nolint:errcheck
-		secretKeyBytes, err = readPasswordInterruptible()
+		secretKeyBytes, err = readPasswordInterruptible(ctx)
 		fmt.Println() //nolint:errcheck
 		if err != nil {
 			return nil, err

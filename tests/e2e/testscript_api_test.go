@@ -22,15 +22,28 @@ type APITestSuite struct {
 	RunID string
 }
 
-// TestScriptsAPI runs testscript scenarios that require real API access.
-// Run with: go test -v -tags=api -timeout 30m
+// TestScriptsAPICompute runs API e2e scenarios under scenarios/with-api/compute/.
+// Run with: go test -v -tags=api -timeout 30m -run TestScriptsAPICompute
+func TestScriptsAPICompute(t *testing.T) {
+	runAPITestSuite(t, "scenarios/with-api/compute")
+}
+
+// TestScriptsAPIDBaaS runs API e2e scenarios under scenarios/with-api/dbaas/.
+// Run with: go test -v -tags=api -timeout 30m -run TestScriptsAPIDBaaS
+func TestScriptsAPIDBaaS(t *testing.T) {
+	runAPITestSuite(t, "scenarios/with-api/dbaas")
+}
+
+// runAPITestSuite is the shared runner for per-suite API test functions.
+// dir is the directory of .txtar scenarios to run (relative to the e2e package).
 //
 // Required environment variables:
 //
 //	EXOSCALE_API_KEY    - Exoscale API key
 //	EXOSCALE_API_SECRET - Exoscale API secret
 //	EXOSCALE_ZONE       - Zone to run tests in (default: ch-gva-2)
-func TestScriptsAPI(t *testing.T) {
+func runAPITestSuite(t *testing.T, dir string) {
+	t.Helper()
 	if os.Getenv("EXOSCALE_API_KEY") == "" || os.Getenv("EXOSCALE_API_SECRET") == "" {
 		t.Skip("Skipping API tests: EXOSCALE_API_KEY and EXOSCALE_API_SECRET must be set")
 	}
@@ -48,13 +61,12 @@ func TestScriptsAPI(t *testing.T) {
 		RunID: runID,
 	}
 
-	// Run all scenarios under scenarios/with-api/
-	files, err := findTestScripts("scenarios/with-api")
+	files, err := findTestScripts(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(files) == 0 {
-		t.Log("No API test scenarios found in scenarios/with-api/")
+		t.Logf("No API test scenarios found in %s/", dir)
 		return
 	}
 
