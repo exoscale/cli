@@ -17,7 +17,7 @@ import (
 
 type DeploymentListItemOutput struct {
 	ID        v3.UUID                              `json:"id" outputWidth:"36"`
-	Name      string                               `json:"name" outputWidth:"38"`
+	Name      string                               `json:"name" outputWidth:"70"`
 	Zone      v3.ZoneName                          `json:"zone" outputWidth:"8"`
 	State     v3.ListDeploymentsResponseEntryState `json:"state" outputLabel:"Status" outputWidth:"6"`
 	GPUType   string                               `json:"gpu_type" outputWidth:"9"`
@@ -69,7 +69,11 @@ func runDeploymentList(c *DeploymentListCmd, stdout, stderr io.Writer) error {
 	defer sink.Flush()
 
 	streamer := output.NewStreamer(DeploymentListItemOutput{}, stdout)
-	defer func() { _ = streamer.Close() }()
+	defer func() {
+		if err := streamer.Close(); err != nil {
+			_, _ = fmt.Fprintf(stderr, "error: %s\n", err)
+		}
+	}()
 
 	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
 		func(ctx context.Context, zone v3.Zone) error {

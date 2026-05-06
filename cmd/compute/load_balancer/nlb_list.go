@@ -1,7 +1,9 @@
 package load_balancer
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -15,17 +17,11 @@ import (
 )
 
 type nlbListItemOutput struct {
-	ID        v3.UUID     `json:"id"`
-	Name      string      `json:"name"`
-	Zone      v3.ZoneName `json:"zone"`
-	IPAddress string      `json:"ip_address"`
+	ID        v3.UUID     `json:"id" outputWidth:"36"`
+	Name      string      `json:"name" outputWidth:"70"`
+	Zone      v3.ZoneName `json:"zone" outputWidth:"8"`
+	IPAddress string      `json:"ip_address" outputWidth:"18"`
 }
-
-type nlbListOutput []nlbListItemOutput
-
-func (o *nlbListOutput) ToJSON()  { output.JSON(o) }
-func (o *nlbListOutput) ToText()  { output.Text(o) }
-func (o *nlbListOutput) ToTable() { output.Table(o) }
 
 type nlbListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -51,6 +47,10 @@ func (c *nlbListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return runNlbList(c, os.Stdout, os.Stderr)
+}
+
+func runNlbList(c *nlbListCmd, stdout, stderr io.Writer) error {
 	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
@@ -59,43 +59,40 @@ func (c *nlbListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	out := make(nlbListOutput, 0)
-	res := make(chan nlbListItemOutput)
-	done := make(chan struct{})
+	sink := utils.NewWarningSinkTo(stderr)
+	defer sink.Flush()
 
-	go func() {
-		for nlb := range res {
-			out = append(out, nlb)
+	streamer := output.NewStreamer(nlbListItemOutput{}, stdout)
+	defer func() {
+		if err := streamer.Close(); err != nil {
+			_, _ = fmt.Fprintf(stderr, "error: %s\n", err)
 		}
-		done <- struct{}{}
 	}()
-	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
-		c := client.WithEndpoint(zone.APIEndpoint)
-		list, err := c.ListLoadBalancers(ctx)
-		if err != nil {
-			return fmt.Errorf("unable to list Network Load Balancers in zone %s: %w", zone, err)
-		}
 
-		for _, nlb := range list.LoadBalancers {
-			res <- nlbListItemOutput{
-				ID:        nlb.ID,
-				Name:      nlb.Name,
-				Zone:      zone.Name,
-				IPAddress: nlb.IP.String(),
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
+		func(ctx context.Context, zone v3.Zone) error {
+			zc := client.WithEndpoint(zone.APIEndpoint)
+			list, err := zc.ListLoadBalancers(ctx)
+			if err != nil {
+				return fmt.Errorf("unable to list Network Load Balancers in zone %s: %w", zone, err)
 			}
-		}
+			for _, nlb := range list.LoadBalancers {
+				if err := streamer.Push(nlbListItemOutput{
+					ID:        nlb.ID,
+					Name:      nlb.Name,
+					Zone:      zone.Name,
+					IPAddress: nlb.IP.String(),
+				}); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 
-		return nil
-	})
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr,
-			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
+	if failed > 0 {
+		return fmt.Errorf("%d zone(s) failed", failed)
 	}
-
-	close(res)
-	<-done
-
-	return c.OutputFunc(&out, nil)
+	return nil
 }
 
 func init() {
