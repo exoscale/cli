@@ -65,8 +65,9 @@ func TestInstanceTypeList(t *testing.T) {
 	defer func() { globalstate.OutputFormat = "" }()
 
 	cmd := &InstanceTypeListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	var outBuf bytes.Buffer
-	if err := runInstanceTypeList(cmd, &outBuf, nil); err != nil {
+	var outBuf, errBuf bytes.Buffer
+	if err := runInstanceTypeList(cmd, &outBuf, &errBuf); err != nil {
+		t.Errorf("%s", errBuf.String())
 		t.Fatalf("instance type list: %v", err)
 	}
 

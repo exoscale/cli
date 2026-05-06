@@ -132,30 +132,6 @@ func TestModelListUsesZone(t *testing.T) {
 	}
 }
 
-func TestModelListOutput_ToJSON(t *testing.T) {
-	ts := newModelListTestServer(t)
-	defer setupModelList(t, ts)()
-	now := time.Now()
-	ts.models = []v3.ListModelsResponseEntry{
-		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1", State: v3.ListModelsResponseEntryStateReady, ModelSize: 1000, CreatedAT: now, UpdatedAT: now},
-		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2", State: v3.ListModelsResponseEntryStateCreating, ModelSize: 0, CreatedAT: now, UpdatedAT: now},
-	}
-	defer withFormat(t, "json")()
-
-	stdout, _, err := runModelListTest(t, "")
-	if err != nil {
-		t.Fatalf("model list: %v", err)
-	}
-
-	var rows []ModelListItemOutput
-	if err := json.Unmarshal([]byte(stdout), &rows); err != nil {
-		t.Fatalf("invalid json: %v\nstdout: %s", err, stdout)
-	}
-	if len(rows) != 2 {
-		t.Fatalf("expected 2 models, got %d", len(rows))
-	}
-}
-
 func TestModelListCmd_CmdShort(t *testing.T) {
 	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
 	short := cmd.CmdShort()

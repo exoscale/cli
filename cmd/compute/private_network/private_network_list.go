@@ -62,7 +62,11 @@ func runPrivateNetworkList(c *privateNetworkListCmd, stdout, stderr io.Writer) e
 	defer sink.Flush()
 
 	streamer := output.NewStreamer(privateNetworkListItemOutput{}, stdout)
-	defer func() { _ = streamer.Close() }()
+	defer func() {
+		if err := streamer.Close(); err != nil {
+			_, _ = fmt.Fprintf(stderr, "error: %s\n", err)
+		}
+	}()
 
 	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
 		func(ctx context.Context, zone v3.Zone) error {
