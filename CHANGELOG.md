@@ -10,6 +10,8 @@
 
 ### Bug fixes
 
+- Adding forgotten field `Inference Engine Version` in `exo ai deployment show` command output #833
+
 ## 1.94.2
 
 ### Bug fixes
