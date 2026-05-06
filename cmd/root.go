@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -65,10 +66,11 @@ var versionCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the RootCmd.
 func Execute(version, commit string) {
 
-	// trap Ctrl+C and call cancel on the context
+	// Trap Ctrl+C (and SIGHUP, which the kernel delivers when the PTY session
+	// leader exits before we do) and cancel the context.
 	ctx, cancel := context.WithCancel(context.Background())
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Interrupt, syscall.SIGHUP)
 	defer func() {
 		signal.Stop(c)
 		cancel()
