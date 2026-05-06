@@ -13,6 +13,7 @@
 - fix(config): `--config` flag now takes precedence over `EXOSCALE_CONFIG` env var as expected #830
 - feat(config): `EXOSCALE_ZONE` env var overrides the default zone from the config profile #830
 - refactor(config): separate config source loading from resolution into an explicit, testable merge function #830
+- Adding forgotten field `Inference Engine Version` in `exo ai deployment show` command output #833
 
 ## 1.94.2
 
