@@ -21,17 +21,17 @@ type dbaasReadReplicaCreateCmd struct {
 	Plan                  string `cli-flag:"plan" cli-usage:"subscription plan"`
 	ReplicaZone           string `cli-flag:"replica-zone" cli-short:"z" cli-usage:"zone where the replica will be created"`
 	SourceService         string `cli-flag:"source-service" cli-usage:"name of the primary service"`
-	TerminationProtection bool   `cli-usage:"enable termination protection (default: true)"`
+	TerminationProtection bool   `cli-usage:"enable Database Service termination protection; set --termination-protection=false to disable"`
 }
 
 func (c *dbaasReadReplicaCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *dbaasReadReplicaCreateCmd) CmdShort() string {
-	return "Create a DBaaS read replica"
+	return "Create a Database Service read replica"
 }
 
 func (c *dbaasReadReplicaCreateCmd) CmdLong() string {
-	return "Create a read replica for an existing PostgreSQL or MySQL/MariaDB primary service. The replica can be created in a different zone than the primary."
+	return "Create a read replica for an existing PostgreSQL or MySQL/MariaDB primary Database Service. The replica can be created in a different zone than the primary."
 }
 
 func (c *dbaasReadReplicaCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -54,10 +54,6 @@ func (c *dbaasReadReplicaCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	sourceService, err := dbaasFindServiceByNameAllZones(ctx, c.SourceService)
 	if err != nil {
 		return err
-	}
-
-	if !dbaasReadReplicaSupportedServiceType(string(sourceService.Service.Type)) {
-		return fmt.Errorf("read replicas are not supported for Database Service type %q", sourceService.Service.Type)
 	}
 
 	client, err := dbaasReadReplicaClientForZone(ctx, c.ReplicaZone)

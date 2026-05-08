@@ -12,14 +12,14 @@ import (
 )
 
 type dbaasReadReplicaListItemOutput struct {
-	ReplicaName string `json:"replica-name"`
-	ReplicaZone string `json:"replica-zone"`
+	ReplicaName string `json:"replica_name"`
+	ReplicaZone string `json:"replica_zone"`
 	Type        string `json:"type"`
 	Plan        string `json:"plan"`
 	State       string `json:"state"`
 	Status      string `json:"status"`
-	IsActive    bool   `json:"is-active"`
-	IsEnabled   bool   `json:"is-enabled"`
+	IsActive    bool   `json:"is_active"`
+	IsEnabled   bool   `json:"is_enabled"`
 }
 
 type dbaasReadReplicaListOutput []dbaasReadReplicaListItemOutput
@@ -39,11 +39,11 @@ type dbaasReadReplicaListCmd struct {
 func (c *dbaasReadReplicaListCmd) CmdAliases() []string { return exocmd.GListAlias }
 
 func (c *dbaasReadReplicaListCmd) CmdShort() string {
-	return "List DBaaS read replicas"
+	return "List Database Service read replicas"
 }
 
 func (c *dbaasReadReplicaListCmd) CmdLong() string {
-	return "List all read replicas of a primary DBaaS service across all zones."
+	return "List all read replicas of a primary Database Service across all zones."
 }
 
 func (c *dbaasReadReplicaListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -53,18 +53,24 @@ func (c *dbaasReadReplicaListCmd) CmdPreRun(cmd *cobra.Command, args []string) e
 func (c *dbaasReadReplicaListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 
-	primaryService, err := dbaasFindServiceByNameAllZones(ctx, c.ServiceName)
+	services, err := dbaasListServicesAllZones(ctx)
 	if err != nil {
 		return err
+	}
+
+	var primaryService *dbaasServiceWithZone
+	for i, service := range services {
+		if string(service.Service.Name) == c.ServiceName {
+			primaryService = &services[i]
+			break
+		}
+	}
+	if primaryService == nil {
+		return fmt.Errorf("%q Database Service not found", c.ServiceName)
 	}
 
 	if !dbaasReadReplicaSupportedServiceType(string(primaryService.Service.Type)) {
 		return fmt.Errorf("read replicas are not supported for Database Service type %q", primaryService.Service.Type)
-	}
-
-	services, err := dbaasListServicesAllZones(ctx)
-	if err != nil {
-		return err
 	}
 
 	out := make(dbaasReadReplicaListOutput, 0)

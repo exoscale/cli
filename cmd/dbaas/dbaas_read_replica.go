@@ -6,7 +6,7 @@ import (
 
 var dbaasReadReplicaCmd = &cobra.Command{
 	Use:   "read-replica",
-	Short: "Manage DBaaS read replicas",
+	Short: "Manage Database Service read replicas",
 }
 
 func init() {

@@ -25,11 +25,11 @@ type dbaasReadReplicaPromoteCmd struct {
 func (c *dbaasReadReplicaPromoteCmd) CmdAliases() []string { return nil }
 
 func (c *dbaasReadReplicaPromoteCmd) CmdShort() string {
-	return "Promote a DBaaS read replica to a standalone primary"
+	return "Promote a Database Service read replica to a standalone primary"
 }
 
 func (c *dbaasReadReplicaPromoteCmd) CmdLong() string {
-	return "Promote a read replica to a standalone primary service. This breaks the replication link."
+	return "Promote a read replica to a standalone primary Database Service. This breaks the replication link."
 }
 
 func (c *dbaasReadReplicaPromoteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {

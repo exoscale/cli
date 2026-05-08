@@ -17,15 +17,15 @@ type dbaasReadReplicaShowOutput struct {
 	Type          string `json:"type"`
 	Plan          string `json:"plan"`
 	State         string `json:"state"`
-	SourceService string `json:"source-service"`
-	SourceZone    string `json:"source-zone,omitempty"`
+	SourceService string `json:"source_service"`
+	SourceZone    string `json:"source_zone,omitempty"`
 	Status        string `json:"status"`
-	IsActive      bool   `json:"is-active"`
-	IsEnabled     bool   `json:"is-enabled"`
-	DiskSize      int64  `json:"disk-size"`
-	NodeCount     int64  `json:"node-count"`
-	NodeCPUCount  int64  `json:"node-cpu-count"`
-	NodeMemory    int64  `json:"node-memory"`
+	IsActive      bool   `json:"is_active"`
+	IsEnabled     bool   `json:"is_enabled"`
+	DiskSize      int64  `json:"disk_size"`
+	NodeCount     int64  `json:"node_count"`
+	NodeCPUCount  int64  `json:"node_cpu_count"`
+	NodeMemory    int64  `json:"node_memory"`
 }
 
 func (o *dbaasReadReplicaShowOutput) ToJSON()  { output.JSON(o) }
@@ -44,11 +44,11 @@ type dbaasReadReplicaShowCmd struct {
 func (c *dbaasReadReplicaShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *dbaasReadReplicaShowCmd) CmdShort() string {
-	return "Show DBaaS read replica details"
+	return "Show Database Service read replica details"
 }
 
 func (c *dbaasReadReplicaShowCmd) CmdLong() string {
-	return "Show details of a specific DBaaS read replica service."
+	return "Show details of a specific Database Service read replica."
 }
 
 func (c *dbaasReadReplicaShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
