@@ -1,7 +1,10 @@
 package model
 
 import (
+	"context"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/dustin/go-humanize"
@@ -14,18 +17,12 @@ import (
 )
 
 type ModelListItemOutput struct {
-	ID        v3.UUID                         `json:"id"`
-	Name      string                          `json:"name"`
-	Zone      v3.ZoneName                     `json:"zone"`
-	State     v3.ListModelsResponseEntryState `json:"state" outputLabel:"Status"`
-	ModelSize string                          `json:"model_size" outputLabel:"Size"`
+	ID        v3.UUID                         `json:"id" outputWidth:"36"`
+	Name      string                          `json:"name" outputWidth:"70"`
+	Zone      v3.ZoneName                     `json:"zone" outputWidth:"8"`
+	State     v3.ListModelsResponseEntryState `json:"state" outputLabel:"Status" outputWidth:"14"`
+	ModelSize string                          `json:"model_size" outputLabel:"Size" outputWidth:"12"`
 }
-
-type ModelListOutput []ModelListItemOutput
-
-func (o *ModelListOutput) ToJSON()  { output.JSON(o) }
-func (o *ModelListOutput) ToText()  { output.Text(o) }
-func (o *ModelListOutput) ToTable() { output.Table(o) }
 
 type ModelListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -41,12 +38,17 @@ func (c *ModelListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists AI models.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&ModelListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&ModelListItemOutput{}), ", "))
 }
 func (c *ModelListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
+
 func (c *ModelListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return runModelList(c, os.Stdout, os.Stderr)
+}
+
+func runModelList(c *ModelListCmd, stdout, stderr io.Writer) error {
 	ctx := exocmd.GContext
 	client := globalstate.EgoscaleV3Client
 
@@ -55,32 +57,45 @@ func (c *ModelListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	out := make(ModelListOutput, 0)
-	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
-		c := client.WithEndpoint(zone.APIEndpoint)
-		resp, err := c.ListModels(ctx)
-		if err != nil {
-			return err
-		}
+	sink := utils.NewWarningSinkTo(stderr)
+	defer sink.Flush()
 
-		for _, m := range resp.Models {
-			var size string
-			if m.ModelSize != 0 {
-				size = humanize.IBytes(uint64(m.ModelSize))
+	streamer := output.NewStreamer(ModelListItemOutput{}, stdout)
+	defer func() {
+		if err := streamer.Close(); err != nil {
+			_, _ = fmt.Fprintf(stderr, "error: %s\n", err)
+		}
+	}()
+
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
+		func(ctx context.Context, zone v3.Zone) error {
+			zc := client.WithEndpoint(zone.APIEndpoint)
+			resp, err := zc.ListModels(ctx)
+			if err != nil {
+				return err
 			}
-			out = append(out, ModelListItemOutput{
-				ID:        m.ID,
-				Name:      m.Name,
-				Zone:      zone.Name,
-				State:     m.State,
-				ModelSize: size,
-			})
-		}
+			for _, m := range resp.Models {
+				var size string
+				if m.ModelSize != 0 {
+					size = humanize.IBytes(uint64(m.ModelSize))
+				}
+				if err := streamer.Push(ModelListItemOutput{
+					ID:        m.ID,
+					Name:      m.Name,
+					Zone:      zone.Name,
+					State:     m.State,
+					ModelSize: size,
+				}); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 
-		return nil
-	})
-
-	return c.OutputFunc(&out, err)
+	if failed > 0 {
+		return fmt.Errorf("%d zone(s) failed", failed)
+	}
+	return nil
 }
 
 func init() {

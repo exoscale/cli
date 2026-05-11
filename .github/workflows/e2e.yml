@@ -2,6 +2,7 @@ name: CI
 
 on:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test-e2e-without-api:
@@ -13,7 +14,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
 
       - name: Build binary
         run: make build
@@ -24,24 +25,32 @@ jobs:
           go test -v
 
   test-e2e-with-api:
-    name: Run E2E (Testscript) Tests / With API
+    name: Run E2E (Testscript) Tests / With API / ${{ matrix.suite }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: compute
+            run: TestScriptsAPICompute
+          - suite: dbaas
+            run: TestScriptsAPIDBaaS
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
 
       - name: Build binary
         run: make build
 
-      - name: Run E2E (Testscript) Tests / With API
+      - name: Run E2E (Testscript) Tests / With API / ${{ matrix.suite }}
         env:
           EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_API_KEY }}
           EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
           EXOSCALE_ZONE: ch-gva-2
         run: |
           cd tests/e2e
-          go test -v -tags=api -timeout 30m -run TestScriptsAPI 2>&1
+          go test -v -tags=api -timeout 30m -run "${{ matrix.run }}" 2>&1

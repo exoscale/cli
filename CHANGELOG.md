@@ -4,17 +4,28 @@
 
 ### Features
 - dbaas: added read-replica sub-command for Postgres and MySQL
+
 ### Improvements
+
+- Made cli more resilient to zone failures, and streams output while waiting for slow zones to responds #826
+- `EXOSCALE_ZONE` env var now overrides the default zone from the config profile #830
+- Config source loading separated from resolution into an explicit, testable merge function #830
+
 ### Bug fixes
+
+- `--config` flag now takes precedence over `EXOSCALE_CONFIG` env var as expected #830
+- Adding forgotten field `Inference Engine Version` in `exo ai deployment show` command output #833
 
 ## 1.94.2
 
 ### Bug fixes
+
 - fix: Improved error reporting for Dedicated Inference #825
 
 ## 1.94.1
 
 ### Bug fixes
+
 - fix: prevent traversal path during sos download #823
 
 ## 1.94.0
@@ -39,6 +50,7 @@
 - fix(nlb): API error swallowed on load-balancer update (e.g. duplicate name conflict reported as "operation is nil") #806
 - fix(config): panic when used without a default account set #798
 - Fix bad flag ref in `dns add NS` #812
+- fix(config): preserve profile defaults such as default zone when API credentials are provided via environment variables #817
 
 ### Documentation
 

@@ -49,12 +49,21 @@ func (c *Client) DeleteObjectVersions(ctx context.Context, bucket, prefix string
 		defer close(errChan)
 
 		batchSize := int32(1000)
+		var keyMarker, versionIDMarker string
 		for {
-			list, err := c.S3Client.ListObjectVersions(ctx, &s3.ListObjectVersionsInput{
+			input := &s3.ListObjectVersionsInput{
 				Bucket:  &bucket,
 				MaxKeys: batchSize,
 				Prefix:  &prefix,
-			})
+			}
+			if keyMarker != "" {
+				input.KeyMarker = &keyMarker
+			}
+			if versionIDMarker != "" {
+				input.VersionIdMarker = &versionIDMarker
+			}
+
+			list, err := c.S3Client.ListObjectVersions(ctx, input)
 			if err != nil {
 				errChan <- err
 				return
@@ -88,7 +97,25 @@ func (c *Client) DeleteObjectVersions(ctx context.Context, bucket, prefix string
 				deletedChan <- deleted
 			}
 			for _, derror := range deleteResult.Errors {
-				errChan <- fmt.Errorf("delete error: %v", derror)
+				errChan <- fmt.Errorf("failed to delete %s (version %s): %s (%s)",
+					aws.ToString(derror.Key),
+					aws.ToString(derror.VersionId),
+					aws.ToString(derror.Message),
+					aws.ToString(derror.Code),
+				)
+			}
+
+			// No progress means all objects are protected; stop to avoid looping forever.
+			if len(deleteResult.Deleted) == 0 {
+				return
+			}
+
+			if list.IsTruncated {
+				keyMarker = aws.ToString(list.NextKeyMarker)
+				versionIDMarker = aws.ToString(list.NextVersionIdMarker)
+			} else {
+				keyMarker = ""
+				versionIDMarker = ""
 			}
 		}
 	}()
