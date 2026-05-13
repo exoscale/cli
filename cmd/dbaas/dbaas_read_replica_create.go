@@ -16,7 +16,7 @@ type dbaasReadReplicaCreateCmd struct {
 
 	_ bool `cli-cmd:"create"`
 
-	Name string `cli-arg:"#" cli-usage:"read replica name"`
+	Name string `cli-arg:"#" cli-usage:"READ-REPLICA-NAME"`
 
 	Plan                  string `cli-flag:"plan" cli-usage:"subscription plan"`
 	ReplicaZone           string `cli-flag:"replica-zone" cli-short:"z" cli-usage:"zone where the replica will be created"`

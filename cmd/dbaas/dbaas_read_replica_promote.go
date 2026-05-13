@@ -17,7 +17,7 @@ type dbaasReadReplicaPromoteCmd struct {
 
 	_ bool `cli-cmd:"promote"`
 
-	Name  string `cli-arg:"#" cli-usage:"name of the read replica to promote"`
+	Name  string `cli-arg:"#" cli-usage:"REPLICA-NAME"`
 	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 	Zone  string `cli-short:"z" cli-usage:"Database Service zone"`
 }

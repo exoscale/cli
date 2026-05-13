@@ -37,7 +37,7 @@ type dbaasReadReplicaShowCmd struct {
 
 	_ bool `cli-cmd:"show"`
 
-	Name string `cli-arg:"#" cli-usage:"name of the read replica"`
+	Name string `cli-arg:"#" cli-usage:"REPLICA-NAME"`
 	Zone string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 

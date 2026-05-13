@@ -34,7 +34,7 @@ type dbaasReadReplicaListCmd struct {
 
 	_ bool `cli-cmd:"list"`
 
-	ServiceName string `cli-arg:"#" cli-usage:"name of the primary service"`
+	ServiceName string `cli-arg:"#" cli-usage:"SERVICE-NAME"`
 }
 
 func (c *dbaasReadReplicaListCmd) CmdAliases() []string { return exocmd.GListAlias }
