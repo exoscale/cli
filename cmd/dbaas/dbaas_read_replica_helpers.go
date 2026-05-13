@@ -25,6 +25,15 @@ func dbaasListServicesAllZones(ctx context.Context) ([]dbaasServiceWithZone, err
 	}
 
 	out := make([]dbaasServiceWithZone, 0)
+	res := make(chan dbaasServiceWithZone)
+	done := make(chan struct{})
+
+	go func() {
+		for svc := range res {
+			out = append(out, svc)
+		}
+		done <- struct{}{}
+	}()
 
 	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
 		zonalClient := client.WithEndpoint(zone.APIEndpoint)
@@ -35,14 +44,17 @@ func dbaasListServicesAllZones(ctx context.Context) ([]dbaasServiceWithZone, err
 		}
 
 		for _, svc := range list.DBAASServices {
-			out = append(out, dbaasServiceWithZone{
+			res <- dbaasServiceWithZone{
 				Service: svc,
 				Zone:    string(zone.Name),
-			})
+			}
 		}
 
 		return nil
 	})
+	close(res)
+	<-done
+
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +75,10 @@ func dbaasFindServiceByNameAllZones(ctx context.Context, name string) (dbaasServ
 		return dbaasServiceWithZone{}, err
 	}
 
+	return dbaasFindServiceByNameInServices(name, services)
+}
+
+func dbaasFindServiceByNameInServices(name string, services []dbaasServiceWithZone) (dbaasServiceWithZone, error) {
 	var matches []dbaasServiceWithZone
 
 	for _, svc := range services {

@@ -9,6 +9,7 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasReadReplicaListItemOutput struct {
@@ -58,41 +59,53 @@ func (c *dbaasReadReplicaListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	var primaryService *dbaasServiceWithZone
-	for i, service := range services {
-		if string(service.Service.Name) == c.ServiceName {
-			primaryService = &services[i]
-			break
-		}
-	}
-	if primaryService == nil {
-		return fmt.Errorf("%q Database Service not found", c.ServiceName)
+	primaryService, err := dbaasFindServiceByNameInServices(c.ServiceName, services)
+	if err != nil {
+		return err
 	}
 
-	if !dbaasReadReplicaSupportedServiceType(string(primaryService.Service.Type)) {
-		return fmt.Errorf("read replicas are not supported for Database Service type %q", primaryService.Service.Type)
+	primaryDetails, err := dbaasGetV3(ctx, c.ServiceName, primaryService.Zone)
+	if err != nil {
+		return err
+	}
+
+	if !dbaasReadReplicaSupportedServiceType(string(primaryDetails.Type)) {
+		return fmt.Errorf("read replicas are not supported for Database Service type %q", primaryDetails.Type)
+	}
+
+	out := dbaasReadReplicaListFromServices(primaryDetails, services)
+
+	return c.OutputFunc(&out, nil)
+}
+
+func dbaasReadReplicaListFromServices(primaryService v3.DBAASServiceCommon, services []dbaasServiceWithZone) dbaasReadReplicaListOutput {
+	serviceByName := make(map[string]dbaasServiceWithZone, len(services))
+	for _, service := range services {
+		serviceByName[string(service.Service.Name)] = service
 	}
 
 	out := make(dbaasReadReplicaListOutput, 0)
+	primaryName := string(primaryService.Name)
 
-	for _, service := range services {
-		replicaIntegration := dbaasGetReadReplicaIntegrationForReplica(service.Service)
-		if replicaIntegration == nil {
+	for _, integration := range primaryService.Integrations {
+		if integration.Type != "read_replica" || integration.Source != primaryName || integration.Dest == "" {
 			continue
 		}
-		if replicaIntegration.Source != c.ServiceName {
+
+		replicaService, ok := serviceByName[integration.Dest]
+		if !ok {
 			continue
 		}
 
 		out = append(out, dbaasReadReplicaListItemOutput{
-			ReplicaName: string(service.Service.Name),
-			ReplicaZone: service.Zone,
-			Type:        string(service.Service.Type),
-			Plan:        service.Service.Plan,
-			State:       string(service.Service.State),
-			Status:      replicaIntegration.Status,
-			IsActive:    utils.DefaultBool(replicaIntegration.ISActive, false),
-			IsEnabled:   utils.DefaultBool(replicaIntegration.ISEnabled, false),
+			ReplicaName: string(replicaService.Service.Name),
+			ReplicaZone: replicaService.Zone,
+			Type:        string(replicaService.Service.Type),
+			Plan:        replicaService.Service.Plan,
+			State:       string(replicaService.Service.State),
+			Status:      integration.Status,
+			IsActive:    utils.DefaultBool(integration.ISActive, false),
+			IsEnabled:   utils.DefaultBool(integration.ISEnabled, false),
 		})
 	}
 
@@ -103,7 +116,7 @@ func (c *dbaasReadReplicaListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return out[i].ReplicaName < out[j].ReplicaName
 	})
 
-	return c.OutputFunc(&out, nil)
+	return out
 }
 
 func init() {
