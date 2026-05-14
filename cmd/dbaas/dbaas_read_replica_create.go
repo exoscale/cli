@@ -35,8 +35,6 @@ func (c *dbaasReadReplicaCreateCmd) CmdLong() string {
 }
 
 func (c *dbaasReadReplicaCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
-
 	if c.SourceService == "" {
 		return fmt.Errorf("--source-service is required")
 	}
@@ -47,6 +45,7 @@ func (c *dbaasReadReplicaCreateCmd) CmdPreRun(cmd *cobra.Command, args []string)
 		return fmt.Errorf("--plan is required")
 	}
 
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasReadReplicaCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
