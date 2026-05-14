@@ -36,10 +36,6 @@ func (c *dbaasReadReplicaCreateCmd) CmdLong() string {
 
 func (c *dbaasReadReplicaCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
-}
-
-func (c *dbaasReadReplicaCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exocmd.GContext
 
 	if c.SourceService == "" {
 		return fmt.Errorf("--source-service is required")
@@ -50,6 +46,11 @@ func (c *dbaasReadReplicaCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if c.Plan == "" {
 		return fmt.Errorf("--plan is required")
 	}
+
+}
+
+func (c *dbaasReadReplicaCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
 
 	sourceService, err := dbaasFindServiceByNameAllZones(ctx, c.SourceService)
 	if err != nil {

@@ -91,8 +91,6 @@ func (c *dbaasReadReplicaPromoteCmd) CmdRun(_ *cobra.Command, _ []string) error 
 			return c.OutputFunc(showCmd.showDatabaseServicePG(ctx))
 		case "mysql":
 			return c.OutputFunc(showCmd.showDatabaseServiceMysql(ctx))
-		default:
-			return nil
 		}
 	}
 

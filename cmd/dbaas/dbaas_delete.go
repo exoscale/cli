@@ -58,7 +58,7 @@ func (c *dbaasServiceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	readReplicaNames := dbaasActiveReadReplicaNamesForPrimary(svc)
 	if len(readReplicaNames) > 0 {
 		return fmt.Errorf(
-			"cannot delete Database Service %q with active read replica(s): %s. "+
+			"cannot delete Database Service %s with active read replica(s): %s. "+
 				"Delete or promote the read replica(s) first",
 			c.Name, strings.Join(readReplicaNames, ", "))
 	}
