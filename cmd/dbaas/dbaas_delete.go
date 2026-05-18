@@ -3,6 +3,7 @@ package dbaas
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -47,6 +48,18 @@ func (c *dbaasServiceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete Database Service %q?", c.Name)) {
 			return nil
 		}
+	}
+
+	svc, err := dbaasGetV3(ctx, c.Name, c.Zone)
+	if err != nil {
+		return err
+	}
+
+	readReplicaNames := dbaasActiveReadReplicaNamesForPrimary(svc)
+	if len(readReplicaNames) > 0 {
+		return fmt.Errorf(
+			"cannot delete Database Service %s with active read replica(s): %s. Delete or promote the read replica(s) first",
+			c.Name, strings.Join(readReplicaNames, ", "))
 	}
 
 	op, err := client.DeleteDBAASService(ctx, c.Name)

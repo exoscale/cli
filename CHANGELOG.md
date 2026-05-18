@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Features
+- dbaas: added read-replica sub-command for Postgres and MySQL
 
 ### Improvements
 
