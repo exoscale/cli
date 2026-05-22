@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Update exo x #836
+
+
 ### Features
 - dbaas: added read-replica sub-command for Postgres and MySQL
 
@@ -15,6 +18,7 @@
 
 - `--config` flag now takes precedence over `EXOSCALE_CONFIG` env var as expected #830
 - Adding forgotten field `Inference Engine Version` in `exo ai deployment show` command output #833
+
 
 ## 1.94.2
 
