@@ -23,7 +23,7 @@ cd tests/e2e
 go test -v
 ```
 
-### With API (CI — env vars)
+### With API (CI, env vars)
 
 ```bash
 cd tests/e2e
@@ -37,7 +37,7 @@ EXOSCALE_API_KEY=... EXOSCALE_API_SECRET=... \
   go test -v -tags=api -timeout 30m -run TestScriptsAPIDBaaS
 ```
 
-### With API (local — reads from exoscale.toml)
+### With API (local, reads from exoscale.toml)
 
 ```bash
 cd tests/e2e
