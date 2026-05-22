@@ -1,62 +1,55 @@
 # E2E Testscript Scenarios
 
-This directory contains testscript scenarios for end-to-end testing the Exoscale CLI.
+Testscript scenarios for end-to-end testing the Exoscale CLI.
 
 ## Directory Structure
 
-- **without-api/**: Test scenarios that don't require API access (run by default)
-- **with-api/**: Test scenarios that require API access (run with `-tags=api`)
-
-## Current Scenarios
-
-### Tests Without API (scenarios/without-api/)
-
-- **basic_no_api.txtar**: Tests basic CLI functionality without API access (version, help commands)
-- **config_isolated.txtar**: Tests config file isolation using `XDG_CONFIG_HOME`
-
-### Tests With API (scenarios/with-api/)
-
-No API test scenarios yet. These will be added in a future PR.
+- **without-api/**: No API access required, runs by default
+- **with-api/compute/**: Compute API scenarios (`-tags=api`, `-run TestScriptsAPICompute`)
+- **with-api/dbaas/**: DBaaS API scenarios (`-tags=api`, `-run TestScriptsAPIDBaaS`)
 
 ## Running Tests
 
-Tests use the pre-built binary from the existing build pipeline. Build it first:
+Build the binary first:
 
 ```bash
-# Build the CLI binary (from repository root)
 make build
-
-# Run local tests only (default - no build tag needed)
-cd tests/e2e
-go test -v
-
-# Run API tests only (requires API credentials)
-cd tests/e2e
-go test -v -tags=api
-
-# Run all tests (local + API)
-cd tests/e2e
-go test -v -tags=api
 ```
 
-## Using Build Tags
+### Without API (default)
 
-The test suite uses Go build tags to separate local tests from API tests:
+```bash
+cd tests/e2e
+go test -v
+```
 
-- **Local tests** (`testscript_local_test.go`): No build tag, runs by default
-- **API tests** (`testscript_api_test.go`): Requires `-tags=api` build tag
+### With API (CI — env vars)
 
-This approach is more maintainable than regex filtering and follows Go best practices.
+```bash
+cd tests/e2e
+EXOSCALE_API_KEY=... EXOSCALE_API_SECRET=... \
+  go test -v -tags=api -timeout 30m -run TestScriptsAPICompute
+```
 
-## Future Work
+```bash
+cd tests/e2e
+EXOSCALE_API_KEY=... EXOSCALE_API_SECRET=... \
+  go test -v -tags=api -timeout 30m -run TestScriptsAPIDBaaS
+```
 
-**TODO**: API-based tests will be added in a separate PR to `scenarios/with-api/`. These will require:
-- Organization test account setup
-- Proper API credentials configuration (`EXOSCALE_API_KEY`, `EXOSCALE_API_SECRET`)
-- Test scenarios covering:
-  - Block storage operations (create, resize, snapshot, delete)
-  - Compute instance operations
-  - Network resources
-  - Other API-dependent features
+### With API (local — reads from exoscale.toml)
 
-The CI workflow is already configured to run API tests on the master branch when credentials are available.
+```bash
+cd tests/e2e
+go test -v -tags=local_integration -timeout 30m \
+  -run TestAPIComputeLocal -account=<account-name>
+```
+
+```bash
+cd tests/e2e
+go test -v -tags=local_integration -timeout 30m \
+  -run TestAPIDBaaSLocal -account=<account-name>
+```
+
+`-account` matches a substring of the account name in
+`~/.config/exoscale/exoscale.toml`. Defaults to `owner-production`.
