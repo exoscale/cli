@@ -2,10 +2,13 @@
 
 ## Unreleased
 
+
+## 1.95.0
+
 - Update exo x #836
 
-
 ### Features
+
 - dbaas: added read-replica sub-command for Postgres and MySQL
 
 ### Improvements
