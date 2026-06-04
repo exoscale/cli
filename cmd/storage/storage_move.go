@@ -2,12 +2,16 @@ package storage
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/utils"
 )
 
 var storageMoveCmd = &cobra.Command{
@@ -38,20 +42,35 @@ Examples:
 `,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
-			return cmd.Usage()
+			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 		return validateMoveArgs(args)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
+		recursive, err := cmd.Flags().GetBool("recursive")
+		if err != nil {
+			return err
+		}
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+		multipartConcurrency, err := cmd.Flags().GetInt("multipart-concurrency")
+		if err != nil {
+			return err
+		}
+		verbose, err := cmd.Flags().GetBool("verbose")
+		if err != nil {
+			return err
+		}
+		dryRun, err := cmd.Flags().GetBool("dry-run")
+		if err != nil {
+			return err
+		}
+
 		srcBucket, srcKey := parseBucketKey(args[0])
 		dstBucket, dstKey := parseBucketKey(args[1])
-
-		recursive, _ := cmd.Flags().GetBool("recursive")
-		force, _ := cmd.Flags().GetBool("force")
-		multipartConcurrency, _ := cmd.Flags().GetInt("multipart-concurrency")
-		verbose, _ := cmd.Flags().GetBool("verbose")
-		dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 		storage, err := sos.NewStorageClient(
 			exocmd.GContext,
@@ -64,7 +83,9 @@ Examples:
 		isPrefix := strings.HasSuffix(srcKey, "/") || recursive
 
 		if !force && !dryRun && isPrefix {
-			if !confirmPrefixMove(exocmd.GContext, srcBucket, srcKey, dstBucket, dstKey) {
+			if !utils.AskQuestion(exocmd.GContext, fmt.Sprintf(
+				"Are you sure you want to move all objects from %s%s/%s to %s%s/%s?",
+				sos.BucketPrefix, srcBucket, srcKey, sos.BucketPrefix, dstBucket, dstKey)) {
 				return nil
 			}
 		}
@@ -88,4 +109,107 @@ func init() {
 	storageMoveCmd.Flags().BoolP("verbose", "v", false, "output moved objects")
 	storageMoveCmd.Flags().Int("multipart-concurrency", 4, "number of concurrent parts for multipart moves")
 	storageCmd.AddCommand(storageMoveCmd)
+}
+
+func validateMoveArgs(args []string) error {
+	srcBucket, srcKey := parseBucketKey(args[0])
+	dstBucket, dstKey := parseBucketKey(args[1])
+
+	if srcBucket == "" {
+		return fmt.Errorf("source must include a bucket name: %s", args[0])
+	}
+	if dstBucket == "" {
+		return fmt.Errorf("destination must include a bucket name: %s", args[1])
+	}
+	if srcKey == "" && dstKey == "" {
+		return fmt.Errorf("at least one of source/destination must include an object key or prefix")
+	}
+	if srcKey != "" && dstKey == "" {
+		return fmt.Errorf("destination must include an object key when source is a single object: %s", args[1])
+	}
+
+	return nil
+}
+
+func parseBucketKey(url string) (bucket, key string) {
+	url = strings.TrimPrefix(url, sos.BucketPrefix)
+	parts := strings.SplitN(url, "/", 2)
+	bucket = parts[0]
+	if len(parts) > 1 {
+		key = parts[1]
+	}
+	return
+}
+
+func runSingleObjectMove(storage *sos.Client, srcBucket, srcKey, dstBucket, dstKey string, multipartConcurrency int, verbose, dryRun bool) error {
+	if srcKey == "" {
+		return fmt.Errorf("source must be an object key, not just a bucket: use a trailing slash for prefix moves")
+	}
+
+	if dryRun {
+		fmt.Printf("move %s%s/%s -> %s%s/%s\n", sos.BucketPrefix, srcBucket, srcKey, sos.BucketPrefix, dstBucket, dstKey)
+		return nil
+	}
+
+	if err := storage.MoveObject(exocmd.GContext, srcBucket, srcKey, dstBucket, dstKey, multipartConcurrency, verbose); err != nil {
+		return fmt.Errorf("move failed: %w", err)
+	}
+
+	if verbose {
+		showObj, err := storage.ShowObject(exocmd.GContext, dstBucket, dstKey)
+		if err == nil {
+			fmt.Printf("moved: %s -> %s (%d bytes, %s)\n", srcKey, showObj.URL, showObj.Size, showObj.LastModified)
+		}
+	}
+
+	return nil
+}
+
+func runPrefixMove(storage *sos.Client, srcBucket, srcKey, dstBucket, dstKey string, multipartConcurrency int, recursive, verbose, dryRun bool) error {
+	var moved, failed int
+	err := storage.ForEachObject(exocmd.GContext, srcBucket, srcKey, recursive, func(o *types.Object) error {
+		if o.Key == nil {
+			return nil
+		}
+
+		srcObjectKey := *o.Key
+		srcObjectKeyTrimmed := strings.TrimPrefix(srcObjectKey, srcKey)
+		dstObjectKey := dstKey + srcObjectKeyTrimmed
+
+		if dryRun {
+			fmt.Printf("move %s%s/%s -> %s%s/%s\n", sos.BucketPrefix, srcBucket, srcObjectKey, sos.BucketPrefix, dstBucket, dstObjectKey)
+			return nil
+		}
+
+		if err := storage.MoveObject(exocmd.GContext, srcBucket, srcObjectKey, dstBucket, dstObjectKey, multipartConcurrency, verbose); err != nil {
+			fmt.Fprintf(os.Stderr, "move failed for %s: %v\n", srcObjectKey, err)
+			failed++
+			return nil
+		}
+
+		moved++
+		if verbose && !globalstate.Quiet {
+			fmt.Printf("moved: %s%s/%s -> %s%s/%s\n", sos.BucketPrefix, srcBucket, srcObjectKey, sos.BucketPrefix, dstBucket, dstObjectKey)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("move failed: %w", err)
+	}
+
+	if failed > 0 {
+		return fmt.Errorf("%d object(s) failed to move", failed)
+	}
+
+	if moved == 0 && !dryRun && !globalstate.Quiet {
+		fmt.Printf("no objects exist at %q\n", srcKey)
+	}
+
+	if verbose && !globalstate.Quiet && moved > 0 {
+		fmt.Printf("moved %d objects\n", moved)
+	}
+
+	return nil
 }
