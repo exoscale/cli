@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- storage: add `move` command for moving objects within and across buckets
+
 
 ## 1.95.0
 
