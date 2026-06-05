@@ -174,7 +174,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 			method := v3.EnumMigrationMethod(c.PGMigrationMethod)
 			databaseService.Migration.Method = method
 		}
-		if len(c.MysqlMigrationIgnoreDbs) > 0 {
+		if len(c.PGMigrationIgnoreDbs) > 0 {
 			dbsJoin := strings.Join(c.PGMigrationIgnoreDbs, ",")
 			databaseService.Migration.IgnoreDbs = dbsJoin
 		}

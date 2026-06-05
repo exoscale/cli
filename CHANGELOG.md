@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Bug fixes
+
+- dbaas: send `--pg-migration-ignore-dbs` value to API #839
 
 ## 1.95.0
 
