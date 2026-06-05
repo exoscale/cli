@@ -1,7 +1,6 @@
 package deployment
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"path"
@@ -9,10 +8,9 @@ import (
 	"time"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 type depShowServer struct {
@@ -25,7 +23,7 @@ func newDepShowServer(t *testing.T) *depShowServer {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ai/deployment", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			writeJSON(t, w, http.StatusOK, v3.ListDeploymentsResponse{Deployments: ts.deployments})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.ListDeploymentsResponse{Deployments: ts.deployments})
 			return
 		}
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -54,7 +52,7 @@ func newDepShowServer(t *testing.T) *depShowServer {
 					CreatedAT:              d.CreatedAT,
 					UpdatedAT:              d.UpdatedAT,
 				}
-				writeJSON(t, w, http.StatusOK, resp)
+				testutils.WriteJSON(t, w, http.StatusOK, resp)
 				return
 			}
 		}
@@ -67,14 +65,7 @@ func newDepShowServer(t *testing.T) *depShowServer {
 func TestDeploymentShowByIDAndName(t *testing.T) {
 	ts := newDepShowServer(t)
 	defer ts.server.Close()
-	exocmd.GContext = context.Background()
-	globalstate.Quiet = true
-	creds := credentials.NewStaticCredentials("key", "secret")
-	client, err := v3.NewClient(creds)
-	if err != nil {
-		t.Fatalf("new client: %v", err)
-	}
-	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(ts.server.URL))
+	testutils.SetupV3Client(t, ts.server.URL)
 
 	now := time.Now()
 	ts.deployments = []v3.ListDeploymentsResponseEntry{{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", State: v3.ListDeploymentsResponseEntryStateReady, GpuType: "gpua5000", GpuCount: 1, Replicas: 1, ServiceLevel: "pro", DeploymentURL: "https://u", Model: &v3.ModelRef{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1"}, CreatedAT: now, UpdatedAT: now}}

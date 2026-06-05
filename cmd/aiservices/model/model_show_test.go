@@ -1,8 +1,6 @@
 package model
 
 import (
-	"context"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"path"
@@ -10,10 +8,9 @@ import (
 	"time"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 // Minimal test server + helpers used across model tests in this package.
@@ -29,10 +26,10 @@ func newModelTestServer(t *testing.T) *modelTestServer {
 		switch r.Method {
 		case http.MethodGet:
 			resp := v3.ListModelsResponse{Models: ts.models}
-			writeJSON(t, w, http.StatusOK, resp)
+			testutils.WriteJSON(t, w, http.StatusOK, resp)
 		case http.MethodPost:
 			op := v3.Operation{ID: v3.UUID("op-model-create"), State: v3.OperationStateSuccess}
-			writeJSON(t, w, http.StatusOK, op)
+			testutils.WriteJSON(t, w, http.StatusOK, op)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
@@ -51,14 +48,14 @@ func newModelTestServer(t *testing.T) *modelTestServer {
 						CreatedAT: m.CreatedAT,
 						UpdatedAT: m.UpdatedAT,
 					}
-					writeJSON(t, w, http.StatusOK, resp)
+					testutils.WriteJSON(t, w, http.StatusOK, resp)
 					return
 				}
 			}
 			w.WriteHeader(http.StatusNotFound)
 		case http.MethodDelete:
 			op := v3.Operation{ID: v3.UUID("op-model-delete"), State: v3.OperationStateSuccess}
-			writeJSON(t, w, http.StatusOK, op)
+			testutils.WriteJSON(t, w, http.StatusOK, op)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
@@ -69,7 +66,7 @@ func newModelTestServer(t *testing.T) *modelTestServer {
 			return
 		}
 		op := v3.Operation{ID: v3.UUID(path.Base(r.URL.Path)), State: v3.OperationStateSuccess}
-		writeJSON(t, w, http.StatusOK, op)
+		testutils.WriteJSON(t, w, http.StatusOK, op)
 	})
 	mux.HandleFunc("/zone", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -77,39 +74,16 @@ func newModelTestServer(t *testing.T) *modelTestServer {
 			return
 		}
 		resp := v3.ListZonesResponse{Zones: []v3.Zone{{APIEndpoint: v3.Endpoint(ts.server.URL), Name: v3.ZoneName("test-zone")}}}
-		writeJSON(t, w, http.StatusOK, resp)
+		testutils.WriteJSON(t, w, http.StatusOK, resp)
 	})
 	ts.server = httptest.NewServer(mux)
 	return ts
 }
 
-func writeJSON(t *testing.T, w http.ResponseWriter, code int, v interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	if err := json.NewEncoder(w).Encode(v); err != nil {
-		t.Fatalf("encode json: %v", err)
-	}
-}
-
-func newV3Client(t *testing.T, endpoint string) *v3.Client {
-	creds := credentials.NewStaticCredentials("key", "secret")
-	client, err := v3.NewClient(creds)
-	if err != nil {
-		t.Fatalf("new client: %v", err)
-	}
-	return client.WithEndpoint(v3.Endpoint(endpoint))
-}
-
-func modelSetup(t *testing.T, ts *modelTestServer) func() {
-	exocmd.GContext = context.Background()
-	globalstate.Quiet = true
-	globalstate.EgoscaleV3Client = newV3Client(t, ts.server.URL)
-	return func() { ts.server.Close() }
-}
-
 func TestModelShow(t *testing.T) {
 	ts := newModelTestServer(t)
-	defer modelSetup(t, ts)()
+	defer ts.server.Close()
+	testutils.SetupV3Client(t, ts.server.URL)
 	now := time.Now()
 	ts.models = []v3.ListModelsResponseEntry{{
 		ID:        v3.UUID("11111111-1111-1111-1111-111111111111"),

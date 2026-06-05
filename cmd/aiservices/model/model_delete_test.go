@@ -4,12 +4,14 @@ import (
 	"testing"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func TestModelDelete(t *testing.T) {
 	ts := newModelTestServer(t)
-	defer modelSetup(t, ts)()
+	testutils.SetupV3Client(t, ts.server.URL)
+	defer ts.server.Close()
 	ts.models = []v3.ListModelsResponseEntry{
 		{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1"},
 		{ID: v3.UUID("22222222-2222-2222-2222-222222222222"), Name: "m2"},
