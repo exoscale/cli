@@ -2,7 +2,6 @@ package deployment
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,8 +9,8 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 type instanceTypeListServer struct {
@@ -25,34 +24,23 @@ func newInstanceTypeListServer(t *testing.T) *instanceTypeListServer {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ai/instance-type", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			writeJSON(t, w, http.StatusOK, v3.ListAIInstanceTypesResponse{InstanceTypes: ts.instanceTypes})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.ListAIInstanceTypesResponse{InstanceTypes: ts.instanceTypes})
 			return
 		}
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	})
 	mux.HandleFunc("/zone", func(w http.ResponseWriter, r *http.Request) {
 		ts.zones++
-		writeJSON(t, w, http.StatusOK, v3.ListZonesResponse{Zones: []v3.Zone{{APIEndpoint: v3.Endpoint(ts.server.URL), Name: v3.ZoneName("test-zone")}}})
+		testutils.WriteJSON(t, w, http.StatusOK, v3.ListZonesResponse{Zones: []v3.Zone{{APIEndpoint: v3.Endpoint(ts.server.URL), Name: v3.ZoneName("test-zone")}}})
 	})
 	ts.server = httptest.NewServer(mux)
 	return ts
 }
 
-func instanceTypeSetup(t *testing.T, url string) {
-	exocmd.GContext = context.Background()
-	globalstate.Quiet = true
-	creds := credentials.NewStaticCredentials("key", "secret")
-	client, err := v3.NewClient(creds)
-	if err != nil {
-		t.Fatalf("new client: %v", err)
-	}
-	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(url))
-}
-
 func TestInstanceTypeList(t *testing.T) {
 	ts := newInstanceTypeListServer(t)
 	defer ts.server.Close()
-	instanceTypeSetup(t, ts.server.URL)
+	testutils.SetupV3Client(t, ts.server.URL)
 
 	trueVal := true
 	falseVal := false
@@ -88,7 +76,7 @@ func TestInstanceTypeList(t *testing.T) {
 func TestInstanceTypeListUsesZone(t *testing.T) {
 	ts := newInstanceTypeListServer(t)
 	defer ts.server.Close()
-	instanceTypeSetup(t, ts.server.URL)
+	testutils.SetupV3Client(t, ts.server.URL)
 
 	cmd := &InstanceTypeListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Zone: v3.ZoneName("test-zone")}
 	if err := cmd.CmdRun(nil, nil); err != nil {

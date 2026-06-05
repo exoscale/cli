@@ -2,7 +2,6 @@ package deployment
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,8 +13,8 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 // zoneBehavior describes how a fake per-zone backend should respond.
@@ -75,10 +74,10 @@ func newMultiZoneHarness(t *testing.T, fixtures []*zoneFixture, slowDelay time.D
 				http.Error(w, "boom", http.StatusInternalServerError)
 				return
 			case zoneEmpty:
-				writeJSON(t, w, http.StatusOK, v3.ListDeploymentsResponse{})
+				testutils.WriteJSON(t, w, http.StatusOK, v3.ListDeploymentsResponse{})
 				return
 			default:
-				writeJSON(t, w, http.StatusOK, v3.ListDeploymentsResponse{Deployments: zone.Deployments})
+				testutils.WriteJSON(t, w, http.StatusOK, v3.ListDeploymentsResponse{Deployments: zone.Deployments})
 			}
 		})
 		zone.server = httptest.NewServer(mux)
@@ -94,31 +93,10 @@ func newMultiZoneHarness(t *testing.T, fixtures []*zoneFixture, slowDelay time.D
 				APIEndpoint: v3.Endpoint(z.server.URL),
 			})
 		}
-		writeJSON(t, w, http.StatusOK, v3.ListZonesResponse{Zones: zones})
+		testutils.WriteJSON(t, w, http.StatusOK, v3.ListZonesResponse{Zones: zones})
 	})
 	h.control = httptest.NewServer(controlMux)
 	return h
-}
-
-func writeJSON(t *testing.T, w http.ResponseWriter, code int, v interface{}) {
-	t.Helper()
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	if err := json.NewEncoder(w).Encode(v); err != nil {
-		t.Fatalf("encode json: %v", err)
-	}
-}
-
-func setupClient(t *testing.T, controlURL string) {
-	t.Helper()
-	exocmd.GContext = context.Background()
-	globalstate.Quiet = true
-	creds := credentials.NewStaticCredentials("key", "secret")
-	client, err := v3.NewClient(creds)
-	if err != nil {
-		t.Fatalf("new client: %v", err)
-	}
-	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(controlURL))
 }
 
 func sampleDeployments(zoneSuffix string, n int) []v3.ListDeploymentsResponseEntry {
@@ -159,7 +137,7 @@ func TestDeploymentList_AllHealthy(t *testing.T) {
 	}
 	h := newMultiZoneHarness(t, zones, 0)
 	defer h.close()
-	setupClient(t, h.control.URL)
+	testutils.SetupV3Client(t, h.control.URL)
 	defer withFormat(t, "json")()
 
 	stdout, stderr, err := runList(t, "")
@@ -195,7 +173,7 @@ func TestDeploymentList_OneTimeout(t *testing.T) {
 	}
 	h := newMultiZoneHarness(t, zones, 2*time.Second)
 	defer h.close()
-	setupClient(t, h.control.URL)
+	testutils.SetupV3Client(t, h.control.URL)
 	defer withFormat(t, "json")()
 
 	start := time.Now()
@@ -231,7 +209,7 @@ func TestDeploymentList_OneServerError(t *testing.T) {
 	}
 	h := newMultiZoneHarness(t, zones, 0)
 	defer h.close()
-	setupClient(t, h.control.URL)
+	testutils.SetupV3Client(t, h.control.URL)
 	defer withFormat(t, "json")()
 
 	stdout, stderr, err := runList(t, "")
@@ -258,7 +236,7 @@ func TestDeploymentList_AllFailed(t *testing.T) {
 	}
 	h := newMultiZoneHarness(t, zones, 0)
 	defer h.close()
-	setupClient(t, h.control.URL)
+	testutils.SetupV3Client(t, h.control.URL)
 	defer withFormat(t, "json")()
 
 	stdout, stderr, err := runList(t, "")
@@ -282,7 +260,7 @@ func TestDeploymentList_ZoneFilter(t *testing.T) {
 	}
 	h := newMultiZoneHarness(t, zones, 0)
 	defer h.close()
-	setupClient(t, h.control.URL)
+	testutils.SetupV3Client(t, h.control.URL)
 	defer withFormat(t, "json")()
 
 	stdout, _, err := runList(t, "z1")
