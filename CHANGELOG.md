@@ -5,6 +5,7 @@
 ### Improvements
 
 - e2e: prefix API test run IDs with `cli-e2e-` so shared test org resources don't collide with other repos
+- e2e: embed the short commit SHA in the `cli-e2e-` prefix so leaked resources can be traced back to the commit that created them
 
 ## 1.95.1
 
