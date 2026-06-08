@@ -53,7 +53,10 @@ func runAPITestSuite(t *testing.T, dir string) {
 		zone = "ch-gva-2"
 	}
 
-	runID := fmt.Sprintf("e2e-%d-%s", time.Now().Unix(), randString(6))
+	// Prefix every test resource with `cli-e2e-` so runs against the shared
+	// Exoscale test organisation do not collide with resources created by
+	// other repositories (terraform-provider-exoscale, csi-driver, ...).
+	runID := fmt.Sprintf("cli-e2e-%d-%s", time.Now().Unix(), randString(6))
 	t.Logf("API test run ID: %s (zone: %s)", runID, zone)
 
 	suite := &APITestSuite{
