@@ -1,4 +1,4 @@
-//go:build api
+//go:build api || local_integration
 
 package e2e_test
 

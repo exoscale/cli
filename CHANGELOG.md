@@ -6,6 +6,12 @@
 
 - e2e: prefix API test run IDs with `cli-e2e-` so shared test org resources don't collide with other repos
 
+## 1.95.1
+
+### Bug fixes
+
+- dbaas: send `--pg-migration-ignore-dbs` value to API #839
+
 ## 1.95.0
 
 - Update exo x #836
