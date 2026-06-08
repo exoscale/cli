@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Improvements
+
+- e2e: prefix API test run IDs with `cli-e2e-` so shared test org resources don't collide with other repos
 
 ## 1.95.0
 
@@ -21,7 +24,6 @@
 
 - `--config` flag now takes precedence over `EXOSCALE_CONFIG` env var as expected #830
 - Adding forgotten field `Inference Engine Version` in `exo ai deployment show` command output #833
-
 
 ## 1.94.2
 
