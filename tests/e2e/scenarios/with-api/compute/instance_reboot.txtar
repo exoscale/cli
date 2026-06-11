@@ -3,7 +3,7 @@
 # TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
 
 # Create a fresh instance for this test; testscript captures stdout automatically
-exec exo --zone $TEST_ZONE --output-format json compute instance create cli-e2e-reboot-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10
+exec exo --zone $TEST_ZONE --output-format json compute instance create reboot-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10
 
 # Extract the instance ID into INSTANCE_ID env var from the captured stdout
 json-setenv INSTANCE_ID id stdout

@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 type depHelperServer struct {
@@ -24,7 +24,7 @@ func newDepHelperServer(t *testing.T) *depHelperServer {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ai/deployment", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			writeJSON(t, w, http.StatusOK, v3.ListDeploymentsResponse{Deployments: ts.deployments})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.ListDeploymentsResponse{Deployments: ts.deployments})
 			return
 		}
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -35,13 +35,13 @@ func newDepHelperServer(t *testing.T) *depHelperServer {
 		case http.MethodGet:
 			for _, d := range ts.deployments {
 				if string(d.ID) == id {
-					writeJSON(t, w, http.StatusOK, v3.GetDeploymentResponse{ID: d.ID, Name: d.Name, State: v3.GetDeploymentResponseState(d.State), GpuType: d.GpuType, GpuCount: d.GpuCount, Replicas: d.Replicas, ServiceLevel: d.ServiceLevel, DeploymentURL: d.DeploymentURL, Model: d.Model, CreatedAT: d.CreatedAT, UpdatedAT: d.UpdatedAT})
+					testutils.WriteJSON(t, w, http.StatusOK, v3.GetDeploymentResponse{ID: d.ID, Name: d.Name, State: v3.GetDeploymentResponseState(d.State), GpuType: d.GpuType, GpuCount: d.GpuCount, Replicas: d.Replicas, ServiceLevel: d.ServiceLevel, DeploymentURL: d.DeploymentURL, Model: d.Model, CreatedAT: d.CreatedAT, UpdatedAT: d.UpdatedAT})
 					return
 				}
 			}
 			w.WriteHeader(http.StatusNotFound)
 		case http.MethodDelete:
-			writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op"), State: v3.OperationStateSuccess})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op"), State: v3.OperationStateSuccess})
 		case http.MethodPost:
 			if strings.HasSuffix(r.URL.Path, "/scale") {
 				_, err := io.Copy(io.Discard, r.Body)
@@ -52,7 +52,7 @@ func newDepHelperServer(t *testing.T) *depHelperServer {
 				if err != nil {
 					t.Fail()
 				}
-				writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op"), State: v3.OperationStateSuccess})
+				testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op"), State: v3.OperationStateSuccess})
 				return
 			}
 			w.WriteHeader(http.StatusNotFound)
@@ -69,12 +69,7 @@ func TestFindListDeploymentsResponseEntryByIDAndName(t *testing.T) {
 	defer ts.server.Close()
 	now := time.Now()
 	ts.deployments = []v3.ListDeploymentsResponseEntry{{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", CreatedAT: now, UpdatedAT: now}}
-	creds := credentials.NewStaticCredentials("key", "secret")
-	client, err := v3.NewClient(creds)
-	if err != nil {
-		t.Fatalf("new client: %v", err)
-	}
-	client = client.WithEndpoint(v3.Endpoint(ts.server.URL))
+	client := testutils.NewV3Client(t, ts.server.URL)
 	ctx := context.Background()
 
 	// by ID
