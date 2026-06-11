@@ -4,7 +4,7 @@
 
 ### Features
 
-- storage: add `move` command for moving objects within and across buckets
+- storage: add `move` command for moving objects within and across buckets #838
 
 ### Improvements
 
