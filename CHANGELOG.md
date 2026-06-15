@@ -10,6 +10,10 @@
 
 - e2e: prefix API test run IDs with `cli-e2e-` so shared test org resources don't collide with other repos
 
+### Bug fixes
+
+- dbaas: fix zone switching for DBaaS-only IAM keys (egoscale#767)
+
 ## 1.95.1
 
 ### Bug fixes
