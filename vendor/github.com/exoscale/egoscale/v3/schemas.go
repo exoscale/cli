@@ -89,9 +89,10 @@ type AIAPIKey struct {
 	// Last update timestamp
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
 }
-
-// AI API key with plaintext value
-type AIAPIKeyWithValue struct {
+// AI API key plaintext value (returned on rotate or reveal)
+type AIAPIKeyValue struct {
+	// Plaintext API key value
+	Value string `json:"value,omitempty"`
 }
 
 // Anti-affinity Group

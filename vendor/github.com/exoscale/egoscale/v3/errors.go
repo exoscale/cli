@@ -123,6 +123,8 @@ func (e *APIError) Unwrap() error { return e.sentinel }
 
 func handleHTTPErrorResp(resp *http.Response) error {
 	if resp.StatusCode >= 400 && resp.StatusCode <= 599 {
+		defer func() { _ = resp.Body.Close() }() // body already read, error not actionable
+
 		var res struct {
 			Message string          `json:"message"`
 			Error   string          `json:"error"`
