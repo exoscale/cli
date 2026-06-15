@@ -5,6 +5,7 @@
 ### Features
 
 - storage: add `move` command for moving objects within and across buckets #838
+- Re-introduce ARM64 builds for Windows #844
 
 ### Improvements
 
