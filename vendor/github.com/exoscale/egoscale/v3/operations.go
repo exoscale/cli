@@ -12,9 +12,9 @@ import (
 	"time"
 )
 
-// FindAIAPIKey attempts to find an AIAPIKey by nameOrID.
-func (l ListAIAPIKeysResponse) FindAIAPIKey(nameOrID string) (AIAPIKey, error) {
-	var result []AIAPIKey
+// FindListAIAPIKeysResponseEntry attempts to find an ListAIAPIKeysResponseEntry by nameOrID.
+func (l ListAIAPIKeysResponse) FindListAIAPIKeysResponseEntry(nameOrID string) (ListAIAPIKeysResponseEntry, error) {
+	var result []ListAIAPIKeysResponseEntry
 	for i, elem := range l.AIAPIKeys {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
 			result = append(result, l.AIAPIKeys[i])
@@ -25,15 +25,15 @@ func (l ListAIAPIKeysResponse) FindAIAPIKey(nameOrID string) (AIAPIKey, error) {
 	}
 
 	if len(result) > 1 {
-		return AIAPIKey{}, fmt.Errorf("%q too many found in ListAIAPIKeysResponse: %w", nameOrID, ErrConflict)
+		return ListAIAPIKeysResponseEntry{}, fmt.Errorf("%q too many found in ListAIAPIKeysResponse: %w", nameOrID, ErrConflict)
 	}
 
-	return AIAPIKey{}, fmt.Errorf("%q not found in ListAIAPIKeysResponse: %w", nameOrID, ErrNotFound)
+	return ListAIAPIKeysResponseEntry{}, fmt.Errorf("%q not found in ListAIAPIKeysResponse: %w", nameOrID, ErrNotFound)
 }
 
 // List AI API keys for an organization
 func (c Client) ListAIAPIKeys(ctx context.Context) (*ListAIAPIKeysResponse, error) {
-	path := "/ai/ai-api-key"
+	path := "/ai/api-key"
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -76,8 +76,8 @@ func (c Client) ListAIAPIKeys(ctx context.Context) (*ListAIAPIKeysResponse, erro
 }
 
 // Create a new AI API key
-func (c Client) CreateAIAPIKey(ctx context.Context, req CreateAIAPIKeyRequest) (*AIAPIKeyWithValue, error) {
-	path := "/ai/ai-api-key"
+func (c Client) CreateAIAPIKey(ctx context.Context, req CreateAIAPIKeyRequest) (*CreateAIAPIKeyResponse, error) {
+	path := "/ai/api-key"
 
 	body, err := prepareJSONBody(req)
 	if err != nil {
@@ -118,7 +118,7 @@ func (c Client) CreateAIAPIKey(ctx context.Context, req CreateAIAPIKeyRequest) (
 		return nil, fmt.Errorf("CreateAIAPIKey: http response: %w", err)
 	}
 
-	bodyresp := new(AIAPIKeyWithValue)
+	bodyresp := new(CreateAIAPIKeyResponse)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateAIAPIKey: prepare Json response: %w", err)
 	}
@@ -126,57 +126,9 @@ func (c Client) CreateAIAPIKey(ctx context.Context, req CreateAIAPIKeyRequest) (
 	return bodyresp, nil
 }
 
-type DeleteAIAPIKeyResponse struct {
-	Deleted *bool `json:"deleted" validate:"required"`
-}
-
-// Delete AI API key
-func (c Client) DeleteAIAPIKey(ctx context.Context, id UUID) (*DeleteAIAPIKeyResponse, error) {
-	path := fmt.Sprintf("/ai/ai-api-key/%v", id)
-
-	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "delete-ai-api-key")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: http response: %w", err)
-	}
-
-	bodyresp := new(DeleteAIAPIKeyResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
 // Get AI API key metadata
-func (c Client) GetAIAPIKey(ctx context.Context, id UUID) (*AIAPIKey, error) {
-	path := fmt.Sprintf("/ai/ai-api-key/%v", id)
+func (c Client) GetAIAPIKey(ctx context.Context, id UUID) (*GetAIAPIKeyResponse, error) {
+	path := fmt.Sprintf("/ai/api-key/%v", id)
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -210,7 +162,7 @@ func (c Client) GetAIAPIKey(ctx context.Context, id UUID) (*AIAPIKey, error) {
 		return nil, fmt.Errorf("GetAIAPIKey: http response: %w", err)
 	}
 
-	bodyresp := new(AIAPIKey)
+	bodyresp := new(GetAIAPIKeyResponse)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetAIAPIKey: prepare Json response: %w", err)
 	}
@@ -219,8 +171,8 @@ func (c Client) GetAIAPIKey(ctx context.Context, id UUID) (*AIAPIKey, error) {
 }
 
 // Update AI API key name and/or scope
-func (c Client) UpdateAIAPIKey(ctx context.Context, id UUID, req UpdateAIAPIKeyRequest) (*AIAPIKey, error) {
-	path := fmt.Sprintf("/ai/ai-api-key/%v", id)
+func (c Client) UpdateAIAPIKey(ctx context.Context, id UUID, req UpdateAIAPIKeyRequest) (*UpdateAIAPIKeyResponse, error) {
+	path := fmt.Sprintf("/ai/api-key/%v", id)
 
 	body, err := prepareJSONBody(req)
 	if err != nil {
@@ -261,7 +213,7 @@ func (c Client) UpdateAIAPIKey(ctx context.Context, id UUID, req UpdateAIAPIKeyR
 		return nil, fmt.Errorf("UpdateAIAPIKey: http response: %w", err)
 	}
 
-	bodyresp := new(AIAPIKey)
+	bodyresp := new(UpdateAIAPIKeyResponse)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateAIAPIKey: prepare Json response: %w", err)
 	}
@@ -269,9 +221,53 @@ func (c Client) UpdateAIAPIKey(ctx context.Context, id UUID, req UpdateAIAPIKeyR
 	return bodyresp, nil
 }
 
+// Reveal AI API key plaintext value
+func (c Client) RevealAIAPIKey(ctx context.Context, id UUID) (*RevealAIAPIKeyResponse, error) {
+	path := fmt.Sprintf("/ai/api-key/%v/reveal", id)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("RevealAIAPIKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("RevealAIAPIKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("RevealAIAPIKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "reveal-ai-api-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("RevealAIAPIKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("RevealAIAPIKey: http response: %w", err)
+	}
+
+	bodyresp := new(RevealAIAPIKeyResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("RevealAIAPIKey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 // Rotate AI API key value
-func (c Client) RotateAIAPIKey(ctx context.Context, id UUID) (*AIAPIKeyWithValue, error) {
-	path := fmt.Sprintf("/ai/ai-api-key/%v/rotate", id)
+func (c Client) RotateAIAPIKey(ctx context.Context, id UUID) (*RotateAIAPIKeyResponse, error) {
+	path := fmt.Sprintf("/ai/api-key/%v/rotate", id)
 
 	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -305,7 +301,7 @@ func (c Client) RotateAIAPIKey(ctx context.Context, id UUID) (*AIAPIKeyWithValue
 		return nil, fmt.Errorf("RotateAIAPIKey: http response: %w", err)
 	}
 
-	bodyresp := new(AIAPIKeyWithValue)
+	bodyresp := new(RotateAIAPIKeyResponse)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RotateAIAPIKey: prepare Json response: %w", err)
 	}
@@ -1062,6 +1058,50 @@ func (c Client) GetModel(ctx context.Context, id UUID) (*GetModelResponse, error
 	bodyresp := new(GetModelResponse)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetModel: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Get per-org Unit Of Measurement (UOM) consumption quota (UOM/min). Null means unlimited. UOM represents weighted units across different AI workloads (e.g., tokens for LLMs, minutes for TTS, pages for OCR).
+func (c Client) GetUserOrgConsumptionQuota(ctx context.Context) (*OrgConsumptionQuotaResponse, error) {
+	path := "/ai/quota"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetUserOrgConsumptionQuota: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetUserOrgConsumptionQuota: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetUserOrgConsumptionQuota: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-user-org-consumption-quota")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetUserOrgConsumptionQuota: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetUserOrgConsumptionQuota: http response: %w", err)
+	}
+
+	bodyresp := new(OrgConsumptionQuotaResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetUserOrgConsumptionQuota: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -6864,6 +6904,8 @@ type CreateDBAASServicePGRequest struct {
 	Migration *CreateDBAASServicePGRequestMigration `json:"migration,omitempty"`
 	// postgresql.conf configuration values
 	PGSettings *JSONSchemaPG `json:"pg-settings,omitempty"`
+	// System-wide settings for the pgaudit extension.
+	PgauditSettings *JSONSchemaPgaudit `json:"pgaudit-settings,omitempty"`
 	// System-wide settings for pgbouncer.
 	PgbouncerSettings *JSONSchemaPgbouncer `json:"pgbouncer-settings,omitempty"`
 	// System-wide settings for pglookout.
@@ -6992,6 +7034,8 @@ type UpdateDBAASServicePGRequest struct {
 	Migration *UpdateDBAASServicePGRequestMigration `json:"migration,omitempty"`
 	// postgresql.conf configuration values
 	PGSettings *JSONSchemaPG `json:"pg-settings,omitempty"`
+	// System-wide settings for the pgaudit extension.
+	PgauditSettings *JSONSchemaPgaudit `json:"pgaudit-settings,omitempty"`
 	// System-wide settings for pgbouncer.
 	PgbouncerSettings *JSONSchemaPgbouncer `json:"pgbouncer-settings,omitempty"`
 	// System-wide settings for pglookout.
@@ -11115,8 +11159,8 @@ func (c Client) ListIAMRoles(ctx context.Context) (*ListIAMRolesResponse, error)
 }
 
 type CreateIAMRoleRequest struct {
-	// Policy
-	AssumeRolePolicy *IAMPolicy `json:"assume-role-policy,omitempty"`
+	// Assume Role Policy
+	AssumeRolePolicy *IAMAssumeRolePolicy `json:"assume-role-policy,omitempty"`
 	// IAM Role description
 	Description string `json:"description,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Sets if the IAM Role Policy is editable or not (default: true). This setting cannot be changed after creation
@@ -11272,6 +11316,8 @@ func (c Client) GetIAMRole(ctx context.Context, id UUID) (*IAMRole, error) {
 }
 
 type UpdateIAMRoleRequest struct {
+	// Assume Role Policy
+	AssumeRolePolicy *IAMAssumeRolePolicy `json:"assume-role-policy,omitempty"`
 	// IAM Role description
 	Description string `json:"description,omitempty" validate:"omitempty,gte=1,lte=255"`
 	Labels      Labels `json:"labels,omitempty"`
@@ -11332,18 +11378,32 @@ func (c Client) UpdateIAMRole(ctx context.Context, id UUID, req UpdateIAMRoleReq
 	return bodyresp, nil
 }
 
-// Update IAM Assume role Policy
-func (c Client) UpdateIAMRoleAssumePolicy(ctx context.Context, id UUID, req IAMPolicy) (*Operation, error) {
-	path := fmt.Sprintf("/iam-role/%v:assume-role-policy", id)
+type AssumeIAMRoleResponse struct {
+	ExpiresAT string `json:"expires-at,omitempty"`
+	Key       string `json:"key,omitempty"`
+	Name      string `json:"name,omitempty"`
+	OrgID     string `json:"org-id,omitempty"`
+	RoleID    string `json:"role-id,omitempty"`
+	Secret    string `json:"secret,omitempty"`
+}
+
+type AssumeIAMRoleRequest struct {
+	// TTL in seconds for the generated access key (cannot exceed the max TTL defined in the targeted assume role)
+	Ttl int64 `json:"ttl" validate:"required,gt=0"`
+}
+
+// [BETA] Request generation of key/secret that allow caller to assume target role
+func (c Client) AssumeIAMRole(ctx context.Context, id UUID, req AssumeIAMRoleRequest) (*AssumeIAMRoleResponse, error) {
+	path := fmt.Sprintf("/iam-role/%v/assume", id)
 
 	body, err := prepareJSONBody(req)
 	if err != nil {
-		return nil, fmt.Errorf("UpdateIAMRoleAssumePolicy: prepare Json body: %w", err)
+		return nil, fmt.Errorf("AssumeIAMRole: prepare Json body: %w", err)
 	}
 
-	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, body)
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
 	if err != nil {
-		return nil, fmt.Errorf("UpdateIAMRoleAssumePolicy: new request: %w", err)
+		return nil, fmt.Errorf("AssumeIAMRole: new request: %w", err)
 	}
 
 	request.Header.Add("User-Agent", c.getUserAgent())
@@ -11351,20 +11411,20 @@ func (c Client) UpdateIAMRoleAssumePolicy(ctx context.Context, id UUID, req IAMP
 	request.Header.Add("Content-Type", "application/json")
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("UpdateIAMRoleAssumePolicy: execute request editors: %w", err)
+		return nil, fmt.Errorf("AssumeIAMRole: execute request editors: %w", err)
 	}
 
 	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("UpdateIAMRoleAssumePolicy: sign request: %w", err)
+		return nil, fmt.Errorf("AssumeIAMRole: sign request: %w", err)
 	}
 
 	if c.trace {
-		dumpRequest(request, "update-iam-role-assume-policy")
+		dumpRequest(request, "assume-iam-role")
 	}
 
 	response, err := c.httpClient.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("UpdateIAMRoleAssumePolicy: http client do: %w", err)
+		return nil, fmt.Errorf("AssumeIAMRole: http client do: %w", err)
 	}
 
 	if c.trace {
@@ -11372,12 +11432,12 @@ func (c Client) UpdateIAMRoleAssumePolicy(ctx context.Context, id UUID, req IAMP
 	}
 
 	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("UpdateIAMRoleAssumePolicy: http response: %w", err)
+		return nil, fmt.Errorf("AssumeIAMRole: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := new(AssumeIAMRoleResponse)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("UpdateIAMRoleAssumePolicy: prepare Json response: %w", err)
+		return nil, fmt.Errorf("AssumeIAMRole: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -11429,70 +11489,6 @@ func (c Client) UpdateIAMRolePolicy(ctx context.Context, id UUID, req IAMPolicy)
 	bodyresp := new(Operation)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateIAMRolePolicy: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-type AssumeIAMRoleResponse struct {
-	Key    string `json:"key,omitempty"`
-	Name   string `json:"name,omitempty"`
-	OrgID  string `json:"org-id,omitempty"`
-	RoleID string `json:"role-id,omitempty"`
-	Secret string `json:"secret,omitempty"`
-}
-
-type AssumeIAMRoleRequest struct {
-	// TTL in seconds for the generated access key (cannot exceed the max TTL defined in the targeted assume role)
-	Ttl int64 `json:"ttl,omitempty" validate:"omitempty,gt=0"`
-}
-
-// [BETA] Request generation of key/secret that allow caller to assume target role
-func (c Client) AssumeIAMRole(ctx context.Context, targetRoleID UUID, req AssumeIAMRoleRequest) (*AssumeIAMRoleResponse, error) {
-	path := fmt.Sprintf("/iam-role/%v/assume", targetRoleID)
-
-	body, err := prepareJSONBody(req)
-	if err != nil {
-		return nil, fmt.Errorf("AssumeIAMRole: prepare Json body: %w", err)
-	}
-
-	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
-	if err != nil {
-		return nil, fmt.Errorf("AssumeIAMRole: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	request.Header.Add("Content-Type", "application/json")
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("AssumeIAMRole: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("AssumeIAMRole: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "assume-iam-role")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("AssumeIAMRole: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("AssumeIAMRole: http response: %w", err)
-	}
-
-	bodyresp := new(AssumeIAMRoleResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("AssumeIAMRole: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -13987,6 +13983,50 @@ func (c Client) ScheduleKmsKeyDeletion(ctx context.Context, id UUID, req Schedul
 	bodyresp := new(SuccessResponse)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ScheduleKmsKeyDeletion: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// [BETA] Returns the live-balance of the current organization.
+func (c Client) GetLiveBalance(ctx context.Context) (*LiveBalance, error) {
+	path := "/live-balance"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetLiveBalance: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetLiveBalance: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetLiveBalance: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-live-balance")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetLiveBalance: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetLiveBalance: http response: %w", err)
+	}
+
+	bodyresp := new(LiveBalance)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetLiveBalance: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -16752,6 +16792,102 @@ func (c Client) GetSKSClusterAuthorityCert(ctx context.Context, id UUID, authori
 	return bodyresp, nil
 }
 
+type GenerateSKSKarpenterExoscaleNodeclassResponse struct {
+	ExoscaleNodeclass string `json:"exoscale-nodeclass,omitempty"`
+}
+
+// Generate a Karpenter ExoscaleNodeClass manifest for an SKS cluster, including its default security group and feature flags if present
+func (c Client) GenerateSKSKarpenterExoscaleNodeclass(ctx context.Context, id UUID) (*GenerateSKSKarpenterExoscaleNodeclassResponse, error) {
+	path := fmt.Sprintf("/sks-cluster/%v/generate-karpenter-exoscale-nodeclass", id)
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterExoscaleNodeclass: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterExoscaleNodeclass: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterExoscaleNodeclass: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "generate-sks-karpenter-exoscale-nodeclass")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterExoscaleNodeclass: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterExoscaleNodeclass: http response: %w", err)
+	}
+
+	bodyresp := new(GenerateSKSKarpenterExoscaleNodeclassResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterExoscaleNodeclass: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type GenerateSKSKarpenterNodepoolResponse struct {
+	Nodepool string `json:"nodepool,omitempty"`
+}
+
+// Generate a Karpenter NodePool manifest with minimal configuration for an SKS cluster
+func (c Client) GenerateSKSKarpenterNodepool(ctx context.Context, id UUID) (*GenerateSKSKarpenterNodepoolResponse, error) {
+	path := fmt.Sprintf("/sks-cluster/%v/generate-karpenter-nodepool", id)
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterNodepool: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterNodepool: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterNodepool: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "generate-sks-karpenter-nodepool")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterNodepool: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterNodepool: http response: %w", err)
+	}
+
+	bodyresp := new(GenerateSKSKarpenterNodepoolResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GenerateSKSKarpenterNodepool: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 type GetSKSClusterInspectionResponse map[string]any
 
 // Helps troubleshoot common problems when deploying a kubernetes cluster. Inspections run every couple of minutes.
@@ -18801,6 +18937,279 @@ func (c Client) UpdateUserRole(ctx context.Context, id UUID, req UpdateUserRoleR
 	return bodyresp, nil
 }
 
+type ListVpcsResponse struct {
+	Vpcs []ListVpcResponseEntry `json:"vpcs,omitempty"`
+}
+
+// FindListVpcResponseEntry attempts to find an ListVpcResponseEntry by nameOrID.
+func (l ListVpcsResponse) FindListVpcResponseEntry(nameOrID string) (ListVpcResponseEntry, error) {
+	var result []ListVpcResponseEntry
+	for i, elem := range l.Vpcs {
+		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
+			result = append(result, l.Vpcs[i])
+		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return ListVpcResponseEntry{}, fmt.Errorf("%q too many found in ListVpcsResponse: %w", nameOrID, ErrConflict)
+	}
+
+	return ListVpcResponseEntry{}, fmt.Errorf("%q not found in ListVpcsResponse: %w", nameOrID, ErrNotFound)
+}
+
+// [BETA] List VPCs
+func (c Client) ListVpcs(ctx context.Context) (*ListVpcsResponse, error) {
+	path := "/vpc"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ListVpcs: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ListVpcs: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ListVpcs: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "list-vpcs")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ListVpcs: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ListVpcs: http response: %w", err)
+	}
+
+	bodyresp := new(ListVpcsResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ListVpcs: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type CreateVpcRequest struct {
+	// VPC description
+	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
+	Labels      Labels `json:"labels,omitempty"`
+	// VPC name
+	Name string `json:"name" validate:"required,gte=1,lte=255"`
+}
+
+// [BETA] Create a VPC
+func (c Client) CreateVpc(ctx context.Context, req CreateVpcRequest) (*Operation, error) {
+	path := "/vpc"
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("CreateVpc: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("CreateVpc: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("CreateVpc: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("CreateVpc: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "create-vpc")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("CreateVpc: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("CreateVpc: http response: %w", err)
+	}
+
+	bodyresp := new(Operation)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("CreateVpc: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// [BETA] Delete a VPC
+func (c Client) DeleteVpc(ctx context.Context, id UUID) (*Operation, error) {
+	path := fmt.Sprintf("/vpc/%v", id)
+
+	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteVpc: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("DeleteVpc: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("DeleteVpc: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "delete-vpc")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteVpc: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("DeleteVpc: http response: %w", err)
+	}
+
+	bodyresp := new(Operation)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("DeleteVpc: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// [BETA] Retrieve VPC details
+func (c Client) GetVpc(ctx context.Context, id UUID) (*Vpc, error) {
+	path := fmt.Sprintf("/vpc/%v", id)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetVpc: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetVpc: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetVpc: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-vpc")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetVpc: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetVpc: http response: %w", err)
+	}
+
+	bodyresp := new(Vpc)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetVpc: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type UpdateVpcRequest struct {
+	// VPC description
+	Description *string `json:"description,omitempty" validate:"omitempty,lte=4096"`
+	Labels      Labels  `json:"labels"`
+	// VPC name
+	Name *string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
+}
+
+// [BETA] Update a VPC
+func (c Client) UpdateVpc(ctx context.Context, id UUID, req UpdateVpcRequest) (*Vpc, error) {
+	path := fmt.Sprintf("/vpc/%v", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateVpc: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateVpc: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("UpdateVpc: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("UpdateVpc: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "update-vpc")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateVpc: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("UpdateVpc: http response: %w", err)
+	}
+
+	bodyresp := new(Vpc)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("UpdateVpc: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 type ListZonesResponse struct {
 	Zones []Zone `json:"zones,omitempty"`
 }
@@ -18837,10 +19246,6 @@ func (c Client) ListZones(ctx context.Context) (*ListZonesResponse, error) {
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
 		return nil, fmt.Errorf("ListZones: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("ListZones: sign request: %w", err)
 	}
 
 	if c.trace {

@@ -2,14 +2,21 @@
 
 ## Unreleased
 
+## 1.95.2
+
 ### Features
 
 - storage: add `move` command for moving objects within and across buckets #838
 - sks: add `name` flag to kubeconfig command to set custom cluster and context name
+- Re-introduce ARM64 builds for Windows #844
 
 ### Improvements
 
 - e2e: prefix API test run IDs with `cli-e2e-` so shared test org resources don't collide with other repos
+
+### Bug fixes
+
+- dbaas: fix zone switching for DBaaS-only IAM keys (egoscale#767)
 
 ## 1.95.1
 
