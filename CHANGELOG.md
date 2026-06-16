@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.95.2
+
 ### Features
 
 - storage: add `move` command for moving objects within and across buckets #838
@@ -9,8 +11,6 @@
 ### Improvements
 
 - e2e: prefix API test run IDs with `cli-e2e-` so shared test org resources don't collide with other repos
-
-## 1.95.2
 
 ### Bug fixes
 
