@@ -34,7 +34,7 @@ func (c *Client) MoveObject(ctx context.Context, srcBucket, srcKey, dstBucket, d
 
 	size := headRes.ContentLength
 
-	if size > moveLargeObjectThreshold {
+	if *size > moveLargeObjectThreshold {
 		return c.moveLargeObject(ctx, srcBucket, srcKey, dstBucket, dstKey, headRes, multipartConcurrency, verbose)
 	}
 

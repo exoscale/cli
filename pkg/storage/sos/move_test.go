@@ -32,7 +32,7 @@ func TestMoveObject_SingleObject(t *testing.T) {
 			setupMocks: func(m *MockS3API) {
 				m.mockHeadObject = func(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options)) (*s3.HeadObjectOutput, error) {
 					return &s3.HeadObjectOutput{
-						ContentLength: 1024,
+						ContentLength: aws.Int64(1024),
 						Metadata:      map[string]string{"key": "value"},
 						ContentType:   aws.String("text/plain"),
 					}, nil
@@ -62,7 +62,7 @@ func TestMoveObject_SingleObject(t *testing.T) {
 			dstKey:    "dest-key",
 			setupMocks: func(m *MockS3API) {
 				m.mockHeadObject = func(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options)) (*s3.HeadObjectOutput, error) {
-					return &s3.HeadObjectOutput{ContentLength: 1024}, nil
+					return &s3.HeadObjectOutput{ContentLength: aws.Int64(1024)}, nil
 				}
 				m.mockGetObjectAcl = func(ctx context.Context, params *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
 					return &s3.GetObjectAclOutput{}, nil
@@ -81,7 +81,7 @@ func TestMoveObject_SingleObject(t *testing.T) {
 			dstKey:    "dest-key",
 			setupMocks: func(m *MockS3API) {
 				m.mockHeadObject = func(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options)) (*s3.HeadObjectOutput, error) {
-					return &s3.HeadObjectOutput{ContentLength: 1024}, nil
+					return &s3.HeadObjectOutput{ContentLength: aws.Int64(1024)}, nil
 				}
 				m.mockGetObjectAcl = func(ctx context.Context, params *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
 					return &s3.GetObjectAclOutput{}, nil
@@ -135,7 +135,7 @@ func TestMoveObject_Multipart(t *testing.T) {
 		mockS3API := &MockS3API{
 			mockHeadObject: func(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options)) (*s3.HeadObjectOutput, error) {
 				return &s3.HeadObjectOutput{
-					ContentLength: 5*1024*1024*1024 + 1,
+					ContentLength: aws.Int64(5*1024*1024*1024 + 1),
 					Metadata:      map[string]string{"key": "value"},
 				}, nil
 			},
@@ -155,7 +155,7 @@ func TestMoveObject_Multipart(t *testing.T) {
 			},
 			mockCompleteMultipartUpload: func(ctx context.Context, params *s3.CompleteMultipartUploadInput, optFns ...func(*s3.Options)) (*s3.CompleteMultipartUploadOutput, error) {
 				for i := 1; i < len(params.MultipartUpload.Parts); i++ {
-					assert.Less(t, params.MultipartUpload.Parts[i-1].PartNumber, params.MultipartUpload.Parts[i].PartNumber,
+					assert.Less(t, aws.ToInt32(params.MultipartUpload.Parts[i-1].PartNumber), aws.ToInt32(params.MultipartUpload.Parts[i].PartNumber),
 						"parts must be sorted by PartNumber")
 				}
 				return &s3.CompleteMultipartUploadOutput{}, nil
@@ -178,7 +178,7 @@ func TestMoveObject_Multipart(t *testing.T) {
 		abortCalled := false
 		mockS3API := &MockS3API{
 			mockHeadObject: func(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options)) (*s3.HeadObjectOutput, error) {
-				return &s3.HeadObjectOutput{ContentLength: 5*1024*1024*1024 + 1}, nil
+				return &s3.HeadObjectOutput{ContentLength: aws.Int64(5*1024*1024*1024 + 1)}, nil
 			},
 			mockGetObjectAcl: func(ctx context.Context, params *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
 				return &s3.GetObjectAclOutput{}, nil

@@ -105,7 +105,7 @@ func TestBlockStorage(t *testing.T) {
 				Command:     "exo compute block-storage snapshot show {{.SnapshotName}}",
 				Expected: blockStorageSnapshotShowOutput{
 					Name:  params.SnapshotName,
-					Size:  "0 GiB",
+					Size:  "12 GiB",
 					State: "created",
 					Labels: map[string]string{
 						"ping": "pong",
@@ -119,7 +119,7 @@ func TestBlockStorage(t *testing.T) {
 					" --rename {{.NewSnapshotName}}",
 				Expected: blockStorageSnapshotShowOutput{
 					Name:  params.NewSnapshotName,
-					Size:  "0 GiB",
+					Size:  "12 GiB",
 					State: "created",
 					Labels: map[string]string{
 						"ping": "pong",
@@ -133,7 +133,7 @@ func TestBlockStorage(t *testing.T) {
 					" --label new=label",
 				Expected: blockStorageSnapshotShowOutput{
 					Name:  params.NewSnapshotName,
-					Size:  "0 GiB",
+					Size:  "12 GiB",
 					State: "created",
 					Labels: map[string]string{
 						"new": "label",
@@ -147,7 +147,7 @@ func TestBlockStorage(t *testing.T) {
 					" --rename {{.SnapshotName}}",
 				Expected: blockStorageSnapshotShowOutput{
 					Name:  params.SnapshotName,
-					Size:  "0 GiB",
+					Size:  "12 GiB",
 					State: "created",
 					Labels: map[string]string{
 						"another": "change",
@@ -160,7 +160,7 @@ func TestBlockStorage(t *testing.T) {
 					" --label=[=]",
 				Expected: blockStorageSnapshotShowOutput{
 					Name:   params.SnapshotName,
-					Size:   "0 GiB",
+					Size:   "12 GiB",
 					State:  "created",
 					Labels: map[string]string{},
 				},
