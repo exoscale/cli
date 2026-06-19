@@ -49,7 +49,7 @@ func (o *instanceTypeListOutput) ToTable() {
 			cols = append(
 				cols,
 				fmt.Sprint(p.CPUs),
-				humanize.Bytes(uint64(p.Memory)),
+				humanize.IBytes(uint64(p.Memory)),
 				fmt.Sprint(p.Authorized),
 			)
 		}
