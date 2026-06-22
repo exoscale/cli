@@ -288,7 +288,7 @@ func TestUploadFile(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer os.RemoveAll(tempDir)
+			defer os.RemoveAll(tempDir) // nolint: errcheck
 
 			fileToUpload := tempDir + "/" + tc.file
 
@@ -422,7 +422,7 @@ func TestUploadFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		os.RemoveAll(tempDir)
+		_ = os.RemoveAll(tempDir)
 	})
 
 	tempFile1 := filepath.Join(tempDir, "file1.txt")

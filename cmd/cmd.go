@@ -153,7 +153,7 @@ type cliCommand interface {
 // specified from the cliCommand.
 func cliCommandFlagName(c cliCommand, field interface{}) (string, error) {
 	fieldValue := reflect.ValueOf(field)
-	if fieldValue.Kind() != reflect.Ptr || fieldValue.IsNil() {
+	if fieldValue.Kind() != reflect.Pointer || fieldValue.IsNil() {
 		return "", fmt.Errorf("field must be a non-nil pointer value")
 	}
 
@@ -215,7 +215,7 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 	fs := pflag.NewFlagSet("", pflag.ExitOnError)
 	cv := reflect.ValueOf(c)
 
-	if cv.Kind() == reflect.Ptr {
+	if cv.Kind() == reflect.Pointer {
 		cv = cv.Elem()
 	}
 
@@ -333,7 +333,7 @@ func cliCommandUse(c cliCommand) (string, error) {
 
 	cv := reflect.ValueOf(c)
 
-	if cv.Kind() == reflect.Ptr {
+	if cv.Kind() == reflect.Pointer {
 		cv = cv.Elem()
 	}
 
@@ -404,7 +404,7 @@ func cliCommandUse(c cliCommand) (string, error) {
 func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) error { //nolint:gocyclo
 	cv := reflect.ValueOf(c)
 
-	if cv.Kind() == reflect.Ptr {
+	if cv.Kind() == reflect.Pointer {
 		cv = cv.Elem()
 	}
 
@@ -425,7 +425,8 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 		if argMode, ok := cTypeField.Tag.Lookup("cli-arg"); ok {
 			switch t := cTypeField.Type.Kind(); t {
 			case reflect.Int64:
-				if argMode == "#" {
+				switch argMode {
+				case "#":
 					// Required arg
 					if argp >= len(args) {
 						return fmt.Errorf("missing arguments, run with --help for usage")
@@ -436,7 +437,7 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 						return fmt.Errorf("invalid value %q", args[argp])
 					}
 					cField.SetInt(int64(argVal))
-				} else if argMode == "?" {
+				case "?":
 					// Optional arg
 					if argp < len(args) {
 						argVal, err := strconv.Atoi(args[argp])
@@ -448,13 +449,14 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 				}
 
 			case reflect.String:
-				if argMode == "#" {
+				switch argMode {
+				case "#":
 					// Required arg
 					if argp >= len(args) {
 						return fmt.Errorf("missing arguments, run with --help for usage")
 					}
 					cField.SetString(args[argp])
-				} else if argMode == "?" {
+				case "?":
 					// Optional arg
 					if argp < len(args) {
 						cField.SetString(args[argp])

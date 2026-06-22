@@ -40,7 +40,7 @@ func TestDeploymentUpdate(t *testing.T) {
 		if r.Method == http.MethodPatch {
 			capturedID = path.Base(r.URL.Path)
 			body, _ := io.ReadAll(r.Body)
-			r.Body.Close()
+			_ = r.Body.Close()
 			if err := json.Unmarshal(body, &capturedRequest); err != nil {
 				t.Fatalf("failed to unmarshal request: %v", err)
 			}
