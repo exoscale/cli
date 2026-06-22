@@ -870,6 +870,26 @@ func (m *validateOpGetObjectAcl) HandleInitialize(ctx context.Context, in middle
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpGetObjectAttributes struct {
+}
+
+func (*validateOpGetObjectAttributes) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpGetObjectAttributes) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*GetObjectAttributesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpGetObjectAttributesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpGetObject struct {
 }
 
@@ -1750,6 +1770,26 @@ func (m *validateOpRestoreObject) HandleInitialize(ctx context.Context, in middl
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpSelectObjectContent struct {
+}
+
+func (*validateOpSelectObjectContent) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpSelectObjectContent) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*SelectObjectContentInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpSelectObjectContentInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpUploadPartCopy struct {
 }
 
@@ -1785,6 +1825,26 @@ func (m *validateOpUploadPart) HandleInitialize(ctx context.Context, in middlewa
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpUploadPartInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpWriteGetObjectResponse struct {
+}
+
+func (*validateOpWriteGetObjectResponse) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpWriteGetObjectResponse) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*WriteGetObjectResponseInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpWriteGetObjectResponseInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -1960,6 +2020,10 @@ func addOpGetBucketWebsiteValidationMiddleware(stack *middleware.Stack) error {
 
 func addOpGetObjectAclValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpGetObjectAcl{}, middleware.After)
+}
+
+func addOpGetObjectAttributesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpGetObjectAttributes{}, middleware.After)
 }
 
 func addOpGetObjectValidationMiddleware(stack *middleware.Stack) error {
@@ -2138,12 +2202,20 @@ func addOpRestoreObjectValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpRestoreObject{}, middleware.After)
 }
 
+func addOpSelectObjectContentValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpSelectObjectContent{}, middleware.After)
+}
+
 func addOpUploadPartCopyValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpUploadPartCopy{}, middleware.After)
 }
 
 func addOpUploadPartValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpUploadPart{}, middleware.After)
+}
+
+func addOpWriteGetObjectResponseValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpWriteGetObjectResponse{}, middleware.After)
 }
 
 func validateAccessControlPolicy(v *types.AccessControlPolicy) error {
@@ -2626,6 +2698,9 @@ func validateInventoryConfiguration(v *types.InventoryConfiguration) error {
 		if err := validateInventoryDestination(v.Destination); err != nil {
 			invalidParams.AddNested("Destination", err.(smithy.InvalidParamsError))
 		}
+	}
+	if v.IsEnabled == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("IsEnabled"))
 	}
 	if v.Filter != nil {
 		if err := validateInventoryFilter(v.Filter); err != nil {
@@ -3663,6 +3738,9 @@ func validateTiering(v *types.Tiering) error {
 		return nil
 	}
 	invalidParams := smithy.InvalidParamsError{Context: "Tiering"}
+	if v.Days == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Days"))
+	}
 	if len(v.AccessTier) == 0 {
 		invalidParams.Add(smithy.NewErrParamRequired("AccessTier"))
 	}
@@ -4455,6 +4533,27 @@ func validateOpGetObjectAclInput(v *GetObjectAclInput) error {
 	}
 	if v.Key == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("Key"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpGetObjectAttributesInput(v *GetObjectAttributesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "GetObjectAttributesInput"}
+	if v.Bucket == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Bucket"))
+	}
+	if v.Key == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Key"))
+	}
+	if v.ObjectAttributes == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ObjectAttributes"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -5307,6 +5406,36 @@ func validateOpRestoreObjectInput(v *RestoreObjectInput) error {
 	}
 }
 
+func validateOpSelectObjectContentInput(v *SelectObjectContentInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "SelectObjectContentInput"}
+	if v.Bucket == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Bucket"))
+	}
+	if v.Key == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Key"))
+	}
+	if v.Expression == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Expression"))
+	}
+	if len(v.ExpressionType) == 0 {
+		invalidParams.Add(smithy.NewErrParamRequired("ExpressionType"))
+	}
+	if v.InputSerialization == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("InputSerialization"))
+	}
+	if v.OutputSerialization == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("OutputSerialization"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpUploadPartCopyInput(v *UploadPartCopyInput) error {
 	if v == nil {
 		return nil
@@ -5320,6 +5449,9 @@ func validateOpUploadPartCopyInput(v *UploadPartCopyInput) error {
 	}
 	if v.Key == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("Key"))
+	}
+	if v.PartNumber == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("PartNumber"))
 	}
 	if v.UploadId == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("UploadId"))
@@ -5342,8 +5474,29 @@ func validateOpUploadPartInput(v *UploadPartInput) error {
 	if v.Key == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("Key"))
 	}
+	if v.PartNumber == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("PartNumber"))
+	}
 	if v.UploadId == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("UploadId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpWriteGetObjectResponseInput(v *WriteGetObjectResponseInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "WriteGetObjectResponseInput"}
+	if v.RequestRoute == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("RequestRoute"))
+	}
+	if v.RequestToken == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("RequestToken"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams

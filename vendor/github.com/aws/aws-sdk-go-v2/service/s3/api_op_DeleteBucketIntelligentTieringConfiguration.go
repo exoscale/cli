@@ -4,6 +4,7 @@ package s3
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	s3cust "github.com/aws/aws-sdk-go-v2/service/s3/internal/customizations"
@@ -14,36 +15,27 @@ import (
 // Deletes the S3 Intelligent-Tiering configuration from the specified bucket. The
 // S3 Intelligent-Tiering storage class is designed to optimize storage costs by
 // automatically moving data to the most cost-effective storage access tier,
-// without additional operational overhead. S3 Intelligent-Tiering delivers
-// automatic cost savings by moving data between access tiers, when access patterns
-// change. The S3 Intelligent-Tiering storage class is suitable for objects larger
-// than 128 KB that you plan to store for at least 30 days. If the size of an
-// object is less than 128 KB, it is not eligible for auto-tiering. Smaller objects
-// can be stored, but they are always charged at the frequent access tier rates in
-// the S3 Intelligent-Tiering storage class. If you delete an object before the end
-// of the 30-day minimum storage duration period, you are charged for 30 days. For
-// more information, see Storage class for automatically optimizing frequently and
-// infrequently accessed objects
-// (https://docs.aws.amazon.com/AmazonS3/latest/dev/storage-class-intro.html#sc-dynamic-data-access).
-// Operations related to DeleteBucketIntelligentTieringConfiguration include:
-//
-// *
-// GetBucketIntelligentTieringConfiguration
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketIntelligentTieringConfiguration.html)
-//
-// *
-// PutBucketIntelligentTieringConfiguration
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketIntelligentTieringConfiguration.html)
-//
-// *
-// ListBucketIntelligentTieringConfigurations
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBucketIntelligentTieringConfigurations.html)
+// without performance impact or operational overhead. S3 Intelligent-Tiering
+// delivers automatic cost savings in three low latency and high throughput access
+// tiers. To get the lowest storage cost on data that can be accessed in minutes to
+// hours, you can choose to activate additional archiving capabilities. The S3
+// Intelligent-Tiering storage class is the ideal storage class for data with
+// unknown, changing, or unpredictable access patterns, independent of object size
+// or retention period. If the size of an object is less than 128 KB, it is not
+// monitored and not eligible for auto-tiering. Smaller objects can be stored, but
+// they are always charged at the Frequent Access tier rates in the S3
+// Intelligent-Tiering storage class. For more information, see Storage class for
+// automatically optimizing frequently and infrequently accessed objects (https://docs.aws.amazon.com/AmazonS3/latest/dev/storage-class-intro.html#sc-dynamic-data-access)
+// . Operations related to DeleteBucketIntelligentTieringConfiguration include:
+//   - GetBucketIntelligentTieringConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketIntelligentTieringConfiguration.html)
+//   - PutBucketIntelligentTieringConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketIntelligentTieringConfiguration.html)
+//   - ListBucketIntelligentTieringConfigurations (https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBucketIntelligentTieringConfigurations.html)
 func (c *Client) DeleteBucketIntelligentTieringConfiguration(ctx context.Context, params *DeleteBucketIntelligentTieringConfigurationInput, optFns ...func(*Options)) (*DeleteBucketIntelligentTieringConfigurationOutput, error) {
 	if params == nil {
 		params = &DeleteBucketIntelligentTieringConfigurationInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "DeleteBucketIntelligentTieringConfiguration", params, optFns, addOperationDeleteBucketIntelligentTieringConfigurationMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "DeleteBucketIntelligentTieringConfiguration", params, optFns, c.addOperationDeleteBucketIntelligentTieringConfigurationMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -65,20 +57,39 @@ type DeleteBucketIntelligentTieringConfigurationInput struct {
 	//
 	// This member is required.
 	Id *string
+
+	noSmithyDocumentSerde
+}
+
+func (in *DeleteBucketIntelligentTieringConfigurationInput) bindEndpointParams(p *EndpointParameters) {
+	p.Bucket = in.Bucket
+
 }
 
 type DeleteBucketIntelligentTieringConfigurationOutput struct {
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationDeleteBucketIntelligentTieringConfigurationMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationDeleteBucketIntelligentTieringConfigurationMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsRestxml_serializeOpDeleteBucketIntelligentTieringConfiguration{}, middleware.After)
 	if err != nil {
 		return err
 	}
 	err = stack.Deserialize.Add(&awsRestxml_deserializeOpDeleteBucketIntelligentTieringConfiguration{}, middleware.After)
 	if err != nil {
+		return err
+	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "DeleteBucketIntelligentTieringConfiguration"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
 		return err
 	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
@@ -99,22 +110,22 @@ func addOperationDeleteBucketIntelligentTieringConfigurationMiddlewares(stack *m
 	if err = addRetryMiddlewares(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
-		return err
-	}
 	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
 		return err
 	}
 	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
 	if err = addOpDeleteBucketIntelligentTieringConfigurationValidationMiddleware(stack); err != nil {
@@ -124,6 +135,9 @@ func addOperationDeleteBucketIntelligentTieringConfigurationMiddlewares(stack *m
 		return err
 	}
 	if err = addMetadataRetrieverMiddleware(stack); err != nil {
+		return err
+	}
+	if err = awsmiddleware.AddRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addDeleteBucketIntelligentTieringConfigurationUpdateEndpoint(stack, options); err != nil {
@@ -141,14 +155,26 @@ func addOperationDeleteBucketIntelligentTieringConfigurationMiddlewares(stack *m
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSerializeImmutableHostnameBucketMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (v *DeleteBucketIntelligentTieringConfigurationInput) bucket() (string, bool) {
+	if v.Bucket == nil {
+		return "", false
+	}
+	return *v.Bucket, true
 }
 
 func newServiceMetadataMiddleware_opDeleteBucketIntelligentTieringConfiguration(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "s3",
 		OperationName: "DeleteBucketIntelligentTieringConfiguration",
 	}
 }
@@ -168,12 +194,13 @@ func addDeleteBucketIntelligentTieringConfigurationUpdateEndpoint(stack *middlew
 		Accessor: s3cust.UpdateEndpointParameterAccessor{
 			GetBucketFromInput: getDeleteBucketIntelligentTieringConfigurationBucketMember,
 		},
-		UsePathStyle:            options.UsePathStyle,
-		UseAccelerate:           options.UseAccelerate,
-		SupportsAccelerate:      true,
-		EndpointResolver:        options.EndpointResolver,
-		EndpointResolverOptions: options.EndpointOptions,
-		UseDualstack:            options.UseDualstack,
-		UseARNRegion:            options.UseARNRegion,
+		UsePathStyle:                   options.UsePathStyle,
+		UseAccelerate:                  options.UseAccelerate,
+		SupportsAccelerate:             true,
+		TargetS3ObjectLambda:           false,
+		EndpointResolver:               options.EndpointResolver,
+		EndpointResolverOptions:        options.EndpointOptions,
+		UseARNRegion:                   options.UseARNRegion,
+		DisableMultiRegionAccessPoints: options.DisableMultiRegionAccessPoints,
 	})
 }

@@ -4,6 +4,7 @@ package s3
 
 import (
 	"context"
+	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	s3cust "github.com/aws/aws-sdk-go-v2/service/s3/internal/customizations"
@@ -16,37 +17,21 @@ import (
 // request parameters as selection criteria to return a subset of the objects in a
 // bucket. A 200 OK response can contain valid or invalid XML. Be sure to design
 // your application to parse the contents of the response and handle it
-// appropriately. This API has been revised. We recommend that you use the newer
-// version, ListObjectsV2
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html), when
-// developing applications. For backward compatibility, Amazon S3 continues to
-// support ListObjects. The following operations are related to ListObjects:
-//
-// *
-// ListObjectsV2
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html)
-//
-// *
-// GetObject
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html)
-//
-// *
-// PutObject
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html)
-//
-// *
-// CreateBucket
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html)
-//
-// *
-// ListBuckets
-// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html)
+// appropriately. This action has been revised. We recommend that you use the newer
+// version, ListObjectsV2 (https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html)
+// , when developing applications. For backward compatibility, Amazon S3 continues
+// to support ListObjects . The following operations are related to ListObjects :
+//   - ListObjectsV2 (https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html)
+//   - GetObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html)
+//   - PutObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html)
+//   - CreateBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html)
+//   - ListBuckets (https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html)
 func (c *Client) ListObjects(ctx context.Context, params *ListObjectsInput, optFns ...func(*Options)) (*ListObjectsOutput, error) {
 	if params == nil {
 		params = &ListObjectsInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "ListObjects", params, optFns, addOperationListObjectsMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "ListObjects", params, optFns, c.addOperationListObjectsMiddlewares)
 	if err != nil {
 		return nil, err
 	}
@@ -58,49 +43,53 @@ func (c *Client) ListObjects(ctx context.Context, params *ListObjectsInput, optF
 
 type ListObjectsInput struct {
 
-	// The name of the bucket containing the objects. When using this API with an
+	// The name of the bucket containing the objects. When using this action with an
 	// access point, you must direct requests to the access point hostname. The access
 	// point hostname takes the form
 	// AccessPointName-AccountId.s3-accesspoint.Region.amazonaws.com. When using this
-	// operation with an access point through the AWS SDKs, you provide the access
-	// point ARN in place of the bucket name. For more information about access point
-	// ARNs, see Using Access Points
-	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/using-access-points.html) in
-	// the Amazon Simple Storage Service Developer Guide. When using this API with
-	// Amazon S3 on Outposts, you must direct requests to the S3 on Outposts hostname.
-	// The S3 on Outposts hostname takes the form
-	// AccessPointName-AccountId.outpostID.s3-outposts.Region.amazonaws.com. When using
-	// this operation using S3 on Outposts through the AWS SDKs, you provide the
-	// Outposts bucket ARN in place of the bucket name. For more information about S3
-	// on Outposts ARNs, see Using S3 on Outposts
-	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/S3onOutposts.html) in the
-	// Amazon Simple Storage Service Developer Guide.
+	// action with an access point through the Amazon Web Services SDKs, you provide
+	// the access point ARN in place of the bucket name. For more information about
+	// access point ARNs, see Using access points (https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-access-points.html)
+	// in the Amazon S3 User Guide. When you use this action with Amazon S3 on
+	// Outposts, you must direct requests to the S3 on Outposts hostname. The S3 on
+	// Outposts hostname takes the form
+	// AccessPointName-AccountId.outpostID.s3-outposts.Region.amazonaws.com . When you
+	// use this action with S3 on Outposts through the Amazon Web Services SDKs, you
+	// provide the Outposts access point ARN in place of the bucket name. For more
+	// information about S3 on Outposts ARNs, see What is S3 on Outposts? (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3onOutposts.html)
+	// in the Amazon S3 User Guide.
 	//
 	// This member is required.
 	Bucket *string
 
-	// A delimiter is a character you use to group keys.
+	// A delimiter is a character that you use to group keys.
 	Delimiter *string
 
 	// Requests Amazon S3 to encode the object keys in the response and specifies the
-	// encoding method to use. An object key may contain any Unicode character;
-	// however, XML 1.0 parser cannot parse some characters, such as characters with an
-	// ASCII value from 0 to 10. For characters that are not supported in XML 1.0, you
-	// can add this parameter to request that Amazon S3 encode the keys in the
+	// encoding method to use. An object key can contain any Unicode character;
+	// however, the XML 1.0 parser cannot parse some characters, such as characters
+	// with an ASCII value from 0 to 10. For characters that are not supported in XML
+	// 1.0, you can add this parameter to request that Amazon S3 encode the keys in the
 	// response.
 	EncodingType types.EncodingType
 
-	// The account id of the expected bucket owner. If the bucket is owned by a
-	// different account, the request will fail with an HTTP 403 (Access Denied) error.
+	// The account ID of the expected bucket owner. If the bucket is owned by a
+	// different account, the request fails with the HTTP status code 403 Forbidden
+	// (access denied).
 	ExpectedBucketOwner *string
 
-	// Specifies the key to start with when listing objects in a bucket.
+	// Marker is where you want Amazon S3 to start listing from. Amazon S3 starts
+	// listing after this specified key. Marker can be any key in the bucket.
 	Marker *string
 
-	// Sets the maximum number of keys returned in the response. By default the API
-	// returns up to 1,000 key names. The response might contain fewer keys but will
-	// never contain more.
-	MaxKeys int32
+	// Sets the maximum number of keys returned in the response. By default, the
+	// action returns up to 1,000 key names. The response might contain fewer keys but
+	// will never contain more.
+	MaxKeys *int32
+
+	// Specifies the optional fields that you want returned in the response. Fields
+	// that you do not specify are not returned.
+	OptionalObjectAttributes []types.OptionalObjectAttributes
 
 	// Limits the response to keys that begin with the specified prefix.
 	Prefix *string
@@ -109,19 +98,26 @@ type ListObjectsInput struct {
 	// objects request. Bucket owners need not specify this parameter in their
 	// requests.
 	RequestPayer types.RequestPayer
+
+	noSmithyDocumentSerde
+}
+
+func (in *ListObjectsInput) bindEndpointParams(p *EndpointParameters) {
+	p.Bucket = in.Bucket
+
 }
 
 type ListObjectsOutput struct {
 
-	// All of the keys rolled up in a common prefix count as a single return when
-	// calculating the number of returns. A response can contain CommonPrefixes only if
-	// you specify a delimiter. CommonPrefixes contains all (if there are any) keys
-	// between Prefix and the next occurrence of the string specified by the delimiter.
-	// CommonPrefixes lists keys that act like subdirectories in the directory
-	// specified by Prefix. For example, if the prefix is notes/ and the delimiter is a
-	// slash (/) as in notes/summer/july, the common prefix is notes/summer/. All of
-	// the keys that roll up into a common prefix count as a single return when
-	// calculating the number of returns.
+	// All of the keys (up to 1,000) rolled up in a common prefix count as a single
+	// return when calculating the number of returns. A response can contain
+	// CommonPrefixes only if you specify a delimiter. CommonPrefixes contains all (if
+	// there are any) keys between Prefix and the next occurrence of the string
+	// specified by the delimiter. CommonPrefixes lists keys that act like
+	// subdirectories in the directory specified by Prefix . For example, if the prefix
+	// is notes/ and the delimiter is a slash ( / ), as in notes/summer/july , the
+	// common prefix is notes/summer/ . All of the keys that roll up into a common
+	// prefix count as a single return when calculating the number of returns.
 	CommonPrefixes []types.CommonPrefix
 
 	// Metadata about each object returned.
@@ -139,41 +135,58 @@ type ListObjectsOutput struct {
 
 	// A flag that indicates whether Amazon S3 returned all of the results that
 	// satisfied the search criteria.
-	IsTruncated bool
+	IsTruncated *bool
 
-	// Indicates where in the bucket listing begins. Marker is included in the response
-	// if it was sent with the request.
+	// Indicates where in the bucket listing begins. Marker is included in the
+	// response if it was sent with the request.
 	Marker *string
 
 	// The maximum number of keys returned in the response body.
-	MaxKeys int32
+	MaxKeys *int32
 
 	// The bucket name.
 	Name *string
 
-	// When response is truncated (the IsTruncated element value in the response is
-	// true), you can use the key name in this field as marker in the subsequent
-	// request to get next set of objects. Amazon S3 lists objects in alphabetical
-	// order Note: This element is returned only if you have delimiter request
-	// parameter specified. If response does not include the NextMarker and it is
-	// truncated, you can use the value of the last Key in the response as the marker
-	// in the subsequent request to get the next set of object keys.
+	// When the response is truncated (the IsTruncated element value in the response
+	// is true ), you can use the key name in this field as the marker parameter in
+	// the subsequent request to get the next set of objects. Amazon S3 lists objects
+	// in alphabetical order. This element is returned only if you have the delimiter
+	// request parameter specified. If the response does not include the NextMarker
+	// element and it is truncated, you can use the value of the last Key element in
+	// the response as the marker parameter in the subsequent request to get the next
+	// set of object keys.
 	NextMarker *string
 
 	// Keys that begin with the indicated prefix.
 	Prefix *string
 
+	// If present, indicates that the requester was successfully charged for the
+	// request.
+	RequestCharged types.RequestCharged
+
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
+
+	noSmithyDocumentSerde
 }
 
-func addOperationListObjectsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationListObjectsMiddlewares(stack *middleware.Stack, options Options) (err error) {
+	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
+		return err
+	}
 	err = stack.Serialize.Add(&awsRestxml_serializeOpListObjects{}, middleware.After)
 	if err != nil {
 		return err
 	}
 	err = stack.Deserialize.Add(&awsRestxml_deserializeOpListObjects{}, middleware.After)
 	if err != nil {
+		return err
+	}
+	if err := addProtocolFinalizerMiddlewares(stack, options, "ListObjects"); err != nil {
+		return fmt.Errorf("add protocol finalizers: %v", err)
+	}
+
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
 		return err
 	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
@@ -194,22 +207,22 @@ func addOperationListObjectsMiddlewares(stack *middleware.Stack, options Options
 	if err = addRetryMiddlewares(stack, options); err != nil {
 		return err
 	}
-	if err = addHTTPSignerV4Middleware(stack, options); err != nil {
-		return err
-	}
 	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
 		return err
 	}
 	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
 	if err = addOpListObjectsValidationMiddleware(stack); err != nil {
@@ -219,6 +232,9 @@ func addOperationListObjectsMiddlewares(stack *middleware.Stack, options Options
 		return err
 	}
 	if err = addMetadataRetrieverMiddleware(stack); err != nil {
+		return err
+	}
+	if err = awsmiddleware.AddRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addListObjectsUpdateEndpoint(stack, options); err != nil {
@@ -236,14 +252,26 @@ func addOperationListObjectsMiddlewares(stack *middleware.Stack, options Options
 	if err = addRequestResponseLogging(stack, options); err != nil {
 		return err
 	}
+	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSerializeImmutableHostnameBucketMiddleware(stack, options); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (v *ListObjectsInput) bucket() (string, bool) {
+	if v.Bucket == nil {
+		return "", false
+	}
+	return *v.Bucket, true
 }
 
 func newServiceMetadataMiddleware_opListObjects(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		SigningName:   "s3",
 		OperationName: "ListObjects",
 	}
 }
@@ -263,12 +291,13 @@ func addListObjectsUpdateEndpoint(stack *middleware.Stack, options Options) erro
 		Accessor: s3cust.UpdateEndpointParameterAccessor{
 			GetBucketFromInput: getListObjectsBucketMember,
 		},
-		UsePathStyle:            options.UsePathStyle,
-		UseAccelerate:           options.UseAccelerate,
-		SupportsAccelerate:      true,
-		EndpointResolver:        options.EndpointResolver,
-		EndpointResolverOptions: options.EndpointOptions,
-		UseDualstack:            options.UseDualstack,
-		UseARNRegion:            options.UseARNRegion,
+		UsePathStyle:                   options.UsePathStyle,
+		UseAccelerate:                  options.UseAccelerate,
+		SupportsAccelerate:             true,
+		TargetS3ObjectLambda:           false,
+		EndpointResolver:               options.EndpointResolver,
+		EndpointResolverOptions:        options.EndpointOptions,
+		UseARNRegion:                   options.UseARNRegion,
+		DisableMultiRegionAccessPoints: options.DisableMultiRegionAccessPoints,
 	})
 }
