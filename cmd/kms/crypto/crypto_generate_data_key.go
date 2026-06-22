@@ -63,14 +63,12 @@ func (c *cryptoGenerateDataKeyCmd) CmdPreRun(cmd *cobra.Command, args []string) 
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *cryptoGenerateDataKeyCmd) CmdRun(_ *cobra.Command, _ []string) error {
+func (c *cryptoGenerateDataKeyCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
-
-	ec := []byte(c.EncryptionContext)
 
 	var bytecount int
 	if c.BytesCount != "" {
@@ -82,9 +80,13 @@ func (c *cryptoGenerateDataKeyCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	req := v3.GenerateDataKeyRequest{
-		KeySpec:           c.KeySpec,
-		BytesCount:        bytecount,
-		EncryptionContext: &ec,
+		KeySpec:    c.KeySpec,
+		BytesCount: bytecount,
+	}
+
+	if cmd.Flags().Changed("encryption-context") {
+		ec := []byte(c.EncryptionContext)
+		req.EncryptionContext = &ec
 	}
 
 	resp, err := client.GenerateDataKey(ctx, v3.UUID(c.Key), req)

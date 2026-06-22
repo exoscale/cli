@@ -58,17 +58,20 @@ func (c *cryptoEncryptCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *cryptoEncryptCmd) CmdRun(_ *cobra.Command, _ []string) error {
+func (c *cryptoEncryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	ec := []byte(c.EncryptionContext)
 	req := v3.EncryptRequest{
-		Plaintext:         []byte(c.Plaintext),
-		EncryptionContext: &ec,
+		Plaintext: []byte(c.Plaintext),
+	}
+
+	if cmd.Flags().Changed("encryption-context") {
+		ec := []byte(c.EncryptionContext)
+		req.EncryptionContext = &ec
 	}
 
 	resp, err := client.Encrypt(ctx, v3.UUID(c.Key), req)

@@ -38,16 +38,11 @@ func (c *cryptoReencryptCmd) CmdPreRun(cmd *cobra.Command, args []string) error 
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *cryptoReencryptCmd) CmdRun(_ *cobra.Command, _ []string) error {
+func (c *cryptoReencryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
-	}
-
-	var sourceEC []byte
-	if c.SourceEncryptionContext != "" {
-		sourceEC = []byte(c.SourceEncryptionContext)
 	}
 
 	decodedCipher, err := base64.StdEncoding.DecodeString(c.Ciphertext)
@@ -55,18 +50,22 @@ func (c *cryptoReencryptCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 	source := &v3.ReEncryptRequestSource{
-		Ciphertext:        decodedCipher,
-		EncryptionContext: &sourceEC,
-		Key:               v3.UUID(c.Key),
+		Ciphertext: decodedCipher,
+		Key:        v3.UUID(c.Key),
 	}
 
-	var destEC []byte
-	if c.DestEncryptionContext != "" {
-		destEC = []byte(c.DestEncryptionContext)
+	if cmd.Flags().Changed("source-encryption-context") {
+		ec := []byte(c.SourceEncryptionContext)
+		source.EncryptionContext = &ec
 	}
+
 	dest := &v3.ReEncryptRequestDestination{
-		Key:               v3.UUID(c.DestinationKey),
-		EncryptionContext: &destEC,
+		Key: v3.UUID(c.DestinationKey),
+	}
+
+	if cmd.Flags().Changed("dest-encryption-context") {
+		ec := []byte(c.DestEncryptionContext)
+		dest.EncryptionContext = &ec
 	}
 
 	req := v3.ReEncryptRequest{
