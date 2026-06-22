@@ -59,6 +59,7 @@ func (c *keyRotationEnableCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return (&KeyShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
 			Key:                c.Key,
+			Zone:               c.Zone,
 		}).CmdRun(nil, nil)
 	}
 

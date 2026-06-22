@@ -67,6 +67,7 @@ func (c *keyCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return (&KeyShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
 			Key:                resp.ID.String(),
+			Zone:               c.Zone,
 		}).CmdRun(nil, nil)
 	}
 
