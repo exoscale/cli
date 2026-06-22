@@ -26,5 +26,8 @@ import (
 	_ "github.com/exoscale/cli/cmd/dbaas"
 	_ "github.com/exoscale/cli/cmd/dns"
 	_ "github.com/exoscale/cli/cmd/iam"
+	_ "github.com/exoscale/cli/cmd/kms"
+	_ "github.com/exoscale/cli/cmd/kms/crypto"
+	_ "github.com/exoscale/cli/cmd/kms/key"
 	_ "github.com/exoscale/cli/cmd/storage"
 )

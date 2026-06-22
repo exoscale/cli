@@ -116,7 +116,7 @@ func formatError(err error) string {
 		return apiErr.Unwrap().Error()
 	}
 
-	msg := apiErr.Unwrap().Error() + ": " + lead
+	msg := apiErr.Unwrap().Error() + ": " + apiErr.Title + ": " + lead
 	for _, e := range apiErr.Errors {
 		field := formatFieldName(e.Location)
 		detail := formatDetail(e.Detail)
