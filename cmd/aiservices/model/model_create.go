@@ -54,7 +54,7 @@ func (c *ModelCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Model created.")
+		_, _ = fmt.Fprintln(os.Stdout, "Model created.")
 	}
 	return nil
 }

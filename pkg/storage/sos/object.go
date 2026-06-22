@@ -353,7 +353,7 @@ func (c *Client) DownloadFile(
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer f.Close() // nolint: errcheck
 
 	getObjectInput := s3.GetObjectInput{
 		Bucket: aws.String(bucket),
@@ -397,7 +397,7 @@ func (o *ListBucketsOutput) ToTable() {
 		1,
 		' ',
 		tabwriter.TabIndent)
-	defer table.Flush()
+	defer table.Flush() // nolint: errcheck
 
 	for _, b := range *o {
 		_, _ = fmt.Fprintf(table, "%s\t%s\t%6s \t%s/\n",

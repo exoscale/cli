@@ -22,7 +22,7 @@ func (o *ListObjectsOutput) ToTable() {
 		1,
 		' ',
 		tabwriter.TabIndent)
-	defer table.Flush()
+	defer table.Flush() // nolint: errcheck
 
 	for _, f := range *o {
 		if f.Dir {

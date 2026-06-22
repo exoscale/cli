@@ -174,7 +174,7 @@ func (c *DeploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Deployment created.")
+		_, _ = fmt.Fprintln(os.Stdout, "Deployment created.")
 	}
 	return nil
 }
