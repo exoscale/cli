@@ -2,6 +2,7 @@ package crypto
 
 import (
 	"encoding/base64"
+	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -55,7 +56,10 @@ func (c *cryptoReencryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed("source-encryption-context") {
-		ec := []byte(c.SourceEncryptionContext)
+		ec, err := base64.StdEncoding.DecodeString(c.SourceEncryptionContext)
+		if err != nil {
+			return fmt.Errorf("source-encryption-context is not valid base64: %w", err)
+		}
 		source.EncryptionContext = &ec
 	}
 
@@ -64,7 +68,10 @@ func (c *cryptoReencryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed("dest-encryption-context") {
-		ec := []byte(c.DestEncryptionContext)
+		ec, err := base64.StdEncoding.DecodeString(c.DestEncryptionContext)
+		if err != nil {
+			return fmt.Errorf("dest-encryption-context is not valid base64: %w", err)
+		}
 		dest.EncryptionContext = &ec
 	}
 

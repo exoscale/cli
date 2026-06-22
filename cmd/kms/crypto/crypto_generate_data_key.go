@@ -2,6 +2,7 @@ package crypto
 
 import (
 	"encoding/base64"
+	"fmt"
 	"os"
 	"strconv"
 
@@ -85,7 +86,10 @@ func (c *cryptoGenerateDataKeyCmd) CmdRun(cmd *cobra.Command, _ []string) error 
 	}
 
 	if cmd.Flags().Changed("encryption-context") {
-		ec := []byte(c.EncryptionContext)
+		ec, err := base64.StdEncoding.DecodeString(c.EncryptionContext)
+		if err != nil {
+			return fmt.Errorf("encryption-context is not valid base64: %w", err)
+		}
 		req.EncryptionContext = &ec
 	}
 

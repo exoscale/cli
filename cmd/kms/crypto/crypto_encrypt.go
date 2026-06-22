@@ -2,6 +2,7 @@ package crypto
 
 import (
 	"encoding/base64"
+	"fmt"
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -37,7 +38,7 @@ type cryptoEncryptCmd struct {
 	_ bool `cli-cmd:"encrypt"`
 
 	Key       string `cli-arg:"#" cli-usage:"ID"`
-	Plaintext string `cli-arg:"#" cli-usage:"PLAINTEXT"`
+	Plaintext string `cli-arg:"#" cli-usage:"PLAINTEXT_b64"`
 
 	EncryptionContext string      `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for encryption"`
 	Zone              v3.ZoneName `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
@@ -65,12 +66,20 @@ func (c *cryptoEncryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
+	decoded, err := base64.StdEncoding.DecodeString(c.Plaintext)
+	if err != nil {
+		return fmt.Errorf("plaintext is not valid base64: %w", err)
+	}
+
 	req := v3.EncryptRequest{
-		Plaintext: []byte(c.Plaintext),
+		Plaintext: decoded,
 	}
 
 	if cmd.Flags().Changed("encryption-context") {
-		ec := []byte(c.EncryptionContext)
+		ec, err := base64.StdEncoding.DecodeString(c.EncryptionContext)
+		if err != nil {
+			return fmt.Errorf("encryption-context is not valid base64: %w", err)
+		}
 		req.EncryptionContext = &ec
 	}
 
