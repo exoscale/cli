@@ -6,11 +6,11 @@
 
 ### Features
 
-- KMS integration with `exo kms key ...` and `exo kms crypto ...` commands.
+- KMS integration with `exo kms key ...` and `exo kms crypto ...` commands #835.
 
 ### Improvements
 
-- re-enableing ARM64 builds for Windows
+- re-enableing ARM64 builds for Windows #844
 
 ## 1.95.2
 
