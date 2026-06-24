@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 1.95.3
+
+### Features
+
+- KMS integration with `exo kms key ...` and `exo kms crypto ...` commands.
+
+### Improvements
+
+- re-enableing ARM64 builds for Windows
+
 ## 1.95.2
 
 ### Features
