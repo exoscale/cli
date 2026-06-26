@@ -7,7 +7,7 @@ import (
 
 var keyCmd = &cobra.Command{
 	Use:   "key",
-	Short: "KMS key",
+	Short: "KMS key lifecycle management",
 }
 
 func init() {
