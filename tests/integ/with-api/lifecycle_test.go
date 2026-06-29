@@ -23,7 +23,13 @@ func TestLifecycle(t *testing.T) {
         {
             "Status": "Enabled",
             "Expiration": { "Days": 30 },
-            "Filter": { "Prefix": "logs/" },
+            "Filter": {
+                "And": {
+                    "Prefix": "logs/",
+                    "ObjectSizeGreaterThan": 1024,
+                    "ObjectSizeLessThan": 2048999999999
+                }
+            },
             "ID": "expire-logs-after-30-days"
         },
         {
@@ -58,7 +64,11 @@ func TestLifecycle(t *testing.T) {
 					Status: types.ExpirationStatus("Enabled"),
 					ID:     aws.String("expire-logs-after-30-days"),
 					Filter: &sos.BucketLifecycleConfRuleFilter{
-						Prefix: aws.String("logs/"),
+						And: &sos.BucketLifecycleAndOperator{
+							Prefix:                aws.String("logs/"),
+							ObjectSizeGreaterThan: aws.Int64(1024),
+							ObjectSizeLessThan:    aws.Int64(2048999999999),
+						},
 					},
 					Expiration: &types.LifecycleExpiration{
 						Days: aws.Int32(30),
