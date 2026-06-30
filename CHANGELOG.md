@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.95.4
+
 ### Improvements
 
 - api: regenerate api commands #851
