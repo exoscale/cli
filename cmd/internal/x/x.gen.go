@@ -27,7 +27,7 @@ func xServers() []map[string]string {
 	}
 }
 
-// XCreateAiApiKey Create AI API Key
+// XCreateAiApiKey [BETA] Create AI API Key
 func XCreateAiApiKey(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-ai-api-key"
 	if xSubcommand {
@@ -72,7 +72,7 @@ func XCreateAiApiKey(params *viper.Viper, body string) (*gentleman.Response, map
 	return resp, decoded, nil
 }
 
-// XListAiApiKeys List AI API Keys
+// XListAiApiKeys [BETA] List AI API Keys
 func XListAiApiKeys(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-ai-api-keys"
 	if xSubcommand {
@@ -113,8 +113,8 @@ func XListAiApiKeys(params *viper.Viper) (*gentleman.Response, map[string]interf
 	return resp, decoded, nil
 }
 
-// XDeleteAiApiKey Delete AI API Key
-func XDeleteAiApiKey(paramId string, params *viper.Viper) (*gentleman.Response, interface{}, error) {
+// XDeleteAiApiKey [BETA] Delete AI API Key
+func XDeleteAiApiKey(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "delete-ai-api-key"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
@@ -137,7 +137,7 @@ func XDeleteAiApiKey(paramId string, params *viper.Viper) (*gentleman.Response, 
 		return nil, nil, errors.Wrap(err, "Request failed")
 	}
 
-	var decoded interface{}
+	var decoded map[string]interface{}
 
 	if resp.StatusCode < 400 {
 		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
@@ -149,13 +149,13 @@ func XDeleteAiApiKey(paramId string, params *viper.Viper) (*gentleman.Response, 
 
 	after := cli.HandleAfter(handlerPath, params, resp, decoded)
 	if after != nil {
-		decoded = after
+		decoded = after.(map[string]interface{})
 	}
 
 	return resp, decoded, nil
 }
 
-// XGetAiApiKey Get AI API Key
+// XGetAiApiKey [BETA] Get AI API Key
 func XGetAiApiKey(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "get-ai-api-key"
 	if xSubcommand {
@@ -197,7 +197,7 @@ func XGetAiApiKey(paramId string, params *viper.Viper) (*gentleman.Response, map
 	return resp, decoded, nil
 }
 
-// XUpdateAiApiKey Update AI API Key
+// XUpdateAiApiKey [BETA] Update AI API Key
 func XUpdateAiApiKey(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "update-ai-api-key"
 	if xSubcommand {
@@ -243,7 +243,7 @@ func XUpdateAiApiKey(paramId string, params *viper.Viper, body string) (*gentlem
 	return resp, decoded, nil
 }
 
-// XRevealAiApiKey Reveal AI API Key
+// XRevealAiApiKey [BETA] Reveal AI API Key
 func XRevealAiApiKey(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "reveal-ai-api-key"
 	if xSubcommand {
@@ -285,7 +285,7 @@ func XRevealAiApiKey(paramId string, params *viper.Viper) (*gentleman.Response, 
 	return resp, decoded, nil
 }
 
-// XRotateAiApiKey Rotate AI API Key
+// XRotateAiApiKey [BETA] Rotate AI API Key
 func XRotateAiApiKey(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "rotate-ai-api-key"
 	if xSubcommand {
@@ -953,7 +953,7 @@ func XGetModel(paramId string, params *viper.Viper) (*gentleman.Response, map[st
 	return resp, decoded, nil
 }
 
-// XGetUserOrgConsumptionQuota Get Organization Consumption Quota
+// XGetUserOrgConsumptionQuota [BETA] Get Organization Consumption Quota
 func XGetUserOrgConsumptionQuota(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "get-user-org-consumption-quota"
 	if xSubcommand {
@@ -9073,9 +9073,9 @@ func XUpdateIamRole(paramId string, params *viper.Viper, body string) (*gentlema
 	return resp, decoded, nil
 }
 
-// XUpdateIamRoleAssumePolicy Update IAM Assume role Policy
-func XUpdateIamRoleAssumePolicy(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "update-iam-role-assume-policy"
+// XAssumeIamRole [BETA] Request generation of key/secret that allow caller to assume target role
+func XAssumeIamRole(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "assume-iam-role"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -9085,10 +9085,10 @@ func XUpdateIamRoleAssumePolicy(paramId string, params *viper.Viper, body string
 		server = xServers()[viper.GetInt("server-index")]["url"]
 	}
 
-	url := server + "/iam-role/{id}:assume-role-policy"
+	url := server + "/iam-role/{id}/assume"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Put().URL(url)
+	req := cli.Client.Post().URL(url)
 
 	if body != "" {
 		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
@@ -9135,52 +9135,6 @@ func XUpdateIamRolePolicy(paramId string, params *viper.Viper, body string) (*ge
 	url = strings.Replace(url, "{id}", paramId, 1)
 
 	req := cli.Client.Put().URL(url)
-
-	if body != "" {
-		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
-	}
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
-// XAssumeIamRole [BETA] Request generation of key/secret that allow caller to assume target role
-func XAssumeIamRole(paramTargetRoleId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "assume-iam-role"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/iam-role/{target-role-id}/assume"
-	url = strings.Replace(url, "{target-role-id}", paramTargetRoleId, 1)
-
-	req := cli.Client.Post().URL(url)
 
 	if body != "" {
 		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
@@ -15116,6 +15070,619 @@ func XUpdateUserRole(paramId string, params *viper.Viper, body string) (*gentlem
 	return resp, decoded, nil
 }
 
+// XCreateVpc [BETA] Create a VPC
+func XCreateVpc(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-vpc"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc"
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListVpcs [BETA] List VPCs
+func XListVpcs(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-vpcs"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteVpc [BETA] Delete a VPC
+func XDeleteVpc(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-vpc"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetVpc [BETA] Retrieve VPC details
+func XGetVpc(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-vpc"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XUpdateVpc [BETA] Update a VPC
+func XUpdateVpc(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "update-vpc"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListVpcRoutes [BETA] List VPC routes
+func XListVpcRoutes(paramVpcId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-vpc-routes"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{vpc-id}/route"
+	url = strings.Replace(url, "{vpc-id}", paramVpcId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XCreateSubnet [BETA] Create a Subnet
+func XCreateSubnet(paramVpcId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-subnet"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{vpc-id}/subnet"
+	url = strings.Replace(url, "{vpc-id}", paramVpcId, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListSubnets [BETA] List Subnets
+func XListSubnets(paramVpcId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-subnets"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{vpc-id}/subnet"
+	url = strings.Replace(url, "{vpc-id}", paramVpcId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteSubnet [BETA] Delete a Subnet
+func XDeleteSubnet(paramVpcId string, paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-subnet"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{vpc-id}/subnet/{id}"
+	url = strings.Replace(url, "{vpc-id}", paramVpcId, 1)
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetSubnet [BETA] Retrieve Subnet details
+func XGetSubnet(paramVpcId string, paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-subnet"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{vpc-id}/subnet/{id}"
+	url = strings.Replace(url, "{vpc-id}", paramVpcId, 1)
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XUpdateSubnet [BETA] Update a Subnet
+func XUpdateSubnet(paramVpcId string, paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "update-subnet"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{vpc-id}/subnet/{id}"
+	url = strings.Replace(url, "{vpc-id}", paramVpcId, 1)
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XCreateRoute [BETA] Create a route
+func XCreateRoute(paramVpcId string, paramSubnetId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-route"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{vpc-id}/subnet/{subnet-id}/route"
+	url = strings.Replace(url, "{vpc-id}", paramVpcId, 1)
+	url = strings.Replace(url, "{subnet-id}", paramSubnetId, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListRoutes [BETA] List Subnet routes
+func XListRoutes(paramVpcId string, paramSubnetId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-routes"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{vpc-id}/subnet/{subnet-id}/route"
+	url = strings.Replace(url, "{vpc-id}", paramVpcId, 1)
+	url = strings.Replace(url, "{subnet-id}", paramSubnetId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteRoute [BETA] Delete a route
+func XDeleteRoute(paramVpcId string, paramSubnetId string, paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-route"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/vpc/{vpc-id}/subnet/{subnet-id}/route/{id}"
+	url = strings.Replace(url, "{vpc-id}", paramVpcId, 1)
+	url = strings.Replace(url, "{subnet-id}", paramSubnetId, 1)
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XListZones List Zones
 func XListZones(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-zones"
@@ -15179,7 +15746,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "create-ai-api-key",
-			Short:   "Create AI API Key",
+			Short:   "[BETA] Create AI API Key",
 			Long:    cli.Markdown("Create a new AI API key\n## Request Schema (application/json)\n\ndescription: Request to create a new AI API key\nproperties:\n  name:\n    description: Human-readable name for the AI API key\n    type: string\n  scope:\n    description: 'Key scope: ''public'' for all deployments, or a specific deployment UUID'\n    type: string\nrequired:\n- name\n- scope\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
@@ -15218,7 +15785,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "list-ai-api-keys",
-			Short:   "List AI API Keys",
+			Short:   "[BETA] List AI API Keys",
 			Long:    cli.Markdown("List AI API keys for an organization"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
@@ -15253,7 +15820,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "delete-ai-api-key id",
-			Short:   "Delete AI API Key",
+			Short:   "[BETA] Delete AI API Key",
 			Long:    cli.Markdown("Delete AI API key"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -15288,7 +15855,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "get-ai-api-key id",
-			Short:   "Get AI API Key",
+			Short:   "[BETA] Get AI API Key",
 			Long:    cli.Markdown("Get AI API key metadata"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -15323,7 +15890,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "update-ai-api-key id",
-			Short:   "Update AI API Key",
+			Short:   "[BETA] Update AI API Key",
 			Long:    cli.Markdown("Update AI API key name and/or scope\n## Request Schema (application/json)\n\ndescription: Request to update an AI API key (at least one property required)\nminProperties: 1\nproperties:\n  name:\n    description: Human-readable name for the AI API key\n    type: string\n  scope:\n    description: 'Key scope: ''public'' for all deployments, or a specific deployment UUID'\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -15362,7 +15929,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "reveal-ai-api-key id",
-			Short:   "Reveal AI API Key",
+			Short:   "[BETA] Reveal AI API Key",
 			Long:    cli.Markdown("Reveal AI API key plaintext value"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -15397,7 +15964,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "rotate-ai-api-key id",
-			Short:   "Rotate AI API Key",
+			Short:   "[BETA] Rotate AI API Key",
 			Long:    cli.Markdown("Rotate AI API key value"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -15951,8 +16518,8 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "get-user-org-consumption-quota",
-			Short:   "Get Organization Consumption Quota",
-			Long:    cli.Markdown("Get per-org token consumption quota (tokens/min). Null means unlimited."),
+			Short:   "[BETA] Get Organization Consumption Quota",
+			Long:    cli.Markdown("Get per-org Unit Of Measurement (UOM) consumption quota (UOM/min). Null means unlimited. UOM represents weighted units across different AI workloads (e.g., tokens for LLMs, minutes for TTS, pages for OCR)."),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -19038,7 +19605,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-mysql name",
 			Short:   "Update a DBaaS MySQL service",
-			Long:    cli.Markdown("Update a DBaaS MySQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 23\n        minimum: 0\n        nullable: true\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 59\n        minimum: 0\n        nullable: true\n        type: integer\n    type: object\n  binlog-retention-period:\n    description: The minimum amount of time in seconds to keep binlog entries before deletion. This may be extended for services that require binlog entries for longer than the default for example if using the MySQL Debezium Kafka connector.\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 86400\n    minimum: 600\n    type: integer\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  mysql-settings:\n    $ref: '#/components/schemas/json-schema-mysql'\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS MySQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 23\n        minimum: 0\n        nullable: true\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 59\n        minimum: 0\n        nullable: true\n        type: integer\n    type: object\n  binlog-retention-period:\n    description: The minimum amount of time in seconds to keep binlog entries before deletion. This may be extended for services that require binlog entries for longer than the default for example if using the MySQL Debezium Kafka connector.\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 86400\n    minimum: 600\n    type: integer\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  mysql-settings:\n    $ref: '#/components/schemas/json-schema-mysql'\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: MySQL version\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -19825,7 +20392,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-pg name",
 			Short:   "Create a DBaaS PostgreSQL service",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    pattern: ^[a-zA-Z0-9-_]+$\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new service is being created.\n    maxLength: 64\n    minLength: 1\n    pattern: ^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 23\n        minimum: 0\n        nullable: true\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 59\n        minimum: 0\n        nullable: true\n        type: integer\n    type: object\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to be enabled when creating the service.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          description: Integration type\n          enum:\n          - read_replica\n          type: string\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  pg-settings:\n    $ref: '#/components/schemas/json-schema-pg'\n  pgbouncer-settings:\n    $ref: '#/components/schemas/json-schema-pgbouncer'\n  pglookout-settings:\n    $ref: '#/components/schemas/json-schema-pglookout'\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary times\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    $ref: '#/components/schemas/json-schema-timescaledb'\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  version:\n    $ref: '#/components/schemas/dbaas-pg-target-versions'\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\nrequired:\n- plan\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    pattern: ^[a-zA-Z0-9-_]+$\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new service is being created.\n    maxLength: 64\n    minLength: 1\n    pattern: ^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 23\n        minimum: 0\n        nullable: true\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 59\n        minimum: 0\n        nullable: true\n        type: integer\n    type: object\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to be enabled when creating the service.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          description: Integration type\n          enum:\n          - read_replica\n          type: string\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  pg-settings:\n    $ref: '#/components/schemas/json-schema-pg'\n  pgaudit-settings:\n    $ref: '#/components/schemas/json-schema-pgaudit'\n  pgbouncer-settings:\n    $ref: '#/components/schemas/json-schema-pgbouncer'\n  pglookout-settings:\n    $ref: '#/components/schemas/json-schema-pglookout'\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary times\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    $ref: '#/components/schemas/json-schema-timescaledb'\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  version:\n    $ref: '#/components/schemas/dbaas-pg-target-versions'\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -19934,7 +20501,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-pg name",
 			Short:   "Update a DBaaS PostgreSQL service",
-			Long:    cli.Markdown("Update a DBaaS PostgreSQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 23\n        minimum: 0\n        nullable: true\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 59\n        minimum: 0\n        nullable: true\n        type: integer\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  pg-settings:\n    $ref: '#/components/schemas/json-schema-pg'\n  pgbouncer-settings:\n    $ref: '#/components/schemas/json-schema-pgbouncer'\n  pglookout-settings:\n    $ref: '#/components/schemas/json-schema-pglookout'\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    $ref: '#/components/schemas/json-schema-timescaledb'\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  version:\n    description: Version\n    type: string\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS PostgreSQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 23\n        minimum: 0\n        nullable: true\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 59\n        minimum: 0\n        nullable: true\n        type: integer\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  pg-settings:\n    $ref: '#/components/schemas/json-schema-pg'\n  pgaudit-settings:\n    $ref: '#/components/schemas/json-schema-pgaudit'\n  pgbouncer-settings:\n    $ref: '#/components/schemas/json-schema-pgbouncer'\n  pglookout-settings:\n    $ref: '#/components/schemas/json-schema-pglookout'\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    $ref: '#/components/schemas/json-schema-timescaledb'\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  version:\n    description: Version\n    type: string\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -21223,7 +21790,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-valkey name",
 			Short:   "Create a DBaaS Valkey service",
-			Long:    cli.Markdown("Create a DBaaS Valkey service\n## Request Schema (application/json)\n\nproperties:\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-name:\n    description: Name of a backup to recover from for services that support backup names\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  valkey-settings:\n    $ref: '#/components/schemas/json-schema-valkey'\nrequired:\n- plan\ntype: object\n"),
+			Long:    cli.Markdown("Create a DBaaS Valkey service\n## Request Schema (application/json)\n\nproperties:\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-name:\n    description: Name of a backup to recover from for services that support backup names\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  valkey-settings:\n    $ref: '#/components/schemas/json-schema-valkey'\n  version:\n    description: Valkey major version\n    minLength: 1\n    type: string\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -21332,7 +21899,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-valkey name",
 			Short:   "update-dbaas-service-valkey",
-			Long:    cli.Markdown("Update a DBaaS Valkey service\n## Request Schema (application/json)\n\nproperties:\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  valkey-settings:\n    $ref: '#/components/schemas/json-schema-valkey'\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS Valkey service\n## Request Schema (application/json)\n\nproperties:\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        exclusiveMaximum: false\n        exclusiveMinimum: false\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  valkey-settings:\n    $ref: '#/components/schemas/json-schema-valkey'\n  version:\n    description: Valkey major version\n    minLength: 1\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -22585,7 +23152,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-iam-role",
 			Short:   "Create IAM Role",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  assume-role-policy:\n    $ref: '#/components/schemas/iam-policy'\n  description:\n    description: IAM Role description\n    maxLength: 255\n    minLength: 1\n    type: string\n  editable:\n    description: 'Sets if the IAM Role Policy is editable or not (default: true). This setting cannot be changed after creation'\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  max-session-ttl:\n    description: Maximum TTL requester is allowed to ask for when assuming a role\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  name:\n    description: IAM Role name\n    maxLength: 191\n    minLength: 1\n    type: string\n  permissions:\n    description: IAM Role permissions\n    items:\n      enum:\n      - bypass-governance-retention\n      - reset-iam-organization-policy\n      type: string\n    type: array\n    uniqueItems: true\n  policy:\n    $ref: '#/components/schemas/iam-policy'\nrequired:\n- name\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  assume-role-policy:\n    $ref: '#/components/schemas/iam-assume-role-policy'\n  description:\n    description: IAM Role description\n    maxLength: 255\n    minLength: 1\n    type: string\n  editable:\n    description: 'Sets if the IAM Role Policy is editable or not (default: true). This setting cannot be changed after creation'\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  max-session-ttl:\n    description: Maximum TTL requester is allowed to ask for when assuming a role\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  name:\n    description: IAM Role name\n    maxLength: 191\n    minLength: 1\n    type: string\n  permissions:\n    description: IAM Role permissions\n    items:\n      enum:\n      - bypass-governance-retention\n      - reset-iam-organization-policy\n      type: string\n    type: array\n    uniqueItems: true\n  policy:\n    $ref: '#/components/schemas/iam-policy'\nrequired:\n- name\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -22729,7 +23296,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-iam-role id",
 			Short:   "Update IAM Role",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: IAM Role description\n    maxLength: 255\n    minLength: 1\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  max-session-ttl:\n    description: Maximum TTL requester is allowed to ask for when assuming a role\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  permissions:\n    description: IAM Role permissions\n    items:\n      enum:\n      - bypass-governance-retention\n      - reset-iam-organization-policy\n      type: string\n    type: array\n    uniqueItems: true\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  assume-role-policy:\n    $ref: '#/components/schemas/iam-assume-role-policy'\n  description:\n    description: IAM Role description\n    maxLength: 255\n    minLength: 1\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  max-session-ttl:\n    description: Maximum TTL requester is allowed to ask for when assuming a role\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  permissions:\n    description: IAM Role permissions\n    items:\n      enum:\n      - bypass-governance-retention\n      - reset-iam-organization-policy\n      type: string\n    type: array\n    uniqueItems: true\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -22766,9 +23333,9 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "update-iam-role-assume-policy id",
-			Short:   "Update IAM Assume role Policy",
-			Long:    cli.Markdown("Update IAM Assume role Policy\n## Request Schema (application/json)\n\ndescription: Policy\nproperties:\n  default-service-strategy:\n    description: IAM default service strategy\n    enum:\n    - allow\n    - deny\n    type: string\n  services:\n    additionalProperties:\n      $ref: '#/components/schemas/iam-service-policy'\n    description: IAM services\n    type: object\nrequired:\n- default-service-strategy\n- services\ntype: object\n"),
+			Use:     "assume-iam-role id",
+			Short:   "[BETA] Request generation of key/secret that allow caller to assume target role",
+			Long:    cli.Markdown("[BETA] Request generation of key/secret that allow caller to assume target role\n## Request Schema (application/json)\n\nproperties:\n  ttl:\n    description: TTL in seconds for the generated access key (cannot exceed the max TTL defined in the targeted assume role)\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\nrequired:\n- ttl\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -22777,7 +23344,7 @@ func xRegister(subcommand bool) {
 					log.Fatal().Err(err).Msg("Unable to get body")
 				}
 
-				_, decoded, err := XUpdateIamRoleAssumePolicy(args[0], params, body)
+				_, decoded, err := XAssumeIamRole(args[0], params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -22817,45 +23384,6 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XUpdateIamRolePolicy(args[0], params, body)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
-			Use:     "assume-iam-role target-role-id",
-			Short:   "[BETA] Request generation of key/secret that allow caller to assume target role",
-			Long:    cli.Markdown("[BETA] Request generation of key/secret that allow caller to assume target role\n## Request Schema (application/json)\n\nproperties:\n  ttl:\n    description: TTL in seconds for the generated access key (cannot exceed the max TTL defined in the targeted assume role)\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\nrequired:\n- ttl\ntype: object\n"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) {
-				body, err := cli.GetBody("application/json", args[1:])
-				if err != nil {
-					log.Fatal().Err(err).Msg("Unable to get body")
-				}
-
-				_, decoded, err := XAssumeIamRole(args[0], params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -23977,7 +24505,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-kms-key",
 			Short:   "[BETA] Create KMS Key",
-			Long:    cli.Markdown("Create a KMS Key in a given zone with a given name.\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  multi-zone:\n    type: boolean\n  name:\n    type: string\n  usage:\n    enum:\n    - encrypt-decrypt\n    type: string\nrequired:\n- name\n- description\n- usage\n- multi-zone\ntype: object\n"),
+			Long:    cli.Markdown("Create a KMS Key in a given zone with a given name.\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  multi-zone:\n    default: false\n    type: boolean\n  name:\n    type: string\n  usage:\n    default: encrypt-decrypt\n    enum:\n    - encrypt-decrypt\n    type: string\nrequired:\n- name\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -26536,7 +27064,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-sks-nodepool id",
 			Short:   "Create a new SKS Nodepool",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Nodepool addons\n    items:\n      enum:\n      - storage-lvm\n      type: string\n    type: array\n    uniqueItems: true\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    maxItems: 8\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to instances names (default: pool), lowercase only'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  kubelet-image-gc:\n    $ref: '#/components/schemas/kubelet-image-gc'\n  labels:\n    $ref: '#/components/schemas/sks-nodepool-labels'\n  name:\n    description: Nodepool name, lowercase only\n    maxLength: 255\n    minLength: 1\n    type: string\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only (default);\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  size:\n    description: Number of instances\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\nrequired:\n- name\n- size\n- disk-size\n- instance-type\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Nodepool addons\n    items:\n      enum:\n      - storage-lvm\n      type: string\n    type: array\n    uniqueItems: true\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    maxItems: 8\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to instances names (default: pool), lowercase only'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  kubelet-image-gc:\n    $ref: '#/components/schemas/kubelet-image-gc'\n  labels:\n    $ref: '#/components/schemas/sks-nodepool-labels'\n  name:\n    description: Nodepool name, lowercase only\n    maxLength: 255\n    minLength: 1\n    type: string\n  nvidia-mig-profiles:\n    $ref: '#/components/schemas/nvidia-mig-profiles'\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only (default);\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  size:\n    description: Number of instances\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\nrequired:\n- name\n- size\n- disk-size\n- instance-type\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -26645,7 +27173,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-sks-nodepool id sks-nodepool-id",
 			Short:   "Update an SKS Nodepool",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    maxItems: 8\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to managed instances names (default: pool), lowercase only'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  kubelet-image-gc:\n    $ref: '#/components/schemas/kubelet-image-gc'\n  labels:\n    $ref: '#/components/schemas/sks-nodepool-labels'\n  name:\n    description: Nodepool name, lowercase only\n    maxLength: 255\n    minLength: 1\n    type: string\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only;\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    maxItems: 8\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to managed instances names (default: pool), lowercase only'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  kubelet-image-gc:\n    $ref: '#/components/schemas/kubelet-image-gc'\n  labels:\n    $ref: '#/components/schemas/sks-nodepool-labels'\n  name:\n    description: Nodepool name, lowercase only\n    maxLength: 255\n    minLength: 1\n    type: string\n  nvidia-mig-profiles:\n    $ref: '#/components/schemas/nvidia-mig-profiles'\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only;\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -27811,6 +28339,516 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XUpdateUserRole(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "create-vpc",
+			Short:   "[BETA] Create a VPC",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: VPC description\n    maxLength: 4096\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: VPC name\n    maxLength: 255\n    minLength: 1\n    type: string\nrequired:\n- name\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[0:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateVpc(params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-vpcs",
+			Short:   "[BETA] List VPCs",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListVpcs(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-vpc id",
+			Short:   "[BETA] Delete a VPC",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteVpc(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-vpc id",
+			Short:   "[BETA] Retrieve VPC details",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetVpc(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "update-vpc id",
+			Short:   "[BETA] Update a VPC",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: VPC description\n    maxLength: 4096\n    nullable: true\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: VPC name\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XUpdateVpc(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-vpc-routes vpc-id",
+			Short:   "[BETA] List VPC routes",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListVpcRoutes(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "create-subnet vpc-id",
+			Short:   "[BETA] Create a Subnet",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  address-space:\n    description: Subnet address space\n    enum:\n    - private\n    type: string\n  addressfamily:\n    description: Subnet address family\n    enum:\n    - inet4\n    type: string\n  description:\n    description: Subnet description\n    maxLength: 4096\n    type: string\n  ipv4-block:\n    description: Subnet ipv4 CIDR\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Subnet name\n    maxLength: 255\n    minLength: 1\n    type: string\nrequired:\n- name\n- addressfamily\n- address-space\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateSubnet(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-subnets vpc-id",
+			Short:   "[BETA] List Subnets",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListSubnets(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-subnet vpc-id id",
+			Short:   "[BETA] Delete a Subnet",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteSubnet(args[0], args[1], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-subnet vpc-id id",
+			Short:   "[BETA] Retrieve Subnet details",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetSubnet(args[0], args[1], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "update-subnet vpc-id id",
+			Short:   "[BETA] Update a Subnet",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Subnet description\n    maxLength: 4096\n    nullable: true\n    type: string\n  ipv4-block:\n    description: Subnet CIDR\n    nullable: true\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Subnet name\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[2:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XUpdateSubnet(args[0], args[1], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "create-route vpc-id subnet-id",
+			Short:   "[BETA] Create a route",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Route description\n    maxLength: 4096\n    type: string\n  destination:\n    description: Route destination CIDR\n    type: string\n  name:\n    description: Route name\n    maxLength: 255\n    minLength: 1\n    type: string\n  target:\n    description: Route target\n    type: string\nrequired:\n- destination\n- target\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[2:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateRoute(args[0], args[1], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-routes vpc-id subnet-id",
+			Short:   "[BETA] List Subnet routes",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListRoutes(args[0], args[1], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-route vpc-id subnet-id id",
+			Short:   "[BETA] Delete a route",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(3),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteRoute(args[0], args[1], args[2], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
