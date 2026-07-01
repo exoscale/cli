@@ -23,6 +23,7 @@
 ### Features
 
 - storage: add `move` command for moving objects within and across buckets #838
+- sks: add `name` flag to kubeconfig command to set custom cluster and context name
 - Re-introduce ARM64 builds for Windows #844
 
 ### Improvements
