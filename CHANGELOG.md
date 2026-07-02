@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- storage: add bucket lifecycle support #847
+
 ## 1.95.4
 
 ### Improvements

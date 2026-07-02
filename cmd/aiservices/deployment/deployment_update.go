@@ -83,7 +83,7 @@ func (c *DeploymentUpdateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Deployment updated.")
+		_, _ = fmt.Fprintln(os.Stdout, "Deployment updated.")
 	}
 
 	return nil

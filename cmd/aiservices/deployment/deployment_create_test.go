@@ -63,7 +63,7 @@ func TestDeploymentCreateWithInferenceEngineParameters(t *testing.T) {
 			return
 		}
 		body, _ := io.ReadAll(r.Body)
-		r.Body.Close()
+		_ = r.Body.Close()
 		if err := json.Unmarshal(body, &capturedRequest); err != nil {
 			t.Fatalf("failed to unmarshal request: %v", err)
 		}
@@ -115,7 +115,7 @@ func TestDeploymentCreateWithInferenceEngineVersion(t *testing.T) {
 			return
 		}
 		body, _ := io.ReadAll(r.Body)
-		r.Body.Close()
+		_ = r.Body.Close()
 		if err := json.Unmarshal(body, &capturedRequest); err != nil {
 			t.Fatalf("failed to unmarshal request: %v", err)
 		}

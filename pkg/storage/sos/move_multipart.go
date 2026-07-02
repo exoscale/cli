@@ -63,7 +63,7 @@ func (c *Client) moveLargeObject(ctx context.Context, srcBucket, srcKey, dstBuck
 	}
 
 	size := headRes.ContentLength
-	completedParts, err := c.uploadParts(ctx, srcBucket, srcKey, dstBucket, dstKey, aws.ToString(createRes.UploadId), size, concurrency)
+	completedParts, err := c.uploadParts(ctx, srcBucket, srcKey, dstBucket, dstKey, aws.ToString(createRes.UploadId), *size, concurrency)
 	if err != nil {
 		_, abortErr := c.S3Client.AbortMultipartUpload(ctx, &s3.AbortMultipartUploadInput{
 			Bucket:   aws.String(dstBucket),
@@ -77,7 +77,7 @@ func (c *Client) moveLargeObject(ctx context.Context, srcBucket, srcKey, dstBuck
 	}
 
 	sort.Slice(completedParts, func(i, j int) bool {
-		return completedParts[i].PartNumber < completedParts[j].PartNumber
+		return *completedParts[i].PartNumber < *completedParts[j].PartNumber
 	})
 
 	_, err = c.S3Client.CompleteMultipartUpload(ctx, &s3.CompleteMultipartUploadInput{
@@ -156,7 +156,7 @@ func (c *Client) uploadPartCopy(ctx context.Context, srcBucket, srcKey, dstBucke
 		Bucket:          aws.String(dstBucket),
 		Key:             aws.String(dstKey),
 		UploadId:        aws.String(uploadID),
-		PartNumber:      partNumber,
+		PartNumber:      aws.Int32(partNumber),
 		CopySource:      aws.String(copySource(srcBucket, srcKey)),
 		CopySourceRange: aws.String(fmt.Sprintf("bytes=%d-%d", start, end-1)),
 	})
@@ -166,6 +166,6 @@ func (c *Client) uploadPartCopy(ctx context.Context, srcBucket, srcKey, dstBucke
 
 	return &s3types.CompletedPart{
 		ETag:       res.CopyPartResult.ETag,
-		PartNumber: partNumber,
+		PartNumber: aws.Int32(partNumber),
 	}, nil
 }

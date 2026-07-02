@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -31,8 +32,7 @@ func TestClientBucketReplication(t *testing.T) {
 				ExistingObjectReplication: &types.ExistingObjectReplication{
 					Status: types.ExistingObjectReplicationStatusEnabled,
 				},
-				Priority:                13,
-				SourceSelectionCriteria: &types.SourceSelectionCriteria{},
+				Priority: 13,
 			},
 		},
 	}
@@ -73,8 +73,7 @@ func TestClientBucketReplication(t *testing.T) {
 									ExistingObjectReplication: &types.ExistingObjectReplication{
 										Status: types.ExistingObjectReplicationStatusEnabled,
 									},
-									Priority:                13,
-									SourceSelectionCriteria: &types.SourceSelectionCriteria{},
+									Priority: aws.Int32(13),
 								},
 							},
 						},

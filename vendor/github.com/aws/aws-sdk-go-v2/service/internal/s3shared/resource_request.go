@@ -22,6 +22,9 @@ type ResourceRequest struct {
 
 	// UseARNRegion indicates if client should use the region provided in an ARN resource
 	UseARNRegion bool
+
+	// UseFIPS indicates if te client is configured for FIPS
+	UseFIPS bool
 }
 
 // ARN returns the resource ARN
@@ -29,12 +32,9 @@ func (r ResourceRequest) ARN() awsarn.ARN {
 	return r.Resource.GetARN()
 }
 
-// UseFips returns true if request config region is FIPS region.
-func (r ResourceRequest) UseFips() bool {
-	return IsFIPS(r.RequestRegion)
-}
-
 // ResourceConfiguredForFIPS returns true if resource ARNs region is FIPS
+//
+// Deprecated: FIPS will not be present in the ARN region
 func (r ResourceRequest) ResourceConfiguredForFIPS() bool {
 	return IsFIPS(r.ARN().Region)
 }
@@ -68,8 +68,10 @@ func (r ResourceRequest) IsCrossRegion() bool {
 	return !strings.EqualFold(v, r.Resource.GetARN().Region)
 }
 
-// IsFIPS returns true if region is a fips region
-func IsFIPS(clientRegion string) bool {
-	return (strings.HasPrefix(clientRegion, "fips-") ||
-		strings.HasSuffix(clientRegion, "-fips"))
+// IsFIPS returns true if region is a fips pseudo-region
+//
+// Deprecated: FIPS should be specified via EndpointOptions.
+func IsFIPS(region string) bool {
+	return strings.HasPrefix(region, "fips-") ||
+		strings.HasSuffix(region, "-fips")
 }

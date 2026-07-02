@@ -177,7 +177,7 @@ func GetStatusPage(subdomain string) (*StatusPalStatus, error) {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint: errcheck
 
 	contentType := resp.Header.Get("content-type")
 	if contentType != statusContentPage {

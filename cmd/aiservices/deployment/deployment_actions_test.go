@@ -60,7 +60,7 @@ func newDepActionsServer(t *testing.T) *depActionsServer {
 		}
 		if len(parts) == 2 && parts[1] == "scale" && r.Method == http.MethodPost {
 			b, _ := io.ReadAll(r.Body)
-			r.Body.Close()
+			_ = r.Body.Close()
 			ts.lastScaleBody = string(b)
 			testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-deploy-scale"), State: v3.OperationStateSuccess})
 			return
