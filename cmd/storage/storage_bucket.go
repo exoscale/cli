@@ -1,11 +1,13 @@
 package storage
 
 import (
+	"github.com/exoscale/cli/cmd/storage/lifecycle"
 	"github.com/spf13/cobra"
 )
 
 func init() {
 	storageCmd.AddCommand(storageBucketCmd)
+	storageBucketCmd.AddCommand(lifecycle.Cmd)
 }
 
 var storageBucketCmd = &cobra.Command{
