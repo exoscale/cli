@@ -148,6 +148,10 @@ func (o *BucketLifecycle) ToTable() {
 				ct.Append([]string{
 					"ID", *r.ID,
 				})
+			} else {
+				ct.Append([]string{
+					"ID", "",
+				})
 			}
 			ct.Append([]string{"Status", string(r.Status)})
 
