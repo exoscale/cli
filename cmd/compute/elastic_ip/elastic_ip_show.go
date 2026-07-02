@@ -162,8 +162,8 @@ func (c *elasticIPShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		out.HealthcheckMode = string(elasticIp.Healthcheck.Mode)
 		out.HealthcheckPort = elasticIp.Healthcheck.Port
 		out.HealthcheckURI = elasticIp.Healthcheck.URI
-		out.HealthcheckInterval = time.Duration(elasticIp.Healthcheck.Interval)
-		out.HealthcheckTimeout = time.Duration(elasticIp.Healthcheck.Timeout)
+		out.HealthcheckInterval = time.Duration(elasticIp.Healthcheck.Interval) * time.Second
+		out.HealthcheckTimeout = time.Duration(elasticIp.Healthcheck.Timeout) * time.Second
 		out.HealthcheckStrikesOK = elasticIp.Healthcheck.StrikesOk
 		out.HealthcheckStrikesFail = elasticIp.Healthcheck.StrikesFail
 		out.HealthcheckTLSSNI = elasticIp.Healthcheck.TlsSNI
