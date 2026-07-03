@@ -3,6 +3,7 @@
 ## Unreleased
 
 - storage: add bucket lifecycle support #847
+- docs: add RELEASING.md with the release process and a v1.94.2 worked example
 
 ## 1.95.4
 
