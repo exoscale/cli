@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+### Bug fixes
+- fix(eip): EIP healthchecks time are in seconds at the API level #858
+
 ## 1.94.0
 
 ### Features
