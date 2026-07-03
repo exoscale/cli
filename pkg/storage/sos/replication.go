@@ -33,8 +33,6 @@ type BucketReplicationRule struct {
 	ID *string
 
 	Priority int32
-
-	SourceSelectionCriteria *types.SourceSelectionCriteria
 }
 
 type BucketReplicationConf struct {
@@ -61,8 +59,7 @@ func (o *BucketReplicationConf) ToS3() *types.ReplicationConfiguration {
 			ExistingObjectReplication: r.ExistingObjectReplication,
 			Filter:                    &types.ReplicationRuleFilterMemberPrefix{Value: r.Filter.Prefix},
 			ID:                        r.ID,
-			Priority:                  r.Priority,
-			SourceSelectionCriteria:   r.SourceSelectionCriteria,
+			Priority:                  aws.Int32(r.Priority),
 		})
 	}
 	return c
@@ -74,17 +71,22 @@ func (o *BucketReplicationConf) FromS3(c *types.ReplicationConfiguration) {
 
 	for i, r := range c.Rules {
 
-		p := r.Filter.(*types.ReplicationRuleFilterMemberPrefix)
+		filterPrefix := ""
+		switch f := r.Filter.(type) {
+		case *types.ReplicationRuleFilterMemberPrefix:
+			filterPrefix = f.Value
+		}
 
 		o.Rules[i] = BucketReplicationRule{
 			Destination:               r.Destination,
 			Status:                    r.Status,
 			DeleteMarkerReplication:   r.DeleteMarkerReplication,
 			ExistingObjectReplication: r.ExistingObjectReplication,
-			Filter:                    BucketReplicationConfRuleFilter{Prefix: p.Value},
-			ID:                        r.ID,
-			Priority:                  r.Priority,
-			SourceSelectionCriteria:   r.SourceSelectionCriteria,
+			Filter: BucketReplicationConfRuleFilter{
+				Prefix: filterPrefix,
+			},
+			ID:       r.ID,
+			Priority: aws.ToInt32(r.Priority),
 		}
 	}
 }

@@ -81,7 +81,7 @@ func (c *DeploymentDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Deployment(s) deleted.")
+		_, _ = fmt.Fprintln(os.Stdout, "Deployment(s) deleted.")
 	}
 	return nil
 }

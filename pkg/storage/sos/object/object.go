@@ -44,11 +44,11 @@ func (o *ObjectVersion) GetKey() *string {
 }
 
 func (o *Object) GetSize() int64 {
-	return o.Size
+	return *o.Size
 }
 
 func (o *ObjectVersion) GetSize() int64 {
-	return o.Size
+	return *o.Size
 }
 
 func (o *Object) GetLastModified() *time.Time {
@@ -60,7 +60,7 @@ func (o *ObjectVersion) GetLastModified() *time.Time {
 }
 
 func (o *ObjectVersion) GetIsLatest() bool {
-	return o.IsLatest
+	return *o.IsLatest
 }
 
 func (o *ObjectVersion) GetVersionID() *string {

@@ -79,7 +79,7 @@ func (c *ModelDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		fmt.Fprintln(os.Stdout, "Model(s) deleted.")
+		_, _ = fmt.Fprintln(os.Stdout, "Model(s) deleted.")
 	}
 	return nil
 }

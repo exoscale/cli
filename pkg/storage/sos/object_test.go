@@ -33,7 +33,7 @@ func TestShowObject(t *testing.T) {
 			name: "successful retrieval",
 			getObjectFn: func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 				return &s3.GetObjectOutput{
-					ContentLength: 100,
+					ContentLength: aws.Int64(100),
 					LastModified:  &now,
 				}, nil
 			},
@@ -56,7 +56,7 @@ func TestShowObject(t *testing.T) {
 			name: "failed to get object ACL",
 			getObjectFn: func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 				return &s3.GetObjectOutput{
-					ContentLength: 100,
+					ContentLength: aws.Int64(100),
 					LastModified:  &now,
 				}, nil
 			},
@@ -131,7 +131,7 @@ func TestDeleteObjects(t *testing.T) {
 			},
 			mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
 				return &s3.ListObjectsV2Output{
-					IsTruncated: false,
+					IsTruncated: aws.Bool(false),
 					Contents: []types.Object{
 						{Key: aws.String(objectKeys[0])},
 						{Key: aws.String(objectKeys[1])},
@@ -159,7 +159,7 @@ func TestDeleteObjects(t *testing.T) {
 			},
 			mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
 				return &s3.ListObjectsV2Output{
-					IsTruncated: false,
+					IsTruncated: aws.Bool(false),
 					Contents: []types.Object{
 						{
 							Key: aws.String("some-file"),
@@ -196,7 +196,7 @@ func TestDeleteObjects(t *testing.T) {
 			},
 			mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
 				return &s3.ListObjectsV2Output{
-					IsTruncated: false,
+					IsTruncated: aws.Bool(false),
 					Contents: []types.Object{
 						{Key: aws.String(objectKeys[0])},
 						{Key: aws.String(objectKeys[1])},
@@ -288,7 +288,7 @@ func TestUploadFile(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer os.RemoveAll(tempDir)
+			defer os.RemoveAll(tempDir) // nolint: errcheck
 
 			fileToUpload := tempDir + "/" + tc.file
 
@@ -422,7 +422,7 @@ func TestUploadFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		os.RemoveAll(tempDir)
+		_ = os.RemoveAll(tempDir)
 	})
 
 	tempFile1 := filepath.Join(tempDir, "file1.txt")
@@ -648,7 +648,7 @@ func TestDeleteObjectVersions_HappyPath(t *testing.T) {
 					return &s3.ListObjectVersionsOutput{}, nil
 				}
 				return &s3.ListObjectVersionsOutput{
-					IsTruncated: false,
+					IsTruncated: aws.Bool(false),
 					Versions: []types.ObjectVersion{
 						{Key: aws.String("obj1"), VersionId: aws.String("v1")},
 						{Key: aws.String("obj2"), VersionId: aws.String("v2")},
@@ -682,7 +682,7 @@ func TestDeleteObjectVersions_ComplianceLock(t *testing.T) {
 			mockListObjectVersions: func(_ context.Context, _ *s3.ListObjectVersionsInput, _ ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
 				listCalls++
 				return &s3.ListObjectVersionsOutput{
-					IsTruncated: false,
+					IsTruncated: aws.Bool(false),
 					Versions: []types.ObjectVersion{
 						{Key: aws.String("locked-obj"), VersionId: aws.String("v1")},
 					},
@@ -726,7 +726,7 @@ func TestDeleteObjectVersions_Pagination(t *testing.T) {
 					assert.Empty(t, aws.ToString(params.KeyMarker))
 					assert.Empty(t, aws.ToString(params.VersionIdMarker))
 					return &s3.ListObjectVersionsOutput{
-						IsTruncated:         true,
+						IsTruncated:         aws.Bool(true),
 						NextKeyMarker:       aws.String("obj1"),
 						NextVersionIdMarker: aws.String("v1"),
 						Versions: []types.ObjectVersion{
@@ -737,7 +737,7 @@ func TestDeleteObjectVersions_Pagination(t *testing.T) {
 					assert.Equal(t, "obj1", aws.ToString(params.KeyMarker))
 					assert.Equal(t, "v1", aws.ToString(params.VersionIdMarker))
 					return &s3.ListObjectVersionsOutput{
-						IsTruncated: false,
+						IsTruncated: aws.Bool(false),
 						Versions: []types.ObjectVersion{
 							{Key: aws.String("obj2"), VersionId: aws.String("v2")},
 						},
