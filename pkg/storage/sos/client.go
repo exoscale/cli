@@ -167,6 +167,10 @@ func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
 						)
 						return aws.Endpoint{URL: sosURL}, nil
 					})),
+				awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+					account.CurrentAccount.Key,
+					account.CurrentAccount.APISecret(),
+					"")),
 			)...)
 		if err != nil {
 			return err
