@@ -13,6 +13,11 @@ import (
 
 var flagAccount = flag.String("account", "owner-production", "account name substring in exoscale.toml")
 
+func TestAPIStorageLocal(t *testing.T) {
+	loadLocalCreds(t)
+	runAPITestSuite(t, "scenarios/with-api/storage")
+}
+
 func TestAPIComputeLocal(t *testing.T) {
 	loadLocalCreds(t)
 	runAPITestSuite(t, "scenarios/with-api/compute")

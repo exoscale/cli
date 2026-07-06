@@ -1,0 +1,45 @@
+# Regression test for: ClientOptZoneFromBucket falls through to EC2 IMDS on non-EC2 hosts
+# Root cause: aws-sdk-go-v2 v1.23.1 removed AnonymousCredentials from GetBucketRegion,
+# causing LoadDefaultConfig to attempt EC2 IMDS when no explicit credentials were set.
+# Fix: wire WithCredentialsProvider(NewStaticCredentialsProvider) in ClientOptZoneFromBucket.
+#
+# This test exercises every storage command that invokes ClientOptZoneFromBucket via the
+# sos://BUCKET/ path syntax.  The bucket is created in TEST_ZONE; subsequent commands
+# omit --zone so the CLI must discover the zone from the SOS HeadBucket response.
+
+# Setup: create a bucket for this test run
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-$TEST_RUN_ID
+stdout '"name"'
+
+# Upload a test object (storage upload has no --zone; uses ClientOptZoneFromBucket)
+exec exo storage upload hello.txt sos://sto-$TEST_RUN_ID/
+
+# --- ClientOptZoneFromBucket exercised below (no --zone flag) ---
+
+# List bucket contents by path - this is the primary regression scenario.
+# Before the fix: "unable to initialize storage client: ... no EC2 IMDS role found"
+exec exo --output-format json storage list sos://sto-$TEST_RUN_ID/
+stdout 'hello.txt'
+
+# Show object metadata via bucket path
+exec exo --output-format json storage show sos://sto-$TEST_RUN_ID/hello.txt
+stdout '"bucket"'
+stdout 'hello.txt'
+
+# Presign generates a time-limited URL - also uses ClientOptZoneFromBucket
+exec exo storage presign sos://sto-$TEST_RUN_ID/hello.txt
+stdout 'https://'
+
+# Download the object to a temp location
+exec exo storage download sos://sto-$TEST_RUN_ID/hello.txt downloaded.txt
+
+# Verify the downloaded content matches what we uploaded
+exec cat downloaded.txt
+stdout 'hello from e2e test'
+
+# Teardown: delete object then bucket (both use ClientOptZoneFromBucket, no --zone)
+exec exo storage delete --force sos://sto-$TEST_RUN_ID/hello.txt
+exec exo storage rb -f sos://sto-$TEST_RUN_ID
+
+-- hello.txt --
+hello from e2e test
