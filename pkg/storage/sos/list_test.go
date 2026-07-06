@@ -283,7 +283,7 @@ func TestListObjects(t *testing.T) {
 						object := testCase.objects[i]
 						contents = append(contents, s3types.Object{
 							Key:          aws.String(object.Key),
-							Size:         object.Size,
+							Size:         aws.Int64(object.Size),
 							LastModified: aws.Time(object.LastModified),
 						})
 					}
@@ -300,7 +300,7 @@ func TestListObjects(t *testing.T) {
 					return &s3.ListObjectsV2Output{
 						Contents:       contents,
 						CommonPrefixes: awsCommonPrefixes,
-						IsTruncated:    truncatedAfter < len(testCase.objects),
+						IsTruncated:    aws.Bool(truncatedAfter < len(testCase.objects)),
 					}, nil
 				},
 				mockListObjectVersions: func(ctx context.Context, params *s3.ListObjectVersionsInput, optFns ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
@@ -316,7 +316,7 @@ func TestListObjects(t *testing.T) {
 						object := objs[i]
 						versions = append(versions, s3types.ObjectVersion{
 							Key:          aws.String(object.Key),
-							Size:         object.Size,
+							Size:         aws.Int64(object.Size),
 							LastModified: aws.Time(object.LastModified),
 						})
 					}
@@ -333,7 +333,7 @@ func TestListObjects(t *testing.T) {
 					return &s3.ListObjectVersionsOutput{
 						Versions:       versions,
 						CommonPrefixes: awsCommonPrefixes,
-						IsTruncated:    truncatedVersionsAfter < len(testCase.objects)+len(testCase.oldVersionObjects),
+						IsTruncated:    aws.Bool(truncatedVersionsAfter < len(testCase.objects)+len(testCase.oldVersionObjects)),
 					}, nil
 				},
 			}

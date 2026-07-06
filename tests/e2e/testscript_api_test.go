@@ -1,4 +1,4 @@
-//go:build api
+//go:build api || local_integration
 
 package e2e_test
 
@@ -22,15 +22,28 @@ type APITestSuite struct {
 	RunID string
 }
 
-// TestScriptsAPI runs testscript scenarios that require real API access.
-// Run with: go test -v -tags=api -timeout 30m
+// TestScriptsAPICompute runs API e2e scenarios under scenarios/with-api/compute/.
+// Run with: go test -v -tags=api -timeout 30m -run TestScriptsAPICompute
+func TestScriptsAPICompute(t *testing.T) {
+	runAPITestSuite(t, "scenarios/with-api/compute")
+}
+
+// TestScriptsAPIDBaaS runs API e2e scenarios under scenarios/with-api/dbaas/.
+// Run with: go test -v -tags=api -timeout 30m -run TestScriptsAPIDBaaS
+func TestScriptsAPIDBaaS(t *testing.T) {
+	runAPITestSuite(t, "scenarios/with-api/dbaas")
+}
+
+// runAPITestSuite is the shared runner for per-suite API test functions.
+// dir is the directory of .txtar scenarios to run (relative to the e2e package).
 //
 // Required environment variables:
 //
 //	EXOSCALE_API_KEY    - Exoscale API key
 //	EXOSCALE_API_SECRET - Exoscale API secret
 //	EXOSCALE_ZONE       - Zone to run tests in (default: ch-gva-2)
-func TestScriptsAPI(t *testing.T) {
+func runAPITestSuite(t *testing.T, dir string) {
+	t.Helper()
 	if os.Getenv("EXOSCALE_API_KEY") == "" || os.Getenv("EXOSCALE_API_SECRET") == "" {
 		t.Skip("Skipping API tests: EXOSCALE_API_KEY and EXOSCALE_API_SECRET must be set")
 	}
@@ -40,7 +53,10 @@ func TestScriptsAPI(t *testing.T) {
 		zone = "ch-gva-2"
 	}
 
-	runID := fmt.Sprintf("e2e-%d-%s", time.Now().Unix(), randString(6))
+	// Prefix every test resource with `cli-e2e-` so runs against the shared
+	// Exoscale test organisation do not collide with resources created by
+	// other repositories (terraform-provider-exoscale, csi-driver, ...).
+	runID := fmt.Sprintf("cli-e2e-%d-%s", time.Now().Unix(), randString(6))
 	t.Logf("API test run ID: %s (zone: %s)", runID, zone)
 
 	suite := &APITestSuite{
@@ -48,13 +64,12 @@ func TestScriptsAPI(t *testing.T) {
 		RunID: runID,
 	}
 
-	// Run all scenarios under scenarios/with-api/
-	files, err := findTestScripts("scenarios/with-api")
+	files, err := findTestScripts(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(files) == 0 {
-		t.Log("No API test scenarios found in scenarios/with-api/")
+		t.Logf("No API test scenarios found in %s/", dir)
 		return
 	}
 
@@ -75,14 +90,14 @@ func TestScriptsAPI(t *testing.T) {
 // setupAPITestEnv configures the testscript environment with API credentials
 // and run metadata. Each scenario creates and deletes its own resources.
 // Credentials are passed via env vars (EXOSCALE_API_KEY / EXOSCALE_API_SECRET)
-// so the CLI never reads or writes a config file during API tests, keeping
-// secrets off disk.
+// so the CLI can run during API tests without writing secrets to disk.
 func setupAPITestEnv(e *testscript.Env, suite *APITestSuite) error {
 	// Isolate HOME so no real config file is accidentally read.
 	e.Setenv("XDG_CONFIG_HOME", e.WorkDir+"/.config")
 	e.Setenv("HOME", e.WorkDir)
 
-	// API credentials — the CLI reads these directly, ignoring any config file.
+	// API credentials — the CLI reads these directly, allowing tests to run
+	// without a config file.
 	e.Setenv("EXOSCALE_API_KEY", os.Getenv("EXOSCALE_API_KEY"))
 	e.Setenv("EXOSCALE_API_SECRET", os.Getenv("EXOSCALE_API_SECRET"))
 

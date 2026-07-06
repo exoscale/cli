@@ -68,7 +68,7 @@ func DecodeUserData(data string) (string, error) {
 
 		return "", err
 	}
-	defer gz.Close()
+	defer gz.Close() // nolint: errcheck
 
 	userData, err := io.ReadAll(gz)
 	if err != nil {

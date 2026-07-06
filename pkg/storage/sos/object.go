@@ -49,12 +49,21 @@ func (c *Client) DeleteObjectVersions(ctx context.Context, bucket, prefix string
 		defer close(errChan)
 
 		batchSize := int32(1000)
+		var keyMarker, versionIDMarker string
 		for {
-			list, err := c.S3Client.ListObjectVersions(ctx, &s3.ListObjectVersionsInput{
+			input := &s3.ListObjectVersionsInput{
 				Bucket:  &bucket,
-				MaxKeys: batchSize,
+				MaxKeys: aws.Int32(batchSize),
 				Prefix:  &prefix,
-			})
+			}
+			if keyMarker != "" {
+				input.KeyMarker = &keyMarker
+			}
+			if versionIDMarker != "" {
+				input.VersionIdMarker = &versionIDMarker
+			}
+
+			list, err := c.S3Client.ListObjectVersions(ctx, input)
 			if err != nil {
 				errChan <- err
 				return
@@ -88,7 +97,25 @@ func (c *Client) DeleteObjectVersions(ctx context.Context, bucket, prefix string
 				deletedChan <- deleted
 			}
 			for _, derror := range deleteResult.Errors {
-				errChan <- fmt.Errorf("delete error: %v", derror)
+				errChan <- fmt.Errorf("failed to delete %s (version %s): %s (%s)",
+					aws.ToString(derror.Key),
+					aws.ToString(derror.VersionId),
+					aws.ToString(derror.Message),
+					aws.ToString(derror.Code),
+				)
+			}
+
+			// No progress means all objects are protected; stop to avoid looping forever.
+			if len(deleteResult.Deleted) == 0 {
+				return
+			}
+
+			if aws.ToBool(list.IsTruncated) {
+				keyMarker = aws.ToString(list.NextKeyMarker)
+				versionIDMarker = aws.ToString(list.NextVersionIdMarker)
+			} else {
+				keyMarker = ""
+				versionIDMarker = ""
 			}
 		}
 	}()
@@ -304,7 +331,7 @@ func (c *Client) DownloadFile(
 	)
 
 	bar := pb.AddBar(
-		object.Size,
+		*object.Size,
 		mpb.PrependDecorators(
 			decor.Name(utils.EllipString(aws.ToString(object.Key), maxFilenameLen),
 				decor.WC{W: maxFilenameLen, C: decor.DidentRight}),
@@ -318,7 +345,7 @@ func (c *Client) DownloadFile(
 
 	// Workaround required to avoid the io.Reader from hanging when uploading empty files
 	// (see https://github.com/vbauerster/mpb/issues/7#issuecomment-518756758)
-	if object.Size == 0 {
+	if *object.Size == 0 {
 		bar.SetTotal(100, true)
 	}
 
@@ -326,7 +353,7 @@ func (c *Client) DownloadFile(
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer f.Close() // nolint: errcheck
 
 	getObjectInput := s3.GetObjectInput{
 		Bucket: aws.String(bucket),
@@ -370,7 +397,7 @@ func (o *ListBucketsOutput) ToTable() {
 		1,
 		' ',
 		tabwriter.TabIndent)
-	defer table.Flush()
+	defer table.Flush() // nolint: errcheck
 
 	for _, b := range *o {
 		_, _ = fmt.Fprintf(table, "%s\t%s\t%6s \t%s/\n",
@@ -687,7 +714,7 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key string) (*ShowObjec
 		Path:         key,
 		Bucket:       bucket,
 		LastModified: obj.LastModified.Format(object.TimestampFormat),
-		Size:         obj.ContentLength,
+		Size:         *obj.ContentLength,
 		ACL:          ACLFromS3(acl.Grants),
 		Metadata:     obj.Metadata,
 		Headers:      ObjectHeadersFromS3(obj),
@@ -726,6 +753,9 @@ func ObjectHeadersFromS3(o *s3.GetObjectOutput) map[string]string {
 	}
 	if o.Expires != nil {
 		headers[ObjectHeaderExpires] = o.Expires.String()
+	}
+	if o.Expiration != nil {
+		headers[ObjectHeaderLifecycleExpiration] = *o.Expiration
 	}
 
 	return headers
@@ -805,4 +835,9 @@ func (o *ShowObjectOutput) ToTable() {
 
 		return buf.String()
 	}()})
+}
+
+func IsTraversalPath(key string) bool {
+	cleaned := path.Clean(key)
+	return strings.HasPrefix(cleaned, "..")
 }

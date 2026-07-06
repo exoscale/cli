@@ -10,12 +10,13 @@ import (
 )
 
 const (
-	ObjectHeaderCacheControl       = "Cache-Control"
-	ObjectHeaderContentDisposition = "Content-Disposition"
-	ObjectHeaderContentEncoding    = "Content-Encoding"
-	ObjectHeaderContentLanguage    = "Content-Language"
-	ObjectHeaderContentType        = "Content-Type"
-	ObjectHeaderExpires            = "Expires"
+	ObjectHeaderCacheControl        = "Cache-Control"
+	ObjectHeaderContentDisposition  = "Content-Disposition"
+	ObjectHeaderContentEncoding     = "Content-Encoding"
+	ObjectHeaderContentLanguage     = "Content-Language"
+	ObjectHeaderContentType         = "Content-Type"
+	ObjectHeaderExpires             = "Expires"
+	ObjectHeaderLifecycleExpiration = "Expires-At"
 )
 
 func (c *Client) UpdateObjectHeaders(ctx context.Context, bucket, key string, headers map[string]*string) error {

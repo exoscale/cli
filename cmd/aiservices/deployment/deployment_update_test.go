@@ -1,7 +1,6 @@
 package deployment
 
 import (
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -10,9 +9,8 @@ import (
 	"testing"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 func TestDeploymentUpdate(t *testing.T) {
@@ -31,7 +29,7 @@ func TestDeploymentUpdate(t *testing.T) {
 					},
 				},
 			}
-			writeJSON(t, w, http.StatusOK, resp)
+			testutils.WriteJSON(t, w, http.StatusOK, resp)
 			return
 		}
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -42,31 +40,23 @@ func TestDeploymentUpdate(t *testing.T) {
 		if r.Method == http.MethodPatch {
 			capturedID = path.Base(r.URL.Path)
 			body, _ := io.ReadAll(r.Body)
-			r.Body.Close()
+			_ = r.Body.Close()
 			if err := json.Unmarshal(body, &capturedRequest); err != nil {
 				t.Fatalf("failed to unmarshal request: %v", err)
 			}
-			writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-update"), State: v3.OperationStateSuccess})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-update"), State: v3.OperationStateSuccess})
 			return
 		}
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	})
 
 	mux.HandleFunc("/operation/", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-update"), State: v3.OperationStateSuccess})
+		testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-update"), State: v3.OperationStateSuccess})
 	})
 
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
-
-	exocmd.GContext = context.Background()
-	globalstate.Quiet = true
-	creds := credentials.NewStaticCredentials("key", "secret")
-	client, err := v3.NewClient(creds)
-	if err != nil {
-		t.Fatalf("new client: %v", err)
-	}
-	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(srv.URL))
+	testutils.SetupV3Client(t, srv.URL)
 
 	c := &DeploymentUpdateCmd{
 		CliCommandSettings:        exocmd.DefaultCLICmdSettings(),

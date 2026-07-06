@@ -33,7 +33,7 @@ func TestShowObject(t *testing.T) {
 			name: "successful retrieval",
 			getObjectFn: func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 				return &s3.GetObjectOutput{
-					ContentLength: 100,
+					ContentLength: aws.Int64(100),
 					LastModified:  &now,
 				}, nil
 			},
@@ -56,7 +56,7 @@ func TestShowObject(t *testing.T) {
 			name: "failed to get object ACL",
 			getObjectFn: func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 				return &s3.GetObjectOutput{
-					ContentLength: 100,
+					ContentLength: aws.Int64(100),
 					LastModified:  &now,
 				}, nil
 			},
@@ -131,7 +131,7 @@ func TestDeleteObjects(t *testing.T) {
 			},
 			mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
 				return &s3.ListObjectsV2Output{
-					IsTruncated: false,
+					IsTruncated: aws.Bool(false),
 					Contents: []types.Object{
 						{Key: aws.String(objectKeys[0])},
 						{Key: aws.String(objectKeys[1])},
@@ -159,7 +159,7 @@ func TestDeleteObjects(t *testing.T) {
 			},
 			mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
 				return &s3.ListObjectsV2Output{
-					IsTruncated: false,
+					IsTruncated: aws.Bool(false),
 					Contents: []types.Object{
 						{
 							Key: aws.String("some-file"),
@@ -196,7 +196,7 @@ func TestDeleteObjects(t *testing.T) {
 			},
 			mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
 				return &s3.ListObjectsV2Output{
-					IsTruncated: false,
+					IsTruncated: aws.Bool(false),
 					Contents: []types.Object{
 						{Key: aws.String(objectKeys[0])},
 						{Key: aws.String(objectKeys[1])},
@@ -288,7 +288,7 @@ func TestUploadFile(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer os.RemoveAll(tempDir)
+			defer os.RemoveAll(tempDir) // nolint: errcheck
 
 			fileToUpload := tempDir + "/" + tc.file
 
@@ -422,7 +422,7 @@ func TestUploadFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		os.RemoveAll(tempDir)
+		_ = os.RemoveAll(tempDir)
 	})
 
 	tempFile1 := filepath.Join(tempDir, "file1.txt")
@@ -577,4 +577,187 @@ func TestUploadFiles(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_IsTraversalPath(t *testing.T) {
+	tests := []struct {
+		path   string
+		expect bool
+	}{
+		{
+			path:   "test.txt",
+			expect: false,
+		},
+		{
+			path:   "../test.txt",
+			expect: true,
+		},
+		{
+			path:   "a/b/../../../test.text",
+			expect: true,
+		},
+		{
+			path:   "a/b/../../test.txt",
+			expect: false,
+		},
+		{
+			path:   "../a/b/test.txt",
+			expect: true,
+		},
+	}
+
+	for _, ut := range tests {
+		t.Run(ut.path, func(t *testing.T) {
+			assert.Equal(t, ut.expect, sos.IsTraversalPath(ut.path))
+		})
+	}
+}
+
+func drainDeleteObjectVersions(deletedChan <-chan types.DeletedObject, errChan <-chan error) ([]types.DeletedObject, []error) {
+	var deleted []types.DeletedObject
+	var errs []error
+	for deletedChan != nil || errChan != nil {
+		select {
+		case d, ok := <-deletedChan:
+			if !ok {
+				deletedChan = nil
+				continue
+			}
+			deleted = append(deleted, d)
+		case e, ok := <-errChan:
+			if !ok {
+				errChan = nil
+				continue
+			}
+			errs = append(errs, e)
+		}
+	}
+	return deleted, errs
+}
+
+func TestDeleteObjectVersions_HappyPath(t *testing.T) {
+	bucket := "test-bucket"
+	listCalls := 0
+
+	client := sos.Client{
+		S3Client: &MockS3API{
+			mockListObjectVersions: func(_ context.Context, params *s3.ListObjectVersionsInput, _ ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
+				listCalls++
+				if listCalls > 1 {
+					// Second call: nothing left.
+					return &s3.ListObjectVersionsOutput{}, nil
+				}
+				return &s3.ListObjectVersionsOutput{
+					IsTruncated: aws.Bool(false),
+					Versions: []types.ObjectVersion{
+						{Key: aws.String("obj1"), VersionId: aws.String("v1")},
+						{Key: aws.String("obj2"), VersionId: aws.String("v2")},
+					},
+				}, nil
+			},
+			mockDeleteObjects: func(_ context.Context, params *s3.DeleteObjectsInput, _ ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error) {
+				return &s3.DeleteObjectsOutput{
+					Deleted: []types.DeletedObject{
+						{Key: aws.String("obj1"), VersionId: aws.String("v1")},
+						{Key: aws.String("obj2"), VersionId: aws.String("v2")},
+					},
+				}, nil
+			},
+		},
+	}
+
+	deleted, errs := drainDeleteObjectVersions(client.DeleteObjectVersions(context.Background(), bucket, "/"))
+	assert.Empty(t, errs)
+	assert.Len(t, deleted, 2)
+	assert.Equal(t, 2, listCalls, "should list twice: once for the batch, once to confirm empty")
+}
+
+func TestDeleteObjectVersions_ComplianceLock(t *testing.T) {
+	bucket := "locked-bucket"
+	listCalls := 0
+	deleteCalls := 0
+
+	client := sos.Client{
+		S3Client: &MockS3API{
+			mockListObjectVersions: func(_ context.Context, _ *s3.ListObjectVersionsInput, _ ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
+				listCalls++
+				return &s3.ListObjectVersionsOutput{
+					IsTruncated: aws.Bool(false),
+					Versions: []types.ObjectVersion{
+						{Key: aws.String("locked-obj"), VersionId: aws.String("v1")},
+					},
+				}, nil
+			},
+			mockDeleteObjects: func(_ context.Context, _ *s3.DeleteObjectsInput, _ ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error) {
+				deleteCalls++
+				return &s3.DeleteObjectsOutput{
+					Errors: []types.Error{
+						{
+							Key:       aws.String("locked-obj"),
+							VersionId: aws.String("v1"),
+							Code:      aws.String("ObjectLocked"),
+							Message:   aws.String("Object is under compliance retention"),
+						},
+					},
+				}, nil
+			},
+		},
+	}
+
+	deleted, errs := drainDeleteObjectVersions(client.DeleteObjectVersions(context.Background(), bucket, "/"))
+	assert.Empty(t, deleted)
+	assert.Len(t, errs, 1)
+	assert.Contains(t, errs[0].Error(), "ObjectLocked")
+	assert.Contains(t, errs[0].Error(), "locked-obj")
+	assert.Equal(t, 1, listCalls, "should stop after first failed batch")
+	assert.Equal(t, 1, deleteCalls, "should stop after first failed batch")
+}
+
+func TestDeleteObjectVersions_Pagination(t *testing.T) {
+	bucket := "big-bucket"
+	listCalls := 0
+
+	client := sos.Client{
+		S3Client: &MockS3API{
+			mockListObjectVersions: func(_ context.Context, params *s3.ListObjectVersionsInput, _ ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
+				listCalls++
+				switch listCalls {
+				case 1:
+					assert.Empty(t, aws.ToString(params.KeyMarker))
+					assert.Empty(t, aws.ToString(params.VersionIdMarker))
+					return &s3.ListObjectVersionsOutput{
+						IsTruncated:         aws.Bool(true),
+						NextKeyMarker:       aws.String("obj1"),
+						NextVersionIdMarker: aws.String("v1"),
+						Versions: []types.ObjectVersion{
+							{Key: aws.String("obj1"), VersionId: aws.String("v1")},
+						},
+					}, nil
+				case 2:
+					assert.Equal(t, "obj1", aws.ToString(params.KeyMarker))
+					assert.Equal(t, "v1", aws.ToString(params.VersionIdMarker))
+					return &s3.ListObjectVersionsOutput{
+						IsTruncated: aws.Bool(false),
+						Versions: []types.ObjectVersion{
+							{Key: aws.String("obj2"), VersionId: aws.String("v2")},
+						},
+					}, nil
+				default:
+					return &s3.ListObjectVersionsOutput{}, nil
+				}
+			},
+			mockDeleteObjects: func(_ context.Context, params *s3.DeleteObjectsInput, _ ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error) {
+				deleted := make([]types.DeletedObject, 0, len(params.Delete.Objects))
+				for _, o := range params.Delete.Objects {
+					deleted = append(deleted, types.DeletedObject{Key: o.Key, VersionId: o.VersionId})
+				}
+				return &s3.DeleteObjectsOutput{Deleted: deleted}, nil
+			},
+		},
+	}
+
+	deleted, errs := drainDeleteObjectVersions(client.DeleteObjectVersions(context.Background(), bucket, "/"))
+	assert.Empty(t, errs)
+	assert.Len(t, deleted, 2, "both pages should be processed")
+	assert.Equal(t, 3, listCalls, "should call list three times: page1, page2, confirm empty")
 }

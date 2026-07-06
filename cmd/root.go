@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -9,9 +11,11 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"regexp"
 	"slices"
-	"strconv"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -42,6 +46,12 @@ var RootCmd = &cobra.Command{
 	Short:         "Manage your Exoscale infrastructure easily",
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
+		if globalstate.RequestTimeout != -time.Second && globalstate.RequestTimeout <= 0 {
+			return fmt.Errorf("--timeout must be a positive duration (e.g. 15s), or -1s to disable")
+		}
+		return nil
+	},
 }
 
 var versionCmd = &cobra.Command{
@@ -56,10 +66,11 @@ var versionCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the RootCmd.
 func Execute(version, commit string) {
 
-	// trap Ctrl+C and call cancel on the context
+	// Trap Ctrl+C (and SIGHUP, which the kernel delivers when the PTY session
+	// leader exits before we do) and cancel the context.
 	ctx, cancel := context.WithCancel(context.Background())
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Interrupt, syscall.SIGHUP)
 	defer func() {
 		signal.Stop(c)
 		cancel()
@@ -75,10 +86,70 @@ func Execute(version, commit string) {
 	GContext = ctx
 
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", formatError(err))
 
 		os.Exit(1) //nolint:gocritic
 	}
+}
+
+var jsonPathFieldRe = regexp.MustCompile(`\$\['([^']+)'\]`)
+
+// formatError renders a user-friendly message from an error. When the chain
+// contains a *v3.APIError it formats the structured server response; otherwise
+// it falls back to the raw error string.
+func formatError(err error) string {
+	var apiErr *v3.APIError
+	if !errors.As(err, &apiErr) {
+		return err.Error()
+	}
+
+	// Prefer the specific "detail" message, fall back to "title".
+	lead := apiErr.Detail
+	if lead == "" {
+		lead = apiErr.Title
+	}
+	if lead == "" {
+		// Simple message/error format — just the status text and message.
+		if apiErr.Message != "" {
+			return apiErr.Unwrap().Error() + ": " + apiErr.Message
+		}
+		return apiErr.Unwrap().Error()
+	}
+
+	msg := apiErr.Unwrap().Error() + ": " + apiErr.Title + ": " + lead
+	for _, e := range apiErr.Errors {
+		field := formatFieldName(e.Location)
+		detail := formatDetail(e.Detail)
+		if field != "" {
+			msg += fmt.Sprintf("\n  - %s: %s", field, detail)
+		} else {
+			msg += fmt.Sprintf("\n  - %s", detail)
+		}
+	}
+	return msg
+}
+
+// formatFieldName turns a JSONPath location like $['inference-engine-version']
+// into a CLI flag name like --inference-engine-version.
+func formatFieldName(location string) string {
+	m := jsonPathFieldRe.FindStringSubmatch(location)
+	if len(m) < 2 {
+		return location
+	}
+	return "--" + m[1]
+}
+
+// formatDetail rewrites technical validation messages into plain English.
+func formatDetail(detail string) string {
+	const enumPrefix = "does not have a value in the enumeration "
+	if after, ok := strings.CutPrefix(detail, enumPrefix); ok {
+		after = strings.TrimSpace(after)
+		var values []string
+		if err := json.Unmarshal([]byte(after), &values); err == nil && len(values) > 0 {
+			return "invalid value; valid values are: " + strings.Join(values, ", ")
+		}
+	}
+	return detail
 }
 
 func init() {
@@ -95,6 +166,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&globalstate.OutputFormat, "output-format", "O", "", "Output format (table|json|text), see \"exo output --help\" for more information")
 	RootCmd.PersistentFlags().StringVar(&output.GOutputTemplate, "output-template", "", "Template to use if output format is \"text\"")
 	RootCmd.PersistentFlags().BoolVarP(&globalstate.Quiet, "quiet", "Q", false, "Quiet mode (disable non-essential command output)")
+	RootCmd.PersistentFlags().DurationVar(&globalstate.RequestTimeout, "timeout", 15*time.Second, "Per-zone timeout for list operations; -1s disables timeout [env EXOSCALE_TIMEOUT]")
 	RootCmd.AddCommand(versionCmd)
 
 	// Don't attempt to load client configuration in testing mode.
@@ -107,85 +179,41 @@ func init() {
 
 var ignoreClientBuild = false
 
+// applyOutputFormat sets the output format from the account default when
+// --output-format was not passed on the command line.
+func applyOutputFormat() {
+	if globalstate.OutputFormat == "" {
+		if account.CurrentAccount.DefaultOutputFormat != "" {
+			globalstate.OutputFormat = account.CurrentAccount.DefaultOutputFormat
+		} else {
+			globalstate.OutputFormat = DefaultOutputFormat
+		}
+	}
+}
+
 // initConfig reads in config file and ENV variables if set.
 func initConfig() { //nolint:gocyclo
-	envs := map[string]string{
+	// Bind meta-config env vars to flags; CLI flags take precedence.
+	metaEnvFlags := map[string]string{
 		"EXOSCALE_CONFIG":  "config",
 		"EXOSCALE_ACCOUNT": "use-account",
+		"EXOSCALE_TIMEOUT": "timeout",
 	}
 
-	for env, flag := range envs {
-		pflag := RootCmd.Flags().Lookup(flag)
+	for envVar, flagName := range metaEnvFlags {
+		pflag := RootCmd.Flags().Lookup(flagName)
 		if pflag == nil {
-			panic(fmt.Sprintf("unknown flag '%s'", flag))
+			panic(fmt.Sprintf("unknown flag %q", flagName))
 		}
 
-		if value, ok := os.LookupEnv(env); ok {
+		if value, ok := os.LookupEnv(envVar); ok && !pflag.Changed {
 			if err := pflag.Value.Set(value); err != nil {
 				log.Fatal(err)
 			}
 		}
 	}
 
-	sosEndpointFromEnv := readFromEnv(
-		"EXOSCALE_STORAGE_API_ENDPOINT",
-		"EXOSCALE_SOS_ENDPOINT",
-	)
-
-	apiEndpoint := os.Getenv("EXOSCALE_API_ENDPOINT")
-
-	apiKeyFromEnv := readFromEnv(
-		"EXOSCALE_API_KEY",
-		"EXOSCALE_KEY",
-		"CLOUDSTACK_KEY",
-		"CLOUDSTACK_API_KEY",
-	)
-
-	apiSecretFromEnv := readFromEnv(
-		"EXOSCALE_API_SECRET",
-		"EXOSCALE_SECRET",
-		"EXOSCALE_SECRET_KEY",
-		"CLOUDSTACK_SECRET",
-		"CLOUDSTACK_SECRET_KEY",
-	)
-
-	apiEnvironmentFromEnv := readFromEnv("EXOSCALE_API_ENVIRONMENT")
-
-	if apiKeyFromEnv != "" && apiSecretFromEnv != "" {
-		account.CurrentAccount.Name = "<environment variables>"
-		GConfigFilePath = "<environment variables>"
-		account.CurrentAccount.Key = apiKeyFromEnv
-		account.CurrentAccount.Secret = apiSecretFromEnv
-
-		if apiEndpoint != "" {
-			account.CurrentAccount.Endpoint = apiEndpoint
-		}
-
-		if apiEnvironmentFromEnv != "" {
-			account.CurrentAccount.Environment = apiEnvironmentFromEnv
-		}
-		if sosEndpointFromEnv != "" {
-			account.CurrentAccount.SosEndpoint = sosEndpointFromEnv
-		}
-
-		clientTimeoutFromEnv := readFromEnv("EXOSCALE_API_TIMEOUT")
-		if clientTimeoutFromEnv != "" {
-			if t, err := strconv.Atoi(clientTimeoutFromEnv); err == nil {
-				account.CurrentAccount.ClientTimeout = t
-			}
-		}
-
-		account.GAllAccount = &account.Config{
-			DefaultAccount: account.CurrentAccount.Name,
-			Accounts:       []account.Account{*account.CurrentAccount},
-		}
-
-		buildClient()
-
-		return
-	}
-
-	config := &account.Config{}
+	env := readEnvSources()
 
 	usr, err := user.Current()
 	if err != nil {
@@ -220,7 +248,6 @@ func initConfig() { //nolint:gocyclo
 			log.Fatalf("%q is a directory but but should be configuration file", GConfigFilePath)
 		}
 
-		// Use config file from the flag.
 		GConfig.SetConfigFile(GConfigFilePath)
 	} else {
 		GConfig.SetConfigName("exoscale")
@@ -234,49 +261,55 @@ func initConfig() { //nolint:gocyclo
 
 	nonCredentialCmds := []string{"config", "version", "status"}
 
-	if err := GConfig.ReadInConfig(); err != nil {
+	file, err := loadFileSources(GConfig, gAccountName)
+	if err != nil {
 		if isNonCredentialCmd(nonCredentialCmds...) {
 			ignoreClientBuild = true
-			// Set GAllAccount with empty config so config commands can handle gracefully
 			account.GAllAccount = &account.Config{}
 			return
 		}
-
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Fatal(`error: the exo CLI must be configured before usage, please run "exo config"`)
-		}
-
 		log.Fatal(err)
 	}
 
-	// All the stored data (e.g. ssh keys) will be put next to the config file.
+	// No config file: require env credentials or bail.
+	if file.config == nil {
+		if env.hasCredentials() {
+			seed := account.Account{Name: "<environment variables>"}
+			GConfigFilePath = "<environment variables>"
+			resolved := resolve(env, fileSources{profile: &seed})
+			account.GAllAccount = &account.Config{
+				DefaultAccount: resolved.Name,
+				Accounts:       []account.Account{resolved},
+			}
+			account.CurrentAccount = &account.GAllAccount.Accounts[0]
+			applyOutputFormat()
+			return
+		}
+		if isNonCredentialCmd(nonCredentialCmds...) {
+			ignoreClientBuild = true
+			account.GAllAccount = &account.Config{}
+			return
+		}
+		log.Fatal(`error: the exo CLI must be configured before usage, please run "exo config"`)
+	}
+
+	// Config file found: update paths.
 	GConfigFilePath = GConfig.ConfigFileUsed()
 	globalstate.ConfigFolder = filepath.Dir(GConfigFilePath)
 
-	if err := GConfig.Unmarshal(config); err != nil {
-		log.Fatal(fmt.Errorf("couldn't read config: %s", err))
-	}
-
-	if len(config.Accounts) == 0 {
+	if len(file.config.Accounts) == 0 {
 		if isNonCredentialCmd(nonCredentialCmds...) {
 			ignoreClientBuild = true
-			// Set GAllAccount so config commands can handle the empty state gracefully
-			account.GAllAccount = config
+			account.GAllAccount = file.config
 			return
 		}
-
 		log.Fatalf("no accounts were found into %q", GConfig.ConfigFileUsed())
-		return
 	}
 
-	// Allow config management commands to run without a default account
-	// This fixes the circular dependency where 'exo config set' couldn't run
-	// to set a default account because it required a default account to exist
+	// Allow config management commands to run without a default account.
 	configManagementCmds := []string{"list", "set", "show"}
 	isConfigManagementCmd := getCmdPosition("config") == 1
 	if isConfigManagementCmd && len(os.Args) > 2 {
-		// Check if the subcommand is a config management command
-		// Need to find the actual subcommand by skipping flags
 		for i := 2; i < len(os.Args); i++ {
 			if !strings.HasPrefix(os.Args[i], "-") {
 				isConfigManagementCmd = slices.Contains(configManagementCmds, os.Args[i])
@@ -287,76 +320,50 @@ func initConfig() { //nolint:gocyclo
 		isConfigManagementCmd = false
 	}
 
-	if config.DefaultAccount == "" && gAccountName == "" {
-		// Allow config management commands to proceed without default account
+	if file.config.DefaultAccount == "" && gAccountName == "" {
 		if isConfigManagementCmd {
 			ignoreClientBuild = true
-			// Set GAllAccount so config commands can access the account list
-			account.GAllAccount = config
+			account.GAllAccount = file.config
 			return
 		}
 
-		// Provide helpful error message with available accounts
-		var availableAccounts []string
-		for _, acc := range config.Accounts {
-			availableAccounts = append(availableAccounts, acc.Name)
+		var names []string
+		for _, acc := range file.config.Accounts {
+			names = append(names, acc.Name)
 		}
-		if len(availableAccounts) > 0 {
+		if len(names) > 0 {
 			log.Fatalf("default account not defined\n\nSet a default account with: exo config set <account-name>\nAvailable accounts: %s\n\nOr specify an account for this command with: --use-account <account-name>",
-				strings.Join(availableAccounts, ", "))
+				strings.Join(names, ", "))
 		} else {
 			log.Fatalf("default account not defined")
 		}
 	}
 
-	if gAccountName == "" {
-		gAccountName = config.DefaultAccount
+	if file.profile == nil {
+		selectedName := gAccountName
+		if selectedName == "" {
+			selectedName = file.config.DefaultAccount
+		}
+		log.Fatalf("error: could't find any configured account named %q", selectedName)
 	}
 
-	account.GAllAccount = config
+	if gAccountName == "" {
+		gAccountName = file.config.DefaultAccount
+	}
+
+	account.GAllAccount = file.config
 	account.GAllAccount.DefaultAccount = gAccountName
 
-	for i, acc := range config.Accounts {
-		if acc.Name == gAccountName {
-			account.CurrentAccount = &config.Accounts[i]
+	resolved := resolve(env, file)
+	// Update in place so account.CurrentAccount pointer stays valid.
+	for i := range account.GAllAccount.Accounts {
+		if account.GAllAccount.Accounts[i].Name == resolved.Name {
+			account.GAllAccount.Accounts[i] = resolved
+			account.CurrentAccount = &account.GAllAccount.Accounts[i]
 			break
 		}
 	}
-
-	if account.CurrentAccount.Name == "" {
-		log.Fatalf("error: could't find any configured account named %q", gAccountName)
-	}
-
-	if account.CurrentAccount.Environment == "" {
-		account.CurrentAccount.Environment = DefaultEnvironment
-	}
-
-	if account.CurrentAccount.DefaultZone == "" {
-		account.CurrentAccount.DefaultZone = DefaultZone
-	}
-
-	// if an output format isn't specified via cli argument, use
-	// the current account default format
-	if globalstate.OutputFormat == "" {
-		if account.CurrentAccount.DefaultOutputFormat != "" {
-			globalstate.OutputFormat = account.CurrentAccount.DefaultOutputFormat
-		} else {
-			globalstate.OutputFormat = DefaultOutputFormat
-		}
-	}
-
-	if account.CurrentAccount.SosEndpoint == "" {
-		account.CurrentAccount.SosEndpoint = DefaultSosEndpoint
-	}
-
-	clientTimeoutFromEnv := readFromEnv("EXOSCALE_API_TIMEOUT")
-	if clientTimeoutFromEnv != "" {
-		if t, err := strconv.Atoi(clientTimeoutFromEnv); err == nil {
-			account.CurrentAccount.ClientTimeout = t
-		}
-	}
-
-	account.CurrentAccount.SosEndpoint = strings.TrimRight(account.CurrentAccount.SosEndpoint, "/")
+	applyOutputFormat()
 }
 
 func isNonCredentialCmd(cmds ...string) bool {

@@ -57,7 +57,7 @@ func statusShow() error {
 
 	buf := bytes.NewBuffer(nil)
 	st := table.NewEmbeddedTable(buf)
-	st.Table.AppendBulk(global)
+	st.AppendBulk(global)
 	st.Render()
 	t.Append([]string{"Services", buf.String()})
 	buf.Reset()
@@ -71,7 +71,7 @@ func statusShow() error {
 	// Show incidents currently taking place
 	if len(incidents) > 0 {
 		it := table.NewEmbeddedTable(buf)
-		it.Table.AppendBulk(incidents)
+		it.AppendBulk(incidents)
 		it.Render()
 	} else {
 		buf = bytes.NewBuffer([]byte("n/a"))
@@ -86,7 +86,7 @@ func statusShow() error {
 	}
 	if len(maintenances) > 0 {
 		mt := table.NewEmbeddedTable(buf)
-		mt.Table.AppendBulk(maintenances)
+		mt.AppendBulk(maintenances)
 		mt.Render()
 	} else {
 		buf = bytes.NewBuffer([]byte("n/a"))

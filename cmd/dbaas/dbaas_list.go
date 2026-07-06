@@ -1,7 +1,9 @@
 package dbaas
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -15,17 +17,11 @@ import (
 )
 
 type dbaasServiceListItemOutput struct {
-	Name string      `json:"name"`
-	Type string      `json:"type"`
-	Plan string      `json:"plan"`
-	Zone v3.ZoneName `json:"zone"`
+	Name string      `json:"name" outputWidth:"70"`
+	Type string      `json:"type" outputWidth:"16"`
+	Plan string      `json:"plan" outputWidth:"16"`
+	Zone v3.ZoneName `json:"zone" outputWidth:"8"`
 }
-
-type dbaasServiceListOutput []dbaasServiceListItemOutput
-
-func (o *dbaasServiceListOutput) ToJSON()  { output.JSON(o) }
-func (o *dbaasServiceListOutput) ToText()  { output.Text(o) }
-func (o *dbaasServiceListOutput) ToTable() { output.Table(o) }
 
 type dbaasServiceListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -51,6 +47,10 @@ func (c *dbaasServiceListCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *dbaasServiceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return runDbaasList(c, os.Stdout, os.Stderr)
+}
+
+func runDbaasList(c *dbaasServiceListCmd, stdout, stderr io.Writer) error {
 	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
@@ -59,44 +59,40 @@ func (c *dbaasServiceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	out := make(dbaasServiceListOutput, 0)
-	res := make(chan dbaasServiceListItemOutput)
-	done := make(chan struct{})
+	sink := utils.NewWarningSinkTo(stderr)
+	defer sink.Flush()
 
-	go func() {
-		for dbService := range res {
-			out = append(out, dbService)
+	streamer := output.NewStreamer(dbaasServiceListItemOutput{}, stdout)
+	defer func() {
+		if err := streamer.Close(); err != nil {
+			_, _ = fmt.Fprintf(stderr, "error: %s\n", err)
 		}
-		done <- struct{}{}
 	}()
-	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
-		c := client.WithEndpoint((zone.APIEndpoint))
-		list, err := c.ListDBAASServices(ctx)
 
-		if err != nil {
-			return fmt.Errorf("unable to list Database Services in zone %s: %w", zone, err)
-		}
-
-		for _, dbService := range list.DBAASServices {
-			res <- dbaasServiceListItemOutput{
-				Name: string(dbService.Name),
-				Type: string(dbService.Type),
-				Plan: dbService.Plan,
-				Zone: zone.Name,
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
+		func(ctx context.Context, zone v3.Zone) error {
+			zc := client.WithEndpoint(zone.APIEndpoint)
+			list, err := zc.ListDBAASServices(ctx)
+			if err != nil {
+				return fmt.Errorf("unable to list Database Services in zone %s: %w", zone, err)
 			}
-		}
+			for _, dbService := range list.DBAASServices {
+				if err := streamer.Push(dbaasServiceListItemOutput{
+					Name: string(dbService.Name),
+					Type: string(dbService.Type),
+					Plan: dbService.Plan,
+					Zone: zone.Name,
+				}); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 
-		return nil
-	})
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr,
-			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
+	if failed > 0 {
+		return fmt.Errorf("%d zone(s) failed", failed)
 	}
-
-	close(res)
-	<-done
-
-	return c.OutputFunc(&out, nil)
+	return nil
 }
 
 func init() {

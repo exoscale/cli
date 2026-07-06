@@ -94,7 +94,7 @@ func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recur
 			}
 		}
 
-		if !res.IsTruncated {
+		if !aws.ToBool(res.IsTruncated) {
 			break
 		}
 	}
@@ -157,8 +157,8 @@ func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
 		cfg, err := awsconfig.LoadDefaultConfig(
 			ctx,
 			append(CommonConfigOptFns,
-				awsconfig.WithEndpointResolver(aws.EndpointResolverFunc(
-					func(service, region string) (aws.Endpoint, error) {
+				awsconfig.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
+					func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 						sosURL := strings.Replace(
 							account.CurrentAccount.SosEndpoint,
 							"{zone}",
@@ -204,8 +204,8 @@ func NewStorageClient(ctx context.Context, opts ...ClientOpt) (*Client, error) {
 		append(CommonConfigOptFns,
 			awsconfig.WithRegion(client.Zone),
 
-			awsconfig.WithEndpointResolver(aws.EndpointResolverFunc(
-				func(service, region string) (aws.Endpoint, error) {
+			awsconfig.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
+				func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 					sosURL := strings.Replace(account.CurrentAccount.SosEndpoint, "{zone}", client.Zone, 1)
 					return aws.Endpoint{
 						URL:           sosURL,

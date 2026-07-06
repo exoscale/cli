@@ -1,7 +1,7 @@
 package deployment
 
 import (
-	"context"
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -9,9 +9,8 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 type instanceTypeListServer struct {
@@ -25,34 +24,23 @@ func newInstanceTypeListServer(t *testing.T) *instanceTypeListServer {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ai/instance-type", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			writeJSON(t, w, http.StatusOK, v3.ListAIInstanceTypesResponse{InstanceTypes: ts.instanceTypes})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.ListAIInstanceTypesResponse{InstanceTypes: ts.instanceTypes})
 			return
 		}
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	})
 	mux.HandleFunc("/zone", func(w http.ResponseWriter, r *http.Request) {
 		ts.zones++
-		writeJSON(t, w, http.StatusOK, v3.ListZonesResponse{Zones: []v3.Zone{{APIEndpoint: v3.Endpoint(ts.server.URL), Name: v3.ZoneName("test-zone")}}})
+		testutils.WriteJSON(t, w, http.StatusOK, v3.ListZonesResponse{Zones: []v3.Zone{{APIEndpoint: v3.Endpoint(ts.server.URL), Name: v3.ZoneName("test-zone")}}})
 	})
 	ts.server = httptest.NewServer(mux)
 	return ts
 }
 
-func instanceTypeSetup(t *testing.T, url string) {
-	exocmd.GContext = context.Background()
-	globalstate.Quiet = true
-	creds := credentials.NewStaticCredentials("key", "secret")
-	client, err := v3.NewClient(creds)
-	if err != nil {
-		t.Fatalf("new client: %v", err)
-	}
-	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(url))
-}
-
 func TestInstanceTypeList(t *testing.T) {
 	ts := newInstanceTypeListServer(t)
 	defer ts.server.Close()
-	instanceTypeSetup(t, ts.server.URL)
+	testutils.SetupV3Client(t, ts.server.URL)
 
 	trueVal := true
 	falseVal := false
@@ -61,56 +49,34 @@ func TestInstanceTypeList(t *testing.T) {
 		{Family: "gpu-a100", Authorized: &trueVal},
 	}
 
+	globalstate.OutputFormat = "json"
+	defer func() { globalstate.OutputFormat = "" }()
+
 	cmd := &InstanceTypeListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	cmd.OutputFunc = func(out output.Outputter, err error) error {
-		if err != nil {
-			return err
-		}
-		o := out.(*InstanceTypeListOutput)
-		if len(*o) != 2 {
-			t.Fatalf("expected 2 instance types, got %d", len(*o))
-		}
-		if (*o)[0].Family != "gpu-a100" {
-			t.Errorf("expected first family gpu-a100, got %s", (*o)[0].Family)
-		}
-		if (*o)[1].Family != "gpu-a5000" {
-			t.Errorf("expected second family gpu-a5000, got %s", (*o)[1].Family)
-		}
-		return nil
-	}
-	if err := cmd.CmdRun(nil, nil); err != nil {
+	var outBuf, errBuf bytes.Buffer
+	if err := runInstanceTypeList(cmd, &outBuf, &errBuf); err != nil {
+		t.Errorf("%s", errBuf.String())
 		t.Fatalf("instance type list: %v", err)
 	}
-}
 
-func TestInstanceTypeListSortByZoneAndFamily(t *testing.T) {
-	out := InstanceTypeListOutput{
-		{Family: "gpu-a100", Authorized: true, Zone: "ch-gva-2"},
-		{Family: "gpu-a5000", Authorized: true, Zone: "ch-dk-2"},
-		{Family: "gpu-a100", Authorized: true, Zone: "ch-dk-2"},
-		{Family: "gpu-h100", Authorized: true, Zone: "ch-gva-2"},
+	var rows []InstanceTypeListItemOutput
+	if err := json.Unmarshal(outBuf.Bytes(), &rows); err != nil {
+		t.Fatalf("invalid json: %v\nstdout: %s", err, outBuf.String())
 	}
-
-	sortInstanceTypeListOutput(out)
-
-	if out[0].Zone != "ch-dk-2" || out[0].Family != "gpu-a100" {
-		t.Errorf("expected ch-dk-2/gpu-a100 first, got %s/%s", out[0].Zone, out[0].Family)
+	if len(rows) != 2 {
+		t.Fatalf("expected 2 instance types, got %d", len(rows))
 	}
-	if out[1].Zone != "ch-dk-2" || out[1].Family != "gpu-a5000" {
-		t.Errorf("expected ch-dk-2/gpu-a5000 second, got %s/%s", out[1].Zone, out[1].Family)
-	}
-	if out[2].Zone != "ch-gva-2" || out[2].Family != "gpu-a100" {
-		t.Errorf("expected ch-gva-2/gpu-a100 third, got %s/%s", out[2].Zone, out[2].Family)
-	}
-	if out[3].Zone != "ch-gva-2" || out[3].Family != "gpu-h100" {
-		t.Errorf("expected ch-gva-2/gpu-h100 fourth, got %s/%s", out[3].Zone, out[3].Family)
+	for _, r := range rows {
+		if r.Zone != "test-zone" {
+			t.Errorf("expected zone test-zone, got %s", r.Zone)
+		}
 	}
 }
 
 func TestInstanceTypeListUsesZone(t *testing.T) {
 	ts := newInstanceTypeListServer(t)
 	defer ts.server.Close()
-	instanceTypeSetup(t, ts.server.URL)
+	testutils.SetupV3Client(t, ts.server.URL)
 
 	cmd := &InstanceTypeListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Zone: v3.ZoneName("test-zone")}
 	if err := cmd.CmdRun(nil, nil); err != nil {
@@ -123,7 +89,7 @@ func TestInstanceTypeListUsesZone(t *testing.T) {
 
 func TestInstanceTypeListOutputToJSON(t *testing.T) {
 	trueVal := true
-	out := InstanceTypeListOutput{
+	out := []InstanceTypeListItemOutput{
 		{Family: "gpu-a100", Authorized: trueVal, Zone: "ch-gva-2"},
 		{Family: "gpu-a5000", Authorized: false, Zone: "ch-gva-2"},
 	}

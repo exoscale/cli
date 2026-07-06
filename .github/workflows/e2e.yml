@@ -2,18 +2,19 @@ name: CI
 
 on:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test-e2e-without-api:
     name: Run E2E (Testscript) Tests / Without API
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
 
       - name: Build binary
         run: make build
@@ -24,24 +25,32 @@ jobs:
           go test -v
 
   test-e2e-with-api:
-    name: Run E2E (Testscript) Tests / With API
+    name: Run E2E (Testscript) Tests / With API / ${{ matrix.suite }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: compute
+            run: TestScriptsAPICompute
+          - suite: dbaas
+            run: TestScriptsAPIDBaaS
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
 
       - name: Build binary
         run: make build
 
-      - name: Run E2E (Testscript) Tests / With API
+      - name: Run E2E (Testscript) Tests / With API / ${{ matrix.suite }}
         env:
           EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_API_KEY }}
           EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
           EXOSCALE_ZONE: ch-gva-2
         run: |
           cd tests/e2e
-          go test -v -tags=api -timeout 30m -run TestScriptsAPI 2>&1
+          go test -v -tags=api -timeout 30m -run "${{ matrix.run }}" 2>&1

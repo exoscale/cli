@@ -1,8 +1,10 @@
 package deployment
 
 import (
+	"context"
 	"fmt"
-	"sort"
+	"io"
+	"os"
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -14,16 +16,10 @@ import (
 )
 
 type InstanceTypeListItemOutput struct {
-	Family     string `json:"family"`
-	Authorized bool   `json:"authorized"`
-	Zone       string `json:"zone"`
+	Family     string `json:"family" outputWidth:"16"`
+	Authorized bool   `json:"authorized" outputWidth:"10"`
+	Zone       string `json:"zone" outputWidth:"8"`
 }
-
-type InstanceTypeListOutput []InstanceTypeListItemOutput
-
-func (o *InstanceTypeListOutput) ToJSON()  { output.JSON(o) }
-func (o *InstanceTypeListOutput) ToText()  { output.Text(o) }
-func (o *InstanceTypeListOutput) ToTable() { output.Table(o) }
 
 type InstanceTypeListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -39,12 +35,17 @@ func (c *InstanceTypeListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists AI instance types.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&InstanceTypeListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&InstanceTypeListItemOutput{}), ", "))
 }
 func (c *InstanceTypeListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
+
 func (c *InstanceTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return runInstanceTypeList(c, os.Stdout, os.Stderr)
+}
+
+func runInstanceTypeList(c *InstanceTypeListCmd, stdout, stderr io.Writer) error {
 	ctx := exocmd.GContext
 	client := globalstate.EgoscaleV3Client
 
@@ -53,45 +54,43 @@ func (c *InstanceTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	out := make(InstanceTypeListOutput, 0)
-	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
-		zoneClient := client.WithEndpoint(zone.APIEndpoint)
-		resp, err := zoneClient.ListAIInstanceTypes(ctx)
-		if err != nil {
-			return err
-		}
+	sink := utils.NewWarningSinkTo(stderr)
+	defer sink.Flush()
 
-		for _, it := range resp.InstanceTypes {
-			authorized := false
-			if it.Authorized != nil {
-				authorized = *it.Authorized
+	streamer := output.NewStreamer(InstanceTypeListItemOutput{}, stdout)
+	defer func() {
+		if err := streamer.Close(); err != nil {
+			_, _ = fmt.Fprintf(stderr, "error: %s\n", err)
+		}
+	}()
+
+	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
+		func(ctx context.Context, zone v3.Zone) error {
+			zc := client.WithEndpoint(zone.APIEndpoint)
+			resp, err := zc.ListAIInstanceTypes(ctx)
+			if err != nil {
+				return err
 			}
-			out = append(out, InstanceTypeListItemOutput{
-				Family:     it.Family,
-				Authorized: authorized,
-				Zone:       string(zone.Name),
-			})
-		}
+			for _, it := range resp.InstanceTypes {
+				authorized := false
+				if it.Authorized != nil {
+					authorized = *it.Authorized
+				}
+				if err := streamer.Push(InstanceTypeListItemOutput{
+					Family:     it.Family,
+					Authorized: authorized,
+					Zone:       string(zone.Name),
+				}); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 
-		return nil
-	})
-
-	sortInstanceTypeListOutput(out)
-
-	return c.OutputFunc(&out, err)
-}
-
-// sortInstanceTypeListOutput sorts by zone then by family alphabetically.
-func sortInstanceTypeListOutput(out InstanceTypeListOutput) {
-	sort.Slice(out, func(i, j int) bool {
-		if out[i].Zone < out[j].Zone {
-			return true
-		}
-		if out[i].Zone > out[j].Zone {
-			return false
-		}
-		return out[i].Family < out[j].Family
-	})
+	if failed > 0 {
+		return fmt.Errorf("%d zone(s) failed", failed)
+	}
+	return nil
 }
 
 func init() {

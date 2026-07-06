@@ -1,22 +1,20 @@
 package model
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 func newModelCreateServer(t *testing.T) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ai/model", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
-			writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-model-create"), State: v3.OperationStateSuccess})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-model-create"), State: v3.OperationStateSuccess})
 			return
 		}
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -26,7 +24,7 @@ func newModelCreateServer(t *testing.T) *httptest.Server {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
-		writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-model-create"), State: v3.OperationStateSuccess})
+		testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-model-create"), State: v3.OperationStateSuccess})
 	})
 	return httptest.NewServer(mux)
 }
@@ -34,14 +32,7 @@ func newModelCreateServer(t *testing.T) *httptest.Server {
 func TestModelCreateSuccessAndMissingName(t *testing.T) {
 	srv := newModelCreateServer(t)
 	defer srv.Close()
-	exocmd.GContext = context.Background()
-	globalstate.Quiet = true
-	creds := credentials.NewStaticCredentials("key", "secret")
-	client, err := v3.NewClient(creds)
-	if err != nil {
-		t.Fatalf("new client: %v", err)
-	}
-	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(srv.URL))
+	testutils.SetupV3Client(t, srv.URL)
 
 	// missing name
 	cmd := &ModelCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}

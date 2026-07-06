@@ -16,7 +16,7 @@ type listFunc[ObjectType object.ObjectInterface] func(ctx context.Context) (*lis
 type listCallOut[ObjectType object.ObjectInterface] struct {
 	Objects        []ObjectType
 	CommonPrefixes []string
-	IsTruncated    bool
+	IsTruncated    *bool
 }
 
 type ObjectListing[ObjectType object.ObjectInterface] struct {
@@ -150,7 +150,7 @@ func getObjectListing[ObjectType object.ObjectInterface](ctx context.Context, c 
 
 		listing.CommonPrefixes = append(listing.CommonPrefixes, res.CommonPrefixes...)
 
-		if !res.IsTruncated {
+		if !aws.ToBool(res.IsTruncated) {
 			break
 		}
 	}

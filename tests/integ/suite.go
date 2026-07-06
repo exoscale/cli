@@ -24,6 +24,7 @@ type Step struct {
 	Command       string
 	Expected      interface{}
 	ExpectedError *exec.ExitError
+	NoZone        bool
 }
 
 type Suite struct {
@@ -67,7 +68,11 @@ func (s *Suite) Run() {
 		errMsg := fmt.Sprintf("step %d/%d: %s\n", nr+1, nSteps, step.Description)
 
 		commandParts := strings.Split(step.Command, " ")
-		commandParts = append([]string{"-z", s.Zone, "-O", "json"}, commandParts[1:]...)
+		if step.NoZone {
+			commandParts = append([]string{"-O", "json"}, commandParts[1:]...)
+		} else {
+			commandParts = append([]string{"-z", s.Zone, "-O", "json"}, commandParts[1:]...)
+		}
 		cmd := exec.Command(Binary, commandParts...)
 		output, err := cmd.CombinedOutput()
 		if step.ExpectedError != nil && err != nil {

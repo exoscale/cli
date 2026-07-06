@@ -1,7 +1,6 @@
 package deployment
 
 import (
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -12,10 +11,9 @@ import (
 	"time"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 type depActionsServer struct {
@@ -30,9 +28,9 @@ func newDepActionsServer(t *testing.T) *depActionsServer {
 	mux.HandleFunc("/ai/deployment", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			writeJSON(t, w, http.StatusOK, v3.ListDeploymentsResponse{Deployments: ts.deployments})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.ListDeploymentsResponse{Deployments: ts.deployments})
 		case http.MethodPost:
-			writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-deploy-create"), State: v3.OperationStateSuccess})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-deploy-create"), State: v3.OperationStateSuccess})
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
@@ -49,7 +47,7 @@ func newDepActionsServer(t *testing.T) *depActionsServer {
 			for _, d := range ts.deployments {
 				if string(d.ID) == id {
 					resp := v3.GetDeploymentResponse{ID: d.ID, Name: d.Name, State: v3.GetDeploymentResponseState(d.State), GpuType: d.GpuType, GpuCount: d.GpuCount, Replicas: d.Replicas, ServiceLevel: d.ServiceLevel, DeploymentURL: d.DeploymentURL, Model: d.Model, CreatedAT: d.CreatedAT, UpdatedAT: d.UpdatedAT}
-					writeJSON(t, w, http.StatusOK, resp)
+					testutils.WriteJSON(t, w, http.StatusOK, resp)
 					return
 				}
 			}
@@ -57,22 +55,22 @@ func newDepActionsServer(t *testing.T) *depActionsServer {
 			return
 		}
 		if len(parts) == 1 && r.Method == http.MethodDelete {
-			writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-deploy-delete"), State: v3.OperationStateSuccess})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-deploy-delete"), State: v3.OperationStateSuccess})
 			return
 		}
 		if len(parts) == 2 && parts[1] == "scale" && r.Method == http.MethodPost {
 			b, _ := io.ReadAll(r.Body)
-			r.Body.Close()
+			_ = r.Body.Close()
 			ts.lastScaleBody = string(b)
-			writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-deploy-scale"), State: v3.OperationStateSuccess})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-deploy-scale"), State: v3.OperationStateSuccess})
 			return
 		}
 		if len(parts) == 2 && parts[1] == "api-key" && r.Method == http.MethodGet {
-			writeJSON(t, w, http.StatusOK, v3.RevealDeploymentAPIKeyResponse{APIKey: "secret"})
+			testutils.WriteJSON(t, w, http.StatusOK, v3.RevealDeploymentAPIKeyResponse{APIKey: "secret"})
 			return
 		}
 		if len(parts) == 2 && parts[1] == "logs" && r.Method == http.MethodGet {
-			writeJSON(t, w, http.StatusOK, v3.GetDeploymentLogsResponse{
+			testutils.WriteJSON(t, w, http.StatusOK, v3.GetDeploymentLogsResponse{
 				Logs: []v3.GetDeploymentLogsEntry{
 					{Message: "l1"},
 					{Message: "l2"},
@@ -87,7 +85,7 @@ func newDepActionsServer(t *testing.T) *depActionsServer {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
-		writeJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID(path.Base(r.URL.Path)), State: v3.OperationStateSuccess})
+		testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID(path.Base(r.URL.Path)), State: v3.OperationStateSuccess})
 	})
 	ts.server = httptest.NewServer(mux)
 	return ts
@@ -96,14 +94,7 @@ func newDepActionsServer(t *testing.T) *depActionsServer {
 func TestDeploymentDeleteScaleRevealLogs(t *testing.T) {
 	ts := newDepActionsServer(t)
 	defer ts.server.Close()
-	exocmd.GContext = context.Background()
-	globalstate.Quiet = true
-	creds := credentials.NewStaticCredentials("key", "secret")
-	client, err := v3.NewClient(creds)
-	if err != nil {
-		t.Fatalf("new client: %v", err)
-	}
-	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(ts.server.URL))
+	testutils.SetupV3Client(t, ts.server.URL)
 
 	now := time.Now()
 	ts.deployments = []v3.ListDeploymentsResponseEntry{{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", CreatedAT: now, UpdatedAT: now}}
@@ -150,14 +141,8 @@ func TestDeploymentDeleteScaleRevealLogs(t *testing.T) {
 func TestDeploymentScaleZeroIncludesReplicas(t *testing.T) {
 	ts := newDepActionsServer(t)
 	defer ts.server.Close()
-	exocmd.GContext = context.Background()
-	globalstate.Quiet = true
-	creds := credentials.NewStaticCredentials("key", "secret")
-	client, err := v3.NewClient(creds)
-	if err != nil {
-		t.Fatalf("new client: %v", err)
-	}
-	globalstate.EgoscaleV3Client = client.WithEndpoint(v3.Endpoint(ts.server.URL))
+	testutils.SetupV3Client(t, ts.server.URL)
+
 	now := time.Now()
 	ts.deployments = []v3.ListDeploymentsResponseEntry{{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", CreatedAT: now, UpdatedAT: now}}
 	sc := &DeploymentScaleCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha", Size: 0}

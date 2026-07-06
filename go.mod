@@ -1,16 +1,16 @@
 module github.com/exoscale/cli
 
-go 1.26
+go 1.26.4
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.2.0
-	github.com/aws/aws-sdk-go-v2/config v1.1.1
-	github.com/aws/aws-sdk-go-v2/credentials v1.1.1
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.0.2
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
-	github.com/aws/smithy-go v1.1.0
+	github.com/aws/aws-sdk-go-v2 v1.23.1
+	github.com/aws/aws-sdk-go-v2/config v1.25.5
+	github.com/aws/aws-sdk-go-v2/credentials v1.16.4
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.14.2
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.44.0
+	github.com/aws/smithy-go v1.17.0
 	github.com/dustin/go-humanize v1.0.1
-	github.com/exoscale/egoscale/v3 v3.1.35-0.20260331081148-08a321a16e52
+	github.com/exoscale/egoscale/v3 v3.1.40
 	github.com/exoscale/openapi-cli-generator v1.2.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/hashicorp/go-multierror v1.1.1
@@ -42,12 +42,19 @@ require (
 	github.com/alecthomas/chroma v0.7.3 // indirect
 	github.com/alecthomas/gometalinter v2.0.11+incompatible // indirect
 	github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.0.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.0.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.0.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.1.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.1.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.1.1 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.1 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.5 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.4 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.4 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.6 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.2.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.2.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.16.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.17.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.20.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.25.4 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/client9/misspell v0.3.4 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect

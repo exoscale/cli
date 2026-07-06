@@ -136,7 +136,7 @@ func outputTableRow(item reflect.Value) []string {
 				row = append(row, fmt.Sprint(field.Interface()))
 			}
 
-		case reflect.Ptr:
+		case reflect.Pointer:
 			// If the field value is a nil pointer, print "n/a" instead of <nil>
 			if field.IsNil() {
 				row = append(row, "n/a")
@@ -277,7 +277,7 @@ func Table(o interface{}) {
 				}(), "\n")})
 			}
 
-		case reflect.Ptr:
+		case reflect.Pointer:
 			// If the field value is a nil pointer, print "n/a" instead of <nil>.
 			if v.Field(i).IsNil() {
 				tab.Append([]string{label, "n/a"})
