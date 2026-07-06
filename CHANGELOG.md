@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Bug fixes
+
+- storage: can't list buckets if no default AWS credentials present #865
+
 ## 1.95.5
 
 ### Features
