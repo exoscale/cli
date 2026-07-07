@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.4
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.14.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.44.0
-	github.com/aws/smithy-go v1.17.0
+	github.com/aws/smithy-go v1.24.2
 	github.com/dustin/go-humanize v1.0.1
 	github.com/exoscale/egoscale/v3 v3.1.40
 	github.com/exoscale/openapi-cli-generator v1.2.0
@@ -42,7 +42,7 @@ require (
 	github.com/alecthomas/chroma v0.7.3 // indirect
 	github.com/alecthomas/gometalinter v2.0.11+incompatible // indirect
 	github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4 // indirect
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.1 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.8 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.5 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.4 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.4 // indirect
