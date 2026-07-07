@@ -157,6 +157,11 @@ func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
 		cfg, err := awsconfig.LoadDefaultConfig(
 			ctx,
 			append(CommonConfigOptFns,
+				awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+					account.CurrentAccount.Key,
+					account.CurrentAccount.APISecret(),
+					"")),
+
 				awsconfig.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
 					func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 						sosURL := strings.Replace(

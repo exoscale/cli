@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Bug fixes
+
+- storage: fix IMDS fallback when using bucket-path syntax (`sos://bucket/`) on non-EC2 hosts #864
+
 ## 1.95.5
 
 ### Features

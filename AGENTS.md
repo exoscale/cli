@@ -97,6 +97,30 @@ Tests live in the same package (white-box). Construct the struct directly and
 call `CmdRun(nil, nil)`. Use `pkg/testutils` for HTTP test servers and client
 setup. See `cmd/aiservices/deployment/deployment_create_test.go`.
 
+### E2E tests for new features
+
+Every new feature must ship with at least one `.txtar` scenario under
+`tests/e2e/scenarios/with-api/<domain>/`. A single scenario covering only
+the happy path is not enough - cover the primary CLI usages:
+
+- The main command (create/list/show/delete or equivalent)
+- At least one flag or option variant that changes the output or behaviour
+- Any path-syntax shorthand the user would reach for (e.g. `sos://bucket/`)
+
+Keep scenarios focused: one file per logical feature or sub-command cluster.
+Name files `<feature>_<scenario>.txtar` (e.g. `bucket_lifecycle_crud.txtar`).
+
+Register the domain under `TestScriptsAPI<Domain>` in
+`tests/e2e/testscript_api_test.go` and `TestAPI<Domain>Local` in
+`tests/e2e/local_test.go`.
+
+Run locally with:
+
+```
+cd tests/e2e
+go test -v -tags=local_integration -timeout 30m -run TestAPI<Domain>Local -account=<name>
+```
+
 ## File header on every AI-touched file
 
 Add a comment at the top of every file you create or modify. Use the

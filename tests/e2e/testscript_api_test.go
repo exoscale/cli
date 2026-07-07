@@ -22,6 +22,12 @@ type APITestSuite struct {
 	RunID string
 }
 
+// TestScriptsAPIStorage runs API e2e scenarios under scenarios/with-api/storage/.
+// Run with: go test -v -tags=api -timeout 10m -run TestScriptsAPIStorage
+func TestScriptsAPIStorage(t *testing.T) {
+	runAPITestSuite(t, "scenarios/with-api/storage")
+}
+
 // TestScriptsAPICompute runs API e2e scenarios under scenarios/with-api/compute/.
 // Run with: go test -v -tags=api -timeout 30m -run TestScriptsAPICompute
 func TestScriptsAPICompute(t *testing.T) {
