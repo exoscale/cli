@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- limits: GPU quota details with `exo limits --gpu`
 
 ### Improvements
 - Upgrade aws sdk #874
