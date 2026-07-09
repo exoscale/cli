@@ -72,13 +72,13 @@ Supported output template annotations: %s`,
 		}
 
 		gpuLabels := map[string]string{
-			limitInstanceGPUs:   "GPU - Compute instance GPUs",
-			gpu2:                "GPU - GPU2",
-			gpu3:                "GPU - GPU3",
-			gpua30:              "GPU - A30",
-			gpu3080ti:           "GPU - 3080 Ti",
-			gpua5000:            "GPU - A5000",
-			gpurtx6000pro:       "GPU - RTX 6000 Pro",
+			limitInstanceGPUs: "GPU - Compute instance GPUs",
+			gpu2:              "GPU - GPU2",
+			gpu3:              "GPU - GPU3",
+			gpua30:            "GPU - A30",
+			gpu3080ti:         "GPU - 3080 Ti",
+			gpua5000:          "GPU - A5000",
+			gpurtx6000pro:     "GPU - RTX 6000 Pro",
 		}
 
 		resourceLimitLabels := map[string]string{
