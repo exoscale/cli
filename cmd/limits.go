@@ -50,8 +50,6 @@ func (o *LimitsOutput) ToJSON()  { output.JSON(o) }
 func (o *LimitsOutput) ToText()  { output.Text(o) }
 func (o *LimitsOutput) ToTable() { output.Table(o) }
 
-var showDetailedGPU bool
-
 var limitsCmd = &cobra.Command{
 	Use:   "limits",
 	Short: "Current account limits",
@@ -71,22 +69,11 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		gpuLabels := map[string]string{
-			limitInstanceGPUs: "GPU - Compute instance GPUs",
-			gpu2:              "GPU - GPU2",
-			gpu3:              "GPU - GPU3",
-			gpua30:            "GPU - A30",
-			gpu3080ti:         "GPU - 3080 Ti",
-			gpua5000:          "GPU - A5000",
-			gpurtx6000pro:     "GPU - RTX 6000 Pro",
-		}
-
 		resourceLimitLabels := map[string]string{
 			limitComputeInstances:    "Compute instances",
 			limitDatabases:           "Databases",
 			limitElasticIPs:          "Elastic IP addresses",
 			limitIAMAPIKeys:          "IAM API keys",
-			limitInstanceGPUs:        "Compute instance GPUs",
 			limitInstanceSnapshots:   "Compute instance snapshots",
 			limitInstanceTemplates:   "Compute instance templates",
 			limitNLB:                 "Network Load Balancers",
@@ -101,22 +88,11 @@ Supported output template annotations: %s`,
 		out := LimitsOutput{}
 		for _, quota := range quotas.Quotas {
 			if label, ok := resourceLimitLabels[quota.Resource]; ok {
-				if showDetailedGPU && quota.Resource == limitInstanceGPUs {
-					continue
-				}
 				out = append(out, LimitsItemOutput{
 					Resource: label,
 					Used:     quota.Usage,
 					Max:      quota.Limit,
 				})
-			} else if showDetailedGPU {
-				if label, ok := gpuLabels[quota.Resource]; ok {
-					out = append(out, LimitsItemOutput{
-						Resource: label,
-						Used:     quota.Usage,
-						Max:      quota.Limit,
-					})
-				}
 			}
 		}
 
@@ -130,5 +106,4 @@ Supported output template annotations: %s`,
 
 func init() {
 	RootCmd.AddCommand(limitsCmd)
-	limitsCmd.Flags().BoolVar(&showDetailedGPU, "gpu", false, "Also show per-family GPU limits")
 }
