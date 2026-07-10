@@ -31,7 +31,7 @@ func TestGetBucketLifecycle(t *testing.T) {
 							{
 								ID:     aws.String("rule-1"),
 								Status: s3types.ExpirationStatusEnabled,
-								Filter: &s3types.LifecycleRuleFilterMemberPrefix{Value: prefix},
+								Filter: &s3types.LifecycleRuleFilter{Prefix: aws.String(prefix)},
 								Expiration: &s3types.LifecycleExpiration{
 									Days: aws.Int32(days),
 								},
@@ -67,8 +67,8 @@ func TestGetBucketLifecycle(t *testing.T) {
 							{
 								ID:     aws.String("rule-and"),
 								Status: s3types.ExpirationStatusEnabled,
-								Filter: &s3types.LifecycleRuleFilterMemberAnd{
-									Value: s3types.LifecycleRuleAndOperator{
+								Filter: &s3types.LifecycleRuleFilter{
+									And: &s3types.LifecycleRuleAndOperator{
 										Prefix:                aws.String(prefix),
 										ObjectSizeGreaterThan: aws.Int64(sizeGT),
 										ObjectSizeLessThan:    aws.Int64(sizeLT),
@@ -102,7 +102,7 @@ func TestGetBucketLifecycle(t *testing.T) {
 							{
 								ID:     aws.String("rule-size"),
 								Status: s3types.ExpirationStatusDisabled,
-								Filter: &s3types.LifecycleRuleFilterMemberObjectSizeGreaterThan{Value: sizeGT},
+								Filter: &s3types.LifecycleRuleFilter{ObjectSizeGreaterThan: aws.Int64(sizeGT)},
 								NoncurrentVersionExpiration: &s3types.NoncurrentVersionExpiration{
 									NoncurrentDays: aws.Int32(7),
 								},
@@ -204,7 +204,7 @@ func TestPutBucketLifecycle(t *testing.T) {
 				{
 					ID:     aws.String("expire-old"),
 					Status: s3types.ExpirationStatusEnabled,
-					Filter: &s3types.LifecycleRuleFilterMemberPrefix{Value: "archive/"},
+					Filter: &s3types.LifecycleRuleFilter{Prefix: aws.String("archive/")},
 					Expiration: &s3types.LifecycleExpiration{
 						Days: aws.Int32(days),
 					},

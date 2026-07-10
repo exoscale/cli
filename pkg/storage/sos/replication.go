@@ -57,7 +57,7 @@ func (o *BucketReplicationConf) ToS3() *types.ReplicationConfiguration {
 			Status:                    r.Status,
 			DeleteMarkerReplication:   r.DeleteMarkerReplication,
 			ExistingObjectReplication: r.ExistingObjectReplication,
-			Filter:                    &types.ReplicationRuleFilterMemberPrefix{Value: r.Filter.Prefix},
+			Filter:                    &types.ReplicationRuleFilter{Prefix: aws.String(r.Filter.Prefix)},
 			ID:                        r.ID,
 			Priority:                  aws.Int32(r.Priority),
 		})
@@ -72,9 +72,8 @@ func (o *BucketReplicationConf) FromS3(c *types.ReplicationConfiguration) {
 	for i, r := range c.Rules {
 
 		filterPrefix := ""
-		switch f := r.Filter.(type) {
-		case *types.ReplicationRuleFilterMemberPrefix:
-			filterPrefix = f.Value
+		if f := r.Filter; f != nil {
+			filterPrefix = aws.ToString(f.Prefix)
 		}
 
 		o.Rules[i] = BucketReplicationRule{

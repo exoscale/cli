@@ -71,28 +71,23 @@ func (o *BucketLifecycleConf) ToS3() *types.BucketLifecycleConfiguration {
 	return c
 }
 
-func (r BucketLifecycleRule) filterToS3() types.LifecycleRuleFilter {
+func (r BucketLifecycleRule) filterToS3() *types.LifecycleRuleFilter {
 	if r.Filter == nil {
 		return nil
 	}
-	switch {
-	case r.Filter.And != nil:
-		return &types.LifecycleRuleFilterMemberAnd{
-			Value: types.LifecycleRuleAndOperator{
-				ObjectSizeGreaterThan: r.Filter.And.ObjectSizeGreaterThan,
-				ObjectSizeLessThan:    r.Filter.And.ObjectSizeLessThan,
-				Prefix:                r.Filter.And.Prefix,
-			},
-		}
-	case r.Filter.Prefix != nil:
-		return &types.LifecycleRuleFilterMemberPrefix{Value: *r.Filter.Prefix}
-	case r.Filter.ObjectSizeGreaterThan != nil:
-		return &types.LifecycleRuleFilterMemberObjectSizeGreaterThan{Value: *r.Filter.ObjectSizeGreaterThan}
-	case r.Filter.ObjectSizeLessThan != nil:
-		return &types.LifecycleRuleFilterMemberObjectSizeLessThan{Value: *r.Filter.ObjectSizeLessThan}
-	default:
-		return &types.LifecycleRuleFilterMemberPrefix{}
+	filter := &types.LifecycleRuleFilter{
+		Prefix:                r.Filter.Prefix,
+		ObjectSizeGreaterThan: r.Filter.ObjectSizeGreaterThan,
+		ObjectSizeLessThan:    r.Filter.ObjectSizeLessThan,
 	}
+	if r.Filter.And != nil {
+		filter.And = &types.LifecycleRuleAndOperator{
+			ObjectSizeGreaterThan: r.Filter.And.ObjectSizeGreaterThan,
+			ObjectSizeLessThan:    r.Filter.And.ObjectSizeLessThan,
+			Prefix:                r.Filter.And.Prefix,
+		}
+	}
+	return filter
 }
 
 func (o *BucketLifecycleConf) FromS3(c *types.BucketLifecycleConfiguration) {
@@ -101,21 +96,19 @@ func (o *BucketLifecycleConf) FromS3(c *types.BucketLifecycleConfiguration) {
 	for i, r := range c.Rules {
 
 		var filter *BucketLifecycleConfRuleFilter
-		switch f := r.Filter.(type) {
-		case *types.LifecycleRuleFilterMemberAnd:
+		if f := r.Filter; f != nil {
 			filter = &BucketLifecycleConfRuleFilter{
-				And: &BucketLifecycleAndOperator{
-					Prefix:                f.Value.Prefix,
-					ObjectSizeGreaterThan: f.Value.ObjectSizeGreaterThan,
-					ObjectSizeLessThan:    f.Value.ObjectSizeLessThan,
-				},
+				Prefix:                f.Prefix,
+				ObjectSizeGreaterThan: f.ObjectSizeGreaterThan,
+				ObjectSizeLessThan:    f.ObjectSizeLessThan,
 			}
-		case *types.LifecycleRuleFilterMemberPrefix:
-			filter = &BucketLifecycleConfRuleFilter{Prefix: &f.Value}
-		case *types.LifecycleRuleFilterMemberObjectSizeGreaterThan:
-			filter = &BucketLifecycleConfRuleFilter{ObjectSizeGreaterThan: &f.Value}
-		case *types.LifecycleRuleFilterMemberObjectSizeLessThan:
-			filter = &BucketLifecycleConfRuleFilter{ObjectSizeLessThan: &f.Value}
+			if f.And != nil {
+				filter.And = &BucketLifecycleAndOperator{
+					Prefix:                f.And.Prefix,
+					ObjectSizeGreaterThan: f.And.ObjectSizeGreaterThan,
+					ObjectSizeLessThan:    f.And.ObjectSizeLessThan,
+				}
+			}
 		}
 
 		o.Rules[i] = BucketLifecycleRule{
