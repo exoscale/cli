@@ -41,10 +41,10 @@ type LimitsGpuCmd struct {
 }
 
 func (c *LimitsGpuCmd) CmdAliases() []string { return nil }
-func (c *LimitsGpuCmd) CmdShort() string     { return "Show all limits including per-family GPU limits" }
+func (c *LimitsGpuCmd) CmdShort() string     { return "Show per-family GPU limits" }
 func (c *LimitsGpuCmd) CmdLong() string {
 	return strings.Join([]string{
-		"Show all account limits, including per-family GPU quotas (A5000, A30, 3080 Ti, etc.).",
+		"Show per-family GPU quotas (A5000, A30, 3080 Ti, RTX 6000 Pro, GPU2, GPU3).",
 		"",
 		fmt.Sprintf("Supported output template annotations: %s",
 			strings.Join(output.TemplateAnnotations(&GpuLimitsOutput{}), ", ")),
@@ -68,31 +68,8 @@ func (c *LimitsGpuCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	resourceLimitLabels := map[string]string{
-		limitComputeInstances:    "Compute instances",
-		limitDatabases:           "Databases",
-		limitElasticIPs:          "Elastic IP addresses",
-		limitIAMAPIKeys:          "IAM API keys",
-		limitInstanceSnapshots:   "Compute instance snapshots",
-		limitInstanceTemplates:   "Compute instance templates",
-		limitNLB:                 "Network Load Balancers",
-		limitPrivateNetworks:     "Private networks",
-		limitSKSClusters:         "SKS clusters",
-		limitSOSBuckets:          "SOS buckets",
-		limitBlockStorageVolumes: "Block Storage Volumes",
-		limitBlockStorage:        "Block Storage cumulative size (GiB)",
-		limitBlockStorageMaxSize: "Max size of a Block Storage Volume (GiB)",
-	}
-
 	out := GpuLimitsOutput{}
 	for _, quota := range quotas.Quotas {
-		if label, ok := resourceLimitLabels[quota.Resource]; ok {
-			out = append(out, GpuLimitOutput{
-				Resource: label,
-				Used:     quota.Usage,
-				Max:      quota.Limit,
-			})
-		}
 		if label, ok := gpuResourceLabels[quota.Resource]; ok {
 			out = append(out, GpuLimitOutput{
 				Resource: label,
