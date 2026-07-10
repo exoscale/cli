@@ -26,17 +26,17 @@ func (o *GpuLimitsOutput) ToText()  { output.Text(o) }
 func (o *GpuLimitsOutput) ToTable() { output.Table(o) }
 
 var gpuResourceLabels = map[string]string{
-	gpu2:                "GPU - GPU2",
-	gpu3:                "GPU - GPU3",
-	gpua30:              "GPU - A30",
-	gpu3080ti:           "GPU - 3080 Ti",
-	gpua5000:            "GPU - A5000",
-	gpurtx6000pro:       "GPU - RTX 6000 Pro",
+	gpu2:          "GPU - GPU2",
+	gpu3:          "GPU - GPU3",
+	gpua30:        "GPU - A30",
+	gpu3080ti:     "GPU - 3080 Ti",
+	gpua5000:      "GPU - A5000",
+	gpurtx6000pro: "GPU - RTX 6000 Pro",
 }
 
 type LimitsGpuCmd struct {
 	CliCommandSettings `cli-cmd:"-"`
-	_                  bool `cli-cmd:"gpu"`
+	_                  bool        `cli-cmd:"gpu"`
 	Zone               v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 

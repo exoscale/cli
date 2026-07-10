@@ -70,47 +70,47 @@ Supported output template annotations: %s`,
 		}
 
 		resourceLimitLabels := map[string]string{
-				limitComputeInstances:    "Compute instances",
-				limitDatabases:           "Databases",
-				limitElasticIPs:          "Elastic IP addresses",
-				limitIAMAPIKeys:          "IAM API keys",
-				limitInstanceSnapshots:   "Compute instance snapshots",
-				limitInstanceTemplates:   "Compute instance templates",
-				limitNLB:                 "Network Load Balancers",
-				limitPrivateNetworks:     "Private networks",
-				limitSKSClusters:         "SKS clusters",
-				limitSOSBuckets:          "SOS buckets",
-				limitBlockStorageVolumes: "Block Storage Volumes",
-				limitBlockStorage:        "Block Storage cumulative size (GiB)",
-				limitBlockStorageMaxSize: "Max size of a Block Storage Volume (GiB)",
-			}
+			limitComputeInstances:    "Compute instances",
+			limitDatabases:           "Databases",
+			limitElasticIPs:          "Elastic IP addresses",
+			limitIAMAPIKeys:          "IAM API keys",
+			limitInstanceSnapshots:   "Compute instance snapshots",
+			limitInstanceTemplates:   "Compute instance templates",
+			limitNLB:                 "Network Load Balancers",
+			limitPrivateNetworks:     "Private networks",
+			limitSKSClusters:         "SKS clusters",
+			limitSOSBuckets:          "SOS buckets",
+			limitBlockStorageVolumes: "Block Storage Volumes",
+			limitBlockStorage:        "Block Storage cumulative size (GiB)",
+			limitBlockStorageMaxSize: "Max size of a Block Storage Volume (GiB)",
+		}
 
-			gpuResourceLabels := map[string]string{
-				gpu2:         "GPU - GPU2",
-				gpu3:         "GPU - GPU3",
-				gpua30:       "GPU - A30",
-				gpu3080ti:    "GPU - 3080 Ti",
-				gpua5000:     "GPU - A5000",
-				gpurtx6000pro: "GPU - RTX 6000 Pro",
-			}
+		gpuResourceLabels := map[string]string{
+			gpu2:          "GPU - GPU2",
+			gpu3:          "GPU - GPU3",
+			gpua30:        "GPU - A30",
+			gpu3080ti:     "GPU - 3080 Ti",
+			gpua5000:      "GPU - A5000",
+			gpurtx6000pro: "GPU - RTX 6000 Pro",
+		}
 
 		out := LimitsOutput{}
-			for _, quota := range quotas.Quotas {
-				if label, ok := resourceLimitLabels[quota.Resource]; ok {
-					out = append(out, LimitsItemOutput{
-						Resource: label,
-						Used:     quota.Usage,
-						Max:      quota.Limit,
-					})
-				}
-				if label, ok := gpuResourceLabels[quota.Resource]; ok {
-					out = append(out, LimitsItemOutput{
-						Resource: label,
-						Used:     quota.Usage,
-						Max:      quota.Limit,
-					})
-				}
+		for _, quota := range quotas.Quotas {
+			if label, ok := resourceLimitLabels[quota.Resource]; ok {
+				out = append(out, LimitsItemOutput{
+					Resource: label,
+					Used:     quota.Usage,
+					Max:      quota.Limit,
+				})
 			}
+			if label, ok := gpuResourceLabels[quota.Resource]; ok {
+				out = append(out, LimitsItemOutput{
+					Resource: label,
+					Used:     quota.Usage,
+					Max:      quota.Limit,
+				})
+			}
+		}
 
 		sort.Slice(out, func(i, j int) bool {
 			return out[i].Resource < out[j].Resource
