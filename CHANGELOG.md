@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Improvements
+- Upgrade aws sdk #874
+- Improve github action workflow #874
+
 ## 1.95.6
 
 ### Bug fixes
