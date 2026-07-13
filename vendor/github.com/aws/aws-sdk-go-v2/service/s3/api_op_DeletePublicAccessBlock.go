@@ -4,24 +4,42 @@ package s3
 
 import (
 	"context"
-	"fmt"
-	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	s3cust "github.com/aws/aws-sdk-go-v2/service/s3/internal/customizations"
 	"github.com/aws/smithy-go/middleware"
+	"github.com/aws/smithy-go/ptr"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Removes the PublicAccessBlock configuration for an Amazon S3 bucket. To use
-// this operation, you must have the s3:PutBucketPublicAccessBlock permission. For
-// more information about permissions, see Permissions Related to Bucket
-// Subresource Operations (https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-with-s3-actions.html#using-with-s3-actions-related-to-bucket-subresources)
-// and Managing Access Permissions to Your Amazon S3 Resources (https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-access-control.html)
-// . The following operations are related to DeletePublicAccessBlock :
-//   - Using Amazon S3 Block Public Access (https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html)
-//   - GetPublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetPublicAccessBlock.html)
-//   - PutPublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutPublicAccessBlock.html)
-//   - GetBucketPolicyStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketPolicyStatus.html)
+// This operation is not supported for directory buckets.
+//
+// Removes the PublicAccessBlock configuration for an Amazon S3 bucket. This
+// operation removes the bucket-level configuration only. The effective public
+// access behavior will still be governed by account-level settings (which may
+// inherit from organization-level policies). To use this operation, you must have
+// the s3:PutBucketPublicAccessBlock permission. For more information about
+// permissions, see [Permissions Related to Bucket Subresource Operations]and [Managing Access Permissions to Your Amazon S3 Resources].
+//
+// The following operations are related to DeletePublicAccessBlock :
+//
+// [Using Amazon S3 Block Public Access]
+//
+// [GetPublicAccessBlock]
+//
+// [PutPublicAccessBlock]
+//
+// [GetBucketPolicyStatus]
+//
+// You must URL encode any signed header values that contain spaces. For example,
+// if your header value is my file.txt , containing two spaces after my , you must
+// URL encode this value to my%20%20file.txt .
+//
+// [GetPublicAccessBlock]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetPublicAccessBlock.html
+// [PutPublicAccessBlock]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutPublicAccessBlock.html
+// [Permissions Related to Bucket Subresource Operations]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-with-s3-actions.html#using-with-s3-actions-related-to-bucket-subresources
+// [Using Amazon S3 Block Public Access]: https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html
+// [Managing Access Permissions to Your Amazon S3 Resources]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-access-control.html
+// [GetBucketPolicyStatus]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketPolicyStatus.html
 func (c *Client) DeletePublicAccessBlock(ctx context.Context, params *DeletePublicAccessBlockInput, optFns ...func(*Options)) (*DeletePublicAccessBlockOutput, error) {
 	if params == nil {
 		params = &DeletePublicAccessBlockInput{}
@@ -44,17 +62,18 @@ type DeletePublicAccessBlockInput struct {
 	// This member is required.
 	Bucket *string
 
-	// The account ID of the expected bucket owner. If the bucket is owned by a
-	// different account, the request fails with the HTTP status code 403 Forbidden
-	// (access denied).
+	// The account ID of the expected bucket owner. If the account ID that you provide
+	// does not match the actual owner of the bucket, the request fails with the HTTP
+	// status code 403 Forbidden (access denied).
 	ExpectedBucketOwner *string
 
 	noSmithyDocumentSerde
 }
 
 func (in *DeletePublicAccessBlockInput) bindEndpointParams(p *EndpointParameters) {
-	p.Bucket = in.Bucket
 
+	p.Bucket = in.Bucket
+	p.UseS3ExpressControlEndpoint = ptr.Bool(true)
 }
 
 type DeletePublicAccessBlockOutput struct {
@@ -65,9 +84,6 @@ type DeletePublicAccessBlockOutput struct {
 }
 
 func (c *Client) addOperationDeletePublicAccessBlockMiddlewares(stack *middleware.Stack, options Options) (err error) {
-	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
-		return err
-	}
 	err = stack.Serialize.Add(&awsRestxml_serializeOpDeletePublicAccessBlock{}, middleware.After)
 	if err != nil {
 		return err
@@ -76,38 +92,20 @@ func (c *Client) addOperationDeletePublicAccessBlockMiddlewares(stack *middlewar
 	if err != nil {
 		return err
 	}
-	if err := addProtocolFinalizerMiddlewares(stack, options, "DeletePublicAccessBlock"); err != nil {
-		return fmt.Errorf("add protocol finalizers: %v", err)
-	}
 
 	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
 		return err
 	}
-	if err = addSetLoggerMiddleware(stack, options); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack, options); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -116,19 +114,22 @@ func (c *Client) addOperationDeletePublicAccessBlockMiddlewares(stack *middlewar
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
-	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+	if err = addPutBucketContextMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDeletePublicAccessBlockValidationMiddleware(stack); err != nil {
 		return err
 	}
-	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDeletePublicAccessBlock(options.Region), middleware.Before); err != nil {
+	if err = stack.Initialize.Add(newServiceMetadataMiddleware(options.Region, "DeletePublicAccessBlock"), middleware.Before); err != nil {
 		return err
 	}
 	if err = addMetadataRetrieverMiddleware(stack); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addDeletePublicAccessBlockUpdateEndpoint(stack, options); err != nil {
@@ -152,6 +153,9 @@ func (c *Client) addOperationDeletePublicAccessBlockMiddlewares(stack *middlewar
 	if err = addSerializeImmutableHostnameBucketMiddleware(stack, options); err != nil {
 		return err
 	}
+	if err = addInterceptors(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -160,14 +164,6 @@ func (v *DeletePublicAccessBlockInput) bucket() (string, bool) {
 		return "", false
 	}
 	return *v.Bucket, true
-}
-
-func newServiceMetadataMiddleware_opDeletePublicAccessBlock(region string) *awsmiddleware.RegisterServiceMetadata {
-	return &awsmiddleware.RegisterServiceMetadata{
-		Region:        region,
-		ServiceID:     ServiceID,
-		OperationName: "DeletePublicAccessBlock",
-	}
 }
 
 // getDeletePublicAccessBlockBucketMember returns a pointer to string denoting a

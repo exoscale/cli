@@ -4,45 +4,70 @@ package s3
 
 import (
 	"context"
-	"fmt"
-	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	s3cust "github.com/aws/aws-sdk-go-v2/service/s3/internal/customizations"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go/middleware"
+	"github.com/aws/smithy-go/ptr"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
+// This operation is not supported for directory buckets.
+//
 // Puts a S3 Intelligent-Tiering configuration to the specified bucket. You can
-// have up to 1,000 S3 Intelligent-Tiering configurations per bucket. The S3
-// Intelligent-Tiering storage class is designed to optimize storage costs by
-// automatically moving data to the most cost-effective storage access tier,
+// have up to 1,000 S3 Intelligent-Tiering configurations per bucket.
+//
+// The S3 Intelligent-Tiering storage class is designed to optimize storage costs
+// by automatically moving data to the most cost-effective storage access tier,
 // without performance impact or operational overhead. S3 Intelligent-Tiering
 // delivers automatic cost savings in three low latency and high throughput access
 // tiers. To get the lowest storage cost on data that can be accessed in minutes to
-// hours, you can choose to activate additional archiving capabilities. The S3
-// Intelligent-Tiering storage class is the ideal storage class for data with
-// unknown, changing, or unpredictable access patterns, independent of object size
-// or retention period. If the size of an object is less than 128 KB, it is not
-// monitored and not eligible for auto-tiering. Smaller objects can be stored, but
-// they are always charged at the Frequent Access tier rates in the S3
-// Intelligent-Tiering storage class. For more information, see Storage class for
-// automatically optimizing frequently and infrequently accessed objects (https://docs.aws.amazon.com/AmazonS3/latest/dev/storage-class-intro.html#sc-dynamic-data-access)
-// . Operations related to PutBucketIntelligentTieringConfiguration include:
-//   - DeleteBucketIntelligentTieringConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketIntelligentTieringConfiguration.html)
-//   - GetBucketIntelligentTieringConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketIntelligentTieringConfiguration.html)
-//   - ListBucketIntelligentTieringConfigurations (https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBucketIntelligentTieringConfigurations.html)
+// hours, you can choose to activate additional archiving capabilities.
+//
+// The S3 Intelligent-Tiering storage class is the ideal storage class for data
+// with unknown, changing, or unpredictable access patterns, independent of object
+// size or retention period. If the size of an object is less than 128 KB, it is
+// not monitored and not eligible for auto-tiering. Smaller objects can be stored,
+// but they are always charged at the Frequent Access tier rates in the S3
+// Intelligent-Tiering storage class.
+//
+// For more information, see [Storage class for automatically optimizing frequently and infrequently accessed objects].
+//
+// Operations related to PutBucketIntelligentTieringConfiguration include:
+//
+// [DeleteBucketIntelligentTieringConfiguration]
+//
+// [GetBucketIntelligentTieringConfiguration]
+//
+// [ListBucketIntelligentTieringConfigurations]
 //
 // You only need S3 Intelligent-Tiering enabled on a bucket if you want to
 // automatically move objects stored in the S3 Intelligent-Tiering storage class to
 // the Archive Access or Deep Archive Access tier.
-// PutBucketIntelligentTieringConfiguration has the following special errors: HTTP
-// 400 Bad Request Error Code: InvalidArgument Cause: Invalid Argument HTTP 400 Bad
-// Request Error Code: TooManyConfigurations Cause: You are attempting to create a
-// new configuration but have already reached the 1,000-configuration limit. HTTP
-// 403 Forbidden Error Cause: You are not the owner of the specified bucket, or you
-// do not have the s3:PutIntelligentTieringConfiguration bucket permission to set
-// the configuration on the bucket.
+//
+// PutBucketIntelligentTieringConfiguration has the following special errors:
+//
+// HTTP 400 Bad Request Error  Code: InvalidArgument
+//
+// Cause: Invalid Argument
+//
+// HTTP 400 Bad Request Error  Code: TooManyConfigurations
+//
+// Cause: You are attempting to create a new configuration but have already
+// reached the 1,000-configuration limit.
+//
+// HTTP 403 Forbidden Error  Cause: You are not the owner of the specified bucket,
+// or you do not have the s3:PutIntelligentTieringConfiguration bucket permission
+// to set the configuration on the bucket.
+//
+// You must URL encode any signed header values that contain spaces. For example,
+// if your header value is my file.txt , containing two spaces after my , you must
+// URL encode this value to my%20%20file.txt .
+//
+// [ListBucketIntelligentTieringConfigurations]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBucketIntelligentTieringConfigurations.html
+// [GetBucketIntelligentTieringConfiguration]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketIntelligentTieringConfiguration.html
+// [Storage class for automatically optimizing frequently and infrequently accessed objects]: https://docs.aws.amazon.com/AmazonS3/latest/dev/storage-class-intro.html#sc-dynamic-data-access
+// [DeleteBucketIntelligentTieringConfiguration]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketIntelligentTieringConfiguration.html
 func (c *Client) PutBucketIntelligentTieringConfiguration(ctx context.Context, params *PutBucketIntelligentTieringConfigurationInput, optFns ...func(*Options)) (*PutBucketIntelligentTieringConfigurationOutput, error) {
 	if params == nil {
 		params = &PutBucketIntelligentTieringConfigurationInput{}
@@ -76,12 +101,18 @@ type PutBucketIntelligentTieringConfigurationInput struct {
 	// This member is required.
 	IntelligentTieringConfiguration *types.IntelligentTieringConfiguration
 
+	// The account ID of the expected bucket owner. If the account ID that you provide
+	// does not match the actual owner of the bucket, the request fails with the HTTP
+	// status code 403 Forbidden (access denied).
+	ExpectedBucketOwner *string
+
 	noSmithyDocumentSerde
 }
 
 func (in *PutBucketIntelligentTieringConfigurationInput) bindEndpointParams(p *EndpointParameters) {
-	p.Bucket = in.Bucket
 
+	p.Bucket = in.Bucket
+	p.UseS3ExpressControlEndpoint = ptr.Bool(true)
 }
 
 type PutBucketIntelligentTieringConfigurationOutput struct {
@@ -92,9 +123,6 @@ type PutBucketIntelligentTieringConfigurationOutput struct {
 }
 
 func (c *Client) addOperationPutBucketIntelligentTieringConfigurationMiddlewares(stack *middleware.Stack, options Options) (err error) {
-	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
-		return err
-	}
 	err = stack.Serialize.Add(&awsRestxml_serializeOpPutBucketIntelligentTieringConfiguration{}, middleware.After)
 	if err != nil {
 		return err
@@ -103,38 +131,20 @@ func (c *Client) addOperationPutBucketIntelligentTieringConfigurationMiddlewares
 	if err != nil {
 		return err
 	}
-	if err := addProtocolFinalizerMiddlewares(stack, options, "PutBucketIntelligentTieringConfiguration"); err != nil {
-		return fmt.Errorf("add protocol finalizers: %v", err)
-	}
 
 	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
 		return err
 	}
-	if err = addSetLoggerMiddleware(stack, options); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack, options); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -143,19 +153,22 @@ func (c *Client) addOperationPutBucketIntelligentTieringConfigurationMiddlewares
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
-	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+	if err = addPutBucketContextMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpPutBucketIntelligentTieringConfigurationValidationMiddleware(stack); err != nil {
 		return err
 	}
-	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opPutBucketIntelligentTieringConfiguration(options.Region), middleware.Before); err != nil {
+	if err = stack.Initialize.Add(newServiceMetadataMiddleware(options.Region, "PutBucketIntelligentTieringConfiguration"), middleware.Before); err != nil {
 		return err
 	}
 	if err = addMetadataRetrieverMiddleware(stack); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addPutBucketIntelligentTieringConfigurationUpdateEndpoint(stack, options); err != nil {
@@ -179,6 +192,9 @@ func (c *Client) addOperationPutBucketIntelligentTieringConfigurationMiddlewares
 	if err = addSerializeImmutableHostnameBucketMiddleware(stack, options); err != nil {
 		return err
 	}
+	if err = addInterceptors(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -187,14 +203,6 @@ func (v *PutBucketIntelligentTieringConfigurationInput) bucket() (string, bool) 
 		return "", false
 	}
 	return *v.Bucket, true
-}
-
-func newServiceMetadataMiddleware_opPutBucketIntelligentTieringConfiguration(region string) *awsmiddleware.RegisterServiceMetadata {
-	return &awsmiddleware.RegisterServiceMetadata{
-		Region:        region,
-		ServiceID:     ServiceID,
-		OperationName: "PutBucketIntelligentTieringConfiguration",
-	}
 }
 
 // getPutBucketIntelligentTieringConfigurationBucketMember returns a pointer to

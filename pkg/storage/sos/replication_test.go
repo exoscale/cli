@@ -67,8 +67,8 @@ func TestClientBucketReplication(t *testing.T) {
 									Status:                  types.ReplicationRuleStatusEnabled,
 									Destination:             &types.Destination{Bucket: &bucketReplica},
 									DeleteMarkerReplication: &types.DeleteMarkerReplication{Status: types.DeleteMarkerReplicationStatusDisabled},
-									Filter: &types.ReplicationRuleFilterMemberPrefix{
-										Value: "*",
+									Filter: &types.ReplicationRuleFilter{
+										Prefix: aws.String("*"),
 									},
 									ExistingObjectReplication: &types.ExistingObjectReplication{
 										Status: types.ExistingObjectReplicationStatusEnabled,

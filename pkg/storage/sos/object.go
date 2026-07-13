@@ -710,6 +710,11 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key string) (*ShowObjec
 		return nil, fmt.Errorf("unable to retrieve bucket ACL: %w", err)
 	}
 
+	headers, err := ObjectHeadersFromS3(obj)
+	if err != nil {
+		return nil, err
+	}
+
 	out := ShowObjectOutput{
 		Path:         key,
 		Bucket:       bucket,
@@ -717,7 +722,7 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key string) (*ShowObjec
 		Size:         *obj.ContentLength,
 		ACL:          ACLFromS3(acl.Grants),
 		Metadata:     obj.Metadata,
-		Headers:      ObjectHeadersFromS3(obj),
+		Headers:      headers,
 		URL:          fmt.Sprintf("https://sos-%s.exo.io/%s/%s", c.Zone, bucket, key),
 	}
 	if obj.ReplicationStatus != "" {
@@ -733,7 +738,7 @@ const (
 
 // ObjectHeadersFromS3 returns mutable object headers in a human-friendly
 // key/value form.
-func ObjectHeadersFromS3(o *s3.GetObjectOutput) map[string]string {
+func ObjectHeadersFromS3(o *s3.GetObjectOutput) (map[string]string, error) {
 	headers := make(map[string]string)
 
 	if o.CacheControl != nil {
@@ -751,14 +756,20 @@ func ObjectHeadersFromS3(o *s3.GetObjectOutput) map[string]string {
 	if o.ContentType != nil {
 		headers[ObjectHeaderContentType] = aws.ToString(o.ContentType)
 	}
-	if o.Expires != nil {
-		headers[ObjectHeaderExpires] = o.Expires.String()
+
+	expires, err := parseExpiresHeader(o.ExpiresString)
+	if err != nil {
+		return nil, err
 	}
+	if expires != nil {
+		headers[ObjectHeaderExpires] = expires.String()
+	}
+
 	if o.Expiration != nil {
 		headers[ObjectHeaderLifecycleExpiration] = *o.Expiration
 	}
 
-	return headers
+	return headers, nil
 }
 
 type ShowObjectOutput struct {

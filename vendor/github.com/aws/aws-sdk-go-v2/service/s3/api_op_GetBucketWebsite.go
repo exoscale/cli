@@ -4,25 +4,38 @@ package s3
 
 import (
 	"context"
-	"fmt"
-	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	s3cust "github.com/aws/aws-sdk-go-v2/service/s3/internal/customizations"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go/middleware"
+	"github.com/aws/smithy-go/ptr"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
+// This operation is not supported for directory buckets.
+//
 // Returns the website configuration for a bucket. To host website on Amazon S3,
 // you can configure a bucket as website by adding a website configuration. For
-// more information about hosting websites, see Hosting Websites on Amazon S3 (https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html)
-// . This GET action requires the S3:GetBucketWebsite permission. By default, only
+// more information about hosting websites, see [Hosting Websites on Amazon S3].
+//
+// This GET action requires the S3:GetBucketWebsite permission. By default, only
 // the bucket owner can read the bucket website configuration. However, bucket
 // owners can allow other users to read the website configuration by writing a
-// bucket policy granting them the S3:GetBucketWebsite permission. The following
-// operations are related to GetBucketWebsite :
-//   - DeleteBucketWebsite (https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketWebsite.html)
-//   - PutBucketWebsite (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketWebsite.html)
+// bucket policy granting them the S3:GetBucketWebsite permission.
+//
+// The following operations are related to GetBucketWebsite :
+//
+// [DeleteBucketWebsite]
+//
+// [PutBucketWebsite]
+//
+// You must URL encode any signed header values that contain spaces. For example,
+// if your header value is my file.txt , containing two spaces after my , you must
+// URL encode this value to my%20%20file.txt .
+//
+// [PutBucketWebsite]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketWebsite.html
+// [Hosting Websites on Amazon S3]: https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html
+// [DeleteBucketWebsite]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketWebsite.html
 func (c *Client) GetBucketWebsite(ctx context.Context, params *GetBucketWebsiteInput, optFns ...func(*Options)) (*GetBucketWebsiteOutput, error) {
 	if params == nil {
 		params = &GetBucketWebsiteInput{}
@@ -45,17 +58,18 @@ type GetBucketWebsiteInput struct {
 	// This member is required.
 	Bucket *string
 
-	// The account ID of the expected bucket owner. If the bucket is owned by a
-	// different account, the request fails with the HTTP status code 403 Forbidden
-	// (access denied).
+	// The account ID of the expected bucket owner. If the account ID that you provide
+	// does not match the actual owner of the bucket, the request fails with the HTTP
+	// status code 403 Forbidden (access denied).
 	ExpectedBucketOwner *string
 
 	noSmithyDocumentSerde
 }
 
 func (in *GetBucketWebsiteInput) bindEndpointParams(p *EndpointParameters) {
-	p.Bucket = in.Bucket
 
+	p.Bucket = in.Bucket
+	p.UseS3ExpressControlEndpoint = ptr.Bool(true)
 }
 
 type GetBucketWebsiteOutput struct {
@@ -80,9 +94,6 @@ type GetBucketWebsiteOutput struct {
 }
 
 func (c *Client) addOperationGetBucketWebsiteMiddlewares(stack *middleware.Stack, options Options) (err error) {
-	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
-		return err
-	}
 	err = stack.Serialize.Add(&awsRestxml_serializeOpGetBucketWebsite{}, middleware.After)
 	if err != nil {
 		return err
@@ -91,38 +102,20 @@ func (c *Client) addOperationGetBucketWebsiteMiddlewares(stack *middleware.Stack
 	if err != nil {
 		return err
 	}
-	if err := addProtocolFinalizerMiddlewares(stack, options, "GetBucketWebsite"); err != nil {
-		return fmt.Errorf("add protocol finalizers: %v", err)
-	}
 
 	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
 		return err
 	}
-	if err = addSetLoggerMiddleware(stack, options); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack, options); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -131,19 +124,22 @@ func (c *Client) addOperationGetBucketWebsiteMiddlewares(stack *middleware.Stack
 	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
 		return err
 	}
-	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+	if err = addPutBucketContextMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetBucketWebsiteValidationMiddleware(stack); err != nil {
 		return err
 	}
-	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opGetBucketWebsite(options.Region), middleware.Before); err != nil {
+	if err = stack.Initialize.Add(newServiceMetadataMiddleware(options.Region, "GetBucketWebsite"), middleware.Before); err != nil {
 		return err
 	}
 	if err = addMetadataRetrieverMiddleware(stack); err != nil {
-		return err
-	}
-	if err = awsmiddleware.AddRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addGetBucketWebsiteUpdateEndpoint(stack, options); err != nil {
@@ -167,6 +163,9 @@ func (c *Client) addOperationGetBucketWebsiteMiddlewares(stack *middleware.Stack
 	if err = addSerializeImmutableHostnameBucketMiddleware(stack, options); err != nil {
 		return err
 	}
+	if err = addInterceptors(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -175,14 +174,6 @@ func (v *GetBucketWebsiteInput) bucket() (string, bool) {
 		return "", false
 	}
 	return *v.Bucket, true
-}
-
-func newServiceMetadataMiddleware_opGetBucketWebsite(region string) *awsmiddleware.RegisterServiceMetadata {
-	return &awsmiddleware.RegisterServiceMetadata{
-		Region:        region,
-		ServiceID:     ServiceID,
-		OperationName: "GetBucketWebsite",
-	}
 }
 
 // getGetBucketWebsiteBucketMember returns a pointer to string denoting a provided
