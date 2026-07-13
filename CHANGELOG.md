@@ -1,11 +1,11 @@
 # Changelog
 
 ## Unreleased
-- limits: Added GPU by type to `exo limits` and subcommand for GPU only details with `exo limits gpu`
 
 ### Improvements
 - Upgrade aws sdk #874
 - Improve github action workflow #874
+- limits: Added GPU by type to `exo limits` and subcommand for GPU only details with `exo limits gpu` #871
 
 ## 1.95.6
 
