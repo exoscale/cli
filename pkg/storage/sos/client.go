@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
@@ -102,6 +104,19 @@ func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recur
 	return nil
 }
 
+func parseExpiresHeader(expiresString *string) (*time.Time, error) {
+	if expiresString == nil {
+		return nil, nil
+	}
+
+	expires, err := http.ParseTime(*expiresString)
+	if err != nil {
+		return nil, fmt.Errorf("invalid %q header value %q: %w", ObjectHeaderExpires, *expiresString, err)
+	}
+
+	return aws.Time(expires), nil
+}
+
 // copyObject is a helper function to be used in commands involving object
 // copying such as metadata/headers manipulation, retrieving information about
 // the targeted object for a later copy.
@@ -138,7 +153,11 @@ func (c *Client) CopyObject(ctx context.Context, bucket, key string) (*s3.CopyOb
 		ContentEncoding:    srcObject.ContentEncoding,
 		ContentLanguage:    srcObject.ContentLanguage,
 		ContentType:        srcObject.ContentType,
-		Expires:            srcObject.Expires,
+	}
+
+	copyObject.Expires, err = parseExpiresHeader(srcObject.ExpiresString)
+	if err != nil {
+		return nil, err
 	}
 
 	storageACLToCopyObject(acl, &copyObject)
@@ -154,24 +173,22 @@ func ClientOptWithZone(zone string) ClientOpt {
 
 func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
 	return func(c *Client) error {
+		sosURL := strings.Replace(
+			account.CurrentAccount.SosEndpoint,
+			"{zone}",
+			account.CurrentAccount.DefaultZone,
+			1,
+		)
+
 		cfg, err := awsconfig.LoadDefaultConfig(
 			ctx,
 			append(CommonConfigOptFns,
+				awsconfig.WithRegion(account.CurrentAccount.DefaultZone),
+
 				awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 					account.CurrentAccount.Key,
 					account.CurrentAccount.APISecret(),
 					"")),
-
-				awsconfig.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
-					func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-						sosURL := strings.Replace(
-							account.CurrentAccount.SosEndpoint,
-							"{zone}",
-							account.CurrentAccount.DefaultZone,
-							1,
-						)
-						return aws.Endpoint{URL: sosURL}, nil
-					})),
 			)...)
 		if err != nil {
 			return err
@@ -179,6 +196,7 @@ func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
 
 		region, err := s3manager.GetBucketRegion(ctx, s3.NewFromConfig(cfg), bucket, func(o *s3.Options) {
 			o.UsePathStyle = true
+			o.BaseEndpoint = aws.String(sosURL)
 		})
 		if err != nil {
 			return err
@@ -209,15 +227,6 @@ func NewStorageClient(ctx context.Context, opts ...ClientOpt) (*Client, error) {
 		append(CommonConfigOptFns,
 			awsconfig.WithRegion(client.Zone),
 
-			awsconfig.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
-				func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-					sosURL := strings.Replace(account.CurrentAccount.SosEndpoint, "{zone}", client.Zone, 1)
-					return aws.Endpoint{
-						URL:           sosURL,
-						SigningRegion: client.Zone,
-					}, nil
-				})),
-
 			awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 				account.CurrentAccount.Key,
 				account.CurrentAccount.APISecret(),
@@ -229,8 +238,11 @@ func NewStorageClient(ctx context.Context, opts ...ClientOpt) (*Client, error) {
 		return nil, err
 	}
 
+	sosURL := strings.Replace(account.CurrentAccount.SosEndpoint, "{zone}", client.Zone, 1)
+
 	client.S3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.UsePathStyle = true
+		o.BaseEndpoint = aws.String(sosURL)
 	})
 
 	return &client, nil

@@ -50,8 +50,9 @@ func (c *Client) moveLargeObject(ctx context.Context, srcBucket, srcKey, dstBuck
 	if headRes.ContentType != nil {
 		createMPInput.ContentType = headRes.ContentType
 	}
-	if headRes.Expires != nil {
-		createMPInput.Expires = headRes.Expires
+	createMPInput.Expires, err = parseExpiresHeader(headRes.ExpiresString)
+	if err != nil {
+		return err
 	}
 
 	createRes, err := c.S3Client.CreateMultipartUpload(ctx, createMPInput)

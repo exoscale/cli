@@ -81,8 +81,9 @@ func (c *Client) moveObject(ctx context.Context, srcBucket, srcKey, dstBucket, d
 	if headRes.ContentType != nil {
 		copyInput.ContentType = headRes.ContentType
 	}
-	if headRes.Expires != nil {
-		copyInput.Expires = headRes.Expires
+	copyInput.Expires, err = parseExpiresHeader(headRes.ExpiresString)
+	if err != nil {
+		return err
 	}
 
 	if _, err := c.S3Client.CopyObject(ctx, copyInput); err != nil {
