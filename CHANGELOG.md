@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- sks: add NVIDIA MIG profile support to nodepool management (`--nvidia-mig-profile` on `nodepool add`/`update`, `--nodepool-nvidia-mig-profile` on cluster `create`) #870
+
 ### Improvements
 - Upgrade aws sdk #874
 - Improve github action workflow #874
