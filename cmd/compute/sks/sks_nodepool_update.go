@@ -30,6 +30,7 @@ type sksNodepoolUpdateCmd struct {
 	InstanceType       string      `cli-usage:"Nodepool Compute instances type"`
 	Labels             []string    `cli-flag:"label" cli-usage:"Nodepool label (format: KEY=VALUE, can be repeated multiple times)"`
 	Name               string      `cli-usage:"Nodepool name"`
+	NvidiaMigProfile   string      `cli-flag:"nvidia-mig-profile" cli-usage:"Nvidia MIG profile to enable on the Nodepool GPUs (e.g. 4g.24gb), empty to disable; the GPU family is inferred from the instance type"`
 	PrivateNetworks    []string    `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
 	SecurityGroups     []string    `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	Taints             []string    `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
@@ -189,6 +190,35 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 			(updateReq.Taints)[key] = *taint
 		}
 
+		updated = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.NvidiaMigProfile)) {
+		var family v3.InstanceTypeFamily
+		if c.NvidiaMigProfile != "" {
+			// The GPU family is inferred from the Nodepool instance type; when
+			// the instance type is being changed in the same command, use the
+			// new one.
+			var it *v3.InstanceType
+			if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.InstanceType)) {
+				it, err = lookupInstanceType(ctx, client, c.InstanceType)
+			} else {
+				it, err = client.GetInstanceType(ctx, nodepool.InstanceType.ID)
+			}
+			if err != nil {
+				return err
+			}
+			family = it.Family
+		}
+
+		profiles, err := buildNvidiaMigProfiles(family, c.NvidiaMigProfile)
+		if err != nil {
+			return err
+		}
+		if profiles == nil {
+			profiles = &v3.NvidiaMigProfiles{}
+		}
+		updateReq.NvidiaMigProfiles = profiles
 		updated = true
 	}
 
