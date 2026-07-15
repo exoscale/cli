@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -28,6 +29,13 @@ const (
 	limitBlockStorageVolumes = "block-storage-volume"
 	limitBlockStorage        = "block-storage"
 	limitBlockStorageMaxSize = "block-storage-max-size"
+
+	gpu2          = "gpu2"
+	gpu3          = "gpu3"
+	gpua30        = "gpua30"
+	gpu3080ti     = "gpu3080ti"
+	gpua5000      = "gpua5000"
+	gpurtx6000pro = "gpurtx6000pro"
 )
 
 type LimitsItemOutput struct {
@@ -50,12 +58,22 @@ var limitsCmd = &cobra.Command{
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&LimitsOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx := GContext
+		client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+		if err != nil {
+			return err
+		}
+
+		quotas, err := client.ListQuotas(ctx)
+		if err != nil {
+			return err
+		}
+
 		resourceLimitLabels := map[string]string{
 			limitComputeInstances:    "Compute instances",
 			limitDatabases:           "Databases",
 			limitElasticIPs:          "Elastic IP addresses",
 			limitIAMAPIKeys:          "IAM API keys",
-			limitInstanceGPUs:        "Compute instance GPUs",
 			limitInstanceSnapshots:   "Compute instance snapshots",
 			limitInstanceTemplates:   "Compute instance templates",
 			limitNLB:                 "Network Load Balancers",
@@ -67,29 +85,36 @@ Supported output template annotations: %s`,
 			limitBlockStorageMaxSize: "Max size of a Block Storage Volume (GiB)",
 		}
 
+		gpuResourceLabels := map[string]string{
+			gpu2:          "GPU - GPU2",
+			gpu3:          "GPU - GPU3",
+			gpua30:        "GPU - A30",
+			gpu3080ti:     "GPU - 3080 Ti",
+			gpua5000:      "GPU - A5000",
+			gpurtx6000pro: "GPU - RTX 6000 Pro",
+		}
+
 		out := LimitsOutput{}
-
-		ctx := GContext
-		client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
-		if err != nil {
-			return err
-		}
-
-		quotas, err := client.ListQuotas(ctx)
-		if err != nil {
-			return err
-		}
 		for _, quota := range quotas.Quotas {
-			if _, ok := resourceLimitLabels[quota.Resource]; !ok {
-				continue
+			if label, ok := resourceLimitLabels[quota.Resource]; ok {
+				out = append(out, LimitsItemOutput{
+					Resource: label,
+					Used:     quota.Usage,
+					Max:      quota.Limit,
+				})
 			}
-
-			out = append(out, LimitsItemOutput{
-				Resource: resourceLimitLabels[quota.Resource],
-				Used:     quota.Usage,
-				Max:      quota.Limit,
-			})
+			if label, ok := gpuResourceLabels[quota.Resource]; ok {
+				out = append(out, LimitsItemOutput{
+					Resource: label,
+					Used:     quota.Usage,
+					Max:      quota.Limit,
+				})
+			}
 		}
+
+		sort.Slice(out, func(i, j int) bool {
+			return out[i].Resource < out[j].Resource
+		})
 
 		return utils.PrintOutput(&out, nil)
 	},
