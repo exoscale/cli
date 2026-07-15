@@ -72,3 +72,62 @@ func TestParseSKSNodepoolTaint(t *testing.T) {
 		require.Equal(t, test.expectedTaint, *v)
 	}
 }
+
+func TestBuildNvidiaMigProfiles(t *testing.T) {
+	tests := []struct {
+		name      string
+		family    v3.InstanceTypeFamily
+		profile   string
+		expected  *v3.NvidiaMigProfiles
+		expectErr bool
+	}{
+		{
+			name:     "empty returns nil regardless of family",
+			family:   v3.InstanceTypeFamilyGpua30,
+			profile:  "",
+			expected: nil,
+		},
+		{
+			name:     "a30 family profile",
+			family:   v3.InstanceTypeFamilyGpua30,
+			profile:  "4g.24gb",
+			expected: &v3.NvidiaMigProfiles{A3024gb: v3.NvidiaMigProfileA3024gb("4g.24gb")},
+		},
+		{
+			name:     "rtxpro6000 family profile",
+			family:   v3.InstanceTypeFamilyGpurtx6000pro,
+			profile:  "4g.96gb",
+			expected: &v3.NvidiaMigProfiles{Rtxpro600096gb: v3.NvidiaMigProfileRtxpro600096gb("4g.96gb")},
+		},
+		{
+			name:     "rtxpro6000 family profile with suffix",
+			family:   v3.InstanceTypeFamilyGpurtx6000pro,
+			profile:  "2g.48gb+gfx",
+			expected: &v3.NvidiaMigProfiles{Rtxpro600096gb: v3.NvidiaMigProfileRtxpro600096gb("2g.48gb+gfx")},
+		},
+		{
+			name:      "profile not valid for family returns error",
+			family:    v3.InstanceTypeFamilyGpua30,
+			profile:   "4g.96gb",
+			expectErr: true,
+		},
+		{
+			name:      "non-GPU family returns error",
+			family:    v3.InstanceTypeFamilyStandard,
+			profile:   "4g.24gb",
+			expectErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := buildNvidiaMigProfiles(test.family, test.profile)
+			if test.expectErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, test.expected, got)
+		})
+	}
+}

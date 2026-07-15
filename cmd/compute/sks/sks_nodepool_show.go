@@ -34,6 +34,7 @@ type sksNodepoolShowOutput struct {
 	State                string                           `json:"state"`
 	Taints               []string                         `json:"taints"`
 	Labels               map[string]string                `json:"labels"`
+	NvidiaMigProfile     string                           `json:"nvidia_mig_profile"`
 	AddOns               []string                         `json:"addons"`
 	ImageGCMin           string                           `json:"image_gc_min_age"`
 	ImageGcLowThreshold  int64                            `json:"image_gc_low_threshold"`
@@ -121,7 +122,20 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			}
 			return
 		}(),
-		Name:               nodepool.Name,
+		Name: nodepool.Name,
+		NvidiaMigProfile: func() string {
+			if nodepool.NvidiaMigProfiles == nil {
+				return ""
+			}
+			switch {
+			case nodepool.NvidiaMigProfiles.A3024gb != "":
+				return string(nodepool.NvidiaMigProfiles.A3024gb)
+			case nodepool.NvidiaMigProfiles.Rtxpro600096gb != "":
+				return string(nodepool.NvidiaMigProfiles.Rtxpro600096gb)
+			default:
+				return ""
+			}
+		}(),
 		SecurityGroups:     make([]string, 0),
 		PrivateNetworks:    make([]string, 0),
 		Size:               nodepool.Size,

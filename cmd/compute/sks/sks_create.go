@@ -55,6 +55,7 @@ type sksCreateCmd struct {
 	NodepoolInstanceType         string            `cli-usage:"default Nodepool Compute instances type"`
 	NodepoolLabels               map[string]string `cli-flag:"nodepool-label" cli-usage:"default Nodepool label (format: key=value)"`
 	NodepoolName                 string            `cli-usage:"default Nodepool name"`
+	NodepoolNvidiaMigProfile     string            `cli-flag:"nodepool-nvidia-mig-profile" cli-usage:"default Nodepool Nvidia MIG profile to enable on the GPUs (e.g. 4g.24gb); the GPU family is inferred from the instance type"`
 	NodepoolPrivateNetworks      []string          `cli-flag:"nodepool-private-network" cli-usage:"default Nodepool Private Network NAME|ID (can be specified multiple times)"`
 	NodepoolSecurityGroups       []string          `cli-flag:"nodepool-security-group" cli-usage:"default Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	NodepoolSize                 int64             `cli-usage:"default Nodepool size. If 0, no default Nodepool will be added to the cluster."`
@@ -255,6 +256,7 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 				LowThreshold:  c.NodepoolImageGcLowThreshold,
 				HighThreshold: c.NodepoolImageGcHighThreshold,
 			},
+			NvidiaMigProfile: c.NodepoolNvidiaMigProfile,
 		}
 
 		nodepoolReq, err := createNodepoolRequest(ctx, client, opts)

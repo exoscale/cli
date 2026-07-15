@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -61,6 +62,82 @@ type CreateNodepoolOpts struct {
 	Taints             []string
 	KubeletImageGC     *v3.KubeletImageGC
 	PublicIPAssignment v3.CreateSKSNodepoolRequestPublicIPAssignment
+
+	// Nvidia MIG (Multi-Instance GPU) profile to enable on the Nodepool GPUs.
+	// The GPU family it applies to is inferred from the Nodepool instance type.
+	// Empty means "leave unset".
+	NvidiaMigProfile string
+}
+
+// nvidiaMigProfilesA30 and nvidiaMigProfilesRtxpro6000 list the MIG profiles
+// supported by each GPU instance type family.
+var (
+	nvidiaMigProfilesA30 = []v3.NvidiaMigProfileA3024gb{
+		v3.NvidiaMigProfileA3024gb1G6Gb,
+		v3.NvidiaMigProfileA3024gb1G6GbMe,
+		v3.NvidiaMigProfileA3024gb2G12Gb,
+		v3.NvidiaMigProfileA3024gb2G12GbMe,
+		v3.NvidiaMigProfileA3024gb4G24Gb,
+	}
+
+	nvidiaMigProfilesRtxpro6000 = []v3.NvidiaMigProfileRtxpro600096gb{
+		v3.NvidiaMigProfileRtxpro600096gb1G24Gb,
+		v3.NvidiaMigProfileRtxpro600096gb1G24GbMe,
+		v3.NvidiaMigProfileRtxpro600096gb1G24GbGfx,
+		v3.NvidiaMigProfileRtxpro600096gb1G24GbMeAll,
+		v3.NvidiaMigProfileRtxpro600096gb1G24GbNoMe,
+		v3.NvidiaMigProfileRtxpro600096gb2G48Gb,
+		v3.NvidiaMigProfileRtxpro600096gb2G48GbGfx,
+		v3.NvidiaMigProfileRtxpro600096gb2G48GbMeAll,
+		v3.NvidiaMigProfileRtxpro600096gb2G48GbNoMe,
+		v3.NvidiaMigProfileRtxpro600096gb4G96Gb,
+		v3.NvidiaMigProfileRtxpro600096gb4G96GbGfx,
+	}
+)
+
+// migProfileValues renders a slice of typed MIG profile enums as plain strings,
+// for use in error messages.
+func migProfileValues[T ~string](profiles []T) []string {
+	values := make([]string, len(profiles))
+	for i, p := range profiles {
+		values[i] = string(p)
+	}
+	return values
+}
+
+// buildNvidiaMigProfiles resolves the requested MIG (Multi-Instance GPU) profile
+// to the egoscale profiles object, selecting the GPU family from the Nodepool
+// instance type family. It returns nil when profile is empty, and an error when
+// the instance type family has no MIG support or the value is not valid for it.
+func buildNvidiaMigProfiles(family v3.InstanceTypeFamily, profile string) (*v3.NvidiaMigProfiles, error) {
+	if profile == "" {
+		return nil, nil
+	}
+
+	switch family {
+	case v3.InstanceTypeFamilyGpua30:
+		p := v3.NvidiaMigProfileA3024gb(profile)
+		if !slices.Contains(nvidiaMigProfilesA30, p) {
+			return nil, fmt.Errorf(
+				"invalid Nvidia MIG profile %q for instance type family %q, supported values: %s",
+				profile, family, strings.Join(migProfileValues(nvidiaMigProfilesA30), ", "),
+			)
+		}
+		return &v3.NvidiaMigProfiles{A3024gb: p}, nil
+
+	case v3.InstanceTypeFamilyGpurtx6000pro:
+		p := v3.NvidiaMigProfileRtxpro600096gb(profile)
+		if !slices.Contains(nvidiaMigProfilesRtxpro6000, p) {
+			return nil, fmt.Errorf(
+				"invalid Nvidia MIG profile %q for instance type family %q, supported values: %s",
+				profile, family, strings.Join(migProfileValues(nvidiaMigProfilesRtxpro6000), ", "),
+			)
+		}
+		return &v3.NvidiaMigProfiles{Rtxpro600096gb: p}, nil
+
+	default:
+		return nil, fmt.Errorf("instance type family %q does not support Nvidia MIG profiles", family)
+	}
 }
 
 func createNodepoolRequest(
@@ -121,6 +198,12 @@ func createNodepoolRequest(
 		}
 		nodepoolReq.Taints = nodepoolTaints
 	}
+
+	migProfiles, err := buildNvidiaMigProfiles(it.Family, opts.NvidiaMigProfile)
+	if err != nil {
+		return nodepoolReq, err
+	}
+	nodepoolReq.NvidiaMigProfiles = migProfiles
 
 	return nodepoolReq, nil
 }
