@@ -78,7 +78,7 @@ func (c *KeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		ReplicasStatus: formatReplicaStatus(resp.ReplicasStatus),
 		Material:       formatKeyMaterial(resp.Material),
 		Rotation:       formatKeyRotationConfig(resp.Rotation),
-		Usage:          string(resp.Usage),
+		Usage:          resp.Usage,
 		Source:         resp.Source,
 		Description:    resp.Description,
 		DeleteAt:       resp.DeleteAT,

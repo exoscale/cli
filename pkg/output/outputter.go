@@ -210,8 +210,9 @@ func Table(o interface{}) {
 			label = l
 		}
 
-		// If the field is a zero-value time.Time, skip displaying it entirely.
+		// If the field is a zero-value time.Time, print "n/a".
 		if ts, ok := v.Field(i).Interface().(time.Time); ok && ts.IsZero() {
+			tab.Append([]string{label, "n/a"})
 			continue
 		}
 
