@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Bug fixes
+
+- dbaas: revert breaking error format change, regenerate API spec (egoscale v3.1.42)
+
+### Improvements
+
+- deps: bump egoscale/v3 to v3.1.42 (#875)
+
 ## 1.96.0
 
 ### Features

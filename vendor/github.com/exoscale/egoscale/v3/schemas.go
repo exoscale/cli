@@ -206,7 +206,7 @@ type BlockStorageVolumeRef struct {
 // Request to create a new AI API key
 type CreateAIAPIKeyRequest struct {
 	// Human-readable name for the AI API key
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,gte=1,lte=50"`
 	// Key scope: 'public' for all deployments, or a specific deployment UUID
 	Scope string `json:"scope" validate:"required"`
 }
@@ -225,6 +225,8 @@ type CreateAIAPIKeyResponse struct {
 	Scope string `json:"scope" validate:"required"`
 	// Last update timestamp
 	UpdatedAT time.Time `json:"updated-at" validate:"required"`
+	// Plaintext AI API key value
+	Value string `json:"value" validate:"required"`
 }
 
 // Deploy an AI model onto a set of GPUs
@@ -241,6 +243,8 @@ type CreateDeploymentRequest struct {
 	Model *ModelRef `json:"model" validate:"required"`
 	// Deployment name
 	Name string `json:"name" validate:"required,gte=1"`
+	// Billing identifier for this deployment. Used by the Router for usage counters and Kafka events.
+	ProductName string `json:"product-name,omitempty" validate:"omitempty,gte=1"`
 	// Number of replicas (>=1)
 	Replicas int64 `json:"replicas" validate:"required,gte=1"`
 }
@@ -2605,6 +2609,13 @@ const (
 	GetDeploymentResponseStateUpdating  GetDeploymentResponseState = "updating"
 )
 
+type GetDeploymentResponseVisibility string
+
+const (
+	GetDeploymentResponseVisibilityPublic  GetDeploymentResponseVisibility = "public"
+	GetDeploymentResponseVisibilityPrivate GetDeploymentResponseVisibility = "private"
+)
+
 // AI deployment
 type GetDeploymentResponse struct {
 	// Creation time
@@ -2635,6 +2646,8 @@ type GetDeploymentResponse struct {
 	StateDetails string `json:"state-details" validate:"required"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at" validate:"required"`
+	// Deployment visibility: private for your organization's deployments, public for Exoscale Managed Inference deployments.
+	Visibility GetDeploymentResponseVisibility `json:"visibility" validate:"required"`
 }
 
 // List of allowed inference-engine parameters
@@ -2845,16 +2858,17 @@ const (
 	InferenceEngineVersion0221 InferenceEngineVersion = "0.22.1"
 	InferenceEngineVersion0230 InferenceEngineVersion = "0.23.0"
 	InferenceEngineVersion0240 InferenceEngineVersion = "0.24.0"
+	InferenceEngineVersion0250 InferenceEngineVersion = "0.25.0"
 )
 
 // Router flush payload: the router's full in-memory usage map with flush identity fields
 type IngestMeteringRequest struct {
-	// ISO-8601 UTC timestamp when the flush snapshot was created (truncated to minute boundary for bucketing)
-	CreatedAT time.Time `json:"created-at" validate:"required"`
 	// UUID identifying this flush; used for idempotent deduplication
 	FlushID UUID `json:"flush-id" validate:"required"`
 	// Router instance identifier that produced this flush
 	RouterID string `json:"router-id" validate:"required,gte=1"`
+	// ISO-8601 UTC timestamp when the flush snapshot was created (truncated to minute boundary for bucketing)
+	Timestamp time.Time `json:"timestamp" validate:"required"`
 	// Map of api-key-uuid to usage entry. Keys are API key UUIDs. Mirrors the router's in-memory accumulator structure directly.
 	Usage map[string]APIKeyUsageEntry `json:"usage" validate:"required"`
 }
@@ -4396,6 +4410,13 @@ const (
 	ListDeploymentsResponseEntryStateUpdating  ListDeploymentsResponseEntryState = "updating"
 )
 
+type ListDeploymentsResponseEntryVisibility string
+
+const (
+	ListDeploymentsResponseEntryVisibilityPublic  ListDeploymentsResponseEntryVisibility = "public"
+	ListDeploymentsResponseEntryVisibilityPrivate ListDeploymentsResponseEntryVisibility = "private"
+)
+
 // AI deployment
 type ListDeploymentsResponseEntry struct {
 	// Creation time
@@ -4420,6 +4441,8 @@ type ListDeploymentsResponseEntry struct {
 	State ListDeploymentsResponseEntryState `json:"state" validate:"required"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at" validate:"required"`
+	// Deployment visibility: private for your organization's deployments, public for Exoscale Managed Inference deployments.
+	Visibility ListDeploymentsResponseEntryVisibility `json:"visibility" validate:"required"`
 }
 
 type ListKmsKeyRotationsResponse struct {
@@ -5588,7 +5611,7 @@ type TemplateRef struct {
 // Request to update an AI API key (at least one property required)
 type UpdateAIAPIKeyRequest struct {
 	// Human-readable name for the AI API key
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=50"`
 	// Key scope: 'public' for all deployments, or a specific deployment UUID
 	Scope string `json:"scope,omitempty"`
 }

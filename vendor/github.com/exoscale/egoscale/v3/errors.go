@@ -118,7 +118,10 @@ type APIErrorEntry struct {
 	Location string
 }
 
-func (e *APIError) Error() string { return e.sentinel.Error() }
+func (e *APIError) Error() string {
+	return fmt.Sprintf("%s: %s", e.sentinel.Error(), e.Message)
+}
+
 func (e *APIError) Unwrap() error { return e.sentinel }
 
 func handleHTTPErrorResp(resp *http.Response) error {
