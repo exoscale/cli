@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.97.0
+
 ### Bug fixes
 
 - dbaas: revert breaking error format change, regenerate API spec (egoscale v3.1.42)
