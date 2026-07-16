@@ -2783,7 +2783,7 @@ type CreateDBAASClickhouseUserRequest struct {
 	Username DBAASUserUsername              `json:"username" validate:"required,gte=1,lte=64"`
 }
 
-func (c Client) CreateDBAASClickhouseUser(ctx context.Context, serviceName string, req CreateDBAASClickhouseUserRequest) (*Operation, error) {
+func (c Client) CreateDBAASClickhouseUser(ctx context.Context, serviceName string, req CreateDBAASClickhouseUserRequest) (*DBAASUserClickhouseSecrets, error) {
 	path := fmt.Sprintf("/dbaas-clickhouse/%v/user", serviceName)
 
 	body, err := prepareJSONBody(req)
@@ -2825,7 +2825,7 @@ func (c Client) CreateDBAASClickhouseUser(ctx context.Context, serviceName strin
 		return nil, fmt.Errorf("CreateDBAASClickhouseUser: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := new(DBAASUserClickhouseSecrets)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateDBAASClickhouseUser: prepare Json response: %w", err)
 	}
@@ -2880,7 +2880,7 @@ type ResetDBAASClickhouseUserPasswordRequest struct {
 	Password DBAASUserPassword `json:"password,omitempty" validate:"omitempty,gte=8,lte=256"`
 }
 
-func (c Client) ResetDBAASClickhouseUserPassword(ctx context.Context, serviceName string, username string, req ResetDBAASClickhouseUserPasswordRequest) (*Operation, error) {
+func (c Client) ResetDBAASClickhouseUserPassword(ctx context.Context, serviceName string, username string, req ResetDBAASClickhouseUserPasswordRequest) (*DBAASUserClickhouseSecrets, error) {
 	path := fmt.Sprintf("/dbaas-clickhouse/%v/user/%v/password/reset", serviceName, username)
 
 	body, err := prepareJSONBody(req)
@@ -2922,7 +2922,7 @@ func (c Client) ResetDBAASClickhouseUserPassword(ctx context.Context, serviceNam
 		return nil, fmt.Errorf("ResetDBAASClickhouseUserPassword: http response: %w", err)
 	}
 
-	bodyresp := new(Operation)
+	bodyresp := new(DBAASUserClickhouseSecrets)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResetDBAASClickhouseUserPassword: prepare Json response: %w", err)
 	}
