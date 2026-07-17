@@ -35,6 +35,9 @@
 
 - storage: add bucket lifecycle support #847
 
+### Bug fixes
+- fix(eip): EIP healthchecks time are in seconds at the API level #858
+
 ## 1.95.4
 
 ### Improvements
@@ -102,6 +105,7 @@
 ### Bug fixes
 
 - fix: prevent traversal path during sos download #823
+
 
 ## 1.94.0
 
