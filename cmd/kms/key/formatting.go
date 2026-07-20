@@ -43,8 +43,14 @@ func formatKeyMaterial(s *v3.KeyMaterial) string {
 	if s == nil {
 		return "-"
 	}
-	return fmt.Sprintf("auto: %s\ncreatedAt: %s\nversion: %d",
-		strconv.FormatBool(*s.Automatic),
+	// TODO: temp fix to prevent null pointer exception. Automatic field will be renamed to manual.
+	if s.Automatic != nil {
+		return fmt.Sprintf("auto: %s\ncreatedAt: %s\nversion: %d",
+			strconv.FormatBool(*s.Automatic),
+			s.CreatedAT,
+			s.Version)
+	}
+	return fmt.Sprintf("createdAt: %s\nversion: %d",
 		s.CreatedAT,
 		s.Version)
 }
