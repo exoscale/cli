@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Improvements⏎
+
+- AUR package: reset pkgrel in PKGBUILD (#878)
+
 ## 1.97.0
 
 ### Bug fixes
