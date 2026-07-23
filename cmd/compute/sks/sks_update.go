@@ -79,7 +79,9 @@ func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	updateReq := v3.UpdateSKSClusterRequest{}
+	updateReq := v3.UpdateSKSClusterRequest{
+		Oidc: cluster.Oidc,
+	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AutoUpgrade)) {
 		updateReq.AutoUpgrade = &c.AutoUpgrade
