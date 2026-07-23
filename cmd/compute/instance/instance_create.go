@@ -302,11 +302,11 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 			if err != nil {
 				return
 			}
-			op, err = globalstate.EgoscaleV3Client.AddInstanceProtection(ctx, value)
+			op, err = client.AddInstanceProtection(ctx, value)
 			if err != nil {
 				return
 			}
-			_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 
 		}
 	})
