@@ -5,7 +5,7 @@
 
 ### Features
 
-- compute: add VPC support 
+- compute: add VPC support (#880)
 
 ### Bug fixes
 
