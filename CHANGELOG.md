@@ -2,11 +2,16 @@
 
 ## Unreleased
 
+
+### Features
+
+- compute: add VPC support 
+
 ### Bug fixes
 
 - instance create: apply delete protection in the instance's zone, fixing a wrong-zone "Not Found" error when creating protected instances outside the default zone (#879)
 
-### Improvements⏎
+### Improvements
 
 - AUR package: reset pkgrel in PKGBUILD (#878)
 
@@ -36,6 +41,7 @@
 ### Bug fixes
 
 - storage: fix IMDS fallback when using bucket-path syntax (`sos://bucket/`) on non-EC2 hosts #864
+
 
 ## 1.95.5
 
