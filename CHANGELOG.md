@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Bug fixes
+
+- instance create: apply delete protection in the instance's zone, fixing a wrong-zone "Not Found" error when creating protected instances outside the default zone (#879)
+
 ### Improvements⏎
 
 - AUR package: reset pkgrel in PKGBUILD (#878)
