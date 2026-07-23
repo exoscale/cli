@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -59,10 +60,9 @@ func runAPITestSuite(t *testing.T, dir string) {
 		zone = "ch-gva-2"
 	}
 
-	// Prefix every test resource with `cli-e2e-` so runs against the shared
-	// Exoscale test organisation do not collide with resources created by
-	// other repositories (terraform-provider-exoscale, csi-driver, ...).
-	runID := fmt.Sprintf("cli-e2e-%d-%s", time.Now().Unix(), randString(6))
+	// Prefix shared-test-org resources with cli-e2e-<sha>- so a leaked
+	// resource maps back to the commit that created it.
+	runID := fmt.Sprintf("cli-e2e-%s-%d-%s", shortSHA(), time.Now().Unix(), randString(6))
 	t.Logf("API test run ID: %s (zone: %s)", runID, zone)
 
 	suite := &APITestSuite{
@@ -328,4 +328,28 @@ func randString(n int) string {
 		b[i] = letters[r.Intn(len(letters))]
 	}
 	return string(b)
+}
+
+// shortSHA returns the short commit SHA of the CLI repo, or "unknown" if
+// git is unavailable, so the prefix stays well-formed.
+func shortSHA() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "unknown"
+	}
+	for {
+		if _, err := os.Stat(filepath.Join(dir, ".git")); err == nil {
+			cmd := exec.Command("git", "-C", dir, "rev-parse", "--short", "HEAD")
+			out, err := cmd.Output()
+			if err != nil {
+				return "unknown"
+			}
+			return strings.TrimSpace(string(out))
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "unknown"
+		}
+		dir = parent
+	}
 }
