@@ -2619,33 +2619,33 @@ const (
 // AI deployment
 type GetDeploymentResponse struct {
 	// Creation time
-	CreatedAT time.Time `json:"created-at" validate:"required"`
+	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Deployment inference endpoint URL
 	DeploymentURL string `json:"deployment-url" validate:"required"`
 	// Number of GPUs
-	GpuCount int64 `json:"gpu-count" validate:"required,gte=1"`
+	GpuCount int64 `json:"gpu-count,omitempty" validate:"omitempty,gte=1"`
 	// GPU type family
-	GpuType string `json:"gpu-type" validate:"required,gte=1"`
+	GpuType string `json:"gpu-type,omitempty" validate:"omitempty,gte=1"`
 	// Deployment ID
-	ID UUID `json:"id" validate:"required"`
+	ID UUID `json:"id,omitempty"`
 	// Optional extra inference engine server CLI args
-	InferenceEngineParameters []string `json:"inference-engine-parameters" validate:"required"`
+	InferenceEngineParameters []string `json:"inference-engine-parameters,omitempty"`
 	// Inference engine version
-	InferenceEngineVersion InferenceEngineVersion `json:"inference-engine-version" validate:"required"`
+	InferenceEngineVersion InferenceEngineVersion `json:"inference-engine-version,omitempty"`
 	// Model reference. Provide either id or name.
 	Model *ModelRef `json:"model" validate:"required"`
 	// Deployment name
 	Name string `json:"name" validate:"required,gte=1"`
 	// Number of replicas (>=0)
-	Replicas int64 `json:"replicas" validate:"required,gte=0"`
+	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gte=0"`
 	// Service level
-	ServiceLevel string `json:"service-level" validate:"required,gte=1"`
+	ServiceLevel string `json:"service-level,omitempty" validate:"omitempty,gte=1"`
 	// Deployment state
 	State GetDeploymentResponseState `json:"state" validate:"required"`
 	// Deployment state details
-	StateDetails string `json:"state-details" validate:"required"`
+	StateDetails string `json:"state-details,omitempty"`
 	// Update time
-	UpdatedAT time.Time `json:"updated-at" validate:"required"`
+	UpdatedAT time.Time `json:"updated-at,omitempty"`
 	// Deployment visibility: private for your organization's deployments, public for Exoscale Managed Inference deployments.
 	Visibility GetDeploymentResponseVisibility `json:"visibility" validate:"required"`
 }
@@ -2859,6 +2859,7 @@ const (
 	InferenceEngineVersion0230 InferenceEngineVersion = "0.23.0"
 	InferenceEngineVersion0240 InferenceEngineVersion = "0.24.0"
 	InferenceEngineVersion0250 InferenceEngineVersion = "0.25.0"
+	InferenceEngineVersion0251 InferenceEngineVersion = "0.25.1"
 )
 
 // Router flush payload: the router's full in-memory usage map with flush identity fields
@@ -4420,27 +4421,27 @@ const (
 // AI deployment
 type ListDeploymentsResponseEntry struct {
 	// Creation time
-	CreatedAT time.Time `json:"created-at" validate:"required"`
+	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Deployment inference endpoint URL
 	DeploymentURL string `json:"deployment-url" validate:"required"`
 	// Number of GPUs
-	GpuCount int64 `json:"gpu-count" validate:"required,gte=1"`
+	GpuCount int64 `json:"gpu-count,omitempty" validate:"omitempty,gte=1"`
 	// GPU type family
-	GpuType string `json:"gpu-type" validate:"required,gte=1"`
+	GpuType string `json:"gpu-type,omitempty" validate:"omitempty,gte=1"`
 	// Deployment ID
-	ID UUID `json:"id" validate:"required"`
+	ID UUID `json:"id,omitempty"`
 	// Model reference. Provide either id or name.
 	Model *ModelRef `json:"model" validate:"required"`
 	// Deployment name
 	Name string `json:"name" validate:"required,gte=1"`
 	// Number of replicas (>=0)
-	Replicas int64 `json:"replicas" validate:"required,gte=0"`
+	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gte=0"`
 	// Service level
-	ServiceLevel string `json:"service-level" validate:"required,gte=1"`
+	ServiceLevel string `json:"service-level,omitempty" validate:"omitempty,gte=1"`
 	// Deployment state
 	State ListDeploymentsResponseEntryState `json:"state" validate:"required"`
 	// Update time
-	UpdatedAT time.Time `json:"updated-at" validate:"required"`
+	UpdatedAT time.Time `json:"updated-at,omitempty"`
 	// Deployment visibility: private for your organization's deployments, public for Exoscale Managed Inference deployments.
 	Visibility ListDeploymentsResponseEntryVisibility `json:"visibility" validate:"required"`
 }
@@ -5517,6 +5518,14 @@ const (
 	SubnetAddressfamilyDual  SubnetAddressfamily = "dual"
 )
 
+// Subnet attachements
+type SubnetInstances struct {
+	// Instance uuid
+	ID UUID `json:"id,omitempty"`
+	// Instance Ipv4 address
+	Ipv4 net.IP `json:"ipv4,omitempty"`
+}
+
 // Subnet
 type Subnet struct {
 	// Subnet address space
@@ -5529,6 +5538,8 @@ type Subnet struct {
 	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
 	// Subnet ID
 	ID UUID `json:"id,omitempty"`
+	// Instances attached to the subnet
+	Instances []SubnetInstances `json:"instances,omitempty"`
 	// Subnet ipv4 CIDR
 	Ipv4Block string `json:"ipv4-block,omitempty"`
 	Labels    Labels `json:"labels,omitempty"`
