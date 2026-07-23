@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -207,6 +208,12 @@ func Table(o interface{}) {
 		label := strings.Join(camelcase.Split(t.Field(i).Name), " ")
 		if l, ok := t.Field(i).Tag.Lookup("outputLabel"); ok {
 			label = l
+		}
+
+		// If the field is a zero-value time.Time, print "n/a".
+		if ts, ok := v.Field(i).Interface().(time.Time); ok && ts.IsZero() {
+			tab.Append([]string{label, "n/a"})
+			continue
 		}
 
 		switch v.Field(i).Kind() {
