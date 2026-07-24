@@ -118,14 +118,13 @@ type APIErrorEntry struct {
 	Location string
 }
 
-func (e *APIError) Error() string {
-	return fmt.Sprintf("%s: %s", e.sentinel.Error(), e.Message)
-}
-
+func (e *APIError) Error() string { return e.sentinel.Error() }
 func (e *APIError) Unwrap() error { return e.sentinel }
 
 func handleHTTPErrorResp(resp *http.Response) error {
 	if resp.StatusCode >= 400 && resp.StatusCode <= 599 {
+		defer resp.Body.Close() // prevent connection leak on error responses
+
 		var res struct {
 			Message string          `json:"message"`
 			Error   string          `json:"error"`
