@@ -16,6 +16,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -88,6 +89,38 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 		return err
 	}
 
+	templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
+	if err != nil {
+		return fmt.Errorf("error listing template with visibility %q: %w", c.TemplateVisibility, err)
+	}
+	template, err := templates.FindTemplate(c.Template)
+	if err != nil {
+		return fmt.Errorf(
+			"no template %q found with visibility %s in zone %s",
+			c.Template,
+			c.TemplateVisibility,
+			c.Zone,
+		)
+	}
+	diskSize, err := compute.ResolveTemplateDiskSize(
+		c.DiskSize,
+		template.Size,
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DiskSize)),
+	)
+	if err != nil {
+		return err
+	}
+	if diskSize != c.DiskSize {
+		fmt.Fprintf(
+			os.Stderr,
+			"warning: template %q requires at least %d GiB; increasing the default disk size from %d GiB to %d GiB\n",
+			template.Name,
+			diskSize,
+			c.DiskSize,
+			diskSize,
+		)
+	}
+
 	var sshKeys []v3.SSHKey
 	for _, sshkeyName := range c.SSHKeys {
 		sshKeys = append(sshKeys, v3.SSHKey{Name: sshkeyName})
@@ -104,13 +137,14 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 	}
 
 	instanceReq := v3.CreateInstanceRequest{
-		DiskSize:           c.DiskSize,
+		DiskSize:           diskSize,
 		PublicIPAssignment: publicIPAssignment,
 		TpmEnabled:         &c.TPM,
 		SecurebootEnabled:  &c.SecureBoot,
 		Labels:             c.Labels,
 		Name:               c.Name,
 		SSHKeys:            sshKeys,
+		Template:           &v3.Template{ID: template.ID},
 	}
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
@@ -225,21 +259,6 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 
 		instanceReq.SSHKeys = []v3.SSHKey{{Name: sshKeyName}}
 	}
-
-	templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
-	if err != nil {
-		return fmt.Errorf("error listing template with visibility %q: %w", c.TemplateVisibility, err)
-	}
-	template, err := templates.FindTemplate(c.Template)
-	if err != nil {
-		return fmt.Errorf(
-			"no template %q found with visibility %s in zone %s",
-			c.Template,
-			c.TemplateVisibility,
-			c.Zone,
-		)
-	}
-	instanceReq.Template = &v3.Template{ID: template.ID}
 
 	if c.CloudInitFile != "" {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)

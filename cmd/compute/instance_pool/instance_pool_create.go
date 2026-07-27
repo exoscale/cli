@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -62,7 +63,7 @@ func (c *instancePoolCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instancePoolCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
+func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
@@ -70,11 +71,43 @@ func (c *instancePoolCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
+	templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
+	if err != nil {
+		return fmt.Errorf("error listing template with visibility %q: %w", c.TemplateVisibility, err)
+	}
+	template, err := templates.FindTemplate(c.Template)
+	if err != nil {
+		return fmt.Errorf(
+			"no template %q found with visibility %s in zone %s",
+			c.Template,
+			c.TemplateVisibility,
+			c.Zone,
+		)
+	}
+	diskSize, err := compute.ResolveTemplateDiskSize(
+		c.DiskSize,
+		template.Size,
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DiskSize)),
+	)
+	if err != nil {
+		return err
+	}
+	if diskSize != c.DiskSize {
+		fmt.Fprintf(
+			os.Stderr,
+			"warning: template %q requires at least %d GiB; increasing the default disk size from %d GiB to %d GiB\n",
+			template.Name,
+			diskSize,
+			c.DiskSize,
+			diskSize,
+		)
+	}
+
 	sshKey := &v3.SSHKey{Name: c.SSHKey}
 
 	instancePoolReq := v3.CreateInstancePoolRequest{
 		Description:    c.Description,
-		DiskSize:       c.DiskSize,
+		DiskSize:       diskSize,
 		Ipv6Enabled:    &c.IPv6,
 		InstancePrefix: c.InstancePrefix,
 		Labels:         c.Labels,
@@ -82,6 +115,7 @@ func (c *instancePoolCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		Name:           c.Name,
 		SSHKey:         sshKey,
 		Size:           c.Size,
+		Template:       &v3.Template{ID: template.ID},
 	}
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
@@ -183,21 +217,6 @@ func (c *instancePoolCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if instancePoolReq.SSHKey == nil && account.CurrentAccount.DefaultSSHKey != "" {
 		instancePoolReq.SSHKey = &v3.SSHKey{Name: account.CurrentAccount.DefaultSSHKey}
 	}
-
-	templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
-	if err != nil {
-		return fmt.Errorf("error listing template with visibility %q: %w", c.TemplateVisibility, err)
-	}
-	template, err := templates.FindTemplate(c.Template)
-	if err != nil {
-		return fmt.Errorf(
-			"no template %q found with visibility %s in zone %s",
-			c.Template,
-			c.TemplateVisibility,
-			c.Zone,
-		)
-	}
-	instancePoolReq.Template = &v3.Template{ID: template.ID}
 
 	if c.CloudInitFile != "" {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
