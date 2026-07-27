@@ -5,6 +5,7 @@
 ### Bug fixes
 
 - instance create: apply delete protection in the instance's zone, fixing a wrong-zone "Not Found" error when creating protected instances outside the default zone (#879)
+- sks cluster update: fix oidc config drop (#881)
 
 ### Improvements⏎
 
