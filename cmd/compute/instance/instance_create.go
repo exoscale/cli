@@ -89,6 +89,29 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 		return err
 	}
 
+	template, err := compute.ResolveTemplate(ctx, client, c.Template, c.TemplateVisibility, c.Zone)
+	if err != nil {
+		return err
+	}
+	diskSize, err := compute.ResolveTemplateDiskSize(
+		c.DiskSize,
+		template.Size,
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DiskSize)),
+	)
+	if err != nil {
+		return err
+	}
+	if diskSize != c.DiskSize {
+		fmt.Fprintf(
+			os.Stderr,
+			"warning: template %q requires at least %d GiB; increasing the default disk size from %d GiB to %d GiB\n",
+			template.Name,
+			diskSize,
+			c.DiskSize,
+			diskSize,
+		)
+	}
+
 	var sshKeys []v3.SSHKey
 	for _, sshkeyName := range c.SSHKeys {
 		sshKeys = append(sshKeys, v3.SSHKey{Name: sshkeyName})
@@ -105,13 +128,14 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 	}
 
 	instanceReq := v3.CreateInstanceRequest{
-		DiskSize:           c.DiskSize,
+		DiskSize:           diskSize,
 		PublicIPAssignment: publicIPAssignment,
 		TpmEnabled:         &c.TPM,
 		SecurebootEnabled:  &c.SecureBoot,
 		Labels:             c.Labels,
 		Name:               c.Name,
 		SSHKeys:            sshKeys,
+		Template:           &v3.Template{ID: template.ID},
 	}
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
@@ -226,12 +250,6 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 
 		instanceReq.SSHKeys = []v3.SSHKey{{Name: sshKeyName}}
 	}
-
-	templateID, err := compute.ResolveTemplateID(ctx, client, c.Template, c.TemplateVisibility, c.Zone)
-	if err != nil {
-		return err
-	}
-	instanceReq.Template = &v3.Template{ID: templateID}
 
 	if c.CloudInitFile != "" {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
