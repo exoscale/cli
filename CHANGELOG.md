@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- storage: add `copy` command for copying objects within and across buckets (#887)
+
 ### Bug fixes
 
 - compute: honor the selected template's minimum disk size when creating instances and instance pools (#882)
