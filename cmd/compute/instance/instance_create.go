@@ -16,6 +16,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -226,20 +227,11 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 		instanceReq.SSHKeys = []v3.SSHKey{{Name: sshKeyName}}
 	}
 
-	templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
+	templateID, err := compute.ResolveTemplateID(ctx, client, c.Template, c.TemplateVisibility, c.Zone)
 	if err != nil {
-		return fmt.Errorf("error listing template with visibility %q: %w", c.TemplateVisibility, err)
+		return err
 	}
-	template, err := templates.FindTemplate(c.Template)
-	if err != nil {
-		return fmt.Errorf(
-			"no template %q found with visibility %s in zone %s",
-			c.Template,
-			c.TemplateVisibility,
-			c.Zone,
-		)
-	}
-	instanceReq.Template = &v3.Template{ID: template.ID}
+	instanceReq.Template = &v3.Template{ID: templateID}
 
 	if c.CloudInitFile != "" {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
