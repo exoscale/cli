@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
-func (c *Client) moveLargeObject(ctx context.Context, srcBucket, srcKey, dstBucket, dstKey string, headRes *s3.HeadObjectOutput, concurrency int, verbose bool) error {
+func (c *Client) copyLargeObjectTo(ctx context.Context, srcBucket, srcKey, dstBucket, dstKey string, headRes *s3.HeadObjectOutput, concurrency int, verbose bool) error {
 	srcURL := fmt.Sprintf("sos://%s/%s", srcBucket, srcKey)
 	dstURL := fmt.Sprintf("sos://%s/%s", dstBucket, dstKey)
 
@@ -93,19 +93,11 @@ func (c *Client) moveLargeObject(ctx context.Context, srcBucket, srcKey, dstBuck
 		return fmt.Errorf("complete multipart upload: %w", err)
 	}
 
-	if verbose {
-		fmt.Printf("deleting: %s\n", srcURL)
-	}
-
-	if err := c.DeleteObject(ctx, srcBucket, srcKey); err != nil {
-		return fmt.Errorf("delete source: %w", err)
-	}
-
 	return nil
 }
 
 func (c *Client) uploadParts(ctx context.Context, srcBucket, srcKey, dstBucket, dstKey, uploadID string, size int64, concurrency int) ([]s3types.CompletedPart, error) {
-	partSize := int64(moveDefaultPartSize)
+	partSize := int64(copyDefaultPartSize)
 	if partSize > size {
 		partSize = size
 	}

@@ -11,17 +11,17 @@ import (
 )
 
 const (
-	moveLargeObjectThreshold = 5 * 1024 * 1024 * 1024 // 5 GiB
-	moveDefaultPartSize      = 100 * 1024 * 1024      // 100 MiB
-	moveMaxConcurrency       = 10
+	copyLargeObjectThreshold = 5 * 1024 * 1024 * 1024 // 5 GiB
+	copyDefaultPartSize      = 100 * 1024 * 1024      // 100 MiB
+	copyMaxConcurrency       = 10
 )
 
-func (c *Client) MoveObject(ctx context.Context, srcBucket, srcKey, dstBucket, dstKey string, multipartConcurrency int, verbose bool) error {
+func (c *Client) CopyObjectTo(ctx context.Context, srcBucket, srcKey, dstBucket, dstKey string, multipartConcurrency int, verbose bool) error {
 	if multipartConcurrency <= 0 {
 		multipartConcurrency = 1
 	}
-	if multipartConcurrency > moveMaxConcurrency {
-		multipartConcurrency = moveMaxConcurrency
+	if multipartConcurrency > copyMaxConcurrency {
+		multipartConcurrency = copyMaxConcurrency
 	}
 
 	headRes, err := c.S3Client.HeadObject(ctx, &s3.HeadObjectInput{
@@ -34,14 +34,34 @@ func (c *Client) MoveObject(ctx context.Context, srcBucket, srcKey, dstBucket, d
 
 	size := headRes.ContentLength
 
-	if *size > moveLargeObjectThreshold {
-		return c.moveLargeObject(ctx, srcBucket, srcKey, dstBucket, dstKey, headRes, multipartConcurrency, verbose)
+	if *size > copyLargeObjectThreshold {
+		return c.copyLargeObjectTo(ctx, srcBucket, srcKey, dstBucket, dstKey, headRes, multipartConcurrency, verbose)
 	}
 
-	return c.moveObject(ctx, srcBucket, srcKey, dstBucket, dstKey, headRes, verbose)
+	return c.copyObjectTo(ctx, srcBucket, srcKey, dstBucket, dstKey, headRes, verbose)
 }
 
-func (c *Client) moveObject(ctx context.Context, srcBucket, srcKey, dstBucket, dstKey string, headRes *s3.HeadObjectOutput, verbose bool) error {
+func (c *Client) MoveObject(ctx context.Context, srcBucket, srcKey, dstBucket, dstKey string, multipartConcurrency int, verbose bool) error {
+	if srcBucket == dstBucket && srcKey == dstKey {
+		return fmt.Errorf("source and destination must differ")
+	}
+
+	if err := c.CopyObjectTo(ctx, srcBucket, srcKey, dstBucket, dstKey, multipartConcurrency, verbose); err != nil {
+		return err
+	}
+
+	if verbose {
+		fmt.Printf("deleting: sos://%s/%s\n", srcBucket, srcKey)
+	}
+
+	if err := c.DeleteObject(ctx, srcBucket, srcKey); err != nil {
+		return fmt.Errorf("delete source: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Client) copyObjectTo(ctx context.Context, srcBucket, srcKey, dstBucket, dstKey string, headRes *s3.HeadObjectOutput, verbose bool) error {
 	srcURL := fmt.Sprintf("sos://%s/%s", srcBucket, srcKey)
 	dstURL := fmt.Sprintf("sos://%s/%s", dstBucket, dstKey)
 
@@ -90,14 +110,6 @@ func (c *Client) moveObject(ctx context.Context, srcBucket, srcKey, dstBucket, d
 		return fmt.Errorf("copy: %w", err)
 	}
 
-	if verbose {
-		fmt.Printf("deleting: %s\n", srcURL)
-	}
-
-	if err := c.DeleteObject(ctx, srcBucket, srcKey); err != nil {
-		return fmt.Errorf("delete source: %w", err)
-	}
-
 	return nil
 }
 
@@ -119,7 +131,7 @@ func copySource(bucket, key string) string {
 // grants are mapped.
 func getACLFromGrants(grants []s3types.Grant) s3types.ObjectCannedACL {
 	for _, grant := range grants {
-		if grant.Grantee.Type != s3types.TypeGroup {
+		if grant.Permission != s3types.PermissionRead || grant.Grantee.Type != s3types.TypeGroup {
 			continue
 		}
 		uri := aws.ToString(grant.Grantee.URI)
