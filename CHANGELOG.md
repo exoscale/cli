@@ -10,6 +10,7 @@
 ### Improvements⏎
 
 - AUR package: reset pkgrel in PKGBUILD (#878)
+- utils: remove unused ICMP formatters (#884)
 
 ## 1.97.0
 
