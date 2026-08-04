@@ -11,6 +11,7 @@
 
 - AUR package: reset pkgrel in PKGBUILD (#878)
 - utils: remove unused ICMP formatters (#884)
+- deps: update golang.org/x dependencies (#885)
 
 ## 1.97.0
 
