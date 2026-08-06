@@ -5,6 +5,7 @@
 ### Bug fixes
 
 - compute: allow instance and instance pool operations to use template IDs omitted from template lists (#888)
+- compute: honor the selected template's minimum disk size when creating instances and instance pools (#882)
 - instance create: apply delete protection in the instance's zone, fixing a wrong-zone "Not Found" error when creating protected instances outside the default zone (#879)
 - sks cluster update: fix oidc config drop (#881)
 
