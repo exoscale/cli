@@ -71,18 +71,9 @@ func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
+	template, err := compute.ResolveTemplate(ctx, client, c.Template, c.TemplateVisibility, c.Zone)
 	if err != nil {
-		return fmt.Errorf("error listing template with visibility %q: %w", c.TemplateVisibility, err)
-	}
-	template, err := templates.FindTemplate(c.Template)
-	if err != nil {
-		return fmt.Errorf(
-			"no template %q found with visibility %s in zone %s",
-			c.Template,
-			c.TemplateVisibility,
-			c.Zone,
-		)
+		return err
 	}
 	diskSize, err := compute.ResolveTemplateDiskSize(
 		c.DiskSize,

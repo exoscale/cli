@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
@@ -259,20 +260,11 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Template)) {
-		templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
+		templateID, err := compute.ResolveTemplateID(ctx, client, c.Template, c.TemplateVisibility, c.Zone)
 		if err != nil {
-			return fmt.Errorf("error listing template with visibility %q: %w", c.TemplateVisibility, err)
+			return err
 		}
-		template, err := templates.FindTemplate(c.Template)
-		if err != nil {
-			return fmt.Errorf(
-				"no template %q found with visibility %s in zone %s",
-				c.Template,
-				c.TemplateVisibility,
-				c.Zone,
-			)
-		}
-		updateReq.Template = &template
+		updateReq.Template = &v3.Template{ID: templateID}
 		updated = true
 	}
 

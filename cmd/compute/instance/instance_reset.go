@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -77,24 +78,17 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.Template != "" {
-
-		templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
-
+		templateID, err := compute.ResolveTemplateID(
+			ctx,
+			client,
+			c.Template,
+			c.TemplateVisibility,
+			v3.ZoneName(c.Zone),
+		)
 		if err != nil {
 			return err
 		}
-
-		template, err := templates.FindTemplate(c.Template)
-		if err != nil {
-			return fmt.Errorf(
-				"no template %q found with visibility %s in zone %s",
-				c.Template,
-				c.TemplateVisibility,
-				c.Zone,
-			)
-		}
-
-		request.Template = &template
+		request.Template = &v3.Template{ID: templateID}
 	}
 
 	op, err := client.ResetInstance(ctx, instance.ID, request)
