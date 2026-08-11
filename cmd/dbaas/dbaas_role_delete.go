@@ -14,10 +14,10 @@ import (
 type dbaasRoleDeleteCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
 
-	_      bool `cli-cmd:"delete"`
-	Name   string `cli-arg:"#" cli-usage:"NAME"`
+	_        bool `cli-cmd:"delete"`
+	Name     string `cli-arg:"#" cli-usage:"NAME"`
 	RoleUUID string `cli-arg:"#" cli-usage:"ROLE-UUID"`
-	Zone   string `cli-short:"z" cli-usage:"Database Service zone"`
+	Zone     string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
 func (c *dbaasRoleDeleteCmd) CmdAliases() []string { return nil }

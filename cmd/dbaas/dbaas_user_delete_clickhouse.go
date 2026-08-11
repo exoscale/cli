@@ -19,13 +19,13 @@ func (c *dbaasUserDeleteCmd) deleteClickhouse(_ *cobra.Command, _ []string) erro
 		return err
 	}
 
-	users, err := client.ListDBAASClickhouseUsers(ctx, c.Name)
+	svc, err := client.GetDBAASServiceClickhouse(ctx, c.Name)
 	if err != nil {
 		return err
 	}
 
 	userUUID := ""
-	for _, u := range users.Users {
+	for _, u := range svc.Users {
 		if string(u.Username) == c.Username {
 			userUUID = string(u.Uuid)
 			break

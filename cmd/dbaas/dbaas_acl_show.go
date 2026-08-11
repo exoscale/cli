@@ -22,7 +22,7 @@ func (o *dbaasAclShowOutput) ToJSON() { output.JSON(o) }
 func (o *dbaasAclShowOutput) ToText() { output.Text(o) }
 
 type dbaasAclUserOutput struct {
-	Username   string                `json:"username"`
+	Username   string              `json:"username"`
 	Roles      []dbaasAclRoleOutput  `json:"roles"`
 	Privileges []dbaasPrivOutput     `json:"privileges"`
 }
@@ -34,18 +34,18 @@ type dbaasAclRoleOutput struct {
 }
 
 type dbaasPrivOutput struct {
-	AccessType   string `json:"access-type"`
-	Database     string `json:"database,omitempty"`
-	Table        string `json:"table,omitempty"`
-	Column       string `json:"column,omitempty"`
-	GrantOption  bool   `json:"grant-option,omitempty"`
+	AccessType  string `json:"access-type"`
+	Database    string `json:"database,omitempty"`
+	Table       string `json:"table,omitempty"`
+	Column      string `json:"column,omitempty"`
+	GrantOption bool   `json:"grant-option,omitempty"`
 	PartialRevoke bool  `json:"partial-revoke,omitempty"`
 }
 
 type dbaasAclShowCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
 
-	_  bool `cli-cmd:"show"`
+	_    bool `cli-cmd:"show"`
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 	Zone string `cli-short:"z" cli-usage:"Database Service zone"`
 }
@@ -104,10 +104,14 @@ func (o *dbaasAclShowOutput) ToTable() {
 	t := table.NewTable(nil)
 	defer t.Render()
 
+	if len(o.Users) == 0 {
+		t.Append([]string{"No ACL configuration found", ""})
+		return
+	}
+
 	for _, u := range o.Users {
 		t.Append([]string{"User", u.Username})
 
-		// Roles
 		buf := bytes.NewBuffer(nil)
 		rolesTable := table.NewEmbeddedTable(buf)
 		rolesTable.SetHeader([]string{"Role", "Default", "Admin"})
@@ -121,7 +125,6 @@ func (o *dbaasAclShowOutput) ToTable() {
 		rolesTable.Render()
 		t.Append([]string{"Roles", buf.String()})
 
-		// Privileges
 		buf.Reset()
 		privsTable := table.NewEmbeddedTable(buf)
 		privsTable.SetHeader([]string{"Access", "Database", "Table", "Column", "Grant", "Partial"})
