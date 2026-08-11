@@ -86,6 +86,8 @@ func (c *dbaasUserShowCmd) CmdRun(cmd *cobra.Command, args []string) error {
 		return c.OutputFunc(c.showGrafana(ctx))
 	case "valkey":
 		return c.OutputFunc(c.showValkey(ctx))
+	case "clickhouse":
+		return c.OutputFunc(c.showClickhouse(ctx))
 	case "thanos":
 		return c.OutputFunc(c.showThanos(ctx))
 	default:

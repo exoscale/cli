@@ -51,6 +51,8 @@ func (c *dbaasUserDeleteCmd) CmdRun(cmd *cobra.Command, args []string) error {
 		return c.deleteOpensearch(cmd, args)
 	case "valkey":
 		return c.deleteValkey(cmd, args)
+	case "clickhouse":
+		return c.deleteClickhouse(cmd, args)
 	default:
 		return fmt.Errorf("deleting user unsupported for service of type %q", db.Type)
 	}

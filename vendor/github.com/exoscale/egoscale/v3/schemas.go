@@ -337,6 +337,37 @@ type DBAASClickhouseAclConfig struct {
 	Users []DBAASClickhouseUserAclConfig `json:"users,omitempty"`
 }
 
+type DBAASClickhouseGrantedRole struct {
+	ISDefault *bool `json:"is-default,omitempty"`
+	// Granted role name
+	Name            string `json:"name" validate:"required"`
+	Uuid            string `json:"uuid,omitempty"`
+	WithAdminOption *bool  `json:"with-admin-option,omitempty"`
+}
+
+type DBAASClickhouseRole struct {
+	GrantedRoles []DBAASClickhouseGrantedRole   `json:"granted-roles,omitempty"`
+	Name         DBAASUserUsername              `json:"name" validate:"required,gte=1,lte=64"`
+	Privileges   []DBAASClickhouseRolePrivilege `json:"privileges,omitempty"`
+	Uuid         string                         `json:"uuid,omitempty"`
+}
+
+type DBAASClickhouseRolePrivilege struct {
+	// Column
+	Column string `json:"column,omitempty"`
+	// Database
+	Database        string            `json:"database,omitempty"`
+	GrantOption     *bool             `json:"grant-option,omitempty"`
+	ISPartialRevoke *bool             `json:"is-partial-revoke,omitempty"`
+	Name            DBAASUserUsername `json:"name" validate:"required,gte=1,lte=64"`
+	// Table
+	Table string `json:"table,omitempty"`
+}
+
+type DBAASClickhouseRoles struct {
+	Roles []DBAASClickhouseRole `json:"roles,omitempty"`
+}
+
 type DBAASClickhouseUser struct {
 	Required *bool             `json:"required,omitempty"`
 	Username DBAASUserUsername `json:"username" validate:"required,gte=1,lte=64"`
@@ -3115,6 +3146,8 @@ type JSONSchemaClickhouseServerSettings struct {
 type JSONSchemaClickhouse struct {
 	// ClickHouse server settings, which can be found in the `system.server_settings` table.
 	ServerSettings *JSONSchemaClickhouseServerSettings `json:"server_settings,omitempty"`
+	// The percentage of free disk space required on local storage before data is moved to object storage. A value of 0.2 means data is moved when local storage has less than 20% free space.
+	TieredStorageMoveFactor float64 `json:"tiered_storage_move_factor,omitempty" validate:"omitempty,gte=0,lte=1"`
 }
 
 type JSONSchemaGrafanaAlertingErrorORTimeout string

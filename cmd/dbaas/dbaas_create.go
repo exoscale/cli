@@ -25,9 +25,10 @@ type dbaasServiceCreateCmd struct {
 	HelpOpensearch bool `cli-usage:"show usage for flags specific to the opensearch type"`
 	HelpMysql      bool `cli-usage:"show usage for flags specific to the mysql type"`
 	HelpPg         bool `cli-usage:"show usage for flags specific to the pg type"`
-	HelpValkey     bool `cli-usage:"show usage for flags specific to the valkey type"`
-	HelpGrafana    bool `cli-usage:"show usage for flags specific to the grafana type"`
-	HelpThanos     bool `cli-usage:"show usage for flags specific to the thanos type"`
+	HelpValkey      bool `cli-usage:"show usage for flags specific to the valkey type"`
+	HelpGrafana     bool `cli-usage:"show usage for flags specific to the grafana type"`
+	HelpThanos      bool `cli-usage:"show usage for flags specific to the thanos type"`
+	HelpClickhouse  bool `cli-usage:"show usage for flags specific to the clickhouse type"`
 
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
@@ -128,6 +129,13 @@ type dbaasServiceCreateCmd struct {
 	// "thanos" type specific flags
 	ThanosIPFilter []string `cli-flag:"thanos-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
 	ThanosSettings string   `cli-flag:"thanos-settings" cli-usage:"Thanos configuration settings (JSON format)" cli-hidden:""`
+
+	// "clickhouse" type specific flags
+	ClickhouseForkFrom          string   `cli-flag:"clickhouse-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
+	ClickhouseIPFilter         []string `cli-flag:"clickhouse-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	ClickhouseRecoveryBackupName string `cli-flag:"clickhouse-recovery-backup-name" cli-usage:"the name of the backup to restore when forking from a Database Service" cli-hidden:""`
+	ClickhouseSettings        string   `cli-flag:"clickhouse-settings" cli-usage:"ClickHouse configuration settings (JSON format)" cli-hidden:""`
+	ClickhouseVersion         string   `cli-flag:"clickhouse-version" cli-usage:"ClickHouse major version" cli-hidden:""`
 }
 
 func (c *dbaasServiceCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
@@ -167,6 +175,9 @@ func (c *dbaasServiceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 	case cmd.Flags().Changed("help-thanos"):
 		exocmd.CmdShowHelpFlags(cmd.Flags(), "thanos-")
 		os.Exit(0)
+	case cmd.Flags().Changed("help-clickhouse"):
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "clickhouse-")
+		os.Exit(0)
 	}
 
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
@@ -199,6 +210,8 @@ func (c *dbaasServiceCreateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 		return c.createValkey(cmd, args)
 	case "thanos":
 		return c.createThanos(cmd, args)
+	case "clickhouse":
+		return c.createClickhouse(cmd, args)
 	default:
 		return fmt.Errorf("unsupported service type %q", c.Type)
 	}

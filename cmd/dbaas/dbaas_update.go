@@ -24,8 +24,9 @@ type dbaasServiceUpdateCmd struct {
 	HelpOpensearch        bool   `cli-usage:"show usage for flags specific to the opensearch type"`
 	HelpMysql             bool   `cli-usage:"show usage for flags specific to the mysql type"`
 	HelpPg                bool   `cli-usage:"show usage for flags specific to the pg type"`
-	HelpValkey            bool   `cli-usage:"show usage for flags specific to the valkey type"`
-	HelpThanos            bool   `cli-usage:"show usage for flags specific to the thanos type"`
+	HelpValkey         bool   `cli-usage:"show usage for flags specific to the valkey type"`
+	HelpThanos         bool   `cli-usage:"show usage for flags specific to the thanos type"`
+	HelpClickhouse     bool   `cli-usage:"show usage for flags specific to the clickhouse type"`
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
 	Plan                  string `cli-usage:"Database Service plan"`
@@ -110,6 +111,11 @@ type dbaasServiceUpdateCmd struct {
 	// "thanos" type specific flags
 	ThanosIPFilter []string `cli-flag:"thanos-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
 	ThanosSettings string   `cli-flag:"thanos-settings" cli-usage:"Thanos configuration settings (JSON format)" cli-hidden:""`
+
+	// "clickhouse" type specific flags
+	ClickhouseIPFilter  []string `cli-flag:"clickhouse-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	ClickhouseSettings  string   `cli-flag:"clickhouse-settings" cli-usage:"ClickHouse configuration settings (JSON format)" cli-hidden:""`
+	ClickhouseVersion   string   `cli-flag:"clickhouse-version" cli-usage:"ClickHouse major version" cli-hidden:""`
 }
 
 func (c *dbaasServiceUpdateCmd) CmdAliases() []string { return nil }
@@ -149,6 +155,9 @@ func (c *dbaasServiceUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 		os.Exit(0)
 	case cmd.Flags().Changed("help-thanos"):
 		exocmd.CmdShowHelpFlags(cmd.Flags(), "thanos-")
+		os.Exit(0)
+	case cmd.Flags().Changed("help-clickhouse"):
+		exocmd.CmdShowHelpFlags(cmd.Flags(), "clickhouse-")
 		os.Exit(0)
 	}
 
@@ -196,6 +205,8 @@ func (c *dbaasServiceUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 		return c.updateValkey(cmd, args)
 	case "thanos":
 		return c.updateThanos(cmd, args)
+	case "clickhouse":
+		return c.updateClickhouse(cmd, args)
 	}
 
 	return nil
