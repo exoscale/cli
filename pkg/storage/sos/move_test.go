@@ -108,6 +108,15 @@ func TestMoveObject_SingleObject(t *testing.T) {
 			},
 			expectError: true,
 		},
+		{
+			name:        "rejects identical source and destination",
+			srcBucket:   "test-bucket",
+			srcKey:      "source-key",
+			dstBucket:   "test-bucket",
+			dstKey:      "source-key",
+			setupMocks:  func(*MockS3API) {},
+			expectError: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -130,8 +139,39 @@ func TestMoveObject_SingleObject(t *testing.T) {
 	}
 }
 
-func TestMoveObject_Multipart(t *testing.T) {
-	t.Run("successful multipart move", func(t *testing.T) {
+func TestCopyObjectToDoesNotDeleteSource(t *testing.T) {
+	mockS3API := &MockS3API{
+		mockHeadObject: func(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options)) (*s3.HeadObjectOutput, error) {
+			return &s3.HeadObjectOutput{ContentLength: aws.Int64(1024)}, nil
+		},
+		mockGetObjectAcl: func(ctx context.Context, params *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
+			return &s3.GetObjectAclOutput{Grants: []types.Grant{
+				{
+					Grantee:    &types.Grantee{Type: types.TypeGroup, URI: aws.String(sos.ACLGranteeAllUsers)},
+					Permission: types.PermissionReadAcp,
+				},
+			}}, nil
+		},
+		mockCopyObject: func(ctx context.Context, params *s3.CopyObjectInput, optFns ...func(*s3.Options)) (*s3.CopyObjectOutput, error) {
+			assert.Equal(t, "dst-bucket", *params.Bucket)
+			assert.Equal(t, "dest-key", *params.Key)
+			assert.Equal(t, "src-bucket/source-key", *params.CopySource)
+			assert.Equal(t, types.ObjectCannedACLPrivate, params.ACL)
+			return &s3.CopyObjectOutput{}, nil
+		},
+		mockDeleteObject: func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+			t.Fatal("copy deleted the source object")
+			return nil, nil
+		},
+	}
+
+	client := &sos.Client{S3Client: mockS3API}
+	err := client.CopyObjectTo(context.Background(), "src-bucket", "source-key", "dst-bucket", "dest-key", 1, false)
+	assert.NoError(t, err)
+}
+
+func TestCopyObjectTo_Multipart(t *testing.T) {
+	t.Run("successful multipart copy", func(t *testing.T) {
 		mockS3API := &MockS3API{
 			mockHeadObject: func(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options)) (*s3.HeadObjectOutput, error) {
 				return &s3.HeadObjectOutput{
@@ -161,7 +201,8 @@ func TestMoveObject_Multipart(t *testing.T) {
 				return &s3.CompleteMultipartUploadOutput{}, nil
 			},
 			mockDeleteObject: func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
-				return &s3.DeleteObjectOutput{}, nil
+				t.Fatal("copy deleted the source object")
+				return nil, nil
 			},
 		}
 
@@ -170,7 +211,7 @@ func TestMoveObject_Multipart(t *testing.T) {
 			Zone:     "test-zone",
 		}
 
-		err := client.MoveObject(context.Background(), "src-bucket", "large-file", "dst-bucket", "large-file", 2, false)
+		err := client.CopyObjectTo(context.Background(), "src-bucket", "large-file", "dst-bucket", "large-file", 2, false)
 		assert.NoError(t, err)
 	})
 
@@ -200,7 +241,7 @@ func TestMoveObject_Multipart(t *testing.T) {
 			Zone:     "test-zone",
 		}
 
-		err := client.MoveObject(context.Background(), "src-bucket", "large-file", "dst-bucket", "large-file", 1, false)
+		err := client.CopyObjectTo(context.Background(), "src-bucket", "large-file", "dst-bucket", "large-file", 1, false)
 		assert.Error(t, err)
 		assert.True(t, abortCalled)
 		assert.Contains(t, err.Error(), "upload failed")

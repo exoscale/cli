@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- storage: add `copy` command for copying objects within and across buckets (#887)
+
 ### Bug fixes
 
 - compute: allow instance and instance pool operations to use template IDs omitted from template lists (#888)
