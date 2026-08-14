@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+## 1.98.0
+
 ### Features
 
-- storage: add `copy` command for copying objects within and across buckets (#887)
+- storage: add server-side `copy`/`cp` for objects and recursive prefixes within and across buckets, plus an `mv` alias (#887)
 
 ### Bug fixes
 
@@ -12,9 +14,12 @@
 - compute: honor the selected template's minimum disk size when creating instances and instance pools (#882)
 - instance create: apply delete protection in the instance's zone, fixing a wrong-zone "Not Found" error when creating protected instances outside the default zone (#879)
 - sks cluster update: fix oidc config drop (#881)
+- kms: avoid a panic when showing keys without an automatic material value (#877)
+- compute eip: display health-check interval and timeout in seconds (#858)
 
-### Improvements⏎
+### Improvements
 
+- kms: display scheduled deletion timestamps and render unset timestamps as `n/a` (#869)
 - AUR package: reset pkgrel in PKGBUILD (#878)
 - utils: remove unused ICMP formatters (#884)
 - deps: update golang.org/x dependencies (#885)
@@ -51,9 +56,6 @@
 ### Features
 
 - storage: add bucket lifecycle support #847
-
-### Bug fixes
-- fix(eip): EIP healthchecks time are in seconds at the API level #858
 
 ## 1.95.4
 
