@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// TODO: I think it'd make more sense to not have this "subcommand" but straight attach/detach
 var instanceVPCCmd = &cobra.Command{
 	Use:   "vpc",
 	Short: "Manage Compute instance VPC Subnet attachments",
