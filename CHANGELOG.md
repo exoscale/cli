@@ -6,9 +6,21 @@
 
 ### Features
 
+- dbaas: clickhouse subcommands
+  - `exo dbaas create clickhouse <name> <plan>` with type-specific flags (`--clickhouse-version`, `--clickhouse-ip-filter`, `--clickhouse-fork-from`, `--clickhouse-recovery-backup-name`, `--clickhouse-settings`, `--termination-protection`)
+  - `exo dbaas show` / `update` / `delete` now support the clickhouse service type, including `--uri` building a `clickhouse://` connection string from the revealed `avnadmin` credentials
+  - `exo dbaas user list` / `show` / `create` / `delete` / `reset` / `reveal` dispatch to the clickhouse endpoints; `user create` and `user reset` return the generated password (table or JSON)
+  - new `exo dbaas role list` / `role delete` and `exo dbaas acl show` commands
+- dbaas: e2e scenarios for the clickhouse lifecycle, user ops, role ACL, and a pg config-lifecycle regression scenario; the local runner now forwards the account endpoint so preprod runs need no manual env setup
+
 ### Bug fixes
 
+- dbaas: fix empty table output for `user create`, `role list`, and `acl show` (output routed to a nil writer)
+- dbaas: fix `show --uri` for clickhouse printing a raw `host:port` instead of a connection URI
+
 ### Improvements
+
+- deps: bump egoscale/v3 to v3.1.44
 
 ## 1.99.0
 

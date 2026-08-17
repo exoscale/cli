@@ -19,13 +19,15 @@ func (c *dbaasUserDeleteCmd) deleteClickhouse(_ *cobra.Command, _ []string) erro
 		return err
 	}
 
-	svc, err := client.GetDBAASServiceClickhouse(ctx, c.Name)
+	// GetDBAASServiceClickhouse does not reflect newly created users; use the
+	// dedicated list endpoint for username -> UUID resolution.
+	users, err := client.ListDBAASClickhouseUsers(ctx, c.Name)
 	if err != nil {
 		return err
 	}
 
 	userUUID := ""
-	for _, u := range svc.Users {
+	for _, u := range users.Users {
 		if string(u.Username) == c.Username {
 			userUUID = string(u.Uuid)
 			break
@@ -33,6 +35,19 @@ func (c *dbaasUserDeleteCmd) deleteClickhouse(_ *cobra.Command, _ []string) erro
 	}
 	if userUUID == "" {
 		return fmt.Errorf("user %q not found for service %q", c.Username, c.Name)
+	}
+
+	if !c.Force {
+		if !utils.AskQuestion(
+			ctx,
+			fmt.Sprintf(
+				"Are you sure you want to delete user %q from service %q?",
+				c.Username,
+				c.Name,
+			),
+		) {
+			return nil
+		}
 	}
 
 	op, err := client.DeleteDBAASClickhouseUser(ctx, c.Name, v3.UUID(userUUID))

@@ -18,6 +18,8 @@ type dbaasRoleDeleteCmd struct {
 	Name     string `cli-arg:"#" cli-usage:"NAME"`
 	RoleUUID string `cli-arg:"#" cli-usage:"ROLE-UUID"`
 	Zone     string `cli-short:"z" cli-usage:"Database Service zone"`
+
+	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
 func (c *dbaasRoleDeleteCmd) CmdAliases() []string { return nil }
@@ -35,6 +37,19 @@ func (c *dbaasRoleDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
+	}
+
+	if !c.Force {
+		if !utils.AskQuestion(
+			ctx,
+			fmt.Sprintf(
+				"Are you sure you want to delete role %q from service %q?",
+				c.RoleUUID,
+				c.Name,
+			),
+		) {
+			return nil
+		}
 	}
 
 	op, err := client.DeleteDBAASClickhouseRole(ctx, c.Name, v3.UUID(c.RoleUUID))
