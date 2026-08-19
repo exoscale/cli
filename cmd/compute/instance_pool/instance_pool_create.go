@@ -3,6 +3,7 @@ package instance_pool
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -31,7 +32,7 @@ type instancePoolCreateCmd struct {
 	Description        string            `cli-usage:"Instance Pool description"`
 	DiskSize           int64             `cli-usage:"managed Compute instances disk size"`
 	ElasticIPs         []string          `cli-flag:"elastic-ip" cli-short:"e" cli-usage:"managed Compute instances Elastic IP ADDRESS|ID (can be specified multiple times)"`
-	IPv6               bool              `cli-flag:"ipv6" cli-short:"6" cli-usage:"enable IPv6 on managed Compute instances"`
+	PublicIPAssignment string            `cli-flag:"public-ip" cli-usage:"Configures public IP assignment of the instance pool (none|inet4|dual). (default: inet4)"`
 	InstancePrefix     string            `cli-usage:"string to prefix managed Compute instances names with"`
 	InstanceType       string            `cli-usage:"managed Compute instances type (format: [FAMILY.]SIZE)"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"Instance Pool label (format: key=value)"`
@@ -71,6 +72,18 @@ func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
+	publicIPAssignment := v3.CreateInstancePoolRequestPublicIPAssignmentInet4
+	if c.PublicIPAssignment != "" {
+		if !slices.Contains([]v3.CreateInstancePoolRequestPublicIPAssignment{
+			v3.CreateInstancePoolRequestPublicIPAssignmentDual,
+			v3.CreateInstancePoolRequestPublicIPAssignmentInet4,
+			v3.CreateInstancePoolRequestPublicIPAssignmentNone,
+		}, v3.CreateInstancePoolRequestPublicIPAssignment(c.PublicIPAssignment)) {
+			return fmt.Errorf("error invalid public-ip: %s", c.PublicIPAssignment)
+		}
+		publicIPAssignment = v3.CreateInstancePoolRequestPublicIPAssignment(c.PublicIPAssignment)
+	}
+
 	template, err := compute.ResolveTemplate(ctx, client, c.Template, c.TemplateVisibility, c.Zone)
 	if err != nil {
 		return err
@@ -97,16 +110,16 @@ func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	sshKey := &v3.SSHKey{Name: c.SSHKey}
 
 	instancePoolReq := v3.CreateInstancePoolRequest{
-		Description:    c.Description,
-		DiskSize:       diskSize,
-		Ipv6Enabled:    &c.IPv6,
-		InstancePrefix: c.InstancePrefix,
-		Labels:         c.Labels,
-		MinAvailable:   c.MinAvailable,
-		Name:           c.Name,
-		SSHKey:         sshKey,
-		Size:           c.Size,
-		Template:       &v3.Template{ID: template.ID},
+		Description:        c.Description,
+		DiskSize:           diskSize,
+		PublicIPAssignment: publicIPAssignment,
+		InstancePrefix:     c.InstancePrefix,
+		Labels:             c.Labels,
+		MinAvailable:       c.MinAvailable,
+		Name:               c.Name,
+		SSHKey:             sshKey,
+		Size:               c.Size,
+		Template:           &v3.Template{ID: template.ID},
 	}
 
 	if l := len(c.AntiAffinityGroups); l > 0 {

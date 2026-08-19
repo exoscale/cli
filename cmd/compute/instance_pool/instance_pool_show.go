@@ -16,24 +16,25 @@ import (
 )
 
 type instancePoolShowOutput struct {
-	ID                 string            `json:"id"`
-	Name               string            `json:"name"`
-	Description        string            `json:"description"`
-	InstanceType       string            `json:"instance_type"`
-	Template           string            `json:"template"`
-	Zone               string            `json:"zone"`
-	AntiAffinityGroups []string          `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
-	SecurityGroups     []string          `json:"security_groups"`
-	PrivateNetworks    []string          `json:"private_networks"`
-	ElasticIPs         []string          `json:"elastic_ips" outputLabel:"Elastic IPs"`
-	IPv6               bool              `json:"ipv6" outputLabel:"IPv6"`
-	SSHKey             string            `json:"ssh_key"`
-	Size               int64             `json:"size"`
-	DiskSize           string            `json:"disk_size"`
-	InstancePrefix     string            `json:"instance_prefix"`
-	State              string            `json:"state"`
-	Labels             map[string]string `json:"labels"`
-	Instances          []string          `json:"instances"`
+	ID                 string                `json:"id"`
+	Name               string                `json:"name"`
+	Description        string                `json:"description"`
+	InstanceType       string                `json:"instance_type"`
+	Template           string                `json:"template"`
+	Zone               string                `json:"zone"`
+	AntiAffinityGroups []string              `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
+	SecurityGroups     []string              `json:"security_groups"`
+	PrivateNetworks    []string              `json:"private_networks"`
+	ElasticIPs         []string              `json:"elastic_ips" outputLabel:"Elastic IPs"`
+	IPv6               bool                  `json:"ipv6" outputLabel:"IPv6"`
+	PublicIPAssignment v3.PublicIPAssignment `json:"public-ip" outputLabel:"Public IP"`
+	SSHKey             string                `json:"ssh_key"`
+	Size               int64                 `json:"size"`
+	DiskSize           string                `json:"disk_size"`
+	InstancePrefix     string                `json:"instance_prefix"`
+	State              string                `json:"state"`
+	Labels             map[string]string     `json:"labels"`
+	Instances          []string              `json:"instances"`
 }
 
 func (o *instancePoolShowOutput) Type() string { return "Instance Pool" }
@@ -104,6 +105,7 @@ func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		ElasticIPs:         make([]string, 0),
 		ID:                 instancePool.ID.String(),
 		IPv6:               utils.DefaultBool(instancePool.Ipv6Enabled, false),
+		PublicIPAssignment: instancePool.PublicIPAssignment,
 		InstancePrefix:     instancePool.InstancePrefix,
 		Instances:          make([]string, 0),
 		Labels: func() (v map[string]string) {
