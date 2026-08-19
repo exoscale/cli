@@ -115,11 +115,6 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		ipV6 = &parsed // only assign pointer if it's a valid IP
 	}
 
-	sshKeys := instance.SSHKeys
-	if instance.SSHKey != nil {
-		sshKeys = append(sshKeys, *instance.SSHKey)
-	}
-
 	out := InstanceShowOutput{
 		AntiAffinityGroups: make([]string, 0),
 		CreationDate:       instance.CreatedAT.String(),
