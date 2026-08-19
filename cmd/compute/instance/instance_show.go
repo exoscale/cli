@@ -33,7 +33,7 @@ type InstanceShowOutput struct {
 	PublicIPAssignment    v3.PublicIPAssignment `json:"public-ip" outputLabel:"Public IP"`
 	IPAddress             string                `json:"ip_address"`
 	IPv6Address           string                `json:"ipv6_address" outputLabel:"IPv6 Address"`
-	SSHKey                string                `json:"ssh_key"`
+	SSHKeys               []string              `json:"ssh_keys"`
 	DiskSize              string                `json:"disk_size"`
 	State                 v3.InstanceState      `json:"state"`
 	Labels                map[string]string     `json:"labels"`
@@ -115,9 +115,9 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		ipV6 = &parsed // only assign pointer if it's a valid IP
 	}
 
-	var sshKeyName *string
+	sshKeys := instance.SSHKeys
 	if instance.SSHKey != nil {
-		sshKeyName = &instance.SSHKey.Name
+		sshKeys = append(sshKeys, *instance.SSHKey)
 	}
 
 	out := InstanceShowOutput{
@@ -137,7 +137,7 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		}(),
 		Name:            instance.Name,
 		PrivateNetworks: make([]string, 0),
-		SSHKey:          utils.DefaultString(sshKeyName, "-"),
+		SSHKeys:         make([]string, 0),
 		SecurityGroups:  make([]string, 0),
 		SecureBoot:      *instance.SecurebootEnabled,
 		Tpm:             *instance.TpmEnabled,
@@ -213,6 +213,10 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 			}
 			out.PrivateNetworks = append(out.PrivateNetworks, foundPN.Name)
 		}
+	}
+
+	for _, k := range instance.SSHKeys {
+		out.SSHKeys = append(out.SSHKeys, k.Name)
 	}
 
 	if instance.SecurityGroups != nil {
