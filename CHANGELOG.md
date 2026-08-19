@@ -10,9 +10,11 @@
 
 ### Bug fixes
 
+
 - compute: allow instance and instance pool operations to use template IDs omitted from template lists (#888)
 - compute: honor the selected template's minimum disk size when creating instances and instance pools (#882)
 - instance create: apply delete protection in the instance's zone, fixing a wrong-zone "Not Found" error when creating protected instances outside the default zone (#879)
+- instance show: correctly show multiple ssh keys
 - sks cluster update: fix oidc config drop (#881)
 - kms: avoid a panic when showing keys without an automatic material value (#877)
 - compute eip: display health-check interval and timeout in seconds (#858)
