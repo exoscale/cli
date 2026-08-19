@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Breaking changes
+- instancepool create: use public ip assignment - #901
+
+### Features
+### Bug fixes
+### Improvements
+
+
 ## 1.98.0
 
 ### Features
