@@ -6,6 +6,9 @@
 - instancepool create: use public ip assignment - #901
 
 ### Features
+
+- chore: update api/x commands (#899)
+
 ### Bug fixes
 ### Improvements
 
