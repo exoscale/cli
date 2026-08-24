@@ -13,3 +13,6 @@ go.work
 .idea/
 .vscode/
 cli
+
+public-api.json
+openapi.json*
