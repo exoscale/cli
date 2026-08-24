@@ -15,4 +15,4 @@ go.work
 cli
 
 public-api.json
-openapi.json
+openapi.json*

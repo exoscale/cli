@@ -1854,7 +1854,7 @@ func XGetDbaasCaCertificate(params *viper.Viper) (*gentleman.Response, map[strin
 	return resp, decoded, nil
 }
 
-// XCreateDbaasServiceClickhouse [BETA] Create a DBaaS ClickHouse service
+// XCreateDbaasServiceClickhouse Create a DBaaS ClickHouse service
 func XCreateDbaasServiceClickhouse(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-dbaas-service-clickhouse"
 	if xSubcommand {
@@ -1900,7 +1900,7 @@ func XCreateDbaasServiceClickhouse(paramName string, params *viper.Viper, body s
 	return resp, decoded, nil
 }
 
-// XDeleteDbaasServiceClickhouse [BETA] Delete a ClickHouse service
+// XDeleteDbaasServiceClickhouse Delete a ClickHouse service
 func XDeleteDbaasServiceClickhouse(paramName string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "delete-dbaas-service-clickhouse"
 	if xSubcommand {
@@ -1942,7 +1942,7 @@ func XDeleteDbaasServiceClickhouse(paramName string, params *viper.Viper) (*gent
 	return resp, decoded, nil
 }
 
-// XGetDbaasServiceClickhouse [BETA] Get a DBaaS ClickHouse service
+// XGetDbaasServiceClickhouse Get a DBaaS ClickHouse service
 func XGetDbaasServiceClickhouse(paramName string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "get-dbaas-service-clickhouse"
 	if xSubcommand {
@@ -1984,7 +1984,7 @@ func XGetDbaasServiceClickhouse(paramName string, params *viper.Viper) (*gentlem
 	return resp, decoded, nil
 }
 
-// XUpdateDbaasServiceClickhouse [BETA] Update a DBaaS ClickHouse service
+// XUpdateDbaasServiceClickhouse Update a DBaaS ClickHouse service
 func XUpdateDbaasServiceClickhouse(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "update-dbaas-service-clickhouse"
 	if xSubcommand {
@@ -2030,7 +2030,7 @@ func XUpdateDbaasServiceClickhouse(paramName string, params *viper.Viper, body s
 	return resp, decoded, nil
 }
 
-// XStartDbaasClickhouseMaintenance [BETA] Initiate ClickHouse maintenance update
+// XStartDbaasClickhouseMaintenance Initiate ClickHouse maintenance update
 func XStartDbaasClickhouseMaintenance(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "start-dbaas-clickhouse-maintenance"
 	if xSubcommand {
@@ -2076,7 +2076,7 @@ func XStartDbaasClickhouseMaintenance(paramName string, params *viper.Viper, bod
 	return resp, decoded, nil
 }
 
-// XGetDbaasClickhouseAclConfig [BETA] Get DBaaS ClickHouse ACL configuration
+// XGetDbaasClickhouseAclConfig Get DBaaS ClickHouse ACL configuration
 func XGetDbaasClickhouseAclConfig(paramServiceName string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "get-dbaas-clickhouse-acl-config"
 	if xSubcommand {
@@ -2118,7 +2118,7 @@ func XGetDbaasClickhouseAclConfig(paramServiceName string, params *viper.Viper) 
 	return resp, decoded, nil
 }
 
-// XListDbaasClickhouseRoles [BETA] List DBaaS ClickHouse roles
+// XListDbaasClickhouseRoles List DBaaS ClickHouse roles
 func XListDbaasClickhouseRoles(paramServiceName string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-dbaas-clickhouse-roles"
 	if xSubcommand {
@@ -2160,7 +2160,7 @@ func XListDbaasClickhouseRoles(paramServiceName string, params *viper.Viper) (*g
 	return resp, decoded, nil
 }
 
-// XDeleteDbaasClickhouseRole [BETA] Delete a DBaaS ClickHouse role
+// XDeleteDbaasClickhouseRole Delete a DBaaS ClickHouse role
 func XDeleteDbaasClickhouseRole(paramServiceName string, paramRoleUuid string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "delete-dbaas-clickhouse-role"
 	if xSubcommand {
@@ -2203,7 +2203,7 @@ func XDeleteDbaasClickhouseRole(paramServiceName string, paramRoleUuid string, p
 	return resp, decoded, nil
 }
 
-// XCreateDbaasClickhouseUser [BETA] Create a DBaaS ClickHouse user
+// XCreateDbaasClickhouseUser Create a DBaaS ClickHouse user
 func XCreateDbaasClickhouseUser(paramServiceName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-dbaas-clickhouse-user"
 	if xSubcommand {
@@ -2249,7 +2249,7 @@ func XCreateDbaasClickhouseUser(paramServiceName string, params *viper.Viper, bo
 	return resp, decoded, nil
 }
 
-// XListDbaasClickhouseUsers [BETA] List DBaaS ClickHouse users
+// XListDbaasClickhouseUsers List DBaaS ClickHouse users
 func XListDbaasClickhouseUsers(paramServiceName string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-dbaas-clickhouse-users"
 	if xSubcommand {
@@ -2291,7 +2291,7 @@ func XListDbaasClickhouseUsers(paramServiceName string, params *viper.Viper) (*g
 	return resp, decoded, nil
 }
 
-// XDeleteDbaasClickhouseUser [BETA] Delete a DBaaS ClickHouse user
+// XDeleteDbaasClickhouseUser Delete a DBaaS ClickHouse user
 func XDeleteDbaasClickhouseUser(paramServiceName string, paramUserUuid string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "delete-dbaas-clickhouse-user"
 	if xSubcommand {
@@ -2334,7 +2334,7 @@ func XDeleteDbaasClickhouseUser(paramServiceName string, paramUserUuid string, p
 	return resp, decoded, nil
 }
 
-// XResetDbaasClickhouseUserPassword [BETA] Reset the credentials of a DBaaS ClickHouse user
+// XResetDbaasClickhouseUserPassword Reset the credentials of a DBaaS ClickHouse user
 func XResetDbaasClickhouseUserPassword(paramServiceName string, paramUsername string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "reset-dbaas-clickhouse-user-password"
 	if xSubcommand {
@@ -2381,7 +2381,7 @@ func XResetDbaasClickhouseUserPassword(paramServiceName string, paramUsername st
 	return resp, decoded, nil
 }
 
-// XRevealDbaasClickhouseUserPassword [BETA] Reveal the secrets of a DBaaS ClickHouse user
+// XRevealDbaasClickhouseUserPassword Reveal the secrets of a DBaaS ClickHouse user
 func XRevealDbaasClickhouseUserPassword(paramServiceName string, paramUsername string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "reveal-dbaas-clickhouse-user-password"
 	if xSubcommand {
@@ -15724,7 +15724,7 @@ func XListVpcs(params *viper.Viper) (*gentleman.Response, map[string]interface{}
 }
 
 // XDeleteVpc [BETA] Delete a VPC
-func XDeleteVpc(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+func XDeleteVpc(paramId string, params *viper.Viper) (*gentleman.Response, interface{}, error) {
 	handlerPath := "delete-vpc"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
@@ -15747,7 +15747,7 @@ func XDeleteVpc(paramId string, params *viper.Viper) (*gentleman.Response, map[s
 		return nil, nil, errors.Wrap(err, "Request failed")
 	}
 
-	var decoded map[string]interface{}
+	var decoded interface{}
 
 	if resp.StatusCode < 400 {
 		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
@@ -15759,7 +15759,7 @@ func XDeleteVpc(paramId string, params *viper.Viper) (*gentleman.Response, map[s
 
 	after := cli.HandleAfter(handlerPath, params, resp, decoded)
 	if after != nil {
-		decoded = after.(map[string]interface{})
+		decoded = after
 	}
 
 	return resp, decoded, nil
@@ -15984,7 +15984,7 @@ func XListSubnets(paramVpcId string, params *viper.Viper) (*gentleman.Response, 
 }
 
 // XDeleteSubnet [BETA] Delete a Subnet
-func XDeleteSubnet(paramVpcId string, paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+func XDeleteSubnet(paramVpcId string, paramId string, params *viper.Viper) (*gentleman.Response, interface{}, error) {
 	handlerPath := "delete-subnet"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
@@ -16008,7 +16008,7 @@ func XDeleteSubnet(paramVpcId string, paramId string, params *viper.Viper) (*gen
 		return nil, nil, errors.Wrap(err, "Request failed")
 	}
 
-	var decoded map[string]interface{}
+	var decoded interface{}
 
 	if resp.StatusCode < 400 {
 		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
@@ -16020,7 +16020,7 @@ func XDeleteSubnet(paramVpcId string, paramId string, params *viper.Viper) (*gen
 
 	after := cli.HandleAfter(handlerPath, params, resp, decoded)
 	if after != nil {
-		decoded = after.(map[string]interface{})
+		decoded = after
 	}
 
 	return resp, decoded, nil
@@ -16301,7 +16301,7 @@ func XListRoutes(paramVpcId string, paramSubnetId string, params *viper.Viper) (
 }
 
 // XDeleteRoute [BETA] Delete a route
-func XDeleteRoute(paramVpcId string, paramSubnetId string, paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+func XDeleteRoute(paramVpcId string, paramSubnetId string, paramId string, params *viper.Viper) (*gentleman.Response, interface{}, error) {
 	handlerPath := "delete-route"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
@@ -16326,7 +16326,7 @@ func XDeleteRoute(paramVpcId string, paramSubnetId string, paramId string, param
 		return nil, nil, errors.Wrap(err, "Request failed")
 	}
 
-	var decoded map[string]interface{}
+	var decoded interface{}
 
 	if resp.StatusCode < 400 {
 		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
@@ -16338,7 +16338,7 @@ func XDeleteRoute(paramVpcId string, paramSubnetId string, paramId string, param
 
 	after := cli.HandleAfter(handlerPath, params, resp, decoded)
 	if after != nil {
-		decoded = after.(map[string]interface{})
+		decoded = after
 	}
 
 	return resp, decoded, nil
@@ -17942,7 +17942,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-clickhouse name",
-			Short:   "[BETA] Create a DBaaS ClickHouse service",
+			Short:   "Create a DBaaS ClickHouse service",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  clickhouse-settings:\n    $ref: '#/components/schemas/json-schema-clickhouse'\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-name:\n    description: Name of a backup to recover from for services that support backup names\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: ClickHouse major version\n    minLength: 1\n    type: string\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -17981,7 +17981,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "delete-dbaas-service-clickhouse name",
-			Short:   "[BETA] Delete a ClickHouse service",
+			Short:   "Delete a ClickHouse service",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -18016,7 +18016,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "get-dbaas-service-clickhouse name",
-			Short:   "[BETA] Get a DBaaS ClickHouse service",
+			Short:   "Get a DBaaS ClickHouse service",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -18051,7 +18051,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-clickhouse name",
-			Short:   "[BETA] Update a DBaaS ClickHouse service",
+			Short:   "Update a DBaaS ClickHouse service",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  clickhouse-settings:\n    $ref: '#/components/schemas/json-schema-clickhouse'\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: ClickHouse major version\n    minLength: 1\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -18090,7 +18090,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "start-dbaas-clickhouse-maintenance name",
-			Short:   "[BETA] Initiate ClickHouse maintenance update",
+			Short:   "Initiate ClickHouse maintenance update",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -18129,7 +18129,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "get-dbaas-clickhouse-acl-config service-name",
-			Short:   "[BETA] Get DBaaS ClickHouse ACL configuration",
+			Short:   "Get DBaaS ClickHouse ACL configuration",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -18164,7 +18164,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "list-dbaas-clickhouse-roles service-name",
-			Short:   "[BETA] List DBaaS ClickHouse roles",
+			Short:   "List DBaaS ClickHouse roles",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -18199,7 +18199,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "delete-dbaas-clickhouse-role service-name role-uuid",
-			Short:   "[BETA] Delete a DBaaS ClickHouse role",
+			Short:   "Delete a DBaaS ClickHouse role",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -18234,7 +18234,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-clickhouse-user service-name",
-			Short:   "[BETA] Create a DBaaS ClickHouse user",
+			Short:   "Create a DBaaS ClickHouse user",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  password:\n    $ref: '#/components/schemas/dbaas-user-password'\n  roles:\n    description: ClickHouse roles to grant to the user\n    items:\n      $ref: '#/components/schemas/dbaas-clickhouse-user-role-input'\n    type: array\n  username:\n    $ref: '#/components/schemas/dbaas-user-username'\nrequired:\n- username\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -18273,7 +18273,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "list-dbaas-clickhouse-users service-name",
-			Short:   "[BETA] List DBaaS ClickHouse users",
+			Short:   "List DBaaS ClickHouse users",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -18308,7 +18308,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "delete-dbaas-clickhouse-user service-name user-uuid",
-			Short:   "[BETA] Delete a DBaaS ClickHouse user",
+			Short:   "Delete a DBaaS ClickHouse user",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -18343,7 +18343,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "reset-dbaas-clickhouse-user-password service-name username",
-			Short:   "[BETA] Reset the credentials of a DBaaS ClickHouse user",
+			Short:   "Reset the credentials of a DBaaS ClickHouse user",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  password:\n    $ref: '#/components/schemas/dbaas-user-password'\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -18382,7 +18382,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "reveal-dbaas-clickhouse-user-password service-name username",
-			Short:   "[BETA] Reveal the secrets of a DBaaS ClickHouse user",
+			Short:   "Reveal the secrets of a DBaaS ClickHouse user",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
