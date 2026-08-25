@@ -3,6 +3,7 @@ package dbaas
 import (
 	"bytes"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -22,9 +23,9 @@ func (o *dbaasRoleListOutput) ToJSON() { output.JSON(o) }
 func (o *dbaasRoleListOutput) ToText() { output.Text(o) }
 
 type dbaasRoleOutput struct {
-	Name         string                  `json:"name"`
-	UUID         string                  `json:"uuid,omitempty"`
-	Privileges   []dbaasRolePrivOutput   `json:"privileges,omitempty"`
+	Name         string                   `json:"name"`
+	UUID         string                   `json:"uuid,omitempty"`
+	Privileges   []dbaasRolePrivOutput    `json:"privileges,omitempty"`
 	GrantedRoles []dbaasGrantedRoleOutput `json:"granted-roles,omitempty"`
 }
 
@@ -47,7 +48,7 @@ type dbaasGrantedRoleOutput struct {
 type dbaasRoleListCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
 
-	_    bool `cli-cmd:"list"`
+	_    bool   `cli-cmd:"list"`
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 	Zone string `cli-short:"z" cli-usage:"Database Service zone"`
 }
@@ -105,7 +106,7 @@ func (c *dbaasRoleListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func (o *dbaasRoleListOutput) ToTable() {
-	t := table.NewTable(nil)
+	t := table.NewTable(os.Stdout)
 	defer t.Render()
 
 	if len(o.Roles) == 0 {

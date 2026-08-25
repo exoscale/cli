@@ -17,12 +17,12 @@ func (c *dbaasUserShowCmd) showClickhouse(ctx context.Context) (output.Outputter
 		return &dbaasUserShowOutput{}, err
 	}
 
-	s, err := client.GetDBAASServiceClickhouse(ctx, c.Name)
+	users, err := client.ListDBAASClickhouseUsers(ctx, c.Name)
 	if err != nil {
 		return &dbaasUserShowOutput{}, err
 	}
 
-	for _, u := range s.Users {
+	for _, u := range users.Users {
 		if string(u.Username) == c.Username {
 			return &dbaasUserShowOutput{
 				Username: c.Username,

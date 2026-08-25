@@ -3,12 +3,33 @@ package dbaas
 
 import (
 	"fmt"
+	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
+
+// dbaasUserClickhouseSecretsOutput carries the user/password pair returned
+// synchronously by ClickHouse user creation and password reset.
+type dbaasUserClickhouseSecretsOutput struct {
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+
+func (o *dbaasUserClickhouseSecretsOutput) ToJSON() { output.JSON(o) }
+func (o *dbaasUserClickhouseSecretsOutput) ToText() { output.Text(o) }
+
+func (o *dbaasUserClickhouseSecretsOutput) ToTable() {
+	t := table.NewTable(os.Stdout)
+	defer t.Render()
+
+	t.Append([]string{"Username", o.Username})
+	t.Append([]string{"Password", o.Password})
+}
 
 func (c *dbaasUserCreateCmd) createClickhouse(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -37,9 +58,8 @@ func (c *dbaasUserCreateCmd) createClickhouse(_ *cobra.Command, _ []string) erro
 		return err
 	}
 
-	if !globalstate.Quiet {
-		fmt.Printf("User %q created. Password: %s\n", c.Username, secrets.Password)
-	}
-
-	return nil
+	return c.OutputFunc(&dbaasUserClickhouseSecretsOutput{
+		Username: c.Username,
+		Password: secrets.Password,
+	}, nil)
 }

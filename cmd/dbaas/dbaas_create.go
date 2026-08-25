@@ -25,10 +25,10 @@ type dbaasServiceCreateCmd struct {
 	HelpOpensearch bool `cli-usage:"show usage for flags specific to the opensearch type"`
 	HelpMysql      bool `cli-usage:"show usage for flags specific to the mysql type"`
 	HelpPg         bool `cli-usage:"show usage for flags specific to the pg type"`
-	HelpValkey      bool `cli-usage:"show usage for flags specific to the valkey type"`
-	HelpGrafana     bool `cli-usage:"show usage for flags specific to the grafana type"`
-	HelpThanos      bool `cli-usage:"show usage for flags specific to the thanos type"`
-	HelpClickhouse  bool `cli-usage:"show usage for flags specific to the clickhouse type"`
+	HelpValkey     bool `cli-usage:"show usage for flags specific to the valkey type"`
+	HelpGrafana    bool `cli-usage:"show usage for flags specific to the grafana type"`
+	HelpThanos     bool `cli-usage:"show usage for flags specific to the thanos type"`
+	HelpClickhouse bool `cli-usage:"show usage for flags specific to the clickhouse type"`
 
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
@@ -131,11 +131,11 @@ type dbaasServiceCreateCmd struct {
 	ThanosSettings string   `cli-flag:"thanos-settings" cli-usage:"Thanos configuration settings (JSON format)" cli-hidden:""`
 
 	// "clickhouse" type specific flags
-	ClickhouseForkFrom          string   `cli-flag:"clickhouse-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
-	ClickhouseIPFilter         []string `cli-flag:"clickhouse-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
-	ClickhouseRecoveryBackupName string `cli-flag:"clickhouse-recovery-backup-name" cli-usage:"the name of the backup to restore when forking from a Database Service" cli-hidden:""`
-	ClickhouseSettings        string   `cli-flag:"clickhouse-settings" cli-usage:"ClickHouse configuration settings (JSON format)" cli-hidden:""`
-	ClickhouseVersion         string   `cli-flag:"clickhouse-version" cli-usage:"ClickHouse major version" cli-hidden:""`
+	ClickhouseForkFrom           string   `cli-flag:"clickhouse-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
+	ClickhouseIPFilter           []string `cli-flag:"clickhouse-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	ClickhouseRecoveryBackupName string   `cli-flag:"clickhouse-recovery-backup-name" cli-usage:"the name of the backup to restore when forking from a Database Service" cli-hidden:""`
+	ClickhouseSettings           string   `cli-flag:"clickhouse-settings" cli-usage:"ClickHouse configuration settings (JSON format)" cli-hidden:""`
+	ClickhouseVersion            string   `cli-flag:"clickhouse-version" cli-usage:"ClickHouse major version" cli-hidden:""`
 }
 
 func (c *dbaasServiceCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }

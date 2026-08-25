@@ -2,8 +2,6 @@
 package dbaas
 
 import (
-	"fmt"
-
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -29,9 +27,8 @@ func (c *dbaasUserResetCmd) resetClickhouse(_ *cobra.Command, _ []string) error 
 		return err
 	}
 
-	if !globalstate.Quiet {
-		fmt.Printf("Password for user %q reset. New password: %s\n", c.Username, secrets.Password)
-	}
-
-	return nil
+	return c.OutputFunc(&dbaasUserClickhouseSecretsOutput{
+		Username: c.Username,
+		Password: secrets.Password,
+	}, nil)
 }

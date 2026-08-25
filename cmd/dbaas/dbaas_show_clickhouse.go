@@ -33,20 +33,20 @@ type dbServiceClickhouseUserShowOutput struct {
 }
 
 type dbServiceClickhouseShowOutput struct {
-	Components    []dbServiceClickhouseComponentShowOutput   `json:"components"`
+	Components     []dbServiceClickhouseComponentShowOutput     `json:"components"`
 	ConnectionInfo *dbServiceClickhouseConnectionInfoShowOutput `json:"connection_info,omitempty"`
-	IPFilter      []string                                       `json:"ip_filter"`
-	PrometheusURI *dbServiceClickhousePrometheusURIShowOutput  `json:"prometheus_uri,omitempty"`
-	URI           string                                       `json:"uri"`
-	URIParams     map[string]interface{}                     `json:"uri_params"`
-	Users         []dbServiceClickhouseUserShowOutput          `json:"users"`
-	Version       string                                       `json:"version"`
+	IPFilter       []string                                     `json:"ip_filter"`
+	PrometheusURI  *dbServiceClickhousePrometheusURIShowOutput  `json:"prometheus_uri,omitempty"`
+	URI            string                                       `json:"uri"`
+	URIParams      map[string]interface{}                       `json:"uri_params"`
+	Users          []dbServiceClickhouseUserShowOutput          `json:"users"`
+	Version        string                                       `json:"version"`
 }
 
 type dbServiceClickhouseConnectionInfoShowOutput struct {
-	URI           []string `json:"uri,omitempty"`
-	MysqlURI      string   `json:"mysql_uri,omitempty"`
-	ArrowflightURI string  `json:"arrowflight_uri,omitempty"`
+	URI            []string `json:"uri,omitempty"`
+	MysqlURI       string   `json:"mysql_uri,omitempty"`
+	ArrowflightURI string   `json:"arrowflight_uri,omitempty"`
 }
 
 type dbServiceClickhousePrometheusURIShowOutput struct {
@@ -158,9 +158,29 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceClickhouse(ctx context.Context)
 		return nil, nil
 
 	case c.ShowURI:
-		if databaseService.ConnectionInfo != nil && len(databaseService.ConnectionInfo.URI) > 0 {
-			fmt.Println(databaseService.ConnectionInfo.URI[0])
+		// Assemble the connection URI from uri_params plus the revealed
+		// avnadmin password (ConnectionInfo.URI is not populated for
+		// ClickHouse; follow the pg pattern).
+		uriParams := databaseService.URIParams
+
+		creds, err := client.RevealDBAASClickhouseUserPassword(
+			ctx,
+			string(databaseService.Name),
+			uriParams["user"].(string),
+		)
+		if err != nil {
+			return nil, err
 		}
+
+		uri := fmt.Sprintf(
+			"clickhouse://%s:%s@%s:%v/%v",
+			uriParams["user"],
+			creds.Password,
+			uriParams["host"],
+			uriParams["port"],
+			uriParams["dbname"],
+		)
+		fmt.Println(uri)
 		return nil, nil
 	}
 
@@ -208,8 +228,8 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceClickhouse(ctx context.Context)
 			ConnectionInfo: func() (v *dbServiceClickhouseConnectionInfoShowOutput) {
 				if databaseService.ConnectionInfo != nil {
 					v = &dbServiceClickhouseConnectionInfoShowOutput{
-						URI:           databaseService.ConnectionInfo.URI,
-						MysqlURI:      databaseService.ConnectionInfo.MysqlURI,
+						URI:            databaseService.ConnectionInfo.URI,
+						MysqlURI:       databaseService.ConnectionInfo.MysqlURI,
 						ArrowflightURI: databaseService.ConnectionInfo.ArrowflightURI,
 					}
 				}

@@ -17,13 +17,15 @@ func (c *dbaasUserListCmd) listClickhouse(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	s, err := client.GetDBAASServiceClickhouse(ctx, c.Name)
+	// Use the dedicated list endpoint: GetDBAASServiceClickhouse does not
+	// reflect newly created users.
+	users, err := client.ListDBAASClickhouseUsers(ctx, c.Name)
 	if err != nil {
 		return err
 	}
 
-	res := make(dbaasUsersListOutput, 0)
-	for _, u := range s.Users {
+	res := make(dbaasUsersListOutput, 0, len(users.Users))
+	for _, u := range users.Users {
 		res = append(res, dbaasUsersListItemOutput{
 			Username: string(u.Username),
 		})

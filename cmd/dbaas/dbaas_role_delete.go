@@ -14,7 +14,7 @@ import (
 type dbaasRoleDeleteCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
 
-	_        bool `cli-cmd:"delete"`
+	_        bool   `cli-cmd:"delete"`
 	Name     string `cli-arg:"#" cli-usage:"NAME"`
 	RoleUUID string `cli-arg:"#" cli-usage:"ROLE-UUID"`
 	Zone     string `cli-short:"z" cli-usage:"Database Service zone"`
@@ -24,7 +24,9 @@ type dbaasRoleDeleteCmd struct {
 
 func (c *dbaasRoleDeleteCmd) CmdAliases() []string { return nil }
 func (c *dbaasRoleDeleteCmd) CmdShort() string     { return "Delete a ClickHouse role" }
-func (c *dbaasRoleDeleteCmd) CmdLong() string      { return "Delete a role from a ClickHouse DBaaS service by UUID." }
+func (c *dbaasRoleDeleteCmd) CmdLong() string {
+	return "Delete a role from a ClickHouse DBaaS service by UUID."
+}
 
 func (c *dbaasRoleDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)

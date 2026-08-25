@@ -3,6 +3,7 @@ package dbaas
 import (
 	"bytes"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -22,9 +23,9 @@ func (o *dbaasAclShowOutput) ToJSON() { output.JSON(o) }
 func (o *dbaasAclShowOutput) ToText() { output.Text(o) }
 
 type dbaasAclUserOutput struct {
-	Username   string              `json:"username"`
-	Roles      []dbaasAclRoleOutput  `json:"roles"`
-	Privileges []dbaasPrivOutput     `json:"privileges"`
+	Username   string               `json:"username"`
+	Roles      []dbaasAclRoleOutput `json:"roles"`
+	Privileges []dbaasPrivOutput    `json:"privileges"`
 }
 
 type dbaasAclRoleOutput struct {
@@ -34,25 +35,27 @@ type dbaasAclRoleOutput struct {
 }
 
 type dbaasPrivOutput struct {
-	AccessType  string `json:"access-type"`
-	Database    string `json:"database,omitempty"`
-	Table       string `json:"table,omitempty"`
-	Column      string `json:"column,omitempty"`
-	GrantOption bool   `json:"grant-option,omitempty"`
-	PartialRevoke bool  `json:"partial-revoke,omitempty"`
+	AccessType    string `json:"access-type"`
+	Database      string `json:"database,omitempty"`
+	Table         string `json:"table,omitempty"`
+	Column        string `json:"column,omitempty"`
+	GrantOption   bool   `json:"grant-option,omitempty"`
+	PartialRevoke bool   `json:"partial-revoke,omitempty"`
 }
 
 type dbaasAclShowCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
 
-	_    bool `cli-cmd:"show"`
+	_    bool   `cli-cmd:"show"`
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 	Zone string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
 func (c *dbaasAclShowCmd) CmdAliases() []string { return nil }
 func (c *dbaasAclShowCmd) CmdShort() string     { return "Show ClickHouse ACL configuration" }
-func (c *dbaasAclShowCmd) CmdLong() string      { return "Show the current ClickHouse ACL configuration for a DBaaS service." }
+func (c *dbaasAclShowCmd) CmdLong() string {
+	return "Show the current ClickHouse ACL configuration for a DBaaS service."
+}
 
 func (c *dbaasAclShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
@@ -86,11 +89,11 @@ func (c *dbaasAclShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 		for _, p := range u.Privileges {
 			userOut.Privileges = append(userOut.Privileges, dbaasPrivOutput{
-				AccessType:  p.AccessType,
-				Database:    p.Database,
-				Table:       p.Table,
-				Column:      p.Column,
-				GrantOption: utils.DefaultBool(p.GrantOption, false),
+				AccessType:    p.AccessType,
+				Database:      p.Database,
+				Table:         p.Table,
+				Column:        p.Column,
+				GrantOption:   utils.DefaultBool(p.GrantOption, false),
 				PartialRevoke: utils.DefaultBool(p.PartialRevoke, false),
 			})
 		}
@@ -101,7 +104,7 @@ func (c *dbaasAclShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func (o *dbaasAclShowOutput) ToTable() {
-	t := table.NewTable(nil)
+	t := table.NewTable(os.Stdout)
 	defer t.Render()
 
 	if len(o.Users) == 0 {

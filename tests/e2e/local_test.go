@@ -46,6 +46,7 @@ func loadLocalCreds(t *testing.T) {
 		key := tomlString(block, "key")
 		secret := tomlString(block, "secret")
 		zone := tomlString(block, "defaultZone")
+		endpoint := tomlString(block, "endpoint")
 		if key == "" || secret == "" {
 			continue
 		}
@@ -53,6 +54,9 @@ func loadLocalCreds(t *testing.T) {
 		t.Setenv("EXOSCALE_API_SECRET", secret)
 		if zone != "" {
 			t.Setenv("EXOSCALE_ZONE", zone)
+		}
+		if endpoint != "" {
+			t.Setenv("EXOSCALE_API_ENDPOINT", endpoint)
 		}
 		return
 	}
