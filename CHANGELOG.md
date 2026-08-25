@@ -3,15 +3,22 @@
 ## Unreleased
 
 ### Breaking changes
-- instancepool create: use public ip assignment - #901
 
 ### Features
 
-- chore: update api/x commands (#899)
-
 ### Bug fixes
+
 ### Improvements
 
+## 1.99.0
+
+### Breaking changes
+
+- instancepool create: use public ip assignment (#901)
+
+### Features
+
+- chore: latest api/x commands (#899)
 
 ## 1.98.0
 
@@ -20,7 +27,6 @@
 - storage: add server-side `copy`/`cp` for objects and recursive prefixes within and across buckets, plus an `mv` alias (#887)
 
 ### Bug fixes
-
 
 - compute: allow instance and instance pool operations to use template IDs omitted from template lists (#888)
 - compute: honor the selected template's minimum disk size when creating instances and instance pools (#882)
