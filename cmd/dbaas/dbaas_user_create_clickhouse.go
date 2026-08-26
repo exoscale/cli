@@ -1,4 +1,3 @@
-// AI-modified by hermes-agent - not reviewed yet
 package dbaas
 
 import (
@@ -39,7 +38,6 @@ func (c *dbaasUserCreateCmd) createClickhouse(_ *cobra.Command, _ []string) erro
 		return err
 	}
 
-	// Check that the service is ready
 	s, err := client.GetDBAASServiceClickhouse(ctx, c.Name)
 	if err != nil {
 		return err

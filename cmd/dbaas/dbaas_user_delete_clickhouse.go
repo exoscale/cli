@@ -1,4 +1,3 @@
-// AI-modified by hermes-agent - not reviewed yet
 package dbaas
 
 import (
@@ -19,8 +18,6 @@ func (c *dbaasUserDeleteCmd) deleteClickhouse(_ *cobra.Command, _ []string) erro
 		return err
 	}
 
-	// GetDBAASServiceClickhouse does not reflect newly created users; use the
-	// dedicated list endpoint for username -> UUID resolution.
 	users, err := client.ListDBAASClickhouseUsers(ctx, c.Name)
 	if err != nil {
 		return err

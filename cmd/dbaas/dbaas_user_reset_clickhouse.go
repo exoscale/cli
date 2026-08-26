@@ -1,4 +1,3 @@
-// AI-modified by hermes-agent - not reviewed yet
 package dbaas
 
 import (

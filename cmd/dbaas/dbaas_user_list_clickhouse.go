@@ -1,4 +1,3 @@
-// AI-modified by hermes-agent - not reviewed yet
 package dbaas
 
 import (
@@ -17,8 +16,6 @@ func (c *dbaasUserListCmd) listClickhouse(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	// Use the dedicated list endpoint: GetDBAASServiceClickhouse does not
-	// reflect newly created users.
 	users, err := client.ListDBAASClickhouseUsers(ctx, c.Name)
 	if err != nil {
 		return err
