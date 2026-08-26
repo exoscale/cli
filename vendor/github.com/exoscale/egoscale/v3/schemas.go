@@ -2650,33 +2650,33 @@ const (
 // AI deployment
 type GetDeploymentResponse struct {
 	// Creation time
-	CreatedAT time.Time `json:"created-at" validate:"required"`
+	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Deployment inference endpoint URL
 	DeploymentURL string `json:"deployment-url" validate:"required"`
 	// Number of GPUs
-	GpuCount int64 `json:"gpu-count" validate:"required,gte=1"`
+	GpuCount int64 `json:"gpu-count,omitempty" validate:"omitempty,gte=1"`
 	// GPU type family
-	GpuType string `json:"gpu-type" validate:"required,gte=1"`
+	GpuType string `json:"gpu-type,omitempty" validate:"omitempty,gte=1"`
 	// Deployment ID
-	ID UUID `json:"id" validate:"required"`
+	ID UUID `json:"id,omitempty"`
 	// Optional extra inference engine server CLI args
-	InferenceEngineParameters []string `json:"inference-engine-parameters" validate:"required"`
+	InferenceEngineParameters []string `json:"inference-engine-parameters,omitempty"`
 	// Inference engine version
-	InferenceEngineVersion InferenceEngineVersion `json:"inference-engine-version" validate:"required"`
+	InferenceEngineVersion InferenceEngineVersion `json:"inference-engine-version,omitempty"`
 	// Model reference. Provide either id or name.
 	Model *ModelRef `json:"model" validate:"required"`
 	// Deployment name
 	Name string `json:"name" validate:"required,gte=1"`
 	// Number of replicas (>=0)
-	Replicas int64 `json:"replicas" validate:"required,gte=0"`
+	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gte=0"`
 	// Service level
-	ServiceLevel string `json:"service-level" validate:"required,gte=1"`
+	ServiceLevel string `json:"service-level,omitempty" validate:"omitempty,gte=1"`
 	// Deployment state
 	State GetDeploymentResponseState `json:"state" validate:"required"`
 	// Deployment state details
-	StateDetails string `json:"state-details" validate:"required"`
+	StateDetails string `json:"state-details,omitempty"`
 	// Update time
-	UpdatedAT time.Time `json:"updated-at" validate:"required"`
+	UpdatedAT time.Time `json:"updated-at,omitempty"`
 	// Deployment visibility: private for your organization's deployments, public for Exoscale Managed Inference deployments.
 	Visibility GetDeploymentResponseVisibility `json:"visibility" validate:"required"`
 }
@@ -2851,6 +2851,30 @@ type IAMServicePolicyRule struct {
 	Resources  []string                   `json:"resources,omitempty"`
 }
 
+type ImpactBreakdown struct {
+	Impact map[string]ImpactValueWithUnit `json:"impact" validate:"required"`
+	Zones  map[string]ZoneImpact          `json:"zones" validate:"required"`
+}
+
+// Error response
+type ImpactErrorResponse struct {
+	Detail string `json:"detail" validate:"required"`
+	Status int    `json:"status" validate:"required,gte=100,lte=599"`
+	Title  string `json:"title" validate:"required"`
+}
+
+// Hierarchical breakdown of impact for a given level in the catalog tree
+type ImpactResourceTreeNode struct {
+	Impact    map[string]ImpactValueWithUnit    `json:"impact" validate:"required"`
+	Resources map[string]ImpactResourceTreeNode `json:"resources" validate:"required"`
+	Usage     *ImpactValueWithUnit              `json:"usage" validate:"required"`
+}
+
+type ImpactValueWithUnit struct {
+	Unit  string  `json:"unit" validate:"required"`
+	Value float64 `json:"value" validate:"required"`
+}
+
 // inference-engine parameter definition
 type InferenceEngineParameterEntry struct {
 	// Allowed values
@@ -2890,6 +2914,8 @@ const (
 	InferenceEngineVersion0230 InferenceEngineVersion = "0.23.0"
 	InferenceEngineVersion0240 InferenceEngineVersion = "0.24.0"
 	InferenceEngineVersion0250 InferenceEngineVersion = "0.25.0"
+	InferenceEngineVersion0251 InferenceEngineVersion = "0.25.1"
+	InferenceEngineVersion0260 InferenceEngineVersion = "0.26.0"
 )
 
 // Router flush payload: the router's full in-memory usage map with flush identity fields
@@ -4453,27 +4479,27 @@ const (
 // AI deployment
 type ListDeploymentsResponseEntry struct {
 	// Creation time
-	CreatedAT time.Time `json:"created-at" validate:"required"`
+	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Deployment inference endpoint URL
 	DeploymentURL string `json:"deployment-url" validate:"required"`
 	// Number of GPUs
-	GpuCount int64 `json:"gpu-count" validate:"required,gte=1"`
+	GpuCount int64 `json:"gpu-count,omitempty" validate:"omitempty,gte=1"`
 	// GPU type family
-	GpuType string `json:"gpu-type" validate:"required,gte=1"`
+	GpuType string `json:"gpu-type,omitempty" validate:"omitempty,gte=1"`
 	// Deployment ID
-	ID UUID `json:"id" validate:"required"`
+	ID UUID `json:"id,omitempty"`
 	// Model reference. Provide either id or name.
 	Model *ModelRef `json:"model" validate:"required"`
 	// Deployment name
 	Name string `json:"name" validate:"required,gte=1"`
 	// Number of replicas (>=0)
-	Replicas int64 `json:"replicas" validate:"required,gte=0"`
+	Replicas int64 `json:"replicas,omitempty" validate:"omitempty,gte=0"`
 	// Service level
-	ServiceLevel string `json:"service-level" validate:"required,gte=1"`
+	ServiceLevel string `json:"service-level,omitempty" validate:"omitempty,gte=1"`
 	// Deployment state
 	State ListDeploymentsResponseEntryState `json:"state" validate:"required"`
 	// Update time
-	UpdatedAT time.Time `json:"updated-at" validate:"required"`
+	UpdatedAT time.Time `json:"updated-at,omitempty"`
 	// Deployment visibility: private for your organization's deployments, public for Exoscale Managed Inference deployments.
 	Visibility ListDeploymentsResponseEntryVisibility `json:"visibility" validate:"required"`
 }
@@ -4822,6 +4848,18 @@ const (
 	NvidiaMigProfileA3024gb4G24Gb   NvidiaMigProfileA3024gb = "4g.24gb"
 )
 
+type NvidiaMigProfileB300269gb string
+
+const (
+	NvidiaMigProfileB300269gb1G34Gb   NvidiaMigProfileB300269gb = "1g.34gb"
+	NvidiaMigProfileB300269gb1G34GbMe NvidiaMigProfileB300269gb = "1g.34gb+me"
+	NvidiaMigProfileB300269gb1G67Gb   NvidiaMigProfileB300269gb = "1g.67gb"
+	NvidiaMigProfileB300269gb2G67Gb   NvidiaMigProfileB300269gb = "2g.67gb"
+	NvidiaMigProfileB300269gb3G135Gb  NvidiaMigProfileB300269gb = "3g.135gb"
+	NvidiaMigProfileB300269gb4G135Gb  NvidiaMigProfileB300269gb = "4g.135gb"
+	NvidiaMigProfileB300269gb7G269Gb  NvidiaMigProfileB300269gb = "7g.269gb"
+)
+
 type NvidiaMigProfileRtxpro600096gb string
 
 const (
@@ -4841,6 +4879,7 @@ const (
 // Nvidia MIG Profiles enabled
 type NvidiaMigProfiles struct {
 	A3024gb        NvidiaMigProfileA3024gb        `json:"a30.24gb,omitempty"`
+	B300269gb      NvidiaMigProfileB300269gb      `json:"b300.269gb,omitempty"`
 	Rtxpro600096gb NvidiaMigProfileRtxpro600096gb `json:"rtxpro6000.96gb,omitempty"`
 }
 
@@ -4896,7 +4935,7 @@ type Operation struct {
 // Per-org Unit Of Measurement (UOM) consumption quota response
 type OrgConsumptionQuotaResponse struct {
 	// Per-org Unit Of Measurement (UOM) consumption quota (UOM/min). Null means unlimited. UOM represents weighted units across different AI workloads (e.g., tokens for LLMs, minutes for TTS, pages for OCR).
-	QuotaUomPerMinute int `json:"quota-uom-per-minute,omitempty" validate:"omitempty,gte=0"`
+	QuotaUomPerMinute *int `json:"quota-uom-per-minute,omitempty" validate:"omitempty,gte=0"`
 }
 
 // Organization
@@ -5198,6 +5237,7 @@ type SecurityGroupRuleProtocol string
 const (
 	SecurityGroupRuleProtocolTCP    SecurityGroupRuleProtocol = "tcp"
 	SecurityGroupRuleProtocolEsp    SecurityGroupRuleProtocol = "esp"
+	SecurityGroupRuleProtocolAll    SecurityGroupRuleProtocol = "all"
 	SecurityGroupRuleProtocolICMP   SecurityGroupRuleProtocol = "icmp"
 	SecurityGroupRuleProtocolUDP    SecurityGroupRuleProtocol = "udp"
 	SecurityGroupRuleProtocolGre    SecurityGroupRuleProtocol = "gre"
@@ -5231,7 +5271,7 @@ type SecurityGroupRule struct {
 // Request to set per-org Unit Of Measurement (UOM) consumption quota
 type SetOrgConsumptionQuotaRequest struct {
 	// Per-org Unit Of Measurement (UOM) consumption quota (UOM/min). Pass null to remove the limit. UOM represents weighted units across different AI workloads (e.g., tokens for LLMs, minutes for TTS, pages for OCR).
-	QuotaUomPerMinute int `json:"quota-uom-per-minute,omitempty" validate:"omitempty,gte=0"`
+	QuotaUomPerMinute *int `json:"quota-uom-per-minute,omitempty" validate:"omitempty,gte=0"`
 }
 
 // Kubernetes Audit parameters
@@ -5375,6 +5415,7 @@ const (
 	SKSNodepoolStateCreating      SKSNodepoolState = "creating"
 	SKSNodepoolStateDeleting      SKSNodepoolState = "deleting"
 	SKSNodepoolStateRunning       SKSNodepoolState = "running"
+	SKSNodepoolStateDegraded      SKSNodepoolState = "degraded"
 	SKSNodepoolStateScaling       SKSNodepoolState = "scaling"
 	SKSNodepoolStateUpdating      SKSNodepoolState = "updating"
 	SKSNodepoolStateError         SKSNodepoolState = "error"
@@ -5550,6 +5591,14 @@ const (
 	SubnetAddressfamilyDual  SubnetAddressfamily = "dual"
 )
 
+// Subnet attachements
+type SubnetInstances struct {
+	// Instance uuid
+	ID UUID `json:"id,omitempty"`
+	// Instance Ipv4 address
+	Ipv4 net.IP `json:"ipv4,omitempty"`
+}
+
 // Subnet
 type Subnet struct {
 	// Subnet address space
@@ -5562,6 +5611,8 @@ type Subnet struct {
 	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
 	// Subnet ID
 	ID UUID `json:"id,omitempty"`
+	// Instances attached to the subnet
+	Instances []SubnetInstances `json:"instances,omitempty"`
 	// Subnet ipv4 CIDR
 	Ipv4Block string `json:"ipv4-block,omitempty"`
 	Labels    Labels `json:"labels,omitempty"`
@@ -5711,6 +5762,12 @@ type Zone struct {
 	Name        ZoneName `json:"name,omitempty"`
 	// Zone SOS endpoint
 	SOSEndpoint Endpoint `json:"sos-endpoint,omitempty"`
+}
+
+// Hierarchical breakdown of impact in a given zone
+type ZoneImpact struct {
+	Impact    map[string]ImpactValueWithUnit    `json:"impact" validate:"required"`
+	Resources map[string]ImpactResourceTreeNode `json:"resources" validate:"required"`
 }
 
 type ZoneName string
