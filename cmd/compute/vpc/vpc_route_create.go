@@ -15,8 +15,9 @@ type vpcRouteCreateCmd struct {
 
 	VPC string `cli-arg:"#" cli-usage:"VPC-NAME|ID"`
 
-	Subnet      string      `cli-usage:"Subnet to create the route in (NAME|ID)"`
-	Destination string      `cli-usage:"route destination CIDR (e.g. 10.9.0.0/24)"`
+	Subnet      string `cli-usage:"Subnet to create the route in (NAME|ID)"`
+	Destination string `cli-usage:"route destination CIDR (e.g. 10.9.0.0/24)"`
+	// TODO: Add a proper link to the doc here to explain what the target can be
 	Target      string      `cli-usage:"route target, as ip=<IP address> (e.g. ip=10.0.0.5)"`
 	Description string      `cli-usage:"route description"`
 	Zone        v3.ZoneName `cli-short:"z" cli-usage:"VPC zone"`
