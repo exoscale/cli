@@ -6,8 +6,8 @@
 
 ### Features
 
+- networking: add VPC support under `exo networking vpc` (#880)
 
-- compute: add VPC support (#880)
 ### Bug fixes
 
 ### Improvements

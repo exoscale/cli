@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/cmd/compute"
+	"github.com/exoscale/cli/cmd/networking"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -18,7 +18,7 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	compute.ComputeCmd.AddCommand(Cmd)
+	networking.NetworkingCmd.AddCommand(Cmd)
 }
 
 // FindVPC resolves a VPC by name or ID in the client's current zone.
@@ -32,7 +32,7 @@ func FindVPC(ctx context.Context, client *v3.Client, nameOrID string) (v3.ListVp
 	if err != nil {
 		if errors.Is(err, v3.ErrNotFound) {
 			return v3.ListVpcEntry{}, fmt.Errorf(
-				"vpc %q not found\nHint: use -z <zone> to specify a different zone, or run 'exo compute vpc list' to see VPCs across all zones",
+				"vpc %q not found\nHint: use -z <zone> to specify a different zone, or run 'exo networking vpc list' to see VPCs across all zones",
 				nameOrID)
 		}
 		return v3.ListVpcEntry{}, err

@@ -22,7 +22,6 @@ import (
 	_ "github.com/exoscale/cli/cmd/compute/security_group"
 	_ "github.com/exoscale/cli/cmd/compute/sks"
 	_ "github.com/exoscale/cli/cmd/compute/ssh_key"
-	_ "github.com/exoscale/cli/cmd/compute/vpc"
 	_ "github.com/exoscale/cli/cmd/config"
 	_ "github.com/exoscale/cli/cmd/dbaas"
 	_ "github.com/exoscale/cli/cmd/dns"
@@ -30,5 +29,7 @@ import (
 	_ "github.com/exoscale/cli/cmd/kms"
 	_ "github.com/exoscale/cli/cmd/kms/crypto"
 	_ "github.com/exoscale/cli/cmd/kms/key"
+	_ "github.com/exoscale/cli/cmd/networking"
+	_ "github.com/exoscale/cli/cmd/networking/vpc"
 	_ "github.com/exoscale/cli/cmd/storage"
 )
