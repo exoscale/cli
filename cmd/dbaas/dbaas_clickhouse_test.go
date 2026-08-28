@@ -1,4 +1,3 @@
-// AI-modified by qwen3.8-27b-nvfp4-dflash2 - not reviewed yet
 package dbaas
 
 import (

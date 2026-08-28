@@ -209,17 +209,15 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceClickhouse(ctx context.Context)
 
 		Clickhouse: &dbServiceClickhouseShowOutput{
 			Components: func() (v []dbServiceClickhouseComponentShowOutput) {
-				if databaseService.Components != nil {
-					for _, c := range databaseService.Components {
-						v = append(v, dbServiceClickhouseComponentShowOutput{
-							Component: c.Component,
-							Host:      c.Host,
-							Port:      c.Port,
-							Route:     string(c.Route),
-							SSL:       c.SSL,
-							Usage:     string(c.Usage),
-						})
-					}
+				for _, c := range databaseService.Components {
+					v = append(v, dbServiceClickhouseComponentShowOutput{
+						Component: c.Component,
+						Host:      c.Host,
+						Port:      c.Port,
+						Route:     string(c.Route),
+						SSL:       c.SSL,
+						Usage:     string(c.Usage),
+					})
 				}
 				return
 			}(),
@@ -256,13 +254,11 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceClickhouse(ctx context.Context)
 			URIParams: databaseService.URIParams,
 
 			Users: func() (v []dbServiceClickhouseUserShowOutput) {
-				if databaseService.Users != nil {
-					for _, u := range databaseService.Users {
-						v = append(v, dbServiceClickhouseUserShowOutput{
-							Username: string(u.Username),
-							UUID:     string(u.Uuid),
-						})
-					}
+				for _, u := range databaseService.Users {
+					v = append(v, dbServiceClickhouseUserShowOutput{
+						Username: string(u.Username),
+						UUID:     string(u.Uuid),
+					})
 				}
 				return
 			}(),
