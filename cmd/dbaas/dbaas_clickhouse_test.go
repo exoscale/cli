@@ -1,3 +1,4 @@
+// AI-modified by qwen3.8-27b-nvfp4-dflash2 - not reviewed yet
 package dbaas
 
 import (
@@ -55,43 +56,6 @@ func setupClickhouseTestServer(t *testing.T, opts *clickhouseTestServerOpts) *ht
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	})
 
-	mux.HandleFunc("/dbaas-clickhouse/"+opts.ServiceName+"/acl-config", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			testutils.WriteJSON(t, w, http.StatusOK, v3.DBAASClickhouseAclConfig{
-				Users: []v3.DBAASClickhouseUserAclConfig{
-					{
-						Username: "avnadmin",
-						Roles: []v3.DBAASClickhouseUserRole{
-							{Name: "admin"},
-						},
-					},
-				},
-			})
-			return
-		}
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	})
-
-	mux.HandleFunc("/dbaas-clickhouse/"+opts.ServiceName+"/role", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			testutils.WriteJSON(t, w, http.StatusOK, v3.DBAASClickhouseRoles{
-				Roles: []v3.DBAASClickhouseRole{
-					{Name: v3.DBAASUserUsername("default_role"), Uuid: "11111111-1111-1111-1111-111111111111"},
-				},
-			})
-			return
-		}
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	})
-
-	mux.HandleFunc("/dbaas-clickhouse/"+opts.ServiceName+"/role/11111111-1111-1111-1111-111111111111", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodDelete {
-			testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-role-delete"), State: v3.OperationStateSuccess})
-			return
-		}
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	})
-
 	mux.HandleFunc("/dbaas-clickhouse/"+opts.ServiceName+"/user", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
@@ -123,7 +87,7 @@ func setupClickhouseTestServer(t *testing.T, opts *clickhouseTestServerOpts) *ht
 
 	// Operation wait (poll) endpoint
 	mux.HandleFunc("/operation/", func(w http.ResponseWriter, r *http.Request) {
-		testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-role-delete"), State: v3.OperationStateSuccess})
+		testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-user-delete"), State: v3.OperationStateSuccess})
 	})
 
 	ts := httptest.NewUnstartedServer(mux)
@@ -131,66 +95,6 @@ func setupClickhouseTestServer(t *testing.T, opts *clickhouseTestServerOpts) *ht
 	// /zone reads opts.ServerURL at request time, so it is set after start.
 	opts.ServerURL = ts.URL
 	return ts
-}
-
-func TestDBAASClickhouseRoleList(t *testing.T) {
-	opts := &clickhouseTestServerOpts{ServiceName: "testdb"}
-	ts := setupClickhouseTestServer(t, opts)
-	defer ts.Close()
-
-	testutils.SetupV3Client(t, ts.URL)
-
-	rootCmd := &cobra.Command{}
-	roleCmd := &cobra.Command{Use: "role"}
-	rootCmd.AddCommand(roleCmd)
-	c := &dbaasRoleListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	err := exocmd.RegisterCLICommand(roleCmd, c)
-	require.NoError(t, err)
-
-	rootCmd.SetArgs([]string{"role", "list", "testdb", "--zone", "test-zone"})
-	err = rootCmd.Execute()
-	require.NoError(t, err)
-}
-
-func TestDBAASClickhouseRoleDelete(t *testing.T) {
-	opts := &clickhouseTestServerOpts{ServiceName: "testdb"}
-	ts := setupClickhouseTestServer(t, opts)
-	defer ts.Close()
-
-	testutils.SetupV3Client(t, ts.URL)
-
-	rootCmd := &cobra.Command{}
-	roleCmd := &cobra.Command{Use: "role"}
-	rootCmd.AddCommand(roleCmd)
-	c := &dbaasRoleDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	err := exocmd.RegisterCLICommand(roleCmd, c)
-	require.NoError(t, err)
-
-	rootCmd.SetArgs([]string{
-		"role", "delete", "testdb", "11111111-1111-1111-1111-111111111111",
-		"--zone", "test-zone", "--force",
-	})
-	err = rootCmd.Execute()
-	require.NoError(t, err)
-}
-
-func TestDBAASClickhouseAclShow(t *testing.T) {
-	opts := &clickhouseTestServerOpts{ServiceName: "testdb"}
-	ts := setupClickhouseTestServer(t, opts)
-	defer ts.Close()
-
-	testutils.SetupV3Client(t, ts.URL)
-
-	rootCmd := &cobra.Command{}
-	aclCmd := &cobra.Command{Use: "acl"}
-	rootCmd.AddCommand(aclCmd)
-	c := &dbaasAclShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	err := exocmd.RegisterCLICommand(aclCmd, c)
-	require.NoError(t, err)
-
-	rootCmd.SetArgs([]string{"acl", "show", "testdb", "--zone", "test-zone"})
-	err = rootCmd.Execute()
-	require.NoError(t, err)
 }
 
 func TestDBAASClickhouseUserCreate(t *testing.T) {

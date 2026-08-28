@@ -1,3 +1,4 @@
+// AI-modified by qwen3.8-27b-nvfp4-dflash2 - not reviewed yet
 package dbaas
 
 import (
@@ -15,6 +16,8 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/dbaas/acl"
+	"github.com/exoscale/cli/cmd/dbaas/role"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -38,6 +41,9 @@ var dbaasCmd = &cobra.Command{
 
 func init() {
 	exocmd.RootCmd.AddCommand(dbaasCmd)
+	// Attach subcommand groups that live in their own packages.
+	dbaasCmd.AddCommand(role.Cmd)
+	dbaasCmd.AddCommand(acl.Cmd)
 }
 
 // parseDtabaseBackupSchedule parses a Database Service backup schedule value
