@@ -3,7 +3,6 @@ package instance
 import (
 	"context"
 	"fmt"
-	"net"
 
 	"github.com/spf13/cobra"
 
@@ -14,35 +13,34 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type instanceVPCAttachCmd struct {
+type instanceDetachFromSubnetCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
 
-	_ bool `cli-cmd:"attach"`
+	_ bool `cli-cmd:"detach-from-subnet"`
 
 	Instance string `cli-arg:"#" cli-usage:"INSTANCE-NAME|ID"`
 	VPC      string `cli-arg:"#" cli-usage:"VPC-NAME|ID"`
 	Subnet   string `cli-arg:"#" cli-usage:"SUBNET-NAME|ID"`
 
-	IPv4 string      `cli-flag:"ipv4" cli-usage:"IPv4 address to assign to the Compute instance in the Subnet"`
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceVPCAttachCmd) CmdAliases() []string { return nil }
+func (c *instanceDetachFromSubnetCmd) CmdAliases() []string { return nil }
 
-func (c *instanceVPCAttachCmd) CmdShort() string {
-	return "Attach a Compute instance to a VPC Subnet"
+func (c *instanceDetachFromSubnetCmd) CmdShort() string {
+	return "Detach a Compute instance from a VPC Subnet"
 }
 
-func (c *instanceVPCAttachCmd) CmdLong() string {
-	return "This command attaches a Compute instance to a VPC Subnet."
+func (c *instanceDetachFromSubnetCmd) CmdLong() string {
+	return "This command detaches a Compute instance from a VPC Subnet."
 }
 
-func (c *instanceVPCAttachCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *instanceDetachFromSubnetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceVPCAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceDetachFromSubnetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -69,24 +67,16 @@ func (c *instanceVPCAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	req := v3.AttachInstanceToSubnetRequest{
+	req := v3.DetachInstanceFromSubnetRequest{
 		Instance: &v3.InstanceRef{ID: instance.ID},
-	}
-
-	if c.IPv4 != "" {
-		ip := net.ParseIP(c.IPv4)
-		if ip == nil || ip.To4() == nil {
-			return fmt.Errorf("invalid IPv4 address: %q", c.IPv4)
-		}
-		req.Ipv4 = ip
 	}
 
 	if err := utils.RunAsync(
 		ctx,
 		client,
-		fmt.Sprintf("Attaching instance %q to Subnet %q...", c.Instance, c.Subnet),
+		fmt.Sprintf("Detaching instance %q from Subnet %q...", c.Instance, c.Subnet),
 		func(ctx context.Context, client *v3.Client) (*v3.Operation, error) {
-			return client.AttachInstanceToSubnet(ctx, vpcEntry.ID, subnetEntry.ID, req)
+			return client.DetachInstanceFromSubnet(ctx, vpcEntry.ID, subnetEntry.ID, req)
 		},
 	); err != nil {
 		return err
@@ -104,7 +94,7 @@ func (c *instanceVPCAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceVPCCmd, &instanceVPCAttachCmd{
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceDetachFromSubnetCmd{
 		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
