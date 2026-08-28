@@ -59,6 +59,10 @@ func (c *securityGroupAddSourceCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	op, err := client.AddExternalSourceToSecurityGroup(ctx, securityGroup.ID, v3.AddExternalSourceToSecurityGroupRequest{
 		Cidr: c.Cidr,
 	})
+	if err != nil {
+		return err
+	}
+
 	utils.DecorateAsyncOperation(fmt.Sprintf("Adding Security Group source %s...", c.Cidr), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
