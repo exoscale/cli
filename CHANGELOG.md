@@ -11,6 +11,7 @@
 
 ### Bug fixes
 
+- iam: include policies in role show output (#903)
 - dbaas: fix empty table output for user create, role list and acl show (output routed to a nil writer) (#894)
 - dbaas: fix show --uri for clickhouse printing a raw host:port instead of a connection URI (#894)
 
