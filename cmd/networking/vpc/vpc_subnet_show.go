@@ -17,8 +17,8 @@ import (
 )
 
 type vpcSubnetInstanceOutput struct {
-	ID   v3.UUID `json:"id"`
-	IPv4 string  `json:"ipv4"`
+	Name string `json:"name`
+	IPv4 string `json:"ipv4"`
 }
 
 type vpcSubnetShowOutput struct {
@@ -49,7 +49,18 @@ func (o *vpcSubnetShowOutput) ToTable() {
 	t.Append([]string{"Address Family", o.AddressFamily})
 	t.Append([]string{"Address Space", o.AddressSpace})
 	t.Append([]string{"IPv4 Block", o.IPv4Block})
-	t.Append([]string{"Labels", formatLabels(o.Labels)})
+	t.Append([]string{"Labels", func() string {
+		var labels map[string]string = o.Labels
+		if len(labels) == 0 {
+			return "n/a"
+		}
+
+		pairs := make([]string, 0, len(o.Labels))
+		for _, k := range o.Labels {
+			pairs = append(pairs, fmt.Sprintf("%s:%s", k, labels[k]))
+		}
+		return strings.Join(pairs, "\n")
+	}()})
 	t.Append([]string{"Instances", formatSubnetInstances(o.Instances)})
 }
 
@@ -124,7 +135,7 @@ func (c *vpcSubnetShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			ipv4 = i.Ipv4.String()
 		}
 		out.Instances = append(out.Instances, vpcSubnetInstanceOutput{
-			ID:   i.ID,
+			Name: i.Name,
 			IPv4: ipv4,
 		})
 	}
@@ -149,7 +160,7 @@ func formatSubnetInstances(instances []vpcSubnetInstanceOutput) string {
 	at.SetAlignment(tablewriter.ALIGN_LEFT)
 
 	for _, i := range instances {
-		at.Append([]string{i.ID.String(), i.IPv4})
+		at.Append([]string{i.Name, i.IPv4})
 	}
 	at.Render()
 

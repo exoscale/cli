@@ -1071,8 +1071,10 @@ type DBAASServiceBackup struct {
 	BackupName string `json:"backup-name" validate:"required"`
 	// Backup timestamp (ISO 8601)
 	BackupTime time.Time `json:"backup-time" validate:"required"`
-	// Backup's original size before compression
+	// Backup's original size before compression, in bytes
 	DataSize int64 `json:"data-size" validate:"required,gte=0"`
+	// Amount of tiered storage data in bytes referenced by this backup
+	TieredStorageDataSize int64 `json:"tiered-storage-data-size,omitempty" validate:"omitempty,gte=0"`
 }
 
 type DBAASServiceClickhouseComponents struct {
@@ -2914,6 +2916,7 @@ const (
 	InferenceEngineVersion0260 InferenceEngineVersion = "0.26.0"
 	InferenceEngineVersion0270 InferenceEngineVersion = "0.27.0"
 	InferenceEngineVersion0271 InferenceEngineVersion = "0.27.1"
+	InferenceEngineVersion0280 InferenceEngineVersion = "0.28.0"
 )
 
 // Router flush payload: the router's full in-memory usage map with flush identity fields
@@ -2942,6 +2945,26 @@ type InstancePrivateNetworks struct {
 	ID UUID `json:"id,omitempty"`
 	// Private Network MAC address
 	MACAddress string `json:"mac-address,omitempty"`
+}
+
+// VPC subnet
+type InstanceVpcSubnets struct {
+	// VPC subnet ID
+	ID UUID `json:"id,omitempty"`
+	// Instance Subnet ipv4 address
+	Ipv4 net.IP `json:"ipv4,omitempty"`
+	// VPC subnet name
+	Name string `json:"name,omitempty"`
+}
+
+// VPC
+type InstanceVpc struct {
+	// VPC ID
+	ID UUID `json:"id,omitempty"`
+	// VPC name
+	Name string `json:"name,omitempty"`
+	// Instances attached to the subnet
+	Subnets []InstanceVpcSubnets `json:"subnets,omitempty"`
 }
 
 // Instance
@@ -2995,6 +3018,8 @@ type Instance struct {
 	TpmEnabled *bool `json:"tpm-enabled,omitempty"`
 	// Instance Cloud-init user-data (base64 encoded)
 	UserData string `json:"user-data,omitempty" validate:"omitempty,gte=1"`
+	// VPC
+	Vpc *InstanceVpc `json:"vpc,omitempty"`
 }
 
 // Instance password
@@ -4396,7 +4421,7 @@ type JSONSchemaValkey struct {
 }
 
 type KeyMaterial struct {
-	// A boolean flag indicating whether this specific material version was created during an automated system rotation window.
+	// Flag stating whether an automation run handled this historic mutation or if manual actor keys initiated it.
 	Automatic *bool `json:"automatic" validate:"required"`
 	// The UTC date-time indicating when this particular generation of physical cryptographic material was seeded.
 	CreatedAT time.Time `json:"created-at" validate:"required"`

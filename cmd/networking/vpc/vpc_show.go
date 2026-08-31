@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
@@ -18,15 +17,15 @@ import (
 )
 
 type vpcSubnetItemOutput struct {
-	ID        v3.UUID `json:"id"`
-	Name      string  `json:"name"`
-	IPv4Block string  `json:"ipv4_block"`
+	Name      string `json:"name"`
+	IPv4Block string `json:"ipv4_block"`
 }
 
 type vpcShowOutput struct {
 	ID          v3.UUID               `json:"id"`
 	Name        string                `json:"name"`
 	Description string                `json:"description"`
+	Default     string                `json:"default"`
 	Zone        v3.ZoneName           `json:"zone"`
 	CreatedAt   string                `json:"created_at"`
 	Labels      map[string]string     `json:"labels"`
@@ -43,9 +42,22 @@ func (o *vpcShowOutput) ToTable() {
 	t.Append([]string{"ID", o.ID.String()})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})
+	t.Append([]string{"Default", o.Default})
+
 	t.Append([]string{"Zone", string(o.Zone)})
 	t.Append([]string{"Created At", o.CreatedAt})
-	t.Append([]string{"Labels", formatLabels(o.Labels)})
+	t.Append([]string{"Labels", func() string {
+		var labels map[string]string = o.Labels
+		if len(labels) == 0 {
+			return "n/a"
+		}
+
+		pairs := make([]string, 0, len(o.Labels))
+		for _, k := range o.Labels {
+			pairs = append(pairs, fmt.Sprintf("%s:%s", k, labels[k]))
+		}
+		return strings.Join(pairs, "\n")
+	}()})
 	t.Append([]string{"Subnets", formatSubnets(o.Subnets)})
 }
 
@@ -99,10 +111,17 @@ func (c *vpcShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		ID:          vpc.ID,
 		Name:        vpc.Name,
 		Description: vpc.Description,
-		Zone:        c.Zone,
-		CreatedAt:   vpc.CreatedAT.String(),
-		Labels:      vpc.Labels,
-		Subnets:     []vpcSubnetItemOutput{},
+		Default: func() string {
+			if *vpc.Default {
+				return "yes"
+			} else {
+				return "no"
+			}
+		}(),
+		Zone:      c.Zone,
+		CreatedAt: vpc.CreatedAT.String(),
+		Labels:    vpc.Labels,
+		Subnets:   []vpcSubnetItemOutput{},
 	}
 
 	subnets, err := client.ListSubnets(ctx, vpc.ID)
@@ -112,7 +131,6 @@ func (c *vpcShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	for _, s := range subnets.Subnets {
 		out.Subnets = append(out.Subnets, vpcSubnetItemOutput{
-			ID:        s.ID,
 			Name:      s.Name,
 			IPv4Block: s.Ipv4Block,
 		})
@@ -138,28 +156,9 @@ func formatSubnets(subnets []vpcSubnetItemOutput) string {
 	at.SetAlignment(tablewriter.ALIGN_LEFT)
 
 	for _, s := range subnets {
-		at.Append([]string{s.Name, s.IPv4Block, s.ID.String()})
+		at.Append([]string{s.Name, s.IPv4Block})
 	}
 	at.Render()
 
 	return buf.String()
-}
-
-func formatLabels(labels map[string]string) string {
-	if len(labels) == 0 {
-		return "-"
-	}
-
-	keys := make([]string, 0, len(labels))
-	for k := range labels {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	pairs := make([]string, 0, len(keys))
-	for _, k := range keys {
-		pairs = append(pairs, fmt.Sprintf("%s=%s", k, labels[k]))
-	}
-
-	return strings.Join(pairs, ", ")
 }

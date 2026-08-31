@@ -179,6 +179,8 @@ github.com/exoscale/egoscale/v3 v3.1.43 h1:b036uxDZvCFVPKHI9RiZLjBcwMjGQTfJyJIzw
 github.com/exoscale/egoscale/v3 v3.1.43/go.mod h1:DUTgeubl5msPAo3SKFed04AxNhyTNOrCTJHZDRYLR10=
 github.com/exoscale/egoscale/v3 v3.1.46 h1:LJZpAEryahQQjowhRlMSIVdC/ATUXIz5LnG3N9q9Eyw=
 github.com/exoscale/egoscale/v3 v3.1.46/go.mod h1:DUTgeubl5msPAo3SKFed04AxNhyTNOrCTJHZDRYLR10=
+github.com/exoscale/egoscale/v3 v3.1.47-0.20260831115652-2637bbffeab9 h1:Q8wIPiHMH1A6rD/6ffvfaS6s3BDvBqMgAP4vCAMCvFA=
+github.com/exoscale/egoscale/v3 v3.1.47-0.20260831115652-2637bbffeab9/go.mod h1:DUTgeubl5msPAo3SKFed04AxNhyTNOrCTJHZDRYLR10=
 github.com/exoscale/openapi-cli-generator v1.2.0 h1:xgTff1bInBP+JZCauD7Jq9GNBFoKK31Cnv5FIAcxtrk=
 github.com/exoscale/openapi-cli-generator v1.2.0/go.mod h1:TZBnbT7f3hJ5ImyUphJwRM+X5xF/zCQZ6o8a42gQeTs=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=

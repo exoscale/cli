@@ -12146,6 +12146,8 @@ type AssumeIAMRoleResponse struct {
 }
 
 type AssumeIAMRoleRequest struct {
+	// Organization ID target of the assume role action
+	OrgID UUID `json:"org-id,omitempty"`
 	// TTL in seconds for the generated access key (cannot exceed the max TTL defined in the targeted assume role)
 	Ttl int64 `json:"ttl" validate:"required,gt=0"`
 }
