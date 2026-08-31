@@ -51,7 +51,7 @@ func (c *vpcDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	if _, err := client.DeleteVpc(ctx, entry.ID); err != nil {
+	if err := client.DeleteVpc(ctx, entry.ID); err != nil {
 		return err
 	}
 

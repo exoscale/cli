@@ -177,6 +177,8 @@ github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7
 github.com/envoyproxy/protoc-gen-validate v0.6.2/go.mod h1:2t7qjJNvHPx8IjnBOzl9E9/baC+qXE/TeeyBRzgJDws=
 github.com/exoscale/egoscale/v3 v3.1.43 h1:b036uxDZvCFVPKHI9RiZLjBcwMjGQTfJyJIzwqQkKO8=
 github.com/exoscale/egoscale/v3 v3.1.43/go.mod h1:DUTgeubl5msPAo3SKFed04AxNhyTNOrCTJHZDRYLR10=
+github.com/exoscale/egoscale/v3 v3.1.46 h1:LJZpAEryahQQjowhRlMSIVdC/ATUXIz5LnG3N9q9Eyw=
+github.com/exoscale/egoscale/v3 v3.1.46/go.mod h1:DUTgeubl5msPAo3SKFed04AxNhyTNOrCTJHZDRYLR10=
 github.com/exoscale/openapi-cli-generator v1.2.0 h1:xgTff1bInBP+JZCauD7Jq9GNBFoKK31Cnv5FIAcxtrk=
 github.com/exoscale/openapi-cli-generator v1.2.0/go.mod h1:TZBnbT7f3hJ5ImyUphJwRM+X5xF/zCQZ6o8a42gQeTs=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=

@@ -66,7 +66,7 @@ func (c *vpcRouteDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	if _, err := client.DeleteRoute(ctx, vpcEntry.ID, subnetEntry.ID, v3.UUID(c.Route)); err != nil {
+	if err := client.DeleteRoute(ctx, vpcEntry.ID, subnetEntry.ID, v3.UUID(c.Route)); err != nil {
 		return err
 	}
 

@@ -57,7 +57,7 @@ func (c *vpcSubnetDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	if _, err := client.DeleteSubnet(ctx, vpcEntry.ID, subnetEntry.ID); err != nil {
+	if err := client.DeleteSubnet(ctx, vpcEntry.ID, subnetEntry.ID); err != nil {
 		return err
 	}
 

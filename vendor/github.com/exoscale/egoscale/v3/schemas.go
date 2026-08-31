@@ -337,6 +337,37 @@ type DBAASClickhouseAclConfig struct {
 	Users []DBAASClickhouseUserAclConfig `json:"users,omitempty"`
 }
 
+type DBAASClickhouseGrantedRole struct {
+	ISDefault *bool `json:"is-default,omitempty"`
+	// Granted role name
+	Name            string `json:"name" validate:"required"`
+	Uuid            string `json:"uuid,omitempty"`
+	WithAdminOption *bool  `json:"with-admin-option,omitempty"`
+}
+
+type DBAASClickhouseRole struct {
+	GrantedRoles []DBAASClickhouseGrantedRole   `json:"granted-roles,omitempty"`
+	Name         DBAASUserUsername              `json:"name" validate:"required,gte=1,lte=64"`
+	Privileges   []DBAASClickhouseRolePrivilege `json:"privileges,omitempty"`
+	Uuid         string                         `json:"uuid,omitempty"`
+}
+
+type DBAASClickhouseRolePrivilege struct {
+	// Column
+	Column string `json:"column,omitempty"`
+	// Database
+	Database        string            `json:"database,omitempty"`
+	GrantOption     *bool             `json:"grant-option,omitempty"`
+	ISPartialRevoke *bool             `json:"is-partial-revoke,omitempty"`
+	Name            DBAASUserUsername `json:"name" validate:"required,gte=1,lte=64"`
+	// Table
+	Table string `json:"table,omitempty"`
+}
+
+type DBAASClickhouseRoles struct {
+	Roles []DBAASClickhouseRole `json:"roles,omitempty"`
+}
+
 type DBAASClickhouseUser struct {
 	Required *bool             `json:"required,omitempty"`
 	Username DBAASUserUsername `json:"username" validate:"required,gte=1,lte=64"`
@@ -2287,10 +2318,6 @@ type ElasticIPRef struct {
 	ID UUID `json:"id,omitempty"`
 }
 
-// An empty map response
-type Empty struct {
-}
-
 type EnableKmsKeyRotationRequest struct {
 	// The number of days between each automatic key rotation.
 	RotationPeriod int `json:"rotation-period,omitempty" validate:"omitempty,gte=90,lte=2560"`
@@ -2820,6 +2847,30 @@ type IAMServicePolicyRule struct {
 	Resources  []string                   `json:"resources,omitempty"`
 }
 
+type ImpactBreakdown struct {
+	Impact map[string]ImpactValueWithUnit `json:"impact" validate:"required"`
+	Zones  map[string]ZoneImpact          `json:"zones" validate:"required"`
+}
+
+// Error response
+type ImpactErrorResponse struct {
+	Detail string `json:"detail" validate:"required"`
+	Status int    `json:"status" validate:"required,gte=100,lte=599"`
+	Title  string `json:"title" validate:"required"`
+}
+
+// Hierarchical breakdown of impact for a given level in the catalog tree
+type ImpactResourceTreeNode struct {
+	Impact    map[string]ImpactValueWithUnit    `json:"impact" validate:"required"`
+	Resources map[string]ImpactResourceTreeNode `json:"resources" validate:"required"`
+	Usage     *ImpactValueWithUnit              `json:"usage" validate:"required"`
+}
+
+type ImpactValueWithUnit struct {
+	Unit  string  `json:"unit" validate:"required"`
+	Value float64 `json:"value" validate:"required"`
+}
+
 // inference-engine parameter definition
 type InferenceEngineParameterEntry struct {
 	// Allowed values
@@ -2860,6 +2911,9 @@ const (
 	InferenceEngineVersion0240 InferenceEngineVersion = "0.24.0"
 	InferenceEngineVersion0250 InferenceEngineVersion = "0.25.0"
 	InferenceEngineVersion0251 InferenceEngineVersion = "0.25.1"
+	InferenceEngineVersion0260 InferenceEngineVersion = "0.26.0"
+	InferenceEngineVersion0270 InferenceEngineVersion = "0.27.0"
+	InferenceEngineVersion0271 InferenceEngineVersion = "0.27.1"
 )
 
 // Router flush payload: the router's full in-memory usage map with flush identity fields
@@ -3116,6 +3170,8 @@ type JSONSchemaClickhouseServerSettings struct {
 type JSONSchemaClickhouse struct {
 	// ClickHouse server settings, which can be found in the `system.server_settings` table.
 	ServerSettings *JSONSchemaClickhouseServerSettings `json:"server_settings,omitempty"`
+	// The percentage of free disk space required on local storage before data is moved to object storage. A value of 0.2 means data is moved when local storage has less than 20% free space.
+	TieredStorageMoveFactor float64 `json:"tiered_storage_move_factor,omitempty" validate:"omitempty,gte=0,lte=1"`
 }
 
 type JSONSchemaGrafanaAlertingErrorORTimeout string
@@ -4594,6 +4650,8 @@ type ListSubnetEntry struct {
 type ListVpcEntry struct {
 	// VPC creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
+	// Indicates if this is the organization's default VPC
+	Default *bool `json:"default,omitempty"`
 	// VPC description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
 	// VPC ID
@@ -4790,6 +4848,18 @@ const (
 	NvidiaMigProfileA3024gb4G24Gb   NvidiaMigProfileA3024gb = "4g.24gb"
 )
 
+type NvidiaMigProfileB300269gb string
+
+const (
+	NvidiaMigProfileB300269gb1G34Gb   NvidiaMigProfileB300269gb = "1g.34gb"
+	NvidiaMigProfileB300269gb1G34GbMe NvidiaMigProfileB300269gb = "1g.34gb+me"
+	NvidiaMigProfileB300269gb1G67Gb   NvidiaMigProfileB300269gb = "1g.67gb"
+	NvidiaMigProfileB300269gb2G67Gb   NvidiaMigProfileB300269gb = "2g.67gb"
+	NvidiaMigProfileB300269gb3G135Gb  NvidiaMigProfileB300269gb = "3g.135gb"
+	NvidiaMigProfileB300269gb4G135Gb  NvidiaMigProfileB300269gb = "4g.135gb"
+	NvidiaMigProfileB300269gb7G269Gb  NvidiaMigProfileB300269gb = "7g.269gb"
+)
+
 type NvidiaMigProfileRtxpro600096gb string
 
 const (
@@ -4809,6 +4879,7 @@ const (
 // Nvidia MIG Profiles enabled
 type NvidiaMigProfiles struct {
 	A3024gb        NvidiaMigProfileA3024gb        `json:"a30.24gb,omitempty"`
+	B300269gb      NvidiaMigProfileB300269gb      `json:"b300.269gb,omitempty"`
 	Rtxpro600096gb NvidiaMigProfileRtxpro600096gb `json:"rtxpro6000.96gb,omitempty"`
 }
 
@@ -4864,7 +4935,7 @@ type Operation struct {
 // Per-org Unit Of Measurement (UOM) consumption quota response
 type OrgConsumptionQuotaResponse struct {
 	// Per-org Unit Of Measurement (UOM) consumption quota (UOM/min). Null means unlimited. UOM represents weighted units across different AI workloads (e.g., tokens for LLMs, minutes for TTS, pages for OCR).
-	QuotaUomPerMinute int `json:"quota-uom-per-minute,omitempty" validate:"omitempty,gte=0"`
+	QuotaUomPerMinute *int `json:"quota-uom-per-minute,omitempty" validate:"omitempty,gte=0"`
 }
 
 // Organization
@@ -5040,12 +5111,6 @@ type Resource struct {
 	Name string `json:"name,omitempty"`
 }
 
-// Reveal AI API key response
-type RevealAIAPIKeyResponse struct {
-	// Plaintext AI API key value
-	Value string `json:"value" validate:"required"`
-}
-
 // AI deployment inference endpoint authentication key
 type RevealDeploymentAPIKeyResponse struct {
 	// Inference endpoint authentication key
@@ -5061,12 +5126,6 @@ type RevisionStamp struct {
 	AT time.Time `json:"at" validate:"required"`
 	// Monotonically increasing sequencing value utilized for optimistic concurrency control locks.
 	Seq int `json:"seq" validate:"required,gte=0"`
-}
-
-// Rotate AI API key response
-type RotateAIAPIKeyResponse struct {
-	// Plaintext AI API key value
-	Value string `json:"value" validate:"required"`
 }
 
 type RotateKmsKeyResponse struct {
@@ -5166,6 +5225,7 @@ type SecurityGroupRuleProtocol string
 const (
 	SecurityGroupRuleProtocolTCP    SecurityGroupRuleProtocol = "tcp"
 	SecurityGroupRuleProtocolEsp    SecurityGroupRuleProtocol = "esp"
+	SecurityGroupRuleProtocolAll    SecurityGroupRuleProtocol = "all"
 	SecurityGroupRuleProtocolICMP   SecurityGroupRuleProtocol = "icmp"
 	SecurityGroupRuleProtocolUDP    SecurityGroupRuleProtocol = "udp"
 	SecurityGroupRuleProtocolGre    SecurityGroupRuleProtocol = "gre"
@@ -5199,7 +5259,7 @@ type SecurityGroupRule struct {
 // Request to set per-org Unit Of Measurement (UOM) consumption quota
 type SetOrgConsumptionQuotaRequest struct {
 	// Per-org Unit Of Measurement (UOM) consumption quota (UOM/min). Pass null to remove the limit. UOM represents weighted units across different AI workloads (e.g., tokens for LLMs, minutes for TTS, pages for OCR).
-	QuotaUomPerMinute int `json:"quota-uom-per-minute,omitempty" validate:"omitempty,gte=0"`
+	QuotaUomPerMinute *int `json:"quota-uom-per-minute,omitempty" validate:"omitempty,gte=0"`
 }
 
 // Kubernetes Audit parameters
@@ -5343,6 +5403,7 @@ const (
 	SKSNodepoolStateCreating      SKSNodepoolState = "creating"
 	SKSNodepoolStateDeleting      SKSNodepoolState = "deleting"
 	SKSNodepoolStateRunning       SKSNodepoolState = "running"
+	SKSNodepoolStateDegraded      SKSNodepoolState = "degraded"
 	SKSNodepoolStateScaling       SKSNodepoolState = "scaling"
 	SKSNodepoolStateUpdating      SKSNodepoolState = "updating"
 	SKSNodepoolStateError         SKSNodepoolState = "error"
@@ -5524,6 +5585,8 @@ type SubnetInstances struct {
 	ID UUID `json:"id,omitempty"`
 	// Instance Ipv4 address
 	Ipv4 net.IP `json:"ipv4,omitempty"`
+	// Instance name
+	Name string `json:"name,omitempty"`
 }
 
 // Subnet
@@ -5619,30 +5682,6 @@ type TemplateRef struct {
 	ID UUID `json:"id,omitempty"`
 }
 
-// Request to update an AI API key (at least one property required)
-type UpdateAIAPIKeyRequest struct {
-	// Human-readable name for the AI API key
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=50"`
-	// Key scope: 'public' for all deployments, or a specific deployment UUID
-	Scope string `json:"scope,omitempty"`
-}
-
-// Update AI API key response
-type UpdateAIAPIKeyResponse struct {
-	// Creation timestamp
-	CreatedAT time.Time `json:"created-at" validate:"required"`
-	// AI API key ID
-	ID UUID `json:"id" validate:"required"`
-	// Human-readable name for the AI API key
-	Name string `json:"name" validate:"required"`
-	// Organization UUID that owns this key
-	OrgUuid UUID `json:"org-uuid" validate:"required"`
-	// Key scope: 'public' for all deployments, or a specific deployment UUID
-	Scope string `json:"scope" validate:"required"`
-	// Last update timestamp
-	UpdatedAT time.Time `json:"updated-at" validate:"required"`
-}
-
 // Update AI deployment
 type UpdateDeploymentRequest struct {
 	// Optional extra inference engine server CLI args
@@ -5673,6 +5712,8 @@ type User struct {
 type Vpc struct {
 	// VPC creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
+	// Indicates if this is the organization's default VPC
+	Default *bool `json:"default,omitempty"`
 	// VPC description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
 	// VPC ID
@@ -5689,6 +5730,12 @@ type Zone struct {
 	Name        ZoneName `json:"name,omitempty"`
 	// Zone SOS endpoint
 	SOSEndpoint Endpoint `json:"sos-endpoint,omitempty"`
+}
+
+// Hierarchical breakdown of impact in a given zone
+type ZoneImpact struct {
+	Impact    map[string]ImpactValueWithUnit    `json:"impact" validate:"required"`
+	Resources map[string]ImpactResourceTreeNode `json:"resources" validate:"required"`
 }
 
 type ZoneName string

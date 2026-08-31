@@ -22,7 +22,6 @@ type vpcSubnetUpdateCmd struct {
 
 	Name        string            `cli-usage:"Subnet name"`
 	Description string            `cli-usage:"Subnet description"`
-	IPv4Block   string            `cli-flag:"ipv4-block" cli-usage:"Subnet IPv4 CIDR (e.g. 10.0.0.0/24)"`
 	Labels      map[string]string `cli-flag:"label" cli-usage:"Subnet label (format: key=value), clearing the labels is possible by passing [=]"`
 	Zone        v3.ZoneName       `cli-short:"z" cli-usage:"VPC zone"`
 }
@@ -71,11 +70,6 @@ func (c *vpcSubnetUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
 		req.Description = &c.Description
-		updated = true
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.IPv4Block)) {
-		req.Ipv4Block = &c.IPv4Block
 		updated = true
 	}
 
