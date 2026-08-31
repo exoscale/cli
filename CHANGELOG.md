@@ -6,9 +6,17 @@
 
 ### Features
 
+- dbaas: add clickhouse subcommands — create with type-specific flags, show/update/delete support (incl. `--uri` building a `clickhouse://` connection string from the revealed `avnadmin` credentials), user list/show/create/delete/reset/reveal (create/reset return the generated password), role list/delete, acl show (#894)
+- dbaas: e2e scenarios for clickhouse lifecycle, user ops, role ACL and pg config lifecycle; local runner forwards the account endpoint so preprod runs need no manual env setup (#894)
+
 ### Bug fixes
 
+- dbaas: fix empty table output for user create, role list and acl show (output routed to a nil writer) (#894)
+- dbaas: fix show --uri for clickhouse printing a raw host:port instead of a connection URI (#894)
+
 ### Improvements
+
+- deps: bump egoscale/v3 to v3.1.44 (#894)
 
 ## 1.99.0
 

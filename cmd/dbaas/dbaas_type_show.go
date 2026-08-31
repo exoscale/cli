@@ -107,7 +107,8 @@ var (
 		"pglookout",
 		"timescaledb",
 	}
-	valkeySettings = []string{"valkey"}
+	valkeySettings     = []string{"valkey"}
+	clickhouseSettings = []string{"clickhouse"}
 )
 
 type dbaasTypeShowCmd struct {
@@ -341,6 +342,26 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 
 			if c.ShowSettings == "thanos" {
 				settings = res.Settings.Thanos.Properties
+			}
+
+			dbaasShowSettings(settings)
+
+		case "clickhouse":
+			if !utils.IsInList(clickhouseSettings, c.ShowSettings) {
+				return fmt.Errorf(
+					"invalid settings value %q, expected one of: %s",
+					c.ShowSettings,
+					strings.Join(clickhouseSettings, ", "),
+				)
+			}
+
+			res, err := client.GetDBAASSettingsClickhouse(ctx)
+			if err != nil {
+				return err
+			}
+
+			if c.ShowSettings == "clickhouse" {
+				settings = res.Settings.Clickhouse.Properties
 			}
 
 			dbaasShowSettings(settings)

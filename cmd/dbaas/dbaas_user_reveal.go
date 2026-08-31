@@ -82,6 +82,8 @@ func (c *dbaasUserRevealCmd) CmdRun(cmd *cobra.Command, args []string) error {
 		return c.OutputFunc(c.revealGrafana(ctx))
 	case "valkey":
 		return c.OutputFunc(c.revealValkey(ctx))
+	case "clickhouse":
+		return c.OutputFunc(c.revealClickhouse(ctx))
 	case "thanos":
 		return c.OutputFunc(c.revealThanos(ctx))
 	default:

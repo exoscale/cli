@@ -107,6 +107,12 @@ func setupAPITestEnv(e *testscript.Env, suite *APITestSuite) error {
 	e.Setenv("EXOSCALE_API_KEY", os.Getenv("EXOSCALE_API_KEY"))
 	e.Setenv("EXOSCALE_API_SECRET", os.Getenv("EXOSCALE_API_SECRET"))
 
+	// Optional endpoint override (local_integration against preprod). No-op
+	// for CI: the variable is unset, so the CLI uses the production default.
+	if endpoint := os.Getenv("EXOSCALE_API_ENDPOINT"); endpoint != "" {
+		e.Setenv("EXOSCALE_API_ENDPOINT", endpoint)
+	}
+
 	// Zone and run metadata
 	e.Setenv("EXO_ZONE", suite.Zone)
 	e.Setenv("EXO_OUTPUT", "json")
