@@ -22,11 +22,47 @@ type iamRoleShowOutput struct {
 	Editable    bool              `json:"editable"`
 	Labels      map[string]string `json:"labels"`
 	Permissions []string          `json:"permission"`
+	Policy      *iamPolicyOutput  `json:"policy" output:"-"`
 }
 
-func (o *iamRoleShowOutput) ToJSON()  { output.JSON(o) }
-func (o *iamRoleShowOutput) ToText()  { output.Text(o) }
-func (o *iamRoleShowOutput) ToTable() { output.Table(o) }
+func (o *iamRoleShowOutput) ToJSON() { output.JSON(o) }
+func (o *iamRoleShowOutput) ToText() { output.Text(o) }
+func (o *iamRoleShowOutput) ToTable() {
+	output.Table(o)
+	if o.Policy != nil {
+		o.Policy.ToTable()
+	}
+}
+
+func iamPolicyToOutput(policy *v3.IAMPolicy) *iamPolicyOutput {
+	if policy == nil {
+		return nil
+	}
+
+	out := &iamPolicyOutput{
+		DefaultServiceStrategy: string(policy.DefaultServiceStrategy),
+		Services:               map[string]iamPolicyServiceOutput{},
+	}
+
+	for name, service := range policy.Services {
+		rules := []iamPolicyServiceRuleOutput{}
+		if service.Type == "rules" {
+			for _, rule := range service.Rules {
+				rules = append(rules, iamPolicyServiceRuleOutput{
+					Action:     string(rule.Action),
+					Expression: rule.Expression,
+				})
+			}
+		}
+
+		out.Services[name] = iamPolicyServiceOutput{
+			Type:  string(service.Type),
+			Rules: rules,
+		}
+	}
+
+	return out
+}
 
 type iamRoleShowCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
@@ -76,32 +112,12 @@ func (c *iamRoleShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
+	policy := iamPolicyToOutput(role.Policy)
 	if c.Policy {
-		policy := role.Policy
-
-		out := iamPolicyOutput{
-			DefaultServiceStrategy: string(policy.DefaultServiceStrategy),
-			Services:               map[string]iamPolicyServiceOutput{},
+		if policy == nil {
+			return errors.New("role policy not found")
 		}
-
-		for name, service := range policy.Services {
-			rules := []iamPolicyServiceRuleOutput{}
-			if service.Type == "rules" {
-				for _, rule := range service.Rules {
-					rules = append(rules, iamPolicyServiceRuleOutput{
-						Action:     string(rule.Action),
-						Expression: rule.Expression,
-					})
-				}
-			}
-
-			out.Services[name] = iamPolicyServiceOutput{
-				Type:  string(service.Type),
-				Rules: rules,
-			}
-		}
-
-		return c.OutputFunc(&out, nil)
+		return c.OutputFunc(policy, nil)
 	}
 
 	out := iamRoleShowOutput{
@@ -111,6 +127,7 @@ func (c *iamRoleShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		Labels:      role.Labels,
 		Name:        role.Name,
 		Permissions: role.Permissions,
+		Policy:      policy,
 	}
 
 	return c.OutputFunc(&out, nil)
