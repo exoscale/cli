@@ -51,7 +51,7 @@ Example usage:
 	metadata:
   	  name: standard
 	[...]
-	
+
 	$ exo compute sks km my-cluster -n
 	---
 	apiVersion: karpenter.sh/v1
