@@ -17,6 +17,7 @@ import (
 const (
 	kubeletImageGcLowThreshold  = 80
 	kubeletImageGcHighThreshold = 85
+	kubeletMaxPods              = 110
 	kubeletImageGcMinAge        = "2m"
 )
 
@@ -35,6 +36,7 @@ type sksNodepoolAddCmd struct {
 	ImageGcLowThreshold  int64    `cli-flag:"image-gc-low-threshold" cli-usage:"the percent of disk usage after which image garbage collection is never run"`
 	ImageGcHighThreshold int64    `cli-flag:"image-gc-high-threshold" cli-usage:"the percent of disk usage after which image garbage collection is always run"`
 	ImageGcMinAge        string   `cli-flag:"image-gc-min-age" cli-usage:"maximum age an image can be unused before it is garbage collected"`
+	KubeletMaxPods       int64    `cli-flag:"kubelet-max-pods" cli-usage:"maximum number of pods that can run on a node (default: 110)"`
 	InstancePrefix       string   `cli-usage:"string to prefix Nodepool member names with"`
 	InstanceType         string   `cli-usage:"Nodepool Compute instances type"`
 	Labels               []string `cli-flag:"label" cli-usage:"Nodepool label (format: key=value)"`
@@ -117,6 +119,7 @@ func (c *sksNodepoolAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			LowThreshold:  c.ImageGcLowThreshold,
 			HighThreshold: c.ImageGcHighThreshold,
 		},
+		KubeletMaxPods:     c.KubeletMaxPods,
 		PublicIPAssignment: publicIPAssignment,
 		NvidiaMigProfile:   c.NvidiaMigProfile,
 	}

@@ -214,145 +214,6 @@ func (c Client) GetAIAPIKey(ctx context.Context, id UUID) (*GetAIAPIKeyResponse,
 	return bodyresp, nil
 }
 
-// Update AI API key name and/or scope
-func (c Client) UpdateAIAPIKey(ctx context.Context, id UUID, req UpdateAIAPIKeyRequest) (*UpdateAIAPIKeyResponse, error) {
-	path := fmt.Sprintf("/ai/api-key/%v", id)
-
-	body, err := prepareJSONBody(req)
-	if err != nil {
-		return nil, fmt.Errorf("UpdateAIAPIKey: prepare JSON body: %w", err)
-	}
-
-	request, err := http.NewRequestWithContext(ctx, "PATCH", c.serverEndpoint+path, body)
-	if err != nil {
-		return nil, fmt.Errorf("UpdateAIAPIKey: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	request.Header.Add("Content-Type", "application/json")
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("UpdateAIAPIKey: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("UpdateAIAPIKey: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "update-ai-api-key")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("UpdateAIAPIKey: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("UpdateAIAPIKey: http response: %w", err)
-	}
-
-	bodyresp := new(UpdateAIAPIKeyResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("UpdateAIAPIKey: prepare JSON response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// Reveal AI API key plaintext value
-func (c Client) RevealAIAPIKey(ctx context.Context, id UUID) (*RevealAIAPIKeyResponse, error) {
-	path := fmt.Sprintf("/ai/api-key/%v/reveal", id)
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("RevealAIAPIKey: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("RevealAIAPIKey: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("RevealAIAPIKey: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "reveal-ai-api-key")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("RevealAIAPIKey: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("RevealAIAPIKey: http response: %w", err)
-	}
-
-	bodyresp := new(RevealAIAPIKeyResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("RevealAIAPIKey: prepare JSON response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// Rotate AI API key value
-func (c Client) RotateAIAPIKey(ctx context.Context, id UUID) (*RotateAIAPIKeyResponse, error) {
-	path := fmt.Sprintf("/ai/api-key/%v/rotate", id)
-
-	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("RotateAIAPIKey: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("RotateAIAPIKey: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("RotateAIAPIKey: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "rotate-ai-api-key")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("RotateAIAPIKey: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("RotateAIAPIKey: http response: %w", err)
-	}
-
-	bodyresp := new(RotateAIAPIKeyResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("RotateAIAPIKey: prepare JSON response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
 // FindListDeploymentsResponseEntry attempts to find an ListDeploymentsResponseEntry by nameOrID.
 func (l ListDeploymentsResponse) FindListDeploymentsResponseEntry(nameOrID string) (ListDeploymentsResponseEntry, error) {
 	var result []ListDeploymentsResponseEntry
@@ -12285,6 +12146,8 @@ type AssumeIAMRoleResponse struct {
 }
 
 type AssumeIAMRoleRequest struct {
+	// Organization ID target of the assume role action
+	OrgID UUID `json:"org-id,omitempty"`
 	// TTL in seconds for the generated access key (cannot exceed the max TTL defined in the targeted assume role)
 	Ttl int64 `json:"ttl" validate:"required,gt=0"`
 }
@@ -17855,7 +17718,9 @@ type CreateSKSNodepoolRequest struct {
 	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type" validate:"required"`
 	// Kubelet image GC options
-	KubeletImageGC *KubeletImageGC   `json:"kubelet-image-gc,omitempty"`
+	KubeletImageGC *KubeletImageGC `json:"kubelet-image-gc,omitempty"`
+	// Maximum number of pods per node (kubelet setting)
+	KubeletMaxPods *int64            `json:"kubelet-max-pods,omitempty" validate:"omitempty,gte=1,lte=65535"`
 	Labels         SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name, lowercase only
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
@@ -18034,7 +17899,9 @@ type UpdateSKSNodepoolRequest struct {
 	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
 	// Kubelet image GC options
-	KubeletImageGC *KubeletImageGC   `json:"kubelet-image-gc,omitempty"`
+	KubeletImageGC *KubeletImageGC `json:"kubelet-image-gc,omitempty"`
+	// Maximum number of pods per node (kubelet setting)
+	KubeletMaxPods *int64            `json:"kubelet-max-pods,omitempty" validate:"omitempty,gte=1,lte=65535"`
 	Labels         SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name, lowercase only
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
@@ -19966,22 +19833,22 @@ func (c Client) CreateVpc(ctx context.Context, req CreateVpcRequest) (*Operation
 }
 
 // [BETA] Delete a VPC
-func (c Client) DeleteVpc(ctx context.Context, id UUID) (*Empty, error) {
+func (c Client) DeleteVpc(ctx context.Context, id UUID) error {
 	path := fmt.Sprintf("/vpc/%v", id)
 
 	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
 	if err != nil {
-		return nil, fmt.Errorf("DeleteVpc: new request: %w", err)
+		return fmt.Errorf("DeleteVpc: new request: %w", err)
 	}
 
 	request.Header.Add("User-Agent", c.getUserAgent())
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("DeleteVpc: execute request editors: %w", err)
+		return fmt.Errorf("DeleteVpc: execute request editors: %w", err)
 	}
 
 	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("DeleteVpc: sign request: %w", err)
+		return fmt.Errorf("DeleteVpc: sign request: %w", err)
 	}
 
 	if c.trace {
@@ -19990,7 +19857,7 @@ func (c Client) DeleteVpc(ctx context.Context, id UUID) (*Empty, error) {
 
 	response, err := c.httpClient.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("DeleteVpc: http client do: %w", err)
+		return fmt.Errorf("DeleteVpc: http client do: %w", err)
 	}
 
 	if c.trace {
@@ -19998,15 +19865,11 @@ func (c Client) DeleteVpc(ctx context.Context, id UUID) (*Empty, error) {
 	}
 
 	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("DeleteVpc: http response: %w", err)
+		return fmt.Errorf("DeleteVpc: http response: %w", err)
 	}
 
-	bodyresp := new(Empty)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("DeleteVpc: prepare JSON response: %w", err)
-	}
-
-	return bodyresp, nil
+	_ = response.Body.Close()
+	return nil
 }
 
 // [BETA] Retrieve VPC details
@@ -20324,22 +20187,22 @@ func (c Client) CreateSubnet(ctx context.Context, vpcID UUID, req CreateSubnetRe
 }
 
 // [BETA] Delete a Subnet
-func (c Client) DeleteSubnet(ctx context.Context, vpcID UUID, id UUID) (*Empty, error) {
+func (c Client) DeleteSubnet(ctx context.Context, vpcID UUID, id UUID) error {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v", vpcID, id)
 
 	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
 	if err != nil {
-		return nil, fmt.Errorf("DeleteSubnet: new request: %w", err)
+		return fmt.Errorf("DeleteSubnet: new request: %w", err)
 	}
 
 	request.Header.Add("User-Agent", c.getUserAgent())
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("DeleteSubnet: execute request editors: %w", err)
+		return fmt.Errorf("DeleteSubnet: execute request editors: %w", err)
 	}
 
 	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("DeleteSubnet: sign request: %w", err)
+		return fmt.Errorf("DeleteSubnet: sign request: %w", err)
 	}
 
 	if c.trace {
@@ -20348,7 +20211,7 @@ func (c Client) DeleteSubnet(ctx context.Context, vpcID UUID, id UUID) (*Empty, 
 
 	response, err := c.httpClient.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("DeleteSubnet: http client do: %w", err)
+		return fmt.Errorf("DeleteSubnet: http client do: %w", err)
 	}
 
 	if c.trace {
@@ -20356,15 +20219,11 @@ func (c Client) DeleteSubnet(ctx context.Context, vpcID UUID, id UUID) (*Empty, 
 	}
 
 	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("DeleteSubnet: http response: %w", err)
+		return fmt.Errorf("DeleteSubnet: http response: %w", err)
 	}
 
-	bodyresp := new(Empty)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("DeleteSubnet: prepare JSON response: %w", err)
-	}
-
-	return bodyresp, nil
+	_ = response.Body.Close()
+	return nil
 }
 
 // [BETA] Retrieve Subnet details
@@ -20712,22 +20571,22 @@ func (c Client) CreateRoute(ctx context.Context, vpcID UUID, subnetID UUID, req 
 }
 
 // [BETA] Delete a route
-func (c Client) DeleteRoute(ctx context.Context, vpcID UUID, subnetID UUID, id UUID) (*Empty, error) {
+func (c Client) DeleteRoute(ctx context.Context, vpcID UUID, subnetID UUID, id UUID) error {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v/route/%v", vpcID, subnetID, id)
 
 	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
 	if err != nil {
-		return nil, fmt.Errorf("DeleteRoute: new request: %w", err)
+		return fmt.Errorf("DeleteRoute: new request: %w", err)
 	}
 
 	request.Header.Add("User-Agent", c.getUserAgent())
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("DeleteRoute: execute request editors: %w", err)
+		return fmt.Errorf("DeleteRoute: execute request editors: %w", err)
 	}
 
 	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("DeleteRoute: sign request: %w", err)
+		return fmt.Errorf("DeleteRoute: sign request: %w", err)
 	}
 
 	if c.trace {
@@ -20736,7 +20595,7 @@ func (c Client) DeleteRoute(ctx context.Context, vpcID UUID, subnetID UUID, id U
 
 	response, err := c.httpClient.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("DeleteRoute: http client do: %w", err)
+		return fmt.Errorf("DeleteRoute: http client do: %w", err)
 	}
 
 	if c.trace {
@@ -20744,15 +20603,11 @@ func (c Client) DeleteRoute(ctx context.Context, vpcID UUID, subnetID UUID, id U
 	}
 
 	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("DeleteRoute: http response: %w", err)
+		return fmt.Errorf("DeleteRoute: http response: %w", err)
 	}
 
-	bodyresp := new(Empty)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("DeleteRoute: prepare JSON response: %w", err)
-	}
-
-	return bodyresp, nil
+	_ = response.Body.Close()
+	return nil
 }
 
 type ListZonesResponse struct {
