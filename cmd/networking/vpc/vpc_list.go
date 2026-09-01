@@ -20,7 +20,8 @@ type vpcListItemOutput struct {
 	ID          v3.UUID     `json:"id" outputWidth:"36"`
 	Name        string      `json:"name" outputWidth:"30"`
 	Zone        v3.ZoneName `json:"zone" outputWidth:"8"`
-	Description string      `json:"description" outputWidth:"40"`
+	Default     string
+	Description string `json:"description" outputWidth:"40"`
 }
 
 type vpcListCmd struct {
@@ -78,9 +79,16 @@ func runVPCList(c *vpcListCmd, stdout, stderr io.Writer) error {
 			}
 			for _, v := range resp.Vpcs {
 				if err := streamer.Push(vpcListItemOutput{
-					ID:          v.ID,
-					Name:        v.Name,
-					Zone:        zone.Name,
+					ID:   v.ID,
+					Name: v.Name,
+					Zone: zone.Name,
+					Default: func() string {
+						if *v.Default {
+							return "yes"
+						} else {
+							return "no"
+						}
+					}(),
 					Description: v.Description,
 				}); err != nil {
 					return err
