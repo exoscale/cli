@@ -15,7 +15,7 @@ import (
 type sksKarpenterManifestCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
 
-	_ bool `cli-cmd:"karpenter-manifests"`
+	_ bool `cli-cmd:"generate-karpenter-manifests"`
 
 	Cluster string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
 
@@ -39,7 +39,7 @@ It create the code for the Kubernetes resources "ExoscaleNodeClass" and/or
 Example usage:
 
     # Generate ExoscaleNodeClass and NodePool resources
-    $ exo compute sks karpenter-manifests my-cluster --zone de-fra-1
+    $ exo compute sks generate-karpenter-manifests my-cluster --zone de-fra-1
 	---
 	apiVersion: karpenter.exoscale.com/v1
 	kind: ExoscaleNodeClass
