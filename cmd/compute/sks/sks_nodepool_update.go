@@ -36,6 +36,7 @@ type sksNodepoolUpdateCmd struct {
 	Taints             []string    `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
 	Zone               v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 	IPv6               bool        `cli-flag:"ipv6" cli-usage:"Enable public IPv6 assignment to Nodepool nodes"`
+	KubeletMaxPods     int64       `cli-flag:"kubelet-max-pods" cli-usage:"maximum number of pods that can run on a node"`
 }
 
 func (c *sksNodepoolUpdateCmd) CmdAliases() []string { return nil }
@@ -227,6 +228,16 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 			updateReq.PublicIPAssignment = v3.UpdateSKSNodepoolRequestPublicIPAssignmentDual
 		} else {
 			updateReq.PublicIPAssignment = v3.UpdateSKSNodepoolRequestPublicIPAssignmentInet4
+		}
+		updated = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KubeletMaxPods)) {
+		if c.KubeletMaxPods != 0 {
+			updateReq.KubeletMaxPods = &c.KubeletMaxPods
+		} else {
+			maxPods := int64(kubeletMaxPods)
+			updateReq.KubeletMaxPods = &maxPods
 		}
 		updated = true
 	}

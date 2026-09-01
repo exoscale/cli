@@ -39,6 +39,7 @@ type sksNodepoolShowOutput struct {
 	ImageGCMin           string                           `json:"image_gc_min_age"`
 	ImageGcLowThreshold  int64                            `json:"image_gc_low_threshold"`
 	ImageGcHighThreshold int64                            `json:"image_gc_high_threshold"`
+	KubeletMaxPods       int64                            `json:"kubelet_max_pods"`
 }
 
 func (o *sksNodepoolShowOutput) Type() string { return "SKS Nodepool" }
@@ -168,6 +169,12 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				return nodepool.KubeletImageGC.HighThreshold
 			}
 			return kubeletImageGcHighThreshold
+		}(),
+		KubeletMaxPods: func() (s int64) {
+			if nodepool.KubeletMaxPods != nil && *nodepool.KubeletMaxPods != 0 {
+				return *nodepool.KubeletMaxPods
+			}
+			return kubeletMaxPods
 		}(),
 		Version: nodepool.Version,
 	}

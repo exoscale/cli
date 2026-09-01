@@ -1071,8 +1071,10 @@ type DBAASServiceBackup struct {
 	BackupName string `json:"backup-name" validate:"required"`
 	// Backup timestamp (ISO 8601)
 	BackupTime time.Time `json:"backup-time" validate:"required"`
-	// Backup's original size before compression
+	// Backup's original size before compression, in bytes
 	DataSize int64 `json:"data-size" validate:"required,gte=0"`
+	// Amount of tiered storage data in bytes referenced by this backup
+	TieredStorageDataSize int64 `json:"tiered-storage-data-size,omitempty" validate:"omitempty,gte=0"`
 }
 
 type DBAASServiceClickhouseComponents struct {
@@ -2318,10 +2320,6 @@ type ElasticIPRef struct {
 	ID UUID `json:"id,omitempty"`
 }
 
-// An empty map response
-type Empty struct {
-}
-
 type EnableKmsKeyRotationRequest struct {
 	// The number of days between each automatic key rotation.
 	RotationPeriod int `json:"rotation-period,omitempty" validate:"omitempty,gte=90,lte=2560"`
@@ -2916,6 +2914,9 @@ const (
 	InferenceEngineVersion0250 InferenceEngineVersion = "0.25.0"
 	InferenceEngineVersion0251 InferenceEngineVersion = "0.25.1"
 	InferenceEngineVersion0260 InferenceEngineVersion = "0.26.0"
+	InferenceEngineVersion0270 InferenceEngineVersion = "0.27.0"
+	InferenceEngineVersion0271 InferenceEngineVersion = "0.27.1"
+	InferenceEngineVersion0280 InferenceEngineVersion = "0.28.0"
 )
 
 // Router flush payload: the router's full in-memory usage map with flush identity fields
@@ -2944,6 +2945,26 @@ type InstancePrivateNetworks struct {
 	ID UUID `json:"id,omitempty"`
 	// Private Network MAC address
 	MACAddress string `json:"mac-address,omitempty"`
+}
+
+// VPC subnet
+type InstanceVpcSubnets struct {
+	// VPC subnet ID
+	ID UUID `json:"id,omitempty"`
+	// Instance Subnet ipv4 address
+	Ipv4 net.IP `json:"ipv4,omitempty"`
+	// VPC subnet name
+	Name string `json:"name,omitempty"`
+}
+
+// VPC
+type InstanceVpc struct {
+	// VPC ID
+	ID UUID `json:"id,omitempty"`
+	// VPC name
+	Name string `json:"name,omitempty"`
+	// Instances attached to the subnet
+	Subnets []InstanceVpcSubnets `json:"subnets,omitempty"`
 }
 
 // Instance
@@ -2997,6 +3018,8 @@ type Instance struct {
 	TpmEnabled *bool `json:"tpm-enabled,omitempty"`
 	// Instance Cloud-init user-data (base64 encoded)
 	UserData string `json:"user-data,omitempty" validate:"omitempty,gte=1"`
+	// VPC
+	Vpc *InstanceVpc `json:"vpc,omitempty"`
 }
 
 // Instance password
@@ -4398,7 +4421,7 @@ type JSONSchemaValkey struct {
 }
 
 type KeyMaterial struct {
-	// A boolean flag indicating whether this specific material version was created during an automated system rotation window.
+	// Flag stating whether an automation run handled this historic mutation or if manual actor keys initiated it.
 	Automatic *bool `json:"automatic" validate:"required"`
 	// The UTC date-time indicating when this particular generation of physical cryptographic material was seeded.
 	CreatedAT time.Time `json:"created-at" validate:"required"`
@@ -4652,6 +4675,8 @@ type ListSubnetEntry struct {
 type ListVpcEntry struct {
 	// VPC creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
+	// Indicates if this is the organization's default VPC
+	Default *bool `json:"default,omitempty"`
 	// VPC description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
 	// VPC ID
@@ -5111,12 +5136,6 @@ type Resource struct {
 	Name string `json:"name,omitempty"`
 }
 
-// Reveal AI API key response
-type RevealAIAPIKeyResponse struct {
-	// Plaintext AI API key value
-	Value string `json:"value" validate:"required"`
-}
-
 // AI deployment inference endpoint authentication key
 type RevealDeploymentAPIKeyResponse struct {
 	// Inference endpoint authentication key
@@ -5132,12 +5151,6 @@ type RevisionStamp struct {
 	AT time.Time `json:"at" validate:"required"`
 	// Monotonically increasing sequencing value utilized for optimistic concurrency control locks.
 	Seq int `json:"seq" validate:"required,gte=0"`
-}
-
-// Rotate AI API key response
-type RotateAIAPIKeyResponse struct {
-	// Plaintext AI API key value
-	Value string `json:"value" validate:"required"`
 }
 
 type RotateKmsKeyResponse struct {
@@ -5444,7 +5457,9 @@ type SKSNodepool struct {
 	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
 	// Kubelet image GC options
-	KubeletImageGC *KubeletImageGC   `json:"kubelet-image-gc,omitempty"`
+	KubeletImageGC *KubeletImageGC `json:"kubelet-image-gc,omitempty"`
+	// Maximum number of pods per node. Set to use a value other than the kubelet default.
+	KubeletMaxPods *int64            `json:"kubelet-max-pods,omitempty" validate:"omitempty,gte=1,lte=65535"`
 	Labels         SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
@@ -5597,6 +5612,8 @@ type SubnetInstances struct {
 	ID UUID `json:"id,omitempty"`
 	// Instance Ipv4 address
 	Ipv4 net.IP `json:"ipv4,omitempty"`
+	// Instance name
+	Name string `json:"name,omitempty"`
 }
 
 // Subnet
@@ -5692,30 +5709,6 @@ type TemplateRef struct {
 	ID UUID `json:"id,omitempty"`
 }
 
-// Request to update an AI API key (at least one property required)
-type UpdateAIAPIKeyRequest struct {
-	// Human-readable name for the AI API key
-	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=50"`
-	// Key scope: 'public' for all deployments, or a specific deployment UUID
-	Scope string `json:"scope,omitempty"`
-}
-
-// Update AI API key response
-type UpdateAIAPIKeyResponse struct {
-	// Creation timestamp
-	CreatedAT time.Time `json:"created-at" validate:"required"`
-	// AI API key ID
-	ID UUID `json:"id" validate:"required"`
-	// Human-readable name for the AI API key
-	Name string `json:"name" validate:"required"`
-	// Organization UUID that owns this key
-	OrgUuid UUID `json:"org-uuid" validate:"required"`
-	// Key scope: 'public' for all deployments, or a specific deployment UUID
-	Scope string `json:"scope" validate:"required"`
-	// Last update timestamp
-	UpdatedAT time.Time `json:"updated-at" validate:"required"`
-}
-
 // Update AI deployment
 type UpdateDeploymentRequest struct {
 	// Optional extra inference engine server CLI args
@@ -5746,6 +5739,8 @@ type User struct {
 type Vpc struct {
 	// VPC creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
+	// Indicates if this is the organization's default VPC
+	Default *bool `json:"default,omitempty"`
 	// VPC description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
 	// VPC ID
