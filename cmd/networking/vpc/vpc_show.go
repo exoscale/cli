@@ -47,14 +47,13 @@ func (o *vpcShowOutput) ToTable() {
 	t.Append([]string{"Zone", string(o.Zone)})
 	t.Append([]string{"Created At", o.CreatedAt})
 	t.Append([]string{"Labels", func() string {
-		var labels map[string]string = o.Labels
-		if len(labels) == 0 {
+		if len(o.Labels) == 0 {
 			return "n/a"
 		}
 
 		pairs := make([]string, 0, len(o.Labels))
 		for _, k := range o.Labels {
-			pairs = append(pairs, fmt.Sprintf("%s:%s", k, labels[k]))
+			pairs = append(pairs, fmt.Sprintf("%s:%s", k, o.Labels[k]))
 		}
 		return strings.Join(pairs, "\n")
 	}()})
