@@ -21,7 +21,6 @@ type vpcSubnetCreateCmd struct {
 	VPC  string `cli-arg:"#" cli-usage:"VPC-NAME|ID"`
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
-	// TODO: I'm not a fan of the usability of this command
 	IPv4Block     string            `cli-flag:"ipv4-block" cli-usage:"Subnet IPv4 CIDR (e.g. 10.0.0.0/24)"`
 	AddressFamily string            `cli-flag:"address-family" cli-usage:"Subnet address family (currently only \"inet4\" is supported)"`
 	AddressSpace  string            `cli-flag:"address-space" cli-usage:"Subnet address space (currently only \"private\" is supported)"`
