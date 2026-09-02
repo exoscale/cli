@@ -18,6 +18,7 @@ import (
 )
 
 var securityGroupRuleProtocols = []string{
+	"all",
 	"ah",
 	"esp",
 	"gre",
