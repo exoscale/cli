@@ -21,10 +21,12 @@ type iamRoleUpdateCmd struct {
 
 	Role string `cli-arg:"#" cli-usage:"ID|NAME"`
 
-	Description string            `cli-flag:"description" cli-usage:"Role description"`
-	Permissions []string          `cli-flag:"permissions" cli-usage:"Role permissions"`
-	Labels      map[string]string `cli-flag:"label" cli-usage:"Role labels (format: key=value)"`
-	Policy      string            `cli-flag:"policy" cli-usage:"Role policy (use '-' to read from STDIN)"`
+	Description      string            `cli-flag:"description" cli-usage:"Role description"`
+	Permissions      []string          `cli-flag:"permissions" cli-usage:"Role permissions"`
+	Labels           map[string]string `cli-flag:"label" cli-usage:"Role labels (format: key=value)"`
+	Policy           string            `cli-flag:"policy" cli-usage:"Role policy (use '-' to read from STDIN)"`
+	AssumeRolePolicy string            `cli-flag:"assume-role-policy" cli-usage:"Assume Role policy (use '-' to read from STDIN)"`
+	MaxSessionTtl    int64             `cli-flag:"max-session-ttl" cli-usage:"Maximum TTL requester is allowed to ask for when assuming a role"`
 
 	_ bool `cli-cmd:"update"`
 }
@@ -37,7 +39,7 @@ func (c *iamRoleUpdateCmd) CmdShort() string {
 
 func (c *iamRoleUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates an IAM Role.
-When you supply '-' as a flag argument to '--policy', the new policy will be read from STDIN.
+To read a policy from STDIN, append '-' to the '--policy' or '--assume-role-policy' flag.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamPolicyOutput{}), ", "))
@@ -78,6 +80,9 @@ func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Permissions)) {
 		updateRole.Permissions = c.Permissions
 	}
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaxSessionTtl)) {
+		updateRole.MaxSessionTtl = c.MaxSessionTtl
+	}
 
 	op, err := client.UpdateIAMRole(ctx, role.ID, updateRole)
 	if err != nil {
@@ -90,42 +95,60 @@ func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	// If we don't need to update Policy we can exit now
-	if c.Policy == "" {
-		if !globalstate.Quiet {
-			return (&iamRoleShowCmd{
-				CliCommandSettings: c.CliCommandSettings,
-				Role:               role.ID.String(),
-			}).CmdRun(nil, nil)
+	if c.Policy != "" {
+		if c.Policy == "-" {
+			inputReader := cmd.InOrStdin()
+			b, err := io.ReadAll(inputReader)
+			if err != nil {
+				return fmt.Errorf("failed to read policy from stdin: %w", err)
+			}
+
+			c.Policy = string(b)
 		}
 
-		return nil
-	}
-
-	if c.Policy == "-" {
-		inputReader := cmd.InOrStdin()
-		b, err := io.ReadAll(inputReader)
+		policy, err := iamPolicyFromJSON([]byte(c.Policy))
 		if err != nil {
-			return fmt.Errorf("failed to read policy from stdin: %w", err)
+			return fmt.Errorf("failed to parse IAM policy: %w", err)
 		}
 
-		c.Policy = string(b)
+		op, err = client.UpdateIAMRolePolicy(ctx, role.ID, *policy)
+		if err != nil {
+			return err
+		}
+		utils.DecorateAsyncOperation("Updating IAM role policy...", func() {
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		})
+		if err != nil {
+			return err
+		}
 	}
 
-	policy, err := iamPolicyFromJSON([]byte(c.Policy))
-	if err != nil {
-		return fmt.Errorf("failed to parse IAM policy: %w", err)
-	}
+	if c.AssumeRolePolicy != "" {
+		if c.AssumeRolePolicy == "-" {
+			inputReader := cmd.InOrStdin()
+			b, err := io.ReadAll(inputReader)
+			if err != nil {
+				return fmt.Errorf("failed to read assume role policy from stdin: %w", err)
+			}
 
-	op, err = client.UpdateIAMRolePolicy(ctx, role.ID, *policy)
-	if err != nil {
-		return err
-	}
-	utils.DecorateAsyncOperation("Updating IAM role policy...", func() {
-		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-	})
-	if err != nil {
-		return err
+			c.AssumeRolePolicy = string(b)
+		}
+
+		assumeRolePolicy, err := iamPolicyFromJSON([]byte(c.AssumeRolePolicy))
+		if err != nil {
+			return fmt.Errorf("failed to parse IAM assume role policy: %w", err)
+		}
+
+		op, err = client.UpdateIAMRoleAssumePolicy(ctx, role.ID, *assumeRolePolicy)
+		if err != nil {
+			return err
+		}
+		utils.DecorateAsyncOperation("Updating IAM assume role policy...", func() {
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	if !globalstate.Quiet {
