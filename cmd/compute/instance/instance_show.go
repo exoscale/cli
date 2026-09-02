@@ -18,29 +18,32 @@ import (
 )
 
 type InstanceShowOutput struct {
-	ID                    v3.UUID               `json:"id"`
-	Name                  string                `json:"name"`
-	CreationDate          string                `json:"creation_date"`
-	InstanceType          string                `json:"instance_type"`
-	Template              string                `json:"template"`
-	Zone                  v3.ZoneName           `json:"zone"`
-	AntiAffinityGroups    []string              `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
-	DeployTarget          string                `json:"deploy_target"`
-	SecurityGroups        []string              `json:"security_groups"`
-	PrivateInstance       string                `json:"private-instance" outputLabel:"Private Instance"`
-	PrivateNetworks       []string              `json:"private_networks"`
-	ElasticIPs            []string              `json:"elastic_ips" outputLabel:"Elastic IPs"`
-	PublicIPAssignment    v3.PublicIPAssignment `json:"public-ip" outputLabel:"Public IP"`
-	IPAddress             string                `json:"ip_address"`
-	IPv6Address           string                `json:"ipv6_address" outputLabel:"IPv6 Address"`
-	SSHKeys               []string              `json:"ssh_keys"`
-	DiskSize              string                `json:"disk_size"`
-	State                 v3.InstanceState      `json:"state"`
-	Labels                map[string]string     `json:"labels"`
-	SecureBoot            bool                  `json:"secureboot"`
-	Tpm                   bool                  `json:"tpm"`
-	ReverseDNS            v3.DomainName         `json:"reverse_dns" outputLabel:"Reverse DNS"`
-	AppConsistentSnapshot bool                  `json:"application_consistent_snapshot_enabled" outputLabel:"Application-Consistent Snapshot enabled"`
+	ID                 v3.UUID               `json:"id"`
+	Name               string                `json:"name"`
+	CreationDate       string                `json:"creation_date"`
+	InstanceType       string                `json:"instance_type"`
+	Template           string                `json:"template"`
+	Zone               v3.ZoneName           `json:"zone"`
+	AntiAffinityGroups []string              `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
+	DeployTarget       string                `json:"deploy_target"`
+	SecurityGroups     []string              `json:"security_groups"`
+	PrivateInstance    string                `json:"private-instance" outputLabel:"Private Instance"`
+	ElasticIPs         []string              `json:"elastic_ips" outputLabel:"Elastic IPs"`
+	PublicIPAssignment v3.PublicIPAssignment `json:"public-ip" outputLabel:"Public IP"`
+	Vpc                string                `json:"vpc"`
+	VpcSubnets         []string              `json:"vpc_subnets"`
+	PrivateNetworks    []string              `json:"private_networks"`
+
+	IPAddress             string            `json:"ip_address"`
+	IPv6Address           string            `json:"ipv6_address" outputLabel:"IPv6 Address"`
+	SSHKeys               []string          `json:"ssh_keys"`
+	DiskSize              string            `json:"disk_size"`
+	State                 v3.InstanceState  `json:"state"`
+	Labels                map[string]string `json:"labels"`
+	SecureBoot            bool              `json:"secureboot"`
+	Tpm                   bool              `json:"tpm"`
+	ReverseDNS            v3.DomainName     `json:"reverse_dns" outputLabel:"Reverse DNS"`
+	AppConsistentSnapshot bool              `json:"application_consistent_snapshot_enabled" outputLabel:"Application-Consistent Snapshot enabled"`
 }
 
 func (o *InstanceShowOutput) Type() string { return "Compute instance" }
@@ -124,20 +127,31 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		PublicIPAssignment: instance.PublicIPAssignment,
 		IPAddress:          utils.DefaultIP(&instance.PublicIP, "-"),
 		IPv6Address:        utils.DefaultIP(ipV6, "-"),
+		//TODO: we need to fix the orchestrator to prevent NPEs here
+		Vpc: instance.Vpc.Name,
+		VpcSubnets: func() []string {
+			list := make([]string, 0)
+			for _, v := range instance.Vpc.Subnets {
+				list = append(list, fmt.Sprintf("%v %v", v.Name, v.Ipv4))
+			}
+			return list
+		}(),
+		PrivateNetworks: make([]string, 0),
 		Labels: func() (v map[string]string) {
+
 			if instance.Labels != nil {
 				v = instance.Labels
 			}
 			return
 		}(),
-		Name:            instance.Name,
-		PrivateNetworks: make([]string, 0),
-		SSHKeys:         make([]string, 0),
-		SecurityGroups:  make([]string, 0),
-		SecureBoot:      *instance.SecurebootEnabled,
-		Tpm:             *instance.TpmEnabled,
-		State:           instance.State,
-		Zone:            c.Zone,
+		Name: instance.Name,
+
+		SSHKeys:        make([]string, 0),
+		SecurityGroups: make([]string, 0),
+		SecureBoot:     *instance.SecurebootEnabled,
+		Tpm:            *instance.TpmEnabled,
+		State:          instance.State,
+		Zone:           c.Zone,
 	}
 
 	if instance.ApplicationConsistentSnapshotEnabled != nil {
