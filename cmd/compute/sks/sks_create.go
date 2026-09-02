@@ -298,8 +298,8 @@ func init() {
 
 }
 
-// Computes the major.minor.patch version of an SKS cluster from an resSKSClusterAttrVersion inputVersion
-// Defaults to latest version
+// Computes the major.minor.patch version of an SKS cluster
+// Defaults to the latest version
 func resolveSKSClusterVersion(ctx context.Context, client *v3.Client, inputVersion string) (string, error) {
 
 	inputVersionLength := len(strings.Split(inputVersion, "."))
