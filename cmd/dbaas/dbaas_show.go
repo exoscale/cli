@@ -76,6 +76,7 @@ type dbServiceShowOutput struct {
 	Valkey     *dbServiceValkeyShowOutput     `json:"valkey,omitempty"`
 	Opensearch *dbServiceOpensearchShowOutput `json:"opensearch,omitempty"`
 	Thanos     *dbServiceThanosShowOutput     `json:"thanos,omitempty"`
+	Clickhouse *dbServiceClickhouseShowOutput `json:"clickhouse,omitempty"`
 }
 
 func (o *dbServiceShowOutput) ToJSON() { output.JSON(o) }
@@ -120,6 +121,8 @@ func (o *dbServiceShowOutput) ToTable() {
 		formatDatabaseServiceValkeyTable(t, o.Valkey)
 	case o.Thanos != nil:
 		formatDatabaseServiceThanosTable(t, o.Thanos)
+	case o.Clickhouse != nil:
+		formatDatabaseServiceClickhouseTable(t, o.Clickhouse)
 	}
 }
 
@@ -213,6 +216,8 @@ func (c *dbaasServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return c.OutputFunc(c.showDatabaseServiceValkey(ctx))
 	case "thanos":
 		return c.OutputFunc(c.showDatabaseServiceThanos(ctx))
+	case "clickhouse":
+		return c.OutputFunc(c.showDatabaseServiceClickhouse(ctx))
 	default:
 		return fmt.Errorf("unsupported service type %q", svc.Type)
 	}

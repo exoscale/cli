@@ -5457,7 +5457,9 @@ type SKSNodepool struct {
 	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
 	// Kubelet image GC options
-	KubeletImageGC *KubeletImageGC   `json:"kubelet-image-gc,omitempty"`
+	KubeletImageGC *KubeletImageGC `json:"kubelet-image-gc,omitempty"`
+	// Maximum number of pods per node. Set to use a value other than the kubelet default.
+	KubeletMaxPods *int64            `json:"kubelet-max-pods,omitempty" validate:"omitempty,gte=1,lte=65535"`
 	Labels         SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`

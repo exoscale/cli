@@ -1,0 +1,45 @@
+# Test: dbaas clickhouse user operations (create/reset-credentials/reveal-secrets/delete)
+# Full lifecycle on a fresh ClickHouse service: the avnadmin user is created
+# by the platform, so user ops are exercised against it, plus a second user
+# we create and delete ourselves.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# Create a ClickHouse service (disable termination protection for cleanup)
+exec exo --zone $TEST_ZONE --output-format json dbaas create clickhouse startup-8 ch-user-$TEST_RUN_ID --termination-protection=false
+
+# Wait for the service to be running
+wait-dbaas-state $TEST_ZONE ch-user-$TEST_RUN_ID running 900
+
+# User list shows the built-in avnadmin user
+exec exo --zone $TEST_ZONE dbaas user list ch-user-$TEST_RUN_ID
+stdout 'avnadmin'
+
+# User show avnadmin
+exec exo --zone $TEST_ZONE dbaas user show ch-user-$TEST_RUN_ID avnadmin
+stdout 'avnadmin'
+
+# User create returns the generated password synchronously (JSON: "password" key)
+exec exo --zone $TEST_ZONE --output-format json dbaas user create ch-user-$TEST_RUN_ID testuser
+stdout '"password"'
+
+# User create also renders the generated password in the default (table) format
+exec exo --zone $TEST_ZONE dbaas user create ch-user-$TEST_RUN_ID tableuser
+stdout 'Username'
+stdout 'Password'
+exec exo --zone $TEST_ZONE dbaas user delete ch-user-$TEST_RUN_ID tableuser -f
+
+# User reset-credentials returns the new password synchronously
+exec exo --zone $TEST_ZONE --output-format json dbaas user reset-credentials ch-user-$TEST_RUN_ID avnadmin
+stdout '"password"'
+
+# User reveal-secrets only works for the avnadmin user
+exec exo --zone $TEST_ZONE dbaas user reveal-secrets ch-user-$TEST_RUN_ID avnadmin
+stdout 'Password'
+! exec exo --zone $TEST_ZONE dbaas user reveal-secrets ch-user-$TEST_RUN_ID nosuchuser
+stderr 'only supported for the avnadmin user'
+
+# User delete (prompts; use --force)
+exec exo --zone $TEST_ZONE dbaas user delete ch-user-$TEST_RUN_ID testuser -f
+
+# Teardown: delete the service
+exec exo --zone $TEST_ZONE dbaas delete -f ch-user-$TEST_RUN_ID

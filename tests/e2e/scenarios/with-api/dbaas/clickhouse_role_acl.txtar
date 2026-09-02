@@ -1,0 +1,24 @@
+# Test: dbaas clickhouse role list / delete and acl show
+# Roles are read-only from the CLI perspective (no create command), so this
+# scenario verifies role listing, role deletion by UUID for a role that does
+# not exist (negative), and the ACL config view on a fresh service.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# Create a ClickHouse service (disable termination protection for cleanup)
+exec exo --zone $TEST_ZONE --output-format json dbaas create clickhouse startup-8 ch-role-$TEST_RUN_ID --termination-protection=false
+
+# Wait for the service to be running
+wait-dbaas-state $TEST_ZONE ch-role-$TEST_RUN_ID running 900
+
+# Role list: the platform creates built-in roles, so the roles array is present
+exec exo --zone $TEST_ZONE --output-format json dbaas role list ch-role-$TEST_RUN_ID
+stdout '"roles"'
+
+# Delete of a non-existent role UUID must fail
+! exec exo --zone $TEST_ZONE dbaas role delete ch-role-$TEST_RUN_ID 00000000-0000-0000-0000-000000000000 -f
+
+# ACL show must succeed (users array may be empty on a fresh service)
+exec exo --zone $TEST_ZONE --output-format json dbaas acl show ch-role-$TEST_RUN_ID
+
+# Teardown: delete the service
+exec exo --zone $TEST_ZONE dbaas delete -f ch-role-$TEST_RUN_ID

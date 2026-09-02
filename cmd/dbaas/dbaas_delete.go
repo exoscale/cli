@@ -62,7 +62,12 @@ func (c *dbaasServiceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			c.Name, strings.Join(readReplicaNames, ", "))
 	}
 
-	op, err := client.DeleteDBAASService(ctx, c.Name)
+	op, err := func() (*v3.Operation, error) {
+		if string(svc.Type) == "clickhouse" {
+			return client.DeleteDBAASServiceClickhouse(ctx, c.Name)
+		}
+		return client.DeleteDBAASService(ctx, c.Name)
+	}()
 	if err != nil {
 		if errors.Is(err, v3.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)

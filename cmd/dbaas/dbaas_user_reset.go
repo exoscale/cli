@@ -68,6 +68,8 @@ func (c *dbaasUserResetCmd) CmdRun(cmd *cobra.Command, args []string) error {
 		return c.resetGrafana(cmd, args)
 	case "valkey":
 		return c.resetValkey(cmd, args)
+	case "clickhouse":
+		return c.resetClickhouse(cmd, args)
 	default:
 		return fmt.Errorf("reseting user credentials unsupported for service of type %q", db.Type)
 	}

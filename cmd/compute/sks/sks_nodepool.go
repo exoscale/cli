@@ -62,6 +62,7 @@ type CreateNodepoolOpts struct {
 	Taints             []string
 	KubeletImageGC     *v3.KubeletImageGC
 	PublicIPAssignment v3.CreateSKSNodepoolRequestPublicIPAssignment
+	KubeletMaxPods     int64
 
 	// Nvidia MIG (Multi-Instance GPU) profile to enable on the Nodepool GPUs.
 	// The GPU family it applies to is inferred from the Nodepool instance type.
@@ -197,6 +198,10 @@ func createNodepoolRequest(
 			nodepoolTaints[key] = *taint
 		}
 		nodepoolReq.Taints = nodepoolTaints
+	}
+
+	if opts.KubeletMaxPods != 0 {
+		nodepoolReq.KubeletMaxPods = &opts.KubeletMaxPods
 	}
 
 	migProfiles, err := buildNvidiaMigProfiles(it.Family, opts.NvidiaMigProfile)

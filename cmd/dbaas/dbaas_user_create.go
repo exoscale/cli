@@ -69,6 +69,8 @@ func (c *dbaasUserCreateCmd) CmdRun(cmd *cobra.Command, args []string) error {
 		return c.createOpensearch(cmd, args)
 	case "valkey":
 		return c.createValkey(cmd, args)
+	case "clickhouse":
+		return c.createClickhouse(cmd, args)
 	default:
 		return fmt.Errorf("creating user unsupported for service of type %q", db.Type)
 	}

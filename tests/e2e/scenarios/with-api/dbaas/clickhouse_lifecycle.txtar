@@ -1,0 +1,32 @@
+# Test: dbaas clickhouse create/show/update/delete lifecycle with clickhouse-specific flags
+# Full lifecycle: create a ClickHouse service with --clickhouse-ip-filter and
+# --clickhouse-version, verify show JSON output, update, then delete.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# Type show with the clickhouse settings view (no resource created)
+exec exo dbaas type show clickhouse --settings=clickhouse
+
+# Create a ClickHouse service with type-specific flags (disable termination protection for cleanup)
+exec exo --zone $TEST_ZONE --output-format json dbaas create clickhouse startup-8 ch-$TEST_RUN_ID --clickhouse-ip-filter 10.0.0.0/8 --clickhouse-version 25.8 --termination-protection=false
+
+# Wait for the service to be running (ClickHouse provisioning can take 5-10 minutes)
+wait-dbaas-state $TEST_ZONE ch-$TEST_RUN_ID running 900
+
+# Show the service and verify the clickhouse section is present in JSON output
+exec exo --zone $TEST_ZONE --output-format json dbaas show ch-$TEST_RUN_ID
+stdout '"clickhouse"'
+stdout '"components"'
+stdout '"uri"'
+
+# Show --uri prints the primary connection URI
+exec exo --zone $TEST_ZONE dbaas show ch-$TEST_RUN_ID --uri
+stdout 'clickhouse://'
+
+# Update: change the IP filter
+exec exo --zone $TEST_ZONE dbaas update ch-$TEST_RUN_ID --clickhouse-ip-filter 192.168.0.0/16 -f
+
+# Wait for the service to stabilise after update
+wait-dbaas-state $TEST_ZONE ch-$TEST_RUN_ID running 600
+
+# Teardown: delete the service
+exec exo --zone $TEST_ZONE dbaas delete -f ch-$TEST_RUN_ID
