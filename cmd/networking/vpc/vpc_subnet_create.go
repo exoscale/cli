@@ -36,13 +36,19 @@ func (c *vpcSubnetCreateCmd) CmdShort() string { return "Create a VPC Subnet" }
 func (c *vpcSubnetCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates a Subnet in a Virtual Private Cloud.
 
+--address-family and --address-space are required.
+
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&vpcSubnetShowOutput{}), ", "))
 }
 
 func (c *vpcSubnetCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	if err := exocmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
+
+	return exocmd.CmdCheckRequiredFlags(cmd, []string{"address-family", "address-space"})
 }
 
 func (c *vpcSubnetCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
