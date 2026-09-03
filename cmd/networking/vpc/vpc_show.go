@@ -25,7 +25,7 @@ type vpcShowOutput struct {
 	ID          v3.UUID               `json:"id"`
 	Name        string                `json:"name"`
 	Description string                `json:"description"`
-	Default     string                `json:"default"`
+	Default     bool                  `json:"default"`
 	Zone        v3.ZoneName           `json:"zone"`
 	CreatedAt   string                `json:"created_at"`
 	Labels      map[string]string     `json:"labels"`
@@ -42,8 +42,7 @@ func (o *vpcShowOutput) ToTable() {
 	t.Append([]string{"ID", o.ID.String()})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})
-	t.Append([]string{"Default", o.Default})
-
+	t.Append([]string{"Default", fmt.Sprintf("%v", o.Default)})
 	t.Append([]string{"Zone", string(o.Zone)})
 	t.Append([]string{"Created At", o.CreatedAt})
 	t.Append([]string{"Labels", func() string {
@@ -52,8 +51,8 @@ func (o *vpcShowOutput) ToTable() {
 		}
 
 		pairs := make([]string, 0, len(o.Labels))
-		for _, k := range o.Labels {
-			pairs = append(pairs, fmt.Sprintf("%s:%s", k, o.Labels[k]))
+		for k, v := range o.Labels {
+			pairs = append(pairs, fmt.Sprintf("%s:%s", k, v))
 		}
 		return strings.Join(pairs, "\n")
 	}()})
@@ -110,17 +109,11 @@ func (c *vpcShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		ID:          vpc.ID,
 		Name:        vpc.Name,
 		Description: vpc.Description,
-		Default: func() string {
-			if *vpc.Default {
-				return "yes"
-			} else {
-				return "no"
-			}
-		}(),
-		Zone:      c.Zone,
-		CreatedAt: vpc.CreatedAT.String(),
-		Labels:    vpc.Labels,
-		Subnets:   []vpcSubnetItemOutput{},
+		Default:     *vpc.Default,
+		Zone:        c.Zone,
+		CreatedAt:   vpc.CreatedAT.String(),
+		Labels:      vpc.Labels,
+		Subnets:     []vpcSubnetItemOutput{},
 	}
 
 	subnets, err := client.ListSubnets(ctx, vpc.ID)
