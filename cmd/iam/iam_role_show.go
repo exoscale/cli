@@ -25,9 +25,15 @@ type iamRoleShowOutput struct {
 	Policy      *iamPolicyOutput  `json:"policy" output:"-"`
 }
 
-func (o *iamRoleShowOutput) ToJSON()  { output.JSON(o) }
-func (o *iamRoleShowOutput) ToText()  { output.Text(o) }
-func (o *iamRoleShowOutput) ToTable() { output.Table(o) }
+func (o *iamRoleShowOutput) ToJSON() { output.JSON(o) }
+func (o *iamRoleShowOutput) ToText() { output.Text(o) }
+func (o *iamRoleShowOutput) ToTable() {
+	output.Table(o)
+	if o.Policy != nil {
+		fmt.Println("\nPolicy:")
+		o.Policy.ToTable()
+	}
+}
 
 func iamPolicyToOutput(policy *v3.IAMPolicy) *iamPolicyOutput {
 	if policy == nil {
