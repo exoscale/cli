@@ -1,6 +1,7 @@
 package sks
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -178,16 +179,9 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 		}
 	}
 
-	if clusterReq.Version == "latest" {
-		versions, err := client.ListSKSClusterVersions(ctx)
-		if err != nil || len(versions.SKSClusterVersions) == 0 {
-			return fmt.Errorf("unable to retrieve SKS versions: %w", err)
-		}
-		if versions == nil || len(versions.SKSClusterVersions) == 0 {
-			return errors.New("no version returned by the API")
-		}
-
-		clusterReq.Version = versions.SKSClusterVersions[0]
+	clusterReq.Version, err = resolveSKSClusterVersion(ctx, client, clusterReq.Version) 
+	if err != nil {
+		return err
 	}
 
 	if c.OIDCClientID != "" {
@@ -302,4 +296,41 @@ func init() {
 		ServiceLevel:                 defaultSKSClusterServiceLevel,
 	}))
 
+}
+
+// Computes the major.minor.patch version of an SKS cluster
+// Defaults to the latest version
+func resolveSKSClusterVersion(ctx context.Context, client *v3.Client, inputVersion string) (string, error) {
+
+	inputVersionLength := len(strings.Split(inputVersion, "."))
+	isMajorMinor := inputVersionLength == 2
+	isMajorMinorPatch := inputVersionLength == 3
+
+	if isMajorMinorPatch {
+		return inputVersion, nil
+	}
+
+	availableVersions, err := client.ListSKSClusterVersions(ctx)
+	if err != nil {
+		return "", err
+	}
+	if len(availableVersions.SKSClusterVersions) == 0 {
+		return "", fmt.Errorf("ListSKSClusterVersions: API returned empty list")
+	}
+
+	defaultVersion := availableVersions.SKSClusterVersions[0]
+	if "latest" == inputVersion {
+		return defaultVersion, nil
+	}
+
+	if isMajorMinor {
+		for _, v := range availableVersions.SKSClusterVersions {
+			if inputVersion == strings.Join(strings.Split(v, ".")[:2], ".") {
+				return v, nil
+			}
+		}
+		return "", fmt.Errorf("the SKS cluster version %s is not supported. Available versions: %s", inputVersion, strings.Join(availableVersions.SKSClusterVersions, ", "))
+	}
+
+	return "", fmt.Errorf("error resolving the provided SKS cluster version: %s. Available versions: %s", inputVersion, strings.Join(availableVersions.SKSClusterVersions, ", "))
 }
