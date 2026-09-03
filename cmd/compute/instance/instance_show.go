@@ -18,24 +18,25 @@ import (
 )
 
 type InstanceShowOutput struct {
-	ID                 v3.UUID               `json:"id"`
-	Name               string                `json:"name"`
-	CreationDate       string                `json:"creation_date"`
-	InstanceType       string                `json:"instance_type"`
-	Template           string                `json:"template"`
-	Zone               v3.ZoneName           `json:"zone"`
-	AntiAffinityGroups []string              `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
-	DeployTarget       string                `json:"deploy_target"`
-	SecurityGroups     []string              `json:"security_groups"`
+	ID                 v3.UUID     `json:"id"`
+	Name               string      `json:"name"`
+	CreationDate       string      `json:"creation_date"`
+	InstanceType       string      `json:"instance_type"`
+	Template           string      `json:"template"`
+	Zone               v3.ZoneName `json:"zone"`
+	AntiAffinityGroups []string    `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
+	DeployTarget       string      `json:"deploy_target"`
+	SecurityGroups     []string    `json:"security_groups"`
+
 	PrivateInstance    string                `json:"private-instance" outputLabel:"Private Instance"`
 	ElasticIPs         []string              `json:"elastic_ips" outputLabel:"Elastic IPs"`
 	PublicIPAssignment v3.PublicIPAssignment `json:"public-ip" outputLabel:"Public IP"`
+	IPAddress          string                `json:"ip_address"`
+	IPv6Address        string                `json:"ipv6_address" outputLabel:"IPv6 Address"`
 	Vpc                string                `json:"vpc"`
 	VpcSubnets         []string              `json:"vpc_subnets"`
 	PrivateNetworks    []string              `json:"private_networks"`
 
-	IPAddress             string            `json:"ip_address"`
-	IPv6Address           string            `json:"ipv6_address" outputLabel:"IPv6 Address"`
 	SSHKeys               []string          `json:"ssh_keys"`
 	DiskSize              string            `json:"disk_size"`
 	State                 v3.InstanceState  `json:"state"`
