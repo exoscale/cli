@@ -39,6 +39,7 @@ type InstanceShowOutput struct {
 	Labels                map[string]string     `json:"labels"`
 	SecureBoot            bool                  `json:"secureboot"`
 	Tpm                   bool                  `json:"tpm"`
+	IpForwarding          bool                  `json:"ip_forwarding"`
 	ReverseDNS            v3.DomainName         `json:"reverse_dns" outputLabel:"Reverse DNS"`
 	AppConsistentSnapshot bool                  `json:"application_consistent_snapshot_enabled" outputLabel:"Application-Consistent Snapshot enabled"`
 }
@@ -136,6 +137,7 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		SecurityGroups:  make([]string, 0),
 		SecureBoot:      *instance.SecurebootEnabled,
 		Tpm:             *instance.TpmEnabled,
+		IpForwarding:    *instance.IPForwarding,
 		State:           instance.State,
 		Zone:            c.Zone,
 	}
