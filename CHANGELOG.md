@@ -11,6 +11,7 @@
 - sks: add `--kubelet-max-pods` flag to `nodepool add`/`update` commands (#904)
 - sks: add a `generate-karpenter-manifests` (short: `km`) command to generate the Karpenter manifests relevant to a cluster
 - Add "all" protocol to security groups
+- vpc: Add support for configuring ip forwarding on instance
 ### Bug fixes
 
 - iam: include policies in role show output (#903)
