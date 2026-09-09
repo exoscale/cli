@@ -2987,6 +2987,8 @@ type Instance struct {
 	ID UUID `json:"id,omitempty"`
 	// Compute instance type
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
+	// VPC ip forwarding
+	IPForwarding *bool `json:"ip-forwarding,omitempty"`
 	// Instance IPv6 address
 	Ipv6Address string `json:"ipv6-address,omitempty"`
 	Labels      Labels `json:"labels,omitempty"`
@@ -4694,6 +4696,13 @@ type LiveBalance struct {
 	Currency string `json:"currency,omitempty"`
 }
 
+type LoadBalancerAddressfamily string
+
+const (
+	LoadBalancerAddressfamilyInet4 LoadBalancerAddressfamily = "inet4"
+	LoadBalancerAddressfamilyInet6 LoadBalancerAddressfamily = "inet6"
+)
+
 type LoadBalancerState string
 
 const (
@@ -4707,6 +4716,8 @@ const (
 
 // Load Balancer
 type LoadBalancer struct {
+	// Load Balancer address family
+	Addressfamily LoadBalancerAddressfamily `json:"addressfamily,omitempty"`
 	// Load Balancer creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Load Balancer description

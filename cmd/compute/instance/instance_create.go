@@ -40,6 +40,7 @@ type instanceCreateCmd struct {
 	DeployTarget          string            `cli-usage:"instance Deploy Target NAME|ID"`
 	DiskSize              int64             `cli-usage:"instance disk size"`
 	TPM                   bool              `cli-flag:"tpm" cli-usage:"enable TPM on instance"`
+	IpForwarding          bool              `cli-flag:"ip-forwarding" cli-usage:"enable ip forwarding on instance"`
 	SecureBoot            bool              `cli-flag:"secureboot" cli-usage:"enable Secure boot on instance"`
 	InstanceType          string            `cli-usage:"instance type (format: [FAMILY.]SIZE)"`
 	Labels                map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
@@ -131,6 +132,7 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 		DiskSize:           diskSize,
 		PublicIPAssignment: publicIPAssignment,
 		TpmEnabled:         &c.TPM,
+		IPForwarding:       &c.IpForwarding,
 		SecurebootEnabled:  &c.SecureBoot,
 		Labels:             c.Labels,
 		Name:               c.Name,
