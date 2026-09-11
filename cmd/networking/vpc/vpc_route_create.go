@@ -18,7 +18,7 @@ type vpcRouteCreateCmd struct {
 	Subnet      string `cli-usage:"Subnet to create the route in (NAME|ID)"`
 	Destination string `cli-usage:"route destination CIDR (e.g. 10.9.0.0/24)"`
 	// TODO: Add a proper link to the doc here to explain what the target can be
-	Target      string      `cli-usage:"route target, as ip=<IP address> (e.g. ip=10.0.0.5)"`
+	Target      string      `cli-usage:"route target, as ip=<IP address> (e.g. ip=10.0.0.5). Find more details at https://community.exoscale.com/product/networking/vpc/how-to/using-routing-rules/"`
 	Description string      `cli-usage:"route description"`
 	Zone        v3.ZoneName `cli-short:"z" cli-usage:"VPC zone"`
 }
@@ -30,7 +30,8 @@ func (c *vpcRouteCreateCmd) CmdShort() string { return "Create a VPC route" }
 func (c *vpcRouteCreateCmd) CmdLong() string {
 	return `This command creates a route on a VPC Subnet.
 
-Routes are scoped to a Subnet, so --subnet is required.`
+Routes are scoped to a Subnet, so --subnet is required.
+Route target explanation can be found here https://community.exoscale.com/product/networking/vpc/how-to/using-routing-rules/`
 }
 
 func (c *vpcRouteCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
