@@ -12,10 +12,12 @@
 - dbaas: e2e scenarios for clickhouse lifecycle, user ops, role ACL and pg config lifecycle; local runner forwards the account endpoint so preprod runs need no manual env setup (#894)
 - sks: add `--kubelet-max-pods` flag to `nodepool add`/`update` commands (#904)
 - sks: add a `generate-karpenter-manifests` (short: `km`) command to generate the Karpenter manifests relevant to a cluster
-
+- Add "all" protocol to security groups
+- vpc: Add support for configuring ip forwarding on instance
 
 ### Bug fixes
 
+- iam: include policies in role show output (#903)
 - dbaas: fix empty table output for user create, role list and acl show (output routed to a nil writer) (#894)
 - dbaas: fix show --uri for clickhouse printing a raw host:port instead of a connection URI (#894)
 

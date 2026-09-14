@@ -36,6 +36,7 @@ type InstanceShowOutput struct {
 	Vpc                string                `json:"vpc"`
 	VpcSubnets         []string              `json:"vpc_subnets"`
 	PrivateNetworks    []string              `json:"private_networks"`
+	IpForwarding       bool                  `json:"ip_forwarding"`
 
 	SSHKeys               []string          `json:"ssh_keys"`
 	DiskSize              string            `json:"disk_size"`
@@ -125,11 +126,11 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		DiskSize:           humanize.IBytes(uint64(instance.DiskSize << 30)),
 		ElasticIPs:         make([]string, 0),
 		ID:                 instance.ID,
+
 		PublicIPAssignment: instance.PublicIPAssignment,
 		IPAddress:          utils.DefaultIP(&instance.PublicIP, "-"),
 		IPv6Address:        utils.DefaultIP(ipV6, "-"),
-		//TODO: we need to fix the orchestrator to prevent NPEs here
-		Vpc: instance.Vpc.Name,
+		Vpc:                instance.Vpc.Name,
 		VpcSubnets: func() []string {
 			list := make([]string, 0)
 			for _, v := range instance.Vpc.Subnets {
@@ -138,6 +139,8 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 			return list
 		}(),
 		PrivateNetworks: make([]string, 0),
+		IpForwarding:    *instance.IPForwarding,
+
 		Labels: func() (v map[string]string) {
 
 			if instance.Labels != nil {
@@ -145,14 +148,14 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 			}
 			return
 		}(),
-		Name: instance.Name,
-
+		Name:           instance.Name,
 		SSHKeys:        make([]string, 0),
 		SecurityGroups: make([]string, 0),
 		SecureBoot:     *instance.SecurebootEnabled,
 		Tpm:            *instance.TpmEnabled,
-		State:          instance.State,
-		Zone:           c.Zone,
+
+		State: instance.State,
+		Zone:  c.Zone,
 	}
 
 	if instance.ApplicationConsistentSnapshotEnabled != nil {

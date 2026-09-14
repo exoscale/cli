@@ -11468,7 +11468,7 @@ func (c Client) DetachInstanceFromElasticIP(ctx context.Context, id UUID, req De
 	return bodyresp, nil
 }
 
-// [BETA] Returns environmental impact reports for an organization
+// [DEPRECATED] use get-impact-report endpoint
 func (c Client) GetEnvImpact(ctx context.Context, period string) (*EnvImpactReport, error) {
 	path := fmt.Sprintf("/env-impact/%v", period)
 
@@ -11520,8 +11520,9 @@ type GetImpactEstimateResponse struct {
 }
 
 type GetImpactEstimateRequest struct {
+	// Product-specific configuration details
 	Metadata map[string]any `json:"metadata,omitempty"`
-	// Product SKU, e.g. compute:ch-gva-2:instance:standard:medium; can also include wildcards, e.g. compute:*:instance:standard:* for all standard instances in all zones
+	// Product SKU, e.g. compute:ch-gva-2:instance:standard:medium; can also include wildcards, e.g. compute:\*:instance:standard:\* for all standard instances in all zones
 	Sku string `json:"sku" validate:"required"`
 }
 
@@ -12415,6 +12416,8 @@ type CreateInstanceRequest struct {
 	DiskSize int64 `json:"disk-size" validate:"required,gte=10,lte=51200"`
 	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type" validate:"required"`
+	// VPC ip forwarding
+	IPForwarding *bool `json:"ip-forwarding,omitempty"`
 	// Enable IPv6. DEPRECATED: use `public-ip-assignments`.
 	Ipv6Enabled *bool  `json:"ipv6-enabled,omitempty"`
 	Labels      Labels `json:"labels,omitempty"`
@@ -14859,7 +14862,16 @@ func (c Client) ListLoadBalancers(ctx context.Context) (*ListLoadBalancersRespon
 	return bodyresp, nil
 }
 
+type CreateLoadBalancerRequestAddressfamily string
+
+const (
+	CreateLoadBalancerRequestAddressfamilyInet4 CreateLoadBalancerRequestAddressfamily = "inet4"
+	CreateLoadBalancerRequestAddressfamilyInet6 CreateLoadBalancerRequestAddressfamily = "inet6"
+)
+
 type CreateLoadBalancerRequest struct {
+	// Load Balancer address family (default: :inet4)
+	Addressfamily CreateLoadBalancerRequestAddressfamily `json:"addressfamily,omitempty"`
 	// Load Balancer description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=255"`
 	Labels      Labels `json:"labels,omitempty"`
