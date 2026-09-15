@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.100.0
 
 - sks: allow `major.minor` format for kube version when creating a cluster
 
