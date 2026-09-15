@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- sks: allow `major.minor` format for kube version when creating a cluster
+
 ### Breaking changes
 
 ### Features
