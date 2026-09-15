@@ -179,7 +179,7 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 		}
 	}
 
-	clusterReq.Version, err = resolveSKSClusterVersion(ctx, client, clusterReq.Version) 
+	clusterReq.Version, err = resolveSKSClusterVersion(ctx, client, clusterReq.Version)
 	if err != nil {
 		return err
 	}
