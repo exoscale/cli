@@ -319,7 +319,7 @@ func resolveSKSClusterVersion(ctx context.Context, client *v3.Client, inputVersi
 	}
 
 	defaultVersion := availableVersions.SKSClusterVersions[0]
-	if "latest" == inputVersion {
+	if inputVersion == "latest" {
 		return defaultVersion, nil
 	}
 
