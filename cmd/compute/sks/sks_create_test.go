@@ -68,8 +68,8 @@ func TestResolveSKSClusterVersions(t *testing.T) {
 			errorMsg:        "",
 		},
 		{
-			name:            "empty version resolves to latest version",
-			inputVersion:    "",
+			name:            "latest default value resolves to resolved latest version",
+			inputVersion:    "latest",
 			expectedVersion: fakeClusterVersions[0],
 			errorMsg:        "",
 		},
