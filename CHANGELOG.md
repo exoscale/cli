@@ -16,6 +16,7 @@
 - sks: add a `generate-karpenter-manifests` (short: `km`) command to generate the Karpenter manifests relevant to a cluster
 - Add "all" protocol to security groups
 - vpc: Add support for configuring ip forwarding on instance
+- nlb: add an `--ipv6` flag to `load-balancer create` to create an IPv6 (inet6) Network Load Balancer, and display the address family in `load-balancer show`/`list`
 
 ### Bug fixes
 
