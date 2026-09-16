@@ -8,12 +8,15 @@
 
 ### Features
 
+
+- networking: add VPC support under `exo networking vpc` (#880)
 - dbaas: add clickhouse subcommands — create with type-specific flags, show/update/delete support (incl. `--uri` building a `clickhouse://` connection string from the revealed `avnadmin` credentials), user list/show/create/delete/reset/reveal (create/reset return the generated password), role list/delete, acl show (#894)
 - dbaas: e2e scenarios for clickhouse lifecycle, user ops, role ACL and pg config lifecycle; local runner forwards the account endpoint so preprod runs need no manual env setup (#894)
 - sks: add `--kubelet-max-pods` flag to `nodepool add`/`update` commands (#904)
 - sks: add a `generate-karpenter-manifests` (short: `km`) command to generate the Karpenter manifests relevant to a cluster
 - Add "all" protocol to security groups
 - vpc: Add support for configuring ip forwarding on instance
+
 ### Bug fixes
 
 - iam: include policies in role show output (#903)

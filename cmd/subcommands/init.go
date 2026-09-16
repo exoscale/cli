@@ -29,5 +29,7 @@ import (
 	_ "github.com/exoscale/cli/cmd/kms"
 	_ "github.com/exoscale/cli/cmd/kms/crypto"
 	_ "github.com/exoscale/cli/cmd/kms/key"
+	_ "github.com/exoscale/cli/cmd/networking"
+	_ "github.com/exoscale/cli/cmd/networking/vpc"
 	_ "github.com/exoscale/cli/cmd/storage"
 )
