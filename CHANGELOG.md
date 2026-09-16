@@ -6,6 +6,10 @@
 
 ### Features
 
+- NLB: Add ipv6 support- #910
+#910
+
+
 ### Bug fixes
 
 ### Improvements
