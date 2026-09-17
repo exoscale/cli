@@ -17,15 +17,16 @@ import (
 )
 
 type nlbShowOutput struct {
-	ID           string                 `json:"id"`
-	Name         string                 `json:"name"`
-	Description  string                 `json:"description"`
-	CreationDate string                 `json:"creation_date"`
-	Zone         v3.ZoneName            `json:"zone"`
-	IPAddress    string                 `json:"ip_address"`
-	State        string                 `json:"state"`
-	Services     []nlbServiceShowOutput `json:"services"`
-	Labels       map[string]string      `json:"labels"`
+	ID            string                 `json:"id"`
+	Name          string                 `json:"name"`
+	Description   string                 `json:"description"`
+	CreationDate  string                 `json:"creation_date"`
+	Zone          v3.ZoneName            `json:"zone"`
+	IPAddress     string                 `json:"ip_address"`
+	AddressFamily string                 `json:"address_family"`
+	State         string                 `json:"state"`
+	Services      []nlbServiceShowOutput `json:"services"`
+	Labels        map[string]string      `json:"labels"`
 }
 
 func (o *nlbShowOutput) ToJSON() { output.JSON(o) }
@@ -39,6 +40,7 @@ func (o *nlbShowOutput) ToTable() {
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Zone", string(o.Zone)})
 	t.Append([]string{"IP Address", o.IPAddress})
+	t.Append([]string{"Address Family", o.AddressFamily})
 	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"Creation Date", o.CreationDate})
 	t.Append([]string{"State", o.State})
@@ -135,15 +137,16 @@ func (c *nlbShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	out := nlbShowOutput{
-		ID:           nlb.ID.String(),
-		Name:         nlb.Name,
-		Description:  nlb.Description,
-		CreationDate: nlb.CreatedAT.String(),
-		Zone:         c.Zone,
-		IPAddress:    nlb.IP.String(),
-		State:        string(nlb.State),
-		Services:     svcOut,
-		Labels:       nlb.Labels,
+		ID:            nlb.ID.String(),
+		Name:          nlb.Name,
+		Description:   nlb.Description,
+		CreationDate:  nlb.CreatedAT.String(),
+		Zone:          c.Zone,
+		IPAddress:     nlb.IP.String(),
+		AddressFamily: string(nlb.Addressfamily),
+		State:         string(nlb.State),
+		Services:      svcOut,
+		Labels:        nlb.Labels,
 	}
 
 	return c.OutputFunc(&out, nil)

@@ -21,6 +21,7 @@ type nlbCreateCmd struct {
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
 	Description string            `cli-usage:"Network Load Balancer description"`
+	IPv6        bool              `cli-flag:"ipv6" cli-short:"6" cli-usage:"create an IPv6 (inet6) Network Load Balancer"`
 	Labels      map[string]string `cli-flag:"label" cli-usage:"Network Load Balancer label (format: key=value)"`
 	Zone        v3.ZoneName       `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
@@ -48,6 +49,10 @@ func (c *nlbCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		Name:        c.Name,
 	}
 	var err error
+
+	if c.IPv6 {
+		nlb.Addressfamily = v3.CreateLoadBalancerRequestAddressfamilyInet6
+	}
 
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)

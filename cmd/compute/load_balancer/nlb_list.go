@@ -17,10 +17,11 @@ import (
 )
 
 type nlbListItemOutput struct {
-	ID        v3.UUID     `json:"id" outputWidth:"36"`
-	Name      string      `json:"name" outputWidth:"70"`
-	Zone      v3.ZoneName `json:"zone" outputWidth:"8"`
-	IPAddress string      `json:"ip_address" outputWidth:"18"`
+	ID            v3.UUID     `json:"id" outputWidth:"36"`
+	Name          string      `json:"name" outputWidth:"70"`
+	Zone          v3.ZoneName `json:"zone" outputWidth:"8"`
+	IPAddress     string      `json:"ip_address" outputWidth:"39"`
+	AddressFamily string      `json:"address_family" outputWidth:"14"`
 }
 
 type nlbListCmd struct {
@@ -78,10 +79,11 @@ func runNlbList(c *nlbListCmd, stdout, stderr io.Writer) error {
 			}
 			for _, nlb := range list.LoadBalancers {
 				if err := streamer.Push(nlbListItemOutput{
-					ID:        nlb.ID,
-					Name:      nlb.Name,
-					Zone:      zone.Name,
-					IPAddress: nlb.IP.String(),
+					ID:            nlb.ID,
+					Name:          nlb.Name,
+					Zone:          zone.Name,
+					IPAddress:     nlb.IP.String(),
+					AddressFamily: string(nlb.Addressfamily),
 				}); err != nil {
 					return err
 				}
