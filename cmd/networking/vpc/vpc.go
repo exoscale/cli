@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 
 	"github.com/spf13/cobra"
 
@@ -57,4 +58,16 @@ func FindSubnet(ctx context.Context, client *v3.Client, vpcID v3.UUID, nameOrID 
 	}
 
 	return subnet, nil
+}
+
+func stringsToIPv4s(strs []string) ([]net.IP, error) {
+	var ips []net.IP
+	for _, s := range strs {
+		ip := net.ParseIP(s)
+		if ip == nil || ip.To4() == nil {
+			return nil, fmt.Errorf("invalid IPv4 address: %q", s)
+		}
+		ips = append(ips, ip)
+	}
+	return ips, nil
 }

@@ -19,10 +19,13 @@ type vpcUpdateCmd struct {
 
 	VPC string `cli-arg:"#" cli-usage:"VPC-NAME|ID"`
 
-	Name        string            `cli-usage:"VPC name"`
-	Description string            `cli-usage:"VPC description"`
-	Labels      map[string]string `cli-flag:"label" cli-usage:"VPC label (format: key=value), clearing the labels is possible by passing [=]"`
-	Zone        v3.ZoneName       `cli-short:"z" cli-usage:"VPC zone"`
+	Name         string            `cli-usage:"VPC name"`
+	Description  string            `cli-usage:"VPC description"`
+	Labels       map[string]string `cli-flag:"label" cli-usage:"VPC label (format: key=value), clearing the labels is possible by passing [=]"`
+	Zone         v3.ZoneName       `cli-short:"z" cli-usage:"VPC zone"`
+	DNSServers   []string          `cli-flag:"dns-server" cli-usage:"DHCP option 6: DNS servers (can be specified multiple times)"`
+	NTPServers   []string          `cli-flag:"ntp-server" cli-usage:"DHCP option 42: NTP servers (can be specified multiple times)"`
+	DomainSearch []string          `cli-flag:"domain-search" cli-usage:"DHCP option 119: domain search list (can be specified multiple times)"`
 }
 
 func (c *vpcUpdateCmd) CmdAliases() []string { return nil }
@@ -69,6 +72,40 @@ func (c *vpcUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
 		req.Labels = exocmd.ConvertIfSpecialEmptyMap(c.Labels)
+		updated = true
+	}
+
+	// Modify existing DHCP options if any of the DHCP options flags are set
+	dhcpOptions := entry.DHCPOptions
+	dhcpOptionsChanged := false
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DNSServers)) {
+		dnsServersParsed, err := stringsToIPv4s(c.DNSServers)
+		if err != nil {
+			return fmt.Errorf("invalid DNS server: %w", err)
+		}
+		dhcpOptions.DNSServers = dnsServersParsed
+
+		dhcpOptionsChanged = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.NTPServers)) {
+		ntpServersParsed, err := stringsToIPv4s(c.NTPServers)
+		if err != nil {
+			return fmt.Errorf("invalid NTP server: %w", err)
+		}
+		dhcpOptions.NtpServers = ntpServersParsed
+
+		dhcpOptionsChanged = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DomainSearch)) {
+		dhcpOptions.DomainSearch = c.DomainSearch
+		dhcpOptionsChanged = true
+	}
+
+	if dhcpOptionsChanged {
+		req.DHCPOptions = dhcpOptions
 		updated = true
 	}
 

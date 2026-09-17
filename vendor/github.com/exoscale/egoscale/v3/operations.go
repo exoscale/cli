@@ -126,50 +126,6 @@ func (c Client) CreateAIAPIKey(ctx context.Context, req CreateAIAPIKeyRequest) (
 	return bodyresp, nil
 }
 
-// Delete AI API key
-func (c Client) DeleteAIAPIKey(ctx context.Context, id UUID) (*Operation, error) {
-	path := fmt.Sprintf("/ai/api-key/%v", id)
-
-	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "delete-ai-api-key")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: http response: %w", err)
-	}
-
-	bodyresp := new(Operation)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("DeleteAIAPIKey: prepare JSON response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
 // Get AI API key metadata
 func (c Client) GetAIAPIKey(ctx context.Context, id UUID) (*GetAIAPIKeyResponse, error) {
 	path := fmt.Sprintf("/ai/api-key/%v", id)
@@ -214,6 +170,50 @@ func (c Client) GetAIAPIKey(ctx context.Context, id UUID) (*GetAIAPIKeyResponse,
 	return bodyresp, nil
 }
 
+// Revoke an AI API key. Key will be deleted after 30 days of retention
+func (c Client) RevokeAIAPIKey(ctx context.Context, id UUID) (*Operation, error) {
+	path := fmt.Sprintf("/ai/api-key/%v/revoke", id)
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("RevokeAIAPIKey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("RevokeAIAPIKey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("RevokeAIAPIKey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "revoke-ai-api-key")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("RevokeAIAPIKey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("RevokeAIAPIKey: http response: %w", err)
+	}
+
+	bodyresp := new(Operation)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("RevokeAIAPIKey: prepare JSON response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 // FindListDeploymentsResponseEntry attempts to find an ListDeploymentsResponseEntry by nameOrID.
 func (l ListDeploymentsResponse) FindListDeploymentsResponseEntry(nameOrID string) (ListDeploymentsResponseEntry, error) {
 	var result []ListDeploymentsResponseEntry
@@ -233,16 +233,8 @@ func (l ListDeploymentsResponse) FindListDeploymentsResponseEntry(nameOrID strin
 	return ListDeploymentsResponseEntry{}, fmt.Errorf("%q not found in ListDeploymentsResponse: %w", nameOrID, ErrNotFound)
 }
 
-type ListDeploymentsOpt func(url.Values)
-
-func ListDeploymentsWithVisibility(visibility string) ListDeploymentsOpt {
-	return func(q url.Values) {
-		q.Add("visibility", fmt.Sprint(visibility))
-	}
-}
-
 // List Deployments
-func (c Client) ListDeployments(ctx context.Context, opts ...ListDeploymentsOpt) (*ListDeploymentsResponse, error) {
+func (c Client) ListDeployments(ctx context.Context) (*ListDeploymentsResponse, error) {
 	path := "/ai/deployment"
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
@@ -251,14 +243,6 @@ func (c Client) ListDeployments(ctx context.Context, opts ...ListDeploymentsOpt)
 	}
 
 	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if len(opts) > 0 {
-		q := request.URL.Query()
-		for _, opt := range opts {
-			opt(q)
-		}
-		request.URL.RawQuery = q.Encode()
-	}
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
 		return nil, fmt.Errorf("ListDeployments: execute request editors: %w", err)
@@ -767,8 +751,16 @@ func (l ListModelsResponse) FindListModelsResponseEntry(nameOrID string) (ListMo
 	return ListModelsResponseEntry{}, fmt.Errorf("%q not found in ListModelsResponse: %w", nameOrID, ErrNotFound)
 }
 
+type ListModelsOpt func(url.Values)
+
+func ListModelsWithVisibility(visibility string) ListModelsOpt {
+	return func(q url.Values) {
+		q.Add("visibility", fmt.Sprint(visibility))
+	}
+}
+
 // List Models
-func (c Client) ListModels(ctx context.Context) (*ListModelsResponse, error) {
+func (c Client) ListModels(ctx context.Context, opts ...ListModelsOpt) (*ListModelsResponse, error) {
 	path := "/ai/model"
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
@@ -777,6 +769,14 @@ func (c Client) ListModels(ctx context.Context) (*ListModelsResponse, error) {
 	}
 
 	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if len(opts) > 0 {
+		q := request.URL.Query()
+		for _, opt := range opts {
+			opt(q)
+		}
+		request.URL.RawQuery = q.Encode()
+	}
 
 	if err := c.executeRequestInterceptors(ctx, request); err != nil {
 		return nil, fmt.Errorf("ListModels: execute request editors: %w", err)
@@ -19788,7 +19788,9 @@ func (c Client) ListVpcs(ctx context.Context) (*ListVpcsResponse, error) {
 type CreateVpcRequest struct {
 	// VPC description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
-	Labels      Labels `json:"labels,omitempty"`
+	// VPC DHCP options
+	DHCPOptions *VpcDHCPOptions `json:"dhcp-options,omitempty"`
+	Labels      Labels          `json:"labels,omitempty"`
 	// VPC name
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
 }
@@ -19931,7 +19933,9 @@ func (c Client) GetVpc(ctx context.Context, id UUID) (*Vpc, error) {
 type UpdateVpcRequest struct {
 	// VPC description
 	Description *string `json:"description,omitempty" validate:"omitempty,lte=4096"`
-	Labels      Labels  `json:"labels"`
+	// VPC DHCP options
+	DHCPOptions *VpcDHCPOptions `json:"dhcp-options,omitempty"`
+	Labels      Labels          `json:"labels"`
 	// VPC name
 	Name *string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 }

@@ -3,6 +3,7 @@ package vpc
 import (
 	"bytes"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 
@@ -28,6 +29,7 @@ type vpcShowOutput struct {
 	Default     bool                  `json:"default"`
 	Zone        v3.ZoneName           `json:"zone"`
 	CreatedAt   string                `json:"created_at"`
+	DhcpOptions *v3.VpcDHCPOptions    `json:"dhcp_options"`
 	Labels      map[string]string     `json:"labels"`
 	Subnets     []vpcSubnetItemOutput `json:"subnets"`
 }
@@ -45,6 +47,7 @@ func (o *vpcShowOutput) ToTable() {
 	t.Append([]string{"Default", fmt.Sprintf("%v", o.Default)})
 	t.Append([]string{"Zone", string(o.Zone)})
 	t.Append([]string{"Created At", o.CreatedAt})
+	t.Append([]string{"DHCP options", formatDhcpOptions(o.DhcpOptions)})
 	t.Append([]string{"Labels", func() string {
 		if len(o.Labels) == 0 {
 			return "n/a"
@@ -113,6 +116,7 @@ func (c *vpcShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		Zone:        c.Zone,
 		CreatedAt:   vpc.CreatedAT.String(),
 		Labels:      vpc.Labels,
+		DhcpOptions: vpc.DHCPOptions,
 		Subnets:     []vpcSubnetItemOutput{},
 	}
 
@@ -152,5 +156,39 @@ func formatSubnets(subnets []vpcSubnetItemOutput) string {
 	}
 	at.Render()
 
+	return buf.String()
+}
+
+func ipSliceToStringSlice(ips []net.IP) []string {
+	result := make([]string, len(ips))
+	for i, ip := range ips {
+		result[i] = ip.String()
+	}
+	return result
+}
+
+func formatDhcpOptions(opts *v3.VpcDHCPOptions) string {
+	hasOptions := len(opts.DNSServers) > 0 || len(opts.NtpServers) > 0 || len(opts.DomainSearch) > 0
+
+	if !hasOptions {
+		return "-"
+	}
+
+	buf := bytes.NewBuffer(nil)
+	at := table.NewEmbeddedTable(buf)
+	at.SetHeader([]string{" "})
+	at.SetAlignment(tablewriter.ALIGN_LEFT)
+
+	if len(opts.DNSServers) > 0 {
+		at.Append([]string{"DNS Servers", strings.Join(ipSliceToStringSlice(opts.DNSServers), ", ")})
+	}
+	if len(opts.NtpServers) > 0 {
+		at.Append([]string{"NTP Servers", strings.Join(ipSliceToStringSlice(opts.NtpServers), ", ")})
+	}
+	if len(opts.DomainSearch) > 0 {
+		at.Append([]string{"Domain Search", strings.Join(opts.DomainSearch, ", ")})
+	}
+
+	at.Render()
 	return buf.String()
 }

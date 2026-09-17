@@ -82,8 +82,6 @@ type AIAPIKey struct {
 	ID UUID `json:"id" validate:"required"`
 	// Human-readable name for the AI API key
 	Name string `json:"name" validate:"required"`
-	// Organization UUID that owns this key
-	OrgUuid UUID `json:"org-uuid" validate:"required"`
 	// Key scope: 'public' for all deployments, or a specific deployment UUID
 	Scope string `json:"scope" validate:"required"`
 	// Last update timestamp
@@ -219,8 +217,6 @@ type CreateAIAPIKeyResponse struct {
 	ID UUID `json:"id" validate:"required"`
 	// Human-readable name for the AI API key
 	Name string `json:"name" validate:"required"`
-	// Organization UUID that owns this key
-	OrgUuid UUID `json:"org-uuid" validate:"required"`
 	// Key scope: 'public' for all deployments, or a specific deployment UUID
 	Scope string `json:"scope" validate:"required"`
 	// Last update timestamp
@@ -2597,8 +2593,6 @@ type GetAIAPIKeyResponse struct {
 	ID UUID `json:"id" validate:"required"`
 	// Human-readable name for the AI API key
 	Name string `json:"name" validate:"required"`
-	// Organization UUID that owns this key
-	OrgUuid UUID `json:"org-uuid" validate:"required"`
 	// Key scope: 'public' for all deployments, or a specific deployment UUID
 	Scope string `json:"scope" validate:"required"`
 	// Last update timestamp
@@ -2638,13 +2632,6 @@ const (
 	GetDeploymentResponseStateUpdating  GetDeploymentResponseState = "updating"
 )
 
-type GetDeploymentResponseVisibility string
-
-const (
-	GetDeploymentResponseVisibilityPublic  GetDeploymentResponseVisibility = "public"
-	GetDeploymentResponseVisibilityPrivate GetDeploymentResponseVisibility = "private"
-)
-
 // AI deployment
 type GetDeploymentResponse struct {
 	// Creation time
@@ -2675,8 +2662,6 @@ type GetDeploymentResponse struct {
 	StateDetails string `json:"state-details,omitempty"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
-	// Deployment visibility: private for your organization's deployments, public for Exoscale Managed Inference deployments.
-	Visibility GetDeploymentResponseVisibility `json:"visibility" validate:"required"`
 }
 
 // List of allowed inference-engine parameters
@@ -2727,6 +2712,16 @@ type GetKmsKeyResponse struct {
 	Usage string `json:"usage" validate:"required"`
 }
 
+type GetModelResponseLifecycleStatus string
+
+const (
+	GetModelResponseLifecycleStatusPreview    GetModelResponseLifecycleStatus = "preview"
+	GetModelResponseLifecycleStatusActive     GetModelResponseLifecycleStatus = "active"
+	GetModelResponseLifecycleStatusDeprecated GetModelResponseLifecycleStatus = "deprecated"
+	GetModelResponseLifecycleStatusEol        GetModelResponseLifecycleStatus = "eol"
+	GetModelResponseLifecycleStatusNull       GetModelResponseLifecycleStatus = "null"
+)
+
 type GetModelResponseState string
 
 const (
@@ -2737,12 +2732,23 @@ const (
 	GetModelResponseStateCreated     GetModelResponseState = "created"
 )
 
+type GetModelResponseVisibility string
+
+const (
+	GetModelResponseVisibilityPrivate GetModelResponseVisibility = "private"
+	GetModelResponseVisibilityPublic  GetModelResponseVisibility = "public"
+)
+
 // AI model
 type GetModelResponse struct {
 	// Creation time
 	CreatedAT time.Time `json:"created-at" validate:"required"`
+	// Model deprecation date
+	DeprecationDate *time.Time `json:"deprecation-date,omitempty"`
 	// Model ID
 	ID UUID `json:"id" validate:"required"`
+	// Model lifecycle state
+	LifecycleStatus GetModelResponseLifecycleStatus `json:"lifecycle-status,omitempty"`
 	// Model size in bytes
 	ModelSize int64 `json:"model-size" validate:"required,gte=0"`
 	// Model name
@@ -2751,6 +2757,8 @@ type GetModelResponse struct {
 	State GetModelResponseState `json:"state" validate:"required"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at" validate:"required"`
+	// Model visibility
+	Visibility GetModelResponseVisibility `json:"visibility,omitempty"`
 }
 
 // GPU usage for an organization
@@ -2761,6 +2769,8 @@ type GetOrganizationUsageResponse struct {
 
 // IAM API Key
 type IAMAPIKey struct {
+	// IAM API Key creation timestamp
+	CreatedAT time.Time `json:"created-at,omitempty"`
 	// IAM API Key
 	Key string `json:"key,omitempty"`
 	// IAM API Key name
@@ -2771,6 +2781,8 @@ type IAMAPIKey struct {
 
 // IAM API Key
 type IAMAPIKeyCreated struct {
+	// IAM API Key creation timestamp
+	CreatedAT time.Time `json:"created-at,omitempty"`
 	// IAM API Key
 	Key string `json:"key,omitempty"`
 	// IAM API Key name
@@ -2917,6 +2929,7 @@ const (
 	InferenceEngineVersion0270 InferenceEngineVersion = "0.27.0"
 	InferenceEngineVersion0271 InferenceEngineVersion = "0.27.1"
 	InferenceEngineVersion0280 InferenceEngineVersion = "0.28.0"
+	InferenceEngineVersion0290 InferenceEngineVersion = "0.29.0"
 )
 
 // Router flush payload: the router's full in-memory usage map with flush identity fields
@@ -3030,6 +3043,16 @@ type InstancePassword struct {
 	Password string `json:"password,omitempty"`
 }
 
+// Instance Pool Error Reason
+type InstancePoolErrorReason struct {
+	// Error cause
+	Cause string `json:"cause,omitempty"`
+	// Job ID at the origin of error
+	JobID string `json:"job-id,omitempty"`
+	// Error type
+	Type string `json:"type,omitempty"`
+}
+
 type InstancePoolState string
 
 const (
@@ -3040,6 +3063,7 @@ const (
 	InstancePoolStateSuspended   InstancePoolState = "suspended"
 	InstancePoolStateRunning     InstancePoolState = "running"
 	InstancePoolStateUpdating    InstancePoolState = "updating"
+	InstancePoolStateError       InstancePoolState = "error"
 )
 
 // Instance Pool
@@ -3056,6 +3080,8 @@ type InstancePool struct {
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=51200"`
 	// Instances Elastic IPs
 	ElasticIPS []ElasticIP `json:"elastic-ips,omitempty"`
+	// Instance Pool Error Reason
+	ErrorReason *InstancePoolErrorReason `json:"error-reason,omitempty"`
 	// Instance Pool ID
 	ID UUID `json:"id,omitempty"`
 	// The instances created by the Instance Pool will be prefixed with this value (default: pool)
@@ -4464,8 +4490,6 @@ type ListAIAPIKeysResponseEntry struct {
 	ID UUID `json:"id" validate:"required"`
 	// Human-readable name for the AI API key
 	Name string `json:"name" validate:"required"`
-	// Organization UUID that owns this key
-	OrgUuid UUID `json:"org-uuid" validate:"required"`
 	// Key scope: 'public' for all deployments, or a specific deployment UUID
 	Scope string `json:"scope" validate:"required"`
 	// Last update timestamp
@@ -4494,13 +4518,6 @@ const (
 	ListDeploymentsResponseEntryStateUpdating  ListDeploymentsResponseEntryState = "updating"
 )
 
-type ListDeploymentsResponseEntryVisibility string
-
-const (
-	ListDeploymentsResponseEntryVisibilityPublic  ListDeploymentsResponseEntryVisibility = "public"
-	ListDeploymentsResponseEntryVisibilityPrivate ListDeploymentsResponseEntryVisibility = "private"
-)
-
 // AI deployment
 type ListDeploymentsResponseEntry struct {
 	// Creation time
@@ -4525,8 +4542,6 @@ type ListDeploymentsResponseEntry struct {
 	State ListDeploymentsResponseEntryState `json:"state" validate:"required"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
-	// Deployment visibility: private for your organization's deployments, public for Exoscale Managed Inference deployments.
-	Visibility ListDeploymentsResponseEntryVisibility `json:"visibility" validate:"required"`
 }
 
 type ListKmsKeyRotationsResponse struct {
@@ -4594,6 +4609,16 @@ type ListModelsResponse struct {
 	Models []ListModelsResponseEntry `json:"models" validate:"required"`
 }
 
+type ListModelsResponseEntryLifecycleStatus string
+
+const (
+	ListModelsResponseEntryLifecycleStatusPreview    ListModelsResponseEntryLifecycleStatus = "preview"
+	ListModelsResponseEntryLifecycleStatusActive     ListModelsResponseEntryLifecycleStatus = "active"
+	ListModelsResponseEntryLifecycleStatusDeprecated ListModelsResponseEntryLifecycleStatus = "deprecated"
+	ListModelsResponseEntryLifecycleStatusEol        ListModelsResponseEntryLifecycleStatus = "eol"
+	ListModelsResponseEntryLifecycleStatusNull       ListModelsResponseEntryLifecycleStatus = "null"
+)
+
 type ListModelsResponseEntryState string
 
 const (
@@ -4604,12 +4629,21 @@ const (
 	ListModelsResponseEntryStateCreated     ListModelsResponseEntryState = "created"
 )
 
+type ListModelsResponseEntryVisibility string
+
+const (
+	ListModelsResponseEntryVisibilityPrivate ListModelsResponseEntryVisibility = "private"
+	ListModelsResponseEntryVisibilityPublic  ListModelsResponseEntryVisibility = "public"
+)
+
 // AI model
 type ListModelsResponseEntry struct {
 	// Creation time
 	CreatedAT time.Time `json:"created-at" validate:"required"`
 	// Model ID
 	ID UUID `json:"id" validate:"required"`
+	// Model lifecycle state
+	LifecycleStatus ListModelsResponseEntryLifecycleStatus `json:"lifecycle-status,omitempty"`
 	// Model size in bytes
 	ModelSize int64 `json:"model-size" validate:"required,gte=0"`
 	// Model name
@@ -4618,6 +4652,8 @@ type ListModelsResponseEntry struct {
 	State ListModelsResponseEntryState `json:"state" validate:"required"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at" validate:"required"`
+	// Model visibility
+	Visibility ListModelsResponseEntryVisibility `json:"visibility,omitempty"`
 }
 
 type ListRouteEntryKind string
@@ -4681,6 +4717,8 @@ type ListVpcEntry struct {
 	Default *bool `json:"default,omitempty"`
 	// VPC description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
+	// VPC DHCP options
+	DHCPOptions *VpcDHCPOptions `json:"dhcp-options,omitempty"`
 	// VPC ID
 	ID     UUID   `json:"id,omitempty"`
 	Labels Labels `json:"labels,omitempty"`
@@ -5710,8 +5748,6 @@ type Template struct {
 	Version string `json:"version,omitempty"`
 	// Template visibility
 	Visibility TemplateVisibility `json:"visibility,omitempty"`
-	// Zones availability
-	Zones []ZoneName `json:"zones,omitempty"`
 }
 
 // Template reference
@@ -5754,11 +5790,23 @@ type Vpc struct {
 	Default *bool `json:"default,omitempty"`
 	// VPC description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
+	// VPC DHCP options
+	DHCPOptions *VpcDHCPOptions `json:"dhcp-options,omitempty"`
 	// VPC ID
 	ID     UUID   `json:"id,omitempty"`
 	Labels Labels `json:"labels,omitempty"`
 	// VPC name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
+}
+
+// VPC DHCP options
+type VpcDHCPOptions struct {
+	// DNS Servers
+	DNSServers []net.IP `json:"dns-servers,omitempty"`
+	// Domain search list, limited to 255 octets post RFC3397 compression
+	DomainSearch []string `json:"domain-search,omitempty"`
+	// NTP Servers
+	NtpServers []net.IP `json:"ntp-servers,omitempty"`
 }
 
 // Zone
