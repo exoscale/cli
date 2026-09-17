@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+
+### Features
+
+- NLB: Add ipv6 support- #910
+
+### Bug fixes
+
+### Improvements
+
+
 ## 1.100.0
 
 - sks: allow `major.minor` format for kube version when creating a cluster
