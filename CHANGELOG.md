@@ -7,6 +7,7 @@
 ### Features
 
 - NLB: Add ipv6 support- #910
+- EIP: allows labels + reverse dns at creation - #913
 
 ### Bug fixes
 
