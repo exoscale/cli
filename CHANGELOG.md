@@ -7,6 +7,7 @@
 ### Features
 
 - NLB: Add ipv6 support- #910
+- vpc: Add support for VPC dhcp options (dns/ntp servers and domain search list) (#912)
 
 ### Bug fixes
 
