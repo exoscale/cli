@@ -55,8 +55,8 @@ func (o *vpcSubnetShowOutput) ToTable() {
 		}
 
 		pairs := make([]string, 0, len(o.Labels))
-		for _, k := range o.Labels {
-			pairs = append(pairs, fmt.Sprintf("%s:%s", k, o.Labels[k]))
+		for k, v := range o.Labels {
+			pairs = append(pairs, fmt.Sprintf("%s:%s", k, v))
 		}
 		return strings.Join(pairs, "\n")
 	}()})
