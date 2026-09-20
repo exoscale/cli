@@ -24,9 +24,9 @@ The configuration file and all assets created during `exo` operations will be sa
 | macOS | `$HOME/Library/Application Support/exoscale/` |
 | Windows | `%USERPROFILE%\.exoscale\` |
 
-The configuration parameters are then saved in a `exoscale.toml` file with the following minimum format:
+The configuration parameters are then saved in an `exoscale.toml` file with the following minimum format:
 
-```
+```toml
 defaultaccount = "account_name"
 
 [[accounts]]
@@ -35,7 +35,51 @@ defaultaccount = "account_name"
   secret = "API_SECRET"
 ```
 
+The top-level `defaultaccount` parameter selects an entry from `accounts` by
+name. Each account supports these parameters:
+
+| Parameter | Description |
+|:--|:--|
+| `name` | Account profile name. |
+| `key` | API key. |
+| `secret` | API secret. Use this or `secretCommand`. |
+| `secretCommand` | Command and arguments that print the API secret, for example `["pass", "show", "exoscale"]`. |
+| `defaultZone` | Default zone for commands that accept `--zone`. |
+| `defaultSSHKey` | Default SSH key name for instance and instance pool creation. |
+| `defaultTemplate` | Default instance template name. |
+| `defaultOutputFormat` | Default output format: `table`, `json`, or `text`. |
+| `endpoint` | Override the Exoscale API endpoint. |
+| `sosendpoint` | Override the SOS endpoint. The value may contain a `{zone}` placeholder. |
+| `customHeaders` | Map of HTTP headers added to API requests. |
+| `clientTimeout` | Legacy API timeout in minutes. |
+| `environment` | Legacy API environment name. |
+
 The current configuration and configuration file path can be shown with `exo config show`.
+
+### Environment variables
+
+Command-line flags take precedence over environment variables. Environment
+variables take precedence over values from the selected configuration profile.
+
+| Variable | Description |
+|:--|:--|
+| `EXOSCALE_ACCOUNT` | Account profile to use. Equivalent to `--use-account`. |
+| `EXOSCALE_API_ENDPOINT` | Override the Exoscale API endpoint. |
+| `EXOSCALE_API_ENVIRONMENT` | Override the legacy API environment name. |
+| `EXOSCALE_API_KEY` | Override the API key. Must be set with `EXOSCALE_API_SECRET`. |
+| `EXOSCALE_API_SECRET` | Override the API secret. Must be set with `EXOSCALE_API_KEY`. |
+| `EXOSCALE_API_TIMEOUT` | Override the legacy API timeout in minutes. |
+| `EXOSCALE_CONFIG` | Path to an alternate configuration file. Equivalent to `--config`. |
+| `EXOSCALE_STORAGE_API_ENDPOINT` | Override the SOS endpoint. |
+| `EXOSCALE_TIMEOUT` | Per-zone timeout for list operations, for example `15s` or `1m`. Set to `-1s` to disable it. |
+| `EXOSCALE_TRACE` | Enable HTTP request and response tracing. Unset it to disable tracing. Trace output may contain sensitive information. |
+| `EXOSCALE_ZONE` | Override the default zone. |
+
+For compatibility, the API key can also be read from `EXOSCALE_KEY`,
+`CLOUDSTACK_KEY`, or `CLOUDSTACK_API_KEY`. The API secret can also be read from
+`EXOSCALE_SECRET`, `EXOSCALE_SECRET_KEY`, `CLOUDSTACK_SECRET`, or
+`CLOUDSTACK_SECRET_KEY`. `EXOSCALE_SOS_ENDPOINT` is an alias for
+`EXOSCALE_STORAGE_API_ENDPOINT`.
 
 ## Usage
 

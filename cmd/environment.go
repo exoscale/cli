@@ -38,14 +38,29 @@ func init() {
 by specifying shell environment variables. Here is the list of environment
 variables supported:
 
-  * EXOSCALE_API_KEY: the Exoscale client API key
-  * EXOSCALE_API_SECRET: the Exoscale client API secret
-  * EXOSCALE_API_TIMEOUT: the Exoscale API timeout in minutes
-  * EXOSCALE_TIMEOUT: per-zone timeout for list operations (e.g. 15s, 1m);
-    set to -1s to disable the timeout
+  * EXOSCALE_ACCOUNT: account profile to use
+  * EXOSCALE_API_ENDPOINT: Exoscale API endpoint
+  * EXOSCALE_API_ENVIRONMENT: legacy API environment name
+  * EXOSCALE_API_KEY: Exoscale API key
+  * EXOSCALE_API_SECRET: Exoscale API secret
+  * EXOSCALE_API_TIMEOUT: legacy API timeout in minutes
+  * EXOSCALE_CONFIG: path to an alternate configuration file
+  * EXOSCALE_STORAGE_API_ENDPOINT: SOS endpoint
+  * EXOSCALE_TIMEOUT: per-zone timeout for list operations (e.g. 15s, 1m),
+    or -1s to disable the timeout
+  * EXOSCALE_TRACE: enable HTTP tracing (unset it to disable tracing). Trace
+    output may contain sensitive information
+  * EXOSCALE_ZONE: default zone
 
-Note: to override the current profile API credentials, *both* EXOSCALE_API_KEY
-and EXOSCALE_API_SECRET variables have to be set.
+Command-line flags take precedence over environment variables, which take
+precedence over the selected configuration profile. To override profile API
+credentials, both EXOSCALE_API_KEY and EXOSCALE_API_SECRET must be set.
+
+Compatibility aliases:
+  * API key: EXOSCALE_KEY, CLOUDSTACK_KEY, CLOUDSTACK_API_KEY
+  * API secret: EXOSCALE_SECRET, EXOSCALE_SECRET_KEY, CLOUDSTACK_SECRET,
+    CLOUDSTACK_SECRET_KEY
+  * SOS endpoint: EXOSCALE_SOS_ENDPOINT
 `,
 	},
 	)
