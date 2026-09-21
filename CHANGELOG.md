@@ -15,6 +15,7 @@
 
 ### Improvements
 
+- docs: document configuration parameters and environment variables (#914)
 
 ## 1.100.0
 
