@@ -18,18 +18,20 @@ type elasticIPCreateCmd struct {
 
 	_ bool `cli-cmd:"create"`
 
-	Description               string `cli-usage:"Elastic IP description"`
-	IPv6                      bool   `cli-flag:"ipv6" cli-usage:"create Elastic IPv6 prefix"`
-	HealthcheckInterval       int64  `cli-usage:"managed Elastic IP health checking interval in seconds"`
-	HealthcheckMode           string `cli-usage:"managed Elastic IP health checking mode (tcp|http|https)"`
-	HealthcheckPort           int64  `cli-usage:"managed Elastic IP health checking port"`
-	HealthcheckStrikesFail    int64  `cli-usage:"number of failed attempts before considering a managed Elastic IP health check unhealthy"`
-	HealthcheckStrikesOK      int64  `cli-usage:"number of successful attempts before considering a managed Elastic IP health check healthy"`
-	HealthcheckTLSSNI         string `cli-flag:"healthcheck-tls-sni" cli-usage:"managed Elastic IP health checking server name to present with SNI in https mode"`
-	HealthcheckTLSSSkipVerify bool   `cli-flag:"healthcheck-tls-skip-verify" cli-usage:"disable TLS certificate verification for managed Elastic IP health checking in https mode"`
-	HealthcheckTimeout        int64  `cli-usage:"managed Elastic IP health checking timeout in seconds"`
-	HealthcheckURI            string `cli-usage:"managed Elastic IP health checking URI (required in http(s) mode)"`
-	Zone                      string `cli-short:"z" cli-usage:"Elastic IP zone"`
+	Description               string            `cli-usage:"Elastic IP description"`
+	IPv6                      bool              `cli-flag:"ipv6" cli-usage:"create Elastic IPv6 prefix"`
+	HealthcheckInterval       int64             `cli-usage:"managed Elastic IP health checking interval in seconds"`
+	HealthcheckMode           string            `cli-usage:"managed Elastic IP health checking mode (tcp|http|https)"`
+	HealthcheckPort           int64             `cli-usage:"managed Elastic IP health checking port"`
+	HealthcheckStrikesFail    int64             `cli-usage:"number of failed attempts before considering a managed Elastic IP health check unhealthy"`
+	HealthcheckStrikesOK      int64             `cli-usage:"number of successful attempts before considering a managed Elastic IP health check healthy"`
+	HealthcheckTLSSNI         string            `cli-flag:"healthcheck-tls-sni" cli-usage:"managed Elastic IP health checking server name to present with SNI in https mode"`
+	HealthcheckTLSSSkipVerify bool              `cli-flag:"healthcheck-tls-skip-verify" cli-usage:"disable TLS certificate verification for managed Elastic IP health checking in https mode"`
+	HealthcheckTimeout        int64             `cli-usage:"managed Elastic IP health checking timeout in seconds"`
+	HealthcheckURI            string            `cli-usage:"managed Elastic IP health checking URI (required in http(s) mode)"`
+	Zone                      string            `cli-short:"z" cli-usage:"Elastic IP zone"`
+	Labels                    map[string]string `cli-flag:"label" cli-usage:"Elastic IP labels (format: key=value, ex: a=1,b=2)"`
+	ReverseDNS                string            `cli-flag:"reverse-dns" cli-usage:"Domain name for reverse DNS record."`
 }
 
 func (c *elasticIPCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
@@ -83,27 +85,45 @@ func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	elasticIP := v3.CreateElasticIPRequest{
 		Healthcheck: healthcheck,
 		Description: c.Description,
+		Labels:      c.Labels,
 	}
 
 	if c.IPv6 {
 		elasticIP.Addressfamily = "inet6"
 	}
 
-	op, err := client.CreateElasticIP(ctx, elasticIP)
-	if err != nil {
-		return err
-	}
+	var eipID v3.UUID
+	{
+		op, err := client.CreateElasticIP(ctx, elasticIP)
+		if err != nil {
+			return err
+		}
 
-	utils.DecorateAsyncOperation("Creating Elastic IP...", func() {
-		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-	})
-	if err != nil {
-		return err
+		utils.DecorateAsyncOperation("Creating Elastic IP...", func() {
+			op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		})
+		if err != nil {
+			return fmt.Errorf("unable to create elastic ip: %w", err)
+		}
+		eipID = op.Reference.ID
+	}
+	{
+		op, err := client.UpdateReverseDNSElasticIP(
+			ctx,
+			eipID,
+			v3.UpdateReverseDNSElasticIPRequest{DomainName: c.ReverseDNS},
+		)
+		utils.DecorateAsyncOperation("Updating Elastic IP reverse dns...", func() {
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		})
+		if err != nil {
+			return fmt.Errorf("unable to update elastic ip reverse dns: %w", err)
+		}
 	}
 
 	return (&elasticIPShowCmd{
 		CliCommandSettings: c.CliCommandSettings,
-		ElasticIP:          op.Reference.ID.String(),
+		ElasticIP:          eipID.String(),
 		Zone:               c.Zone,
 	}).CmdRun(nil, nil)
 }

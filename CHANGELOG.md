@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- EIP: allows labels + reverse dns at creation - #913
+
 ## 1.101.0
 
 ### Breaking changes
