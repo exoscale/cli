@@ -18,24 +18,25 @@ import (
 )
 
 type elasticIPShowOutput struct {
-	ID                       string        `json:"id"`
-	IPAddress                string        `json:"ip_address"`
-	AddressFamily            string        `json:"address_family"`
-	CIDR                     string        `json:"cidr"`
-	Description              string        `json:"description"`
-	Zone                     string        `json:"zone"`
-	Type                     string        `json:"type"`
-	ReverseDNS               string        `json:"reverse_dns"`
-	Instances                []string      `json:"instances"`
-	HealthcheckMode          string        `json:"healthcheck_mode,omitempty"`
-	HealthcheckPort          int64         `json:"healthcheck_port,omitempty"`
-	HealthcheckURI           string        `json:"healthcheck_uri,omitempty"`
-	HealthcheckInterval      time.Duration `json:"healthcheck_interval,omitempty"`
-	HealthcheckTimeout       time.Duration `json:"healthcheck_timeout,omitempty"`
-	HealthcheckStrikesOK     int64         `json:"healthcheck_strikes_ok,omitempty"`
-	HealthcheckStrikesFail   int64         `json:"healthcheck_strikes_fail,omitempty"`
-	HealthcheckTLSSNI        string        `json:"healthcheck_tls_sni,omitempty"`
-	HealthcheckTLSSkipVerify *bool         `json:"healthcheck_tls_skip_verify,omitempty"`
+	ID                       string            `json:"id"`
+	IPAddress                string            `json:"ip_address"`
+	AddressFamily            string            `json:"address_family"`
+	CIDR                     string            `json:"cidr"`
+	Description              string            `json:"description"`
+	Zone                     string            `json:"zone"`
+	Type                     string            `json:"type"`
+	ReverseDNS               string            `json:"reverse_dns"`
+	Instances                []string          `json:"instances"`
+	HealthcheckMode          string            `json:"healthcheck_mode,omitempty"`
+	HealthcheckPort          int64             `json:"healthcheck_port,omitempty"`
+	HealthcheckURI           string            `json:"healthcheck_uri,omitempty"`
+	HealthcheckInterval      time.Duration     `json:"healthcheck_interval,omitempty"`
+	HealthcheckTimeout       time.Duration     `json:"healthcheck_timeout,omitempty"`
+	HealthcheckStrikesOK     int64             `json:"healthcheck_strikes_ok,omitempty"`
+	HealthcheckStrikesFail   int64             `json:"healthcheck_strikes_fail,omitempty"`
+	HealthcheckTLSSNI        string            `json:"healthcheck_tls_sni,omitempty"`
+	HealthcheckTLSSkipVerify *bool             `json:"healthcheck_tls_skip_verify,omitempty"`
+	Labels                   map[string]string `json:"labels"`
 }
 
 func (o *elasticIPShowOutput) ToJSON() { output.JSON(o) }
@@ -75,6 +76,18 @@ func (o *elasticIPShowOutput) ToTable() {
 			t.Append([]string{"Healthcheck TLS Skip Verification", fmt.Sprint(o.HealthcheckTLSSkipVerify)})
 		}
 	}
+
+	var labelsOutput string
+	if len(o.Labels) > 0 {
+		var labels []string
+		for k, v := range o.Labels {
+			labels = append(labels, fmt.Sprintf("%s:%s", k, v))
+		}
+		labelsOutput = strings.Join(labels, "\n")
+	} else {
+		labelsOutput = "n/a"
+	}
+	t.Append([]string{"Labels", labelsOutput})
 }
 
 type elasticIPShowCmd struct {
@@ -133,6 +146,7 @@ func (c *elasticIPShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		Description:   elasticIp.Description,
 		Zone:          c.Zone,
 		Type:          "manual",
+		Labels:        elasticIp.Labels,
 	}
 
 	rdns, err := client.GetReverseDNSElasticIP(ctx, elasticIp.ID)

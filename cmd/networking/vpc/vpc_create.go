@@ -20,9 +20,12 @@ type vpcCreateCmd struct {
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
-	Description string            `cli-usage:"VPC description"`
-	Labels      map[string]string `cli-flag:"label" cli-usage:"VPC label (format: key=value)"`
-	Zone        v3.ZoneName       `cli-short:"z" cli-usage:"VPC zone"`
+	Description  string            `cli-usage:"VPC description"`
+	Labels       map[string]string `cli-flag:"label" cli-usage:"VPC label (format: key=value)"`
+	Zone         v3.ZoneName       `cli-short:"z" cli-usage:"VPC zone"`
+	DNSServers   []string          `cli-flag:"dns-server" cli-usage:"DHCP option 6: DNS servers (can be specified multiple times)"`
+	NTPServers   []string          `cli-flag:"ntp-server" cli-usage:"DHCP option 42: NTP servers (can be specified multiple times)"`
+	DomainSearch []string          `cli-flag:"domain-search" cli-usage:"DHCP option 119: domain search list (can be specified multiple times)"`
 }
 
 func (c *vpcCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
@@ -48,9 +51,23 @@ func (c *vpcCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
+	dnsServersParsed, err := stringsToIPv4s(c.DNSServers)
+	if err != nil {
+		return fmt.Errorf("invalid DNS server: %w", err)
+	}
+	ntpServersParsed, err := stringsToIPv4s(c.NTPServers)
+	if err != nil {
+		return fmt.Errorf("invalid NTP server: %w", err)
+	}
+
 	req := v3.CreateVpcRequest{
 		Name:        c.Name,
 		Description: c.Description,
+		DHCPOptions: &v3.VpcDHCPOptions{
+			DNSServers:   dnsServersParsed,
+			NtpServers:   ntpServersParsed,
+			DomainSearch: c.DomainSearch,
+		},
 	}
 
 	if len(c.Labels) > 0 {
