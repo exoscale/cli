@@ -7,7 +7,7 @@
 ### Features
 
 - NLB: Add ipv6 support- #910
-
+- Show VPC & KMS quotas
 ### Bug fixes
 
 - fix(vpc): correctly print labels in subnet show - #911
