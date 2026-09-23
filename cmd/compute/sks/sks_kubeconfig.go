@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -23,6 +23,7 @@ type sksKubeconfigCmd struct {
 
 	ExecCredential bool        `cli-short:"x" cli-usage:"output an ExecCredential object to use with a kubeconfig user.exec mode"`
 	Groups         []string    `cli-flag:"group" cli-short:"g" cli-usage:"client certificate group. Can be specified multiple times. Defaults to system:masters"`
+	Name           string      `cli-short:"n" cli-usage:"cluster name to use in the generated kubeconfig"`
 	TTL            int64       `cli-short:"t" cli-usage:"client certificate validity duration in seconds"`
 	Zone           v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
@@ -111,6 +112,10 @@ func (c *sksKubeconfigCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksKubeconfigCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	if c.ExecCredential && c.Name != "" {
+		return fmt.Errorf("--name cannot be used with --exec-credential")
+	}
+
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -150,6 +155,13 @@ func (c *sksKubeconfigCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.ExecCredential {
+		if c.Name != "" {
+			kubeconfig, err = setSKSKubeconfigClusterName(kubeconfig, c.Name)
+			if err != nil {
+				return fmt.Errorf("error rewriting kubeconfig content: %w", err)
+			}
+		}
+
 		fmt.Print(string(kubeconfig))
 		return nil
 	}
@@ -188,6 +200,98 @@ func (c *sksKubeconfigCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	fmt.Print(string(ecOut))
 	return nil
+}
+
+func setSKSKubeconfigClusterName(kubeconfig []byte, name string) ([]byte, error) {
+	if name == "" {
+		return kubeconfig, nil
+	}
+
+	var doc yaml.Node
+	if err := yaml.Unmarshal(kubeconfig, &doc); err != nil {
+		return nil, err
+	}
+
+	root := yamlDocumentRoot(&doc)
+	clusters := yamlMappingValue(root, "clusters")
+	if clusters == nil || clusters.Kind != yaml.SequenceNode || len(clusters.Content) == 0 {
+		return nil, fmt.Errorf("cluster name not found")
+	}
+
+	oldName := ""
+	for _, cluster := range clusters.Content {
+		clusterName := yamlMappingValue(cluster, "name")
+		if clusterName == nil {
+			continue
+		}
+
+		if oldName == "" {
+			oldName = clusterName.Value
+		}
+		if clusterName.Value == oldName {
+			setYAMLDoubleQuotedString(clusterName, name)
+		}
+	}
+	if oldName == "" {
+		return nil, fmt.Errorf("cluster name not found")
+	}
+
+	contexts := yamlMappingValue(root, "contexts")
+	if contexts != nil && contexts.Kind == yaml.SequenceNode {
+		for _, context := range contexts.Content {
+			contextName := yamlMappingValue(context, "name")
+			if contextName != nil && contextName.Value == oldName {
+				setYAMLDoubleQuotedString(contextName, name)
+			}
+
+			contextValue := yamlMappingValue(context, "context")
+			contextCluster := yamlMappingValue(contextValue, "cluster")
+			if contextCluster != nil && contextCluster.Value == oldName {
+				setYAMLDoubleQuotedString(contextCluster, name)
+			}
+		}
+	}
+
+	currentContext := yamlMappingValue(root, "current-context")
+	if currentContext != nil && currentContext.Value == oldName {
+		setYAMLDoubleQuotedString(currentContext, name)
+	}
+
+	out, err := yaml.Marshal(&doc)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+func yamlDocumentRoot(node *yaml.Node) *yaml.Node {
+	if node.Kind == yaml.DocumentNode && len(node.Content) > 0 {
+		return node.Content[0]
+	}
+
+	return node
+}
+
+func yamlMappingValue(node *yaml.Node, key string) *yaml.Node {
+	if node == nil || node.Kind != yaml.MappingNode {
+		return nil
+	}
+
+	for i := 0; i < len(node.Content)-1; i += 2 {
+		if node.Content[i].Value == key {
+			return node.Content[i+1]
+		}
+	}
+
+	return nil
+}
+
+func setYAMLDoubleQuotedString(node *yaml.Node, value string) {
+	node.Kind = yaml.ScalarNode
+	node.Tag = "!!str"
+	node.Value = value
+	node.Style = yaml.DoubleQuotedStyle
 }
 
 func init() {
