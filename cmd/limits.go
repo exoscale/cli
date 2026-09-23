@@ -29,6 +29,8 @@ const (
 	limitBlockStorageVolumes = "block-storage-volume"
 	limitBlockStorage        = "block-storage"
 	limitBlockStorageMaxSize = "block-storage-max-size"
+	limitVPC                 = "vpc"
+	limitKMSKey              = "kms-key"
 
 	gpu2          = "gpu2"
 	gpu3          = "gpu3"
@@ -83,6 +85,8 @@ Supported output template annotations: %s`,
 			limitBlockStorageVolumes: "Block Storage Volumes",
 			limitBlockStorage:        "Block Storage cumulative size (GiB)",
 			limitBlockStorageMaxSize: "Max size of a Block Storage Volume (GiB)",
+			limitVPC:                 "VPC",
+			limitKMSKey:              "KMS Keys",
 		}
 
 		gpuResourceLabels := map[string]string{
