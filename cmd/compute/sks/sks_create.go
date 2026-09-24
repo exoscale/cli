@@ -45,6 +45,7 @@ type sksCreateCmd struct {
 	ExoscaleCSI                  bool              `cli-usage:"deploy the Exoscale Container Storage Interface on worker nodes"`
 	EnableKarpenterAddon         bool              `cli-usage:"deploy Karpenter node provisioner"`
 	FeatureGates                 []string          `cli-flag:"feature-gates" cli-usage:"SKS cluster feature gates to enable"`
+	KarpenterFeatureGates        []string          `cli-flag:"karpenter-feature-gates" cli-usage:"Karpenter feature gates to enable (only effective when the Karpenter addon is enabled)"`
 	NodepoolAntiAffinityGroups   []string          `cli-flag:"nodepool-anti-affinity-group" cli-usage:"default Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
 	NodepoolDeployTarget         string            `cli-usage:"default Nodepool Deploy Target NAME|ID"`
 	NodepoolDescription          string            `cli-usage:"default Nodepool description"`
@@ -126,6 +127,12 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 			return nil
 		}(),
 		FeatureGates: c.FeatureGates,
+		KarpenterFeatureGates: func() []string {
+			if len(c.KarpenterFeatureGates) > 0 {
+				return c.KarpenterFeatureGates
+			}
+			return nil
+		}(),
 	}
 
 	ctx := exocmd.GContext
