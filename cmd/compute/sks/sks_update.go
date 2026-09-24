@@ -23,24 +23,25 @@ type sksUpdateCmd struct {
 	Cluster string      `cli-arg:"#" cli-usage:"NAME|ID"`
 	Zone    v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
 
-	AutoUpgrade          bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version(--auto-upgrade=false to disable again)"`
-	Description          string            `cli-usage:"SKS cluster description"`
-	FeatureGates         []string          `cli-flag:"feature-gates" cli-usage:"SKS cluster feature gates to enable"`
-	Labels               map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
-	Name                 string            `cli-usage:"SKS cluster name"`
-	EnableCSIAddon       bool              `cli-usage:"enable the Exoscale CSI driver"`
-	EnableKarpenterAddon bool              `cli-usage:"enable the Karpenter autoscaler addon"`
-	AuditEnabled         bool              `cli-flag:"audit-enabled" cli-usage:"enable or disable Kubernetes Audit logging"`
-	AuditEndpoint        string            `cli-flag:"audit-endpoint" cli-usage:"Kubernetes Audit endpoint URL"`
-	AuditBearerToken     string            `cli-flag:"audit-bearer-token" cli-usage:"Bearer token for Kubernetes Audit endpoint authentication"`
-	AuditInitialBackoff  string            `cli-flag:"audit-initial-backoff" cli-usage:"Initial backoff for Kubernetes Audit endpoint retry (default: 10s)"`
-	OIDCClientID         string            `cli-flag:"oidc-client-id" cli-usage:"OpenID client ID"`
-	OIDCGroupsClaim      string            `cli-flag:"oidc-groups-claim" cli-usage:"OpenID JWT claim to use as the user's group"`
-	OIDCGroupsPrefix     string            `cli-flag:"oidc-groups-prefix" cli-usage:"OpenID prefix prepended to group claims"`
-	OIDCIssuerURL        string            `cli-flag:"oidc-issuer-url" cli-usage:"OpenID provider URL"`
-	OIDCRequiredClaim    map[string]string `cli-flag:"oidc-required-claim" cli-usage:"OpenID token required claim (format: key=value)"`
-	OIDCUsernameClaim    string            `cli-flag:"oidc-username-claim" cli-usage:"OpenID JWT claim to use as the user name"`
-	OIDCUsernamePrefix   string            `cli-flag:"oidc-username-prefix" cli-usage:"OpenID prefix prepended to username claims"`
+	AutoUpgrade           bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version(--auto-upgrade=false to disable again)"`
+	Description           string            `cli-usage:"SKS cluster description"`
+	FeatureGates          []string          `cli-flag:"feature-gates" cli-usage:"SKS cluster feature gates to enable"`
+	KarpenterFeatureGates []string          `cli-flag:"karpenter-feature-gates" cli-usage:"Karpenter feature gates to enable (only effective when the Karpenter addon is enabled)"`
+	Labels                map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
+	Name                  string            `cli-usage:"SKS cluster name"`
+	EnableCSIAddon        bool              `cli-usage:"enable the Exoscale CSI driver"`
+	EnableKarpenterAddon  bool              `cli-usage:"enable the Karpenter autoscaler addon"`
+	AuditEnabled          bool              `cli-flag:"audit-enabled" cli-usage:"enable or disable Kubernetes Audit logging"`
+	AuditEndpoint         string            `cli-flag:"audit-endpoint" cli-usage:"Kubernetes Audit endpoint URL"`
+	AuditBearerToken      string            `cli-flag:"audit-bearer-token" cli-usage:"Bearer token for Kubernetes Audit endpoint authentication"`
+	AuditInitialBackoff   string            `cli-flag:"audit-initial-backoff" cli-usage:"Initial backoff for Kubernetes Audit endpoint retry (default: 10s)"`
+	OIDCClientID          string            `cli-flag:"oidc-client-id" cli-usage:"OpenID client ID"`
+	OIDCGroupsClaim       string            `cli-flag:"oidc-groups-claim" cli-usage:"OpenID JWT claim to use as the user's group"`
+	OIDCGroupsPrefix      string            `cli-flag:"oidc-groups-prefix" cli-usage:"OpenID prefix prepended to group claims"`
+	OIDCIssuerURL         string            `cli-flag:"oidc-issuer-url" cli-usage:"OpenID provider URL"`
+	OIDCRequiredClaim     map[string]string `cli-flag:"oidc-required-claim" cli-usage:"OpenID token required claim (format: key=value)"`
+	OIDCUsernameClaim     string            `cli-flag:"oidc-username-claim" cli-usage:"OpenID JWT claim to use as the user name"`
+	OIDCUsernamePrefix    string            `cli-flag:"oidc-username-prefix" cli-usage:"OpenID prefix prepended to username claims"`
 }
 
 func (c *sksUpdateCmd) CmdAliases() []string { return nil }
@@ -90,6 +91,11 @@ func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.FeatureGates)) {
 		updateReq.FeatureGates = c.FeatureGates
+		updated = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KarpenterFeatureGates)) {
+		updateReq.KarpenterFeatureGates = c.KarpenterFeatureGates
 		updated = true
 	}
 
