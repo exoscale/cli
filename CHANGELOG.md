@@ -5,6 +5,7 @@
 ### Features
 
 - EIP: allows labels + reverse dns at creation - #913
+- sks: add `--karpenter-feature-gates` flag to `sks create`/`update` and surface the value in `sks show`
 
 ## 1.101.0
 

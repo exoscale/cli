@@ -15,25 +15,26 @@ import (
 )
 
 type sksShowOutput struct {
-	ID                  v3.UUID                 `json:"id"`
-	Name                string                  `json:"name"`
-	Description         string                  `json:"description"`
-	CreationDate        string                  `json:"creation_date"`
-	AutoUpgrade         bool                    `json:"auto_upgrade"`
-	EnableKubeProxy     bool                    `json:"enable_kube_proxy"`
-	Zone                v3.ZoneName             `json:"zone"`
-	Endpoint            string                  `json:"endpoint"`
-	Version             string                  `json:"version"`
-	ServiceLevel        string                  `json:"service_level"`
-	CNI                 string                  `json:"cni"`
-	AddOns              []string                `json:"addons"`
-	AuditEnabled        bool                    `json:"audit_enabled"`
-	AuditEndpoint       string                  `json:"audit_endpoint"`
-	AuditInitialBackoff string                  `json:"audit_initial_backoff"`
-	FeatureGates        []string                `json:"feature_gates"`
-	State               string                  `json:"state"`
-	Labels              map[string]string       `json:"labels"`
-	Nodepools           []sksNodepoolShowOutput `json:"nodepools"`
+	ID                    v3.UUID                 `json:"id"`
+	Name                  string                  `json:"name"`
+	Description           string                  `json:"description"`
+	CreationDate          string                  `json:"creation_date"`
+	AutoUpgrade           bool                    `json:"auto_upgrade"`
+	EnableKubeProxy       bool                    `json:"enable_kube_proxy"`
+	Zone                  v3.ZoneName             `json:"zone"`
+	Endpoint              string                  `json:"endpoint"`
+	Version               string                  `json:"version"`
+	ServiceLevel          string                  `json:"service_level"`
+	CNI                   string                  `json:"cni"`
+	AddOns                []string                `json:"addons"`
+	AuditEnabled          bool                    `json:"audit_enabled"`
+	AuditEndpoint         string                  `json:"audit_endpoint"`
+	AuditInitialBackoff   string                  `json:"audit_initial_backoff"`
+	FeatureGates          []string                `json:"feature_gates"`
+	KarpenterFeatureGates []string                `json:"karpenter_feature_gates"`
+	State                 string                  `json:"state"`
+	Labels                map[string]string       `json:"labels"`
+	Nodepools             []sksNodepoolShowOutput `json:"nodepools"`
 }
 
 func (o *sksShowOutput) ToJSON() { output.JSON(o) }
@@ -60,7 +61,18 @@ func (o *sksShowOutput) ToTable() {
 		t.Append([]string{"Audit Endpoint", o.AuditEndpoint})
 		t.Append([]string{"Audit Initial Backoff", o.AuditInitialBackoff})
 	}
-	t.Append([]string{"Feature Gates", strings.Join(o.FeatureGates, "\n")})
+	t.Append([]string{"Feature Gates", func() string {
+		if len(o.FeatureGates) > 0 {
+			return strings.Join(o.FeatureGates, "\n")
+		}
+		return "n/a"
+	}()})
+	t.Append([]string{"Karpenter Feature Gates", func() string {
+		if len(o.KarpenterFeatureGates) > 0 {
+			return strings.Join(o.KarpenterFeatureGates, "\n")
+		}
+		return "n/a"
+	}()})
 	t.Append([]string{"State", o.State})
 	t.Append([]string{"Labels", func() string {
 		if len(o.Labels) > 0 {
@@ -163,6 +175,12 @@ func (c *sksShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			FeatureGates: func() (v []string) {
 				if cluster.FeatureGates != nil {
 					v = cluster.FeatureGates
+				}
+				return
+			}(),
+			KarpenterFeatureGates: func() (v []string) {
+				if cluster.KarpenterFeatureGates != nil {
+					v = cluster.KarpenterFeatureGates
 				}
 				return
 			}(),

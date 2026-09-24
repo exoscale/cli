@@ -5421,8 +5421,10 @@ type SKSCluster struct {
 	// A list of Kubernetes-only Alpha features to enable for API server component
 	FeatureGates []string `json:"feature-gates,omitempty"`
 	// Cluster ID
-	ID     UUID             `json:"id,omitempty"`
-	Labels SKSClusterLabels `json:"labels,omitempty"`
+	ID UUID `json:"id,omitempty"`
+	// A list of Kubernetes Karpenter feature gates to enable
+	KarpenterFeatureGates []string         `json:"karpenter-feature-gates,omitempty"`
+	Labels                SKSClusterLabels `json:"labels,omitempty"`
 	// Cluster level
 	Level SKSClusterLevel `json:"level,omitempty"`
 	// Cluster name
