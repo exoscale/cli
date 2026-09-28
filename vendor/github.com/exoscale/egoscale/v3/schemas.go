@@ -74,25 +74,16 @@ type AccessKeyResource struct {
 	ResourceType AccessKeyResourceResourceType `json:"resource-type,omitempty"`
 }
 
-// AI API key metadata
-type AIAPIKey struct {
-	// Creation timestamp
-	CreatedAT time.Time `json:"created-at" validate:"required"`
-	// AI API key ID
+type AIAPIKeyDeploymentRef struct {
+	// Deployment ID
 	ID UUID `json:"id" validate:"required"`
-	// Human-readable name for the AI API key
-	Name string `json:"name" validate:"required"`
-	// Key scope: 'public' for all deployments, or a specific deployment UUID
-	Scope string `json:"scope" validate:"required"`
-	// Last update timestamp
-	UpdatedAT time.Time `json:"updated-at" validate:"required"`
 }
 
-// AI API key plaintext value
-type AIAPIKeyValue struct {
-	// Plaintext AI API key value
-	Value string `json:"value" validate:"required"`
-}
+// Allowlist of deployments. An empty array denies access to all deployments. Grant access to all deployments with all-deployments instead.
+type AIAPIKeyDeployments []AIAPIKeyDeploymentRef
+
+// Allowlist of public model names. An empty array denies access to all public models. Grant access to all public models with all-models instead.
+type AIAPIKeyModels []string
 
 // Anti-affinity Group
 type AntiAffinityGroup struct {
@@ -112,12 +103,12 @@ type AntiAffinityGroupRef struct {
 	ID UUID `json:"id,omitempty"`
 }
 
-// Usage breakdown for one API key, grouped by model
+// Usage breakdown for one API key, grouped by product-name
 type APIKeyUsageEntry struct {
-	// Map of model-uuid to accumulated counters. Keys are model UUIDs.
-	Models map[string]ModelUsageCounters `json:"models" validate:"required"`
 	// Organization that owns this API key
 	OrganizationID UUID `json:"organization-id" validate:"required"`
+	// Map of product-name to accumulated counters. Keys are product names.
+	ProductNames map[string]ModelUsageCounters `json:"product-names" validate:"required"`
 }
 
 type BlockStorageSnapshotState string
@@ -201,26 +192,57 @@ type BlockStorageVolumeRef struct {
 	ID UUID `json:"id,omitempty"`
 }
 
-// Request to create a new AI API key
+type CPUManagerConfigCPUManagerPolicy string
+
+const (
+	CPUManagerConfigCPUManagerPolicyStatic CPUManagerConfigCPUManagerPolicy = "static"
+	CPUManagerConfigCPUManagerPolicyNone   CPUManagerConfigCPUManagerPolicy = "none"
+)
+
+// CPU manager config
+type CPUManagerConfig struct {
+	// CPU management policy used by the kubelet. The "static" policy grants exclusive CPUs to Guaranteed pods requesting integer CPU limits. When set to "static", a CPU reservation must be provided via kube-reserved or system-reserved
+	CPUManagerPolicy CPUManagerConfigCPUManagerPolicy `json:"cpu-manager-policy,omitempty"`
+	// CPU manager policy options used by the kubelet. They refine the behavior of the "static" cpu-manager-policy and are only valid when the policy is "static"
+	CPUManagerPolicyOptions []string `json:"cpu-manager-policy-options,omitempty"`
+	// CPU manager reconcile period used by the kubelet, as a duration string (for example "10s").
+	CPUManagerReconcilePeriod string `json:"cpu-manager-reconcile-period,omitempty"`
+	// Resources reserved for kube or system components.
+	KubeReserved *ReservedResources `json:"kube-reserved,omitempty"`
+	// Resources reserved for kube or system components.
+	SystemReserved *ReservedResources `json:"system-reserved,omitempty"`
+}
+
+// Request to create a new AI API key.
 type CreateAIAPIKeyRequest struct {
+	// Grant access to all deployments of the organization. Takes precedence over the deployments array, which is ignored when set.
+	AllDeployments *bool `json:"all-deployments,omitempty"`
+	// Grant access to all public models. Takes precedence over the models array, which is ignored when set.
+	AllModels *bool `json:"all-models,omitempty"`
+	// Allowlist of deployments. An empty array denies access to all deployments. Grant access to all deployments with all-deployments instead.
+	Deployments *AIAPIKeyDeployments `json:"deployments,omitempty"`
+	// Allowlist of public model names. An empty array denies access to all public models. Grant access to all public models with all-models instead.
+	Models *AIAPIKeyModels `json:"models,omitempty"`
 	// Human-readable name for the AI API key
 	Name string `json:"name" validate:"required,gte=1,lte=50"`
-	// Key scope: 'public' for all deployments, or a specific deployment UUID
-	Scope string `json:"scope" validate:"required"`
 }
 
 // Create AI API key response
 type CreateAIAPIKeyResponse struct {
-	// Creation timestamp
+	// True when the key has access to all deployments of the organization.
+	AllDeployments *bool `json:"all-deployments" validate:"required"`
+	// True when the key has access to all public models.
+	AllModels *bool     `json:"all-models" validate:"required"`
 	CreatedAT time.Time `json:"created-at" validate:"required"`
-	// AI API key ID
-	ID UUID `json:"id" validate:"required"`
-	// Human-readable name for the AI API key
-	Name string `json:"name" validate:"required"`
-	// Key scope: 'public' for all deployments, or a specific deployment UUID
-	Scope string `json:"scope" validate:"required"`
+	// Allowlist of deployments. An empty array denies access to all deployments. Grant access to all deployments with all-deployments instead.
+	Deployments *AIAPIKeyDeployments `json:"deployments" validate:"required"`
+	ID          UUID                 `json:"id" validate:"required"`
+	// Allowlist of public model names. An empty array denies access to all public models. Grant access to all public models with all-models instead.
+	Models *AIAPIKeyModels `json:"models" validate:"required"`
+	Name   string          `json:"name" validate:"required"`
 	// Last update timestamp
-	UpdatedAT time.Time `json:"updated-at" validate:"required"`
+	RevokedAT *time.Time `json:"revoked-at,omitempty"`
+	UpdatedAT time.Time  `json:"updated-at" validate:"required"`
 	// Plaintext AI API key value
 	Value string `json:"value" validate:"required"`
 }
@@ -2565,6 +2587,14 @@ type Event struct {
 	Zone string `json:"zone,omitempty"`
 }
 
+// Focus report download URL
+type FocusReport struct {
+	// URL expiration in seconds
+	ExpiresIn int64 `json:"expires_in,omitempty" validate:"omitempty,gt=0"`
+	// Focus report presigned URL
+	PresignedURL string `json:"presigned_url,omitempty"`
+}
+
 type GenerateDataKeyRequestKeySpec string
 
 const (
@@ -2587,14 +2617,22 @@ type GenerateDataKeyResponse struct {
 
 // Get AI API key response
 type GetAIAPIKeyResponse struct {
+	// True when the key has access to all deployments of the organization.
+	AllDeployments *bool `json:"all-deployments" validate:"required"`
+	// True when the key has access to all public models.
+	AllModels *bool `json:"all-models" validate:"required"`
 	// Creation timestamp
 	CreatedAT time.Time `json:"created-at" validate:"required"`
+	// Allowlist of deployments. An empty array denies access to all deployments. Grant access to all deployments with all-deployments instead.
+	Deployments *AIAPIKeyDeployments `json:"deployments" validate:"required"`
 	// AI API key ID
 	ID UUID `json:"id" validate:"required"`
+	// Allowlist of public model names. An empty array denies access to all public models. Grant access to all public models with all-models instead.
+	Models *AIAPIKeyModels `json:"models" validate:"required"`
 	// Human-readable name for the AI API key
 	Name string `json:"name" validate:"required"`
-	// Key scope: 'public' for all deployments, or a specific deployment UUID
-	Scope string `json:"scope" validate:"required"`
+	// Revocation timestamp. Null when the API key is active.
+	RevokedAT *time.Time `json:"revoked-at" validate:"required"`
 	// Last update timestamp
 	UpdatedAT time.Time `json:"updated-at" validate:"required"`
 }
@@ -2861,6 +2899,27 @@ type IAMServicePolicyRule struct {
 	Resources  []string                   `json:"resources,omitempty"`
 }
 
+// IAM System Role
+type IAMSystemRole struct {
+	// Assume Role Policy
+	AssumeRolePolicy *IAMAssumeRolePolicy `json:"assume-role-policy,omitempty"`
+	// IAM System Role description
+	Description string `json:"description,omitempty" validate:"omitempty,gte=1,lte=255"`
+	// IAM System Role mutability
+	Editable *bool `json:"editable,omitempty"`
+	// IAM System Role ID
+	ID     UUID   `json:"id,omitempty"`
+	Labels Labels `json:"labels,omitempty"`
+	// Maximum TTL requester is allowed to ask for when assuming a system role
+	MaxSessionTtl int64 `json:"max-session-ttl,omitempty" validate:"omitempty,gt=0"`
+	// IAM System Role name
+	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
+	// IAM System Role permissions
+	Permissions []string `json:"permissions,omitempty"`
+	// Policy
+	Policy *IAMPolicy `json:"policy,omitempty"`
+}
+
 type ImpactBreakdown struct {
 	Impact map[string]ImpactValueWithUnit `json:"impact" validate:"required"`
 	Zones  map[string]ZoneImpact          `json:"zones" validate:"required"`
@@ -2930,6 +2989,7 @@ const (
 	InferenceEngineVersion0271 InferenceEngineVersion = "0.27.1"
 	InferenceEngineVersion0280 InferenceEngineVersion = "0.28.0"
 	InferenceEngineVersion0290 InferenceEngineVersion = "0.29.0"
+	InferenceEngineVersion0300 InferenceEngineVersion = "0.30.0"
 )
 
 // Router flush payload: the router's full in-memory usage map with flush identity fields
@@ -3835,6 +3895,63 @@ type JSONSchemaOpensearchAuthFailureListeners struct {
 	IPRateLimiting *JSONSchemaOpensearchAuthFailureListenersIPRateLimiting `json:"ip_rate_limiting,omitempty"`
 }
 
+type JSONSchemaOpensearchClusterClusterRemoteStore struct {
+	// The amount of time to wait for the cluster state upload to complete. Defaults to 20s.
+	StateGlobalMetadataUploadTimeout string `json:"state.global_metadata.upload_timeout,omitempty"`
+	// The amount of time to wait for the manifest file upload to complete. The manifest file contains the details of each of the files uploaded for a single cluster state, both index metadata files and global metadata files. Defaults to 20s.
+	StateMetadataManifestUploadTimeout string `json:"state.metadata_manifest.upload_timeout,omitempty"`
+	// The default value of the translog buffer interval used when performing periodic translog updates. This setting is only effective when the index setting `index.remote_store.translog.buffer_interval` is not present. Defaults to 650ms.
+	TranslogBufferInterval string `json:"translog.buffer_interval,omitempty"`
+	// Sets the maximum number of open translog files for remote-backed indexes. This limits the total number of translog files per shard. After reaching this limit, the remote store flushes the translog files. Default is 1000. The minimum required is 100.
+	TranslogMaxReaders int `json:"translog.max_readers,omitempty" validate:"omitempty,gte=100,lte=2.147483647e+09"`
+}
+
+type JSONSchemaOpensearchClusterClusterSearchRequestSlowlogLevel string
+
+const (
+	JSONSchemaOpensearchClusterClusterSearchRequestSlowlogLevelDebug JSONSchemaOpensearchClusterClusterSearchRequestSlowlogLevel = "debug"
+	JSONSchemaOpensearchClusterClusterSearchRequestSlowlogLevelInfo  JSONSchemaOpensearchClusterClusterSearchRequestSlowlogLevel = "info"
+	JSONSchemaOpensearchClusterClusterSearchRequestSlowlogLevelTrace JSONSchemaOpensearchClusterClusterSearchRequestSlowlogLevel = "trace"
+	JSONSchemaOpensearchClusterClusterSearchRequestSlowlogLevelWarn  JSONSchemaOpensearchClusterClusterSearchRequestSlowlogLevel = "warn"
+)
+
+type JSONSchemaOpensearchClusterClusterSearchRequestSlowlogThreshold struct {
+	// Debug threshold for total request took time. The value should be in the form count and unit, where unit one of (s,m,h,d,nanos,ms,micros) or -1. Default is -1
+	Debug string `json:"debug,omitempty"`
+	// Info threshold for total request took time. The value should be in the form count and unit, where unit one of (s,m,h,d,nanos,ms,micros) or -1. Default is -1
+	Info string `json:"info,omitempty"`
+	// Trace threshold for total request took time. The value should be in the form count and unit, where unit one of (s,m,h,d,nanos,ms,micros) or -1. Default is -1
+	Trace string `json:"trace,omitempty"`
+	// Warning threshold for total request took time. The value should be in the form count and unit, where unit one of (s,m,h,d,nanos,ms,micros) or -1. Default is -1
+	Warn string `json:"warn,omitempty"`
+}
+
+type JSONSchemaOpensearchClusterClusterSearchRequestSlowlog struct {
+	// Log level
+	Level     JSONSchemaOpensearchClusterClusterSearchRequestSlowlogLevel      `json:"level,omitempty"`
+	Threshold *JSONSchemaOpensearchClusterClusterSearchRequestSlowlogThreshold `json:"threshold,omitempty"`
+}
+
+// Cluster settings
+type JSONSchemaOpensearchCluster struct {
+	// Defines a limit of how much total remote data can be referenced as a ratio of the size of the disk reserved for the file cache. This is designed to be a safeguard to prevent oversubscribing a cluster. Defaults to 0.
+	ClusterFilecacheRemoteDataRatio *float64                                       `json:"cluster.filecache.remote_data_ratio,omitempty" validate:"omitempty,gte=0,lte=100"`
+	ClusterRemoteStore              *JSONSchemaOpensearchClusterClusterRemoteStore `json:"cluster.remote_store,omitempty"`
+	// When set to true, OpenSearch attempts to evenly distribute the primary shards between the cluster nodes. Enabling this setting does not always guarantee an equal number of primary shards on each node, especially in the event of a failover. Changing this setting to false after it was set to true does not invoke redistribution of primary shards. Default is false.
+	ClusterRoutingAllocationBalancePreferPrimary *bool                                                   `json:"cluster.routing.allocation.balance.prefer_primary,omitempty"`
+	ClusterSearchRequestSlowlog                  *JSONSchemaOpensearchClusterClusterSearchRequestSlowlog `json:"cluster.search.request.slowlog,omitempty"`
+}
+
+// Watermark settings
+type JSONSchemaOpensearchDiskWatermarks struct {
+	// The flood stage watermark for disk usage.
+	FloodStage int `json:"flood_stage" validate:"required"`
+	// The high watermark for disk usage.
+	High int `json:"high" validate:"required"`
+	// The low watermark for disk usage.
+	Low int `json:"low" validate:"required"`
+}
+
 // Opensearch Email Sender Settings
 type JSONSchemaOpensearchEmailSender struct {
 	// This should be identical to the Sender name defined in Opensearch dashboards
@@ -3859,6 +3976,66 @@ type JSONSchemaOpensearchIsmHistory struct {
 	IsmHistoryRolloverCheckPeriod int `json:"ism_history_rollover_check_period,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
 	// How long audit history indices are kept in days.
 	IsmHistoryRolloverRetentionPeriod int `json:"ism_history_rollover_retention_period,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
+}
+
+// ML Commons settings
+type JSONSchemaOpensearchMlCommons struct {
+	// Enable or disable model access control for ML Commons. When enabled, access to ML models is controlled by security permissions. Defaults to false.
+	MlCommonsModelAccessControlEnabled *bool `json:"ml_commons_model_access_control_enabled,omitempty"`
+	// Native memory threshold percentage for ML Commons. Controls the maximum percentage of native memory that can be used by ML Commons operations. Defaults to 90%.
+	MlCommonsNativeMemoryThreshold int `json:"ml_commons_native_memory_threshold,omitempty" validate:"omitempty,gte=1,lte=100"`
+	// Enable or disable running ML Commons tasks only on ML nodes. When enabled, ML tasks will only execute on nodes designated as ML nodes. Defaults to true.
+	MlCommonsOnlyRunOnMlNode *bool `json:"ml_commons_only_run_on_ml_node,omitempty"`
+}
+
+type JSONSchemaOpensearchRemoteStore struct {
+	// The variance factor that is used together with the moving average to calculate the dynamic bytes lag threshold for activating remote segment backpressure. Defaults to 10.
+	SegmentPressureBytesLagVarianceFactor float64 `json:"segment.pressure.bytes_lag.variance_factor,omitempty" validate:"omitempty,gte=1"`
+	// The minimum consecutive failure count for activating remote segment backpressure. Defaults to 5.
+	SegmentPressureConsecutiveFailuresLimit int `json:"segment.pressure.consecutive_failures.limit,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
+	// Enables remote segment backpressure. Default is `true`
+	SegmentPressureEnabled *bool `json:"segment.pressure.enabled,omitempty"`
+	// The variance factor that is used together with the moving average to calculate the dynamic time lag threshold for activating remote segment backpressure. Defaults to 10.
+	SegmentPressureTimeLagVarianceFactor float64 `json:"segment.pressure.time_lag.variance_factor,omitempty" validate:"omitempty,gte=1"`
+}
+
+// Top N queries monitoring by CPU
+type JSONSchemaOpensearchSearchInsightsTopQueriesCPU struct {
+	// Enable or disable top N query monitoring by the metric
+	Enabled *bool `json:"enabled,omitempty"`
+	// Specify the value of N for the top N queries by the metric
+	TopNSize int `json:"top_n_size,omitempty" validate:"omitempty,gte=1"`
+	// Configure the window size of the top N queries. The value should be a time value with unit, e.g. 1m, 5s, 1h.
+	WindowSize string `json:"window_size,omitempty"`
+}
+
+// Top N queries monitoring by latency
+type JSONSchemaOpensearchSearchInsightsTopQueriesLatency struct {
+	// Enable or disable top N query monitoring by the metric
+	Enabled *bool `json:"enabled,omitempty"`
+	// Specify the value of N for the top N queries by the metric
+	TopNSize int `json:"top_n_size,omitempty" validate:"omitempty,gte=1"`
+	// Configure the window size of the top N queries. The value should be a time value with unit, e.g. 1m, 5s, 1h.
+	WindowSize string `json:"window_size,omitempty"`
+}
+
+// Top N queries monitoring by memory
+type JSONSchemaOpensearchSearchInsightsTopQueriesMemory struct {
+	// Enable or disable top N query monitoring by the metric
+	Enabled *bool `json:"enabled,omitempty"`
+	// Specify the value of N for the top N queries by the metric
+	TopNSize int `json:"top_n_size,omitempty" validate:"omitempty,gte=1"`
+	// Configure the window size of the top N queries. The value should be a time value with unit, e.g. 1m, 5s, 1h.
+	WindowSize string `json:"window_size,omitempty"`
+}
+
+type JSONSchemaOpensearchSearchInsightsTopQueries struct {
+	// Top N queries monitoring by CPU
+	CPU *JSONSchemaOpensearchSearchInsightsTopQueriesCPU `json:"cpu,omitempty"`
+	// Top N queries monitoring by latency
+	Latency *JSONSchemaOpensearchSearchInsightsTopQueriesLatency `json:"latency,omitempty"`
+	// Top N queries monitoring by memory
+	Memory *JSONSchemaOpensearchSearchInsightsTopQueriesMemory `json:"memory,omitempty"`
 }
 
 type JSONSchemaOpensearchSearchBackpressureMode string
@@ -3935,6 +4112,18 @@ type JSONSchemaOpensearchSearchBackpressure struct {
 	SearchTask *JSONSchemaOpensearchSearchBackpressureSearchTask `json:"search_task,omitempty"`
 }
 
+// Segment Replication Backpressure Settings
+type JSONSchemaOpensearchSegrep struct {
+	// The maximum number of indexing checkpoints that a replica shard can fall behind when copying from primary. Once `segrep.pressure.checkpoint.limit` is breached along with `segrep.pressure.time.limit`, the segment replication backpressure mechanism is initiated. Default is 4 checkpoints.
+	PressureCheckpointLimit int `json:"pressure.checkpoint.limit,omitempty" validate:"omitempty,gte=0"`
+	// Enables the segment replication backpressure mechanism. Default is false.
+	PressureEnabled *bool `json:"pressure.enabled,omitempty"`
+	// The maximum number of stale replica shards that can exist in a replication group. Once `segrep.pressure.replica.stale.limit` is breached, the segment replication backpressure mechanism is initiated. Default is .5, which is 50% of a replication group.
+	PressureReplicaStaleLimit float64 `json:"pressure.replica.stale.limit,omitempty" validate:"omitempty,gte=0,lte=1"`
+	// The maximum amount of time that a replica shard can take to copy from the primary shard. Once segrep.pressure.time.limit is breached along with segrep.pressure.checkpoint.limit, the segment replication backpressure mechanism is initiated. Default is 5 minutes.
+	PressureTimeLimit string `json:"pressure.time.limit,omitempty"`
+}
+
 // Operating factor
 type JSONSchemaOpensearchShardIndexingPressureOperatingFactor struct {
 	// Specify the lower occupancy limit of the allocated quota of memory for the shard. If the total memory usage of a shard is below this limit, shard indexing backpressure decreases the current allocated memory for that shard. Default is 0.75
@@ -3981,14 +4170,24 @@ type JSONSchemaOpensearch struct {
 	ActionDestructiveRequiresName *bool `json:"action_destructive_requires_name,omitempty"`
 	// Opensearch Security Plugin Settings
 	AuthFailureListeners *JSONSchemaOpensearchAuthFailureListeners `json:"auth_failure_listeners,omitempty"`
+	// Cluster settings
+	Cluster *JSONSchemaOpensearchCluster `json:"cluster,omitempty"`
 	// Controls the number of shards allowed in the cluster per data node
 	ClusterMaxShardsPerNode int `json:"cluster_max_shards_per_node,omitempty" validate:"omitempty,gte=100,lte=10000"`
 	// How many concurrent incoming/outgoing shard recoveries (normally replicas) are allowed to happen on a node. Defaults to 2.
 	ClusterRoutingAllocationNodeConcurrentRecoveries int `json:"cluster_routing_allocation_node_concurrent_recoveries,omitempty" validate:"omitempty,gte=2,lte=16"`
+	// Watermark settings
+	DiskWatermarks *JSONSchemaOpensearchDiskWatermarks `json:"disk_watermarks,omitempty"`
 	// Opensearch Email Sender Settings
 	EmailSender *JSONSchemaOpensearchEmailSender `json:"email-sender,omitempty"`
+	// Enable remote-backed storage
+	EnableRemoteBackedStorage *bool `json:"enable_remote_backed_storage,omitempty"`
+	// Enable searchable snapshots
+	EnableSearchableSnapshots *bool `json:"enable_searchable_snapshots,omitempty"`
 	// Enable/Disable security audit
 	EnableSecurityAudit *bool `json:"enable_security_audit,omitempty"`
+	// Enable/Disable snapshot API for custom repositories, this requires security management to be enabled
+	EnableSnapshotAPI *bool `json:"enable_snapshot_api,omitempty"`
 	// Maximum content length for HTTP requests to the OpenSearch HTTP API, in bytes.
 	HTTPMaxContentLength int `json:"http_max_content_length,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
 	// The max size of allowed headers, in bytes
@@ -4017,18 +4216,26 @@ type JSONSchemaOpensearch struct {
 	KnnMemoryCircuitBreakerEnabled *bool `json:"knn_memory_circuit_breaker_enabled,omitempty"`
 	// Maximum amount of memory that can be used for KNN index. Defaults to 50% of the JVM heap size.
 	KnnMemoryCircuitBreakerLimit int `json:"knn_memory_circuit_breaker_limit,omitempty" validate:"omitempty,gte=3,lte=100"`
+	// ML Commons settings
+	MlCommons *JSONSchemaOpensearchMlCommons `json:"ml-commons,omitempty"`
+	// Defines a limit of how much total remote data can be referenced as a ratio of the size of the disk reserved for the file cache. This is designed to be a safeguard to prevent oversubscribing a cluster. Defaults to 5gb. Requires restarting all OpenSearch nodes.
+	NodeSearchCacheSize *string `json:"node.search.cache.size,omitempty"`
 	// Compatibility mode sets OpenSearch to report its version as 7.10 so clients continue to work. Default is false
 	OverrideMainResponseVersion *bool `json:"override_main_response_version,omitempty"`
 	// Enable or disable filtering of alerting by backend roles. Requires Security plugin. Defaults to false
 	PluginsAlertingFilterByBackendRoles *bool `json:"plugins_alerting_filter_by_backend_roles,omitempty"`
 	// Whitelisted addresses for reindexing. Changing this value will cause all OpenSearch instances to restart.
-	ReindexRemoteWhitelist []string `json:"reindex_remote_whitelist"`
+	ReindexRemoteWhitelist []string                         `json:"reindex_remote_whitelist"`
+	RemoteStore            *JSONSchemaOpensearchRemoteStore `json:"remote_store,omitempty"`
 	// Script compilation circuit breaker limits the number of inline script compilations within a period of time. Default is use-context
-	ScriptMaxCompilationsRate string `json:"script_max_compilations_rate,omitempty" validate:"omitempty,lte=1024"`
+	ScriptMaxCompilationsRate string                                        `json:"script_max_compilations_rate,omitempty" validate:"omitempty,lte=1024"`
+	SearchInsightsTopQueries  *JSONSchemaOpensearchSearchInsightsTopQueries `json:"search.insights.top_queries,omitempty"`
 	// Search Backpressure Settings
 	SearchBackpressure *JSONSchemaOpensearchSearchBackpressure `json:"search_backpressure,omitempty"`
 	// Maximum number of aggregation buckets allowed in a single response. OpenSearch default value is used when this is not defined.
 	SearchMaxBuckets *int `json:"search_max_buckets,omitempty" validate:"omitempty,gte=1,lte=1e+06"`
+	// Segment Replication Backpressure Settings
+	Segrep *JSONSchemaOpensearchSegrep `json:"segrep,omitempty"`
 	// Shard indexing back pressure settings
 	ShardIndexingPressure *JSONSchemaOpensearchShardIndexingPressure `json:"shard_indexing_pressure,omitempty"`
 	// Size for the thread pool queue. See documentation for exact details.
@@ -4484,16 +4691,20 @@ type ListAIAPIKeysResponse struct {
 
 // AI API key list entry
 type ListAIAPIKeysResponseEntry struct {
-	// Creation timestamp
+	// True when the key has access to all deployments of the organization.
+	AllDeployments *bool `json:"all-deployments" validate:"required"`
+	// True when the key has access to all public models.
+	AllModels *bool     `json:"all-models" validate:"required"`
 	CreatedAT time.Time `json:"created-at" validate:"required"`
-	// AI API key ID
-	ID UUID `json:"id" validate:"required"`
-	// Human-readable name for the AI API key
-	Name string `json:"name" validate:"required"`
-	// Key scope: 'public' for all deployments, or a specific deployment UUID
-	Scope string `json:"scope" validate:"required"`
-	// Last update timestamp
-	UpdatedAT time.Time `json:"updated-at" validate:"required"`
+	// Allowlist of deployments. An empty array denies access to all deployments. Grant access to all deployments with all-deployments instead.
+	Deployments *AIAPIKeyDeployments `json:"deployments" validate:"required"`
+	ID          UUID                 `json:"id" validate:"required"`
+	// Allowlist of public model names. An empty array denies access to all public models. Grant access to all public models with all-models instead.
+	Models *AIAPIKeyModels `json:"models" validate:"required"`
+	Name   string          `json:"name" validate:"required"`
+	// Revocation timestamp. Null when the API key is active.
+	RevokedAT *time.Time `json:"revoked-at" validate:"required"`
+	UpdatedAT time.Time  `json:"updated-at" validate:"required"`
 }
 
 // List of available instance types with authorization status
@@ -5177,6 +5388,16 @@ type ReplicateKmsKeyRequest struct {
 	Zone string `json:"zone" validate:"required"`
 }
 
+// Resources reserved for kube or system components.
+type ReservedResources struct {
+	// CPU reservation, e.g., "200m"
+	CPU string `json:"cpu" validate:"required"`
+	// Ephemeral storage reservation, e.g., "1Gi"
+	EphemeralStorage string `json:"ephemeral-storage,omitempty"`
+	// Memory reservation, e.g., "512Mi"
+	Memory string `json:"memory,omitempty"`
+}
+
 // Resource
 type Resource struct {
 	// Resource ID
@@ -5399,7 +5620,8 @@ const (
 // SKS Cluster
 type SKSCluster struct {
 	// Cluster addons
-	Addons []string `json:"addons,omitempty"`
+	Addons          []string                   `json:"addons,omitempty"`
+	AllowedNetworks *SKSClusterAllowedNetworks `json:"allowed-networks,omitempty"`
 	// Kubernetes Audit parameters
 	Audit *SKSAudit `json:"audit,omitempty"`
 	// Enable auto upgrade of the control plane to the latest patch version available
@@ -5421,8 +5643,10 @@ type SKSCluster struct {
 	// A list of Kubernetes-only Alpha features to enable for API server component
 	FeatureGates []string `json:"feature-gates,omitempty"`
 	// Cluster ID
-	ID     UUID             `json:"id,omitempty"`
-	Labels SKSClusterLabels `json:"labels,omitempty"`
+	ID UUID `json:"id,omitempty"`
+	// A list of Karpenter controller feature gates to enable for the Karpenter controller binary
+	KarpenterFeatureGates []string         `json:"karpenter-feature-gates,omitempty"`
+	Labels                SKSClusterLabels `json:"labels,omitempty"`
 	// Cluster level
 	Level SKSClusterLevel `json:"level,omitempty"`
 	// Cluster name
@@ -5436,6 +5660,8 @@ type SKSCluster struct {
 	// Control plane Kubernetes version
 	Version string `json:"version,omitempty"`
 }
+
+type SKSClusterAllowedNetworks []string
 
 type SKSClusterDeprecatedResource struct {
 	Group          string `json:"group,omitempty"`
@@ -5489,6 +5715,8 @@ type SKSNodepool struct {
 	Addons []string `json:"addons,omitempty"`
 	// Nodepool Anti-affinity Groups
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	// CPU manager config
+	CPUManagerConfig *CPUManagerConfig `json:"cpu-manager-config,omitempty"`
 	// Nodepool creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Deploy target reference
@@ -5754,6 +5982,33 @@ type Template struct {
 type TemplateRef struct {
 	// Template ID
 	ID UUID `json:"id,omitempty"`
+}
+
+// Update the models and/or deployments accessible by an AI API key. Omitted properties are left unchanged.
+type UpdateAIAPIKeyRequest struct {
+	// Grant or remove access to all deployments of the organization. Takes precedence over the deployments array, which is ignored when set.
+	AllDeployments *bool `json:"all-deployments,omitempty"`
+	// Grant or remove access to all public models. Takes precedence over the models array, which is ignored when set.
+	AllModels *bool `json:"all-models,omitempty"`
+	// Allowlist of deployments. An empty array denies access to all deployments. Grant access to all deployments with all-deployments instead.
+	Deployments *AIAPIKeyDeployments `json:"deployments,omitempty"`
+	// Allowlist of public model names. An empty array denies access to all public models. Grant access to all public models with all-models instead.
+	Models *AIAPIKeyModels `json:"models,omitempty"`
+}
+
+type UpdateAIAPIKeyResponse struct {
+	// True when the key has access to all deployments of the organization.
+	AllDeployments *bool `json:"all-deployments" validate:"required"`
+	// True when the key has access to all public models.
+	AllModels *bool     `json:"all-models" validate:"required"`
+	CreatedAT time.Time `json:"created-at" validate:"required"`
+	// Allowlist of deployments. An empty array denies access to all deployments. Grant access to all deployments with all-deployments instead.
+	Deployments *AIAPIKeyDeployments `json:"deployments" validate:"required"`
+	ID          UUID                 `json:"id" validate:"required"`
+	// Allowlist of public model names. An empty array denies access to all public models. Grant access to all public models with all-models instead.
+	Models    *AIAPIKeyModels `json:"models" validate:"required"`
+	Name      string          `json:"name" validate:"required"`
+	UpdatedAT time.Time       `json:"updated-at" validate:"required"`
 }
 
 // Update AI deployment

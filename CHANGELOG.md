@@ -6,6 +6,7 @@
 
 - EIP: allows labels + reverse dns at creation - #913
 - chore(api): update commands - #917 - Add FOCUS endpoint
+- sks: add `--karpenter-feature-gates` flag to `sks create`/`update` and surface the value in `sks show`
 
 ## 1.101.0
 
