@@ -205,3 +205,25 @@ func TestKarpenterFeatureGatesRoundTrip(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, string(data), `"karpenter-feature-gates":["Drift=true"]`)
 }
+
+// TestKarpenterFeatureGatesClearedOnDisable verifies that disabling the Karpenter
+// addon produces an UpdateSKSClusterRequest with KarpenterFeatureGates explicitly
+// set to an empty slice — and that this survives JSON serialization as
+// `"karpenter-feature-gates":[]`. This is required so the server actually clears
+// the previously-set feature gates; relying on omitempty would leave them
+// untouched on the server and the update would fail.
+func TestKarpenterFeatureGatesClearedOnDisable(t *testing.T) {
+	t.Parallel()
+
+	updateReq := v3.UpdateSKSClusterRequest{
+		Addons:                []string{sksClusterAddonExoscaleCCM, sksClusterAddonMetricsServer},
+		KarpenterFeatureGates: []string{},
+	}
+
+	data, err := json.Marshal(updateReq)
+	require.NoError(t, err)
+	require.Contains(t, string(data), `"karpenter-feature-gates":[]`,
+		"empty slice must be serialized so the server clears the field")
+	require.NotContains(t, string(data), `"karpenter-feature-gates":null`,
+		"nil would be encoded as null, which is not what we want here")
+}

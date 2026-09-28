@@ -31,10 +31,10 @@ type sksShowOutput struct {
 	AuditEndpoint         string                  `json:"audit_endpoint"`
 	AuditInitialBackoff   string                  `json:"audit_initial_backoff"`
 	FeatureGates          []string                `json:"feature_gates"`
-	KarpenterFeatureGates []string                `json:"karpenter_feature_gates"`
 	State                 string                  `json:"state"`
 	Labels                map[string]string       `json:"labels"`
 	Nodepools             []sksNodepoolShowOutput `json:"nodepools"`
+	KarpenterFeatureGates []string                `json:"karpenter_feature_gates"`
 }
 
 func (o *sksShowOutput) ToJSON() { output.JSON(o) }
@@ -67,12 +67,6 @@ func (o *sksShowOutput) ToTable() {
 		}
 		return "n/a"
 	}()})
-	t.Append([]string{"Karpenter Feature Gates", func() string {
-		if len(o.KarpenterFeatureGates) > 0 {
-			return strings.Join(o.KarpenterFeatureGates, "\n")
-		}
-		return "n/a"
-	}()})
 	t.Append([]string{"State", o.State})
 	t.Append([]string{"Labels", func() string {
 		if len(o.Labels) > 0 {
@@ -101,6 +95,12 @@ func (o *sksShowOutput) ToTable() {
 					return services
 				}(),
 				"\n")
+		}
+		return "n/a"
+	}()})
+	t.Append([]string{"Karpenter Feature Gates", func() string {
+		if len(o.KarpenterFeatureGates) > 0 {
+			return strings.Join(o.KarpenterFeatureGates, "\n")
 		}
 		return "n/a"
 	}()})

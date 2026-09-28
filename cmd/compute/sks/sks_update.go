@@ -143,6 +143,10 @@ func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		} else if !c.EnableKarpenterAddon && cluster.Addons != nil && slices.Contains(cluster.Addons, sksClusterAddonKarpenter) {
 			// Disable Karpenter addon if it's currently enabled and the flag is set to false
 			removeAddonFromList(&updateReq, cluster, sksClusterAddonKarpenter)
+			// Clear any previously-set Karpenter feature gates: keeping them
+			// would make the API reject the update since they only apply when
+			// the Karpenter addon is enabled.
+			updateReq.KarpenterFeatureGates = []string{}
 			updated = true
 		}
 	}
