@@ -33,8 +33,8 @@ type AIAPIKeyUpdateCmd struct {
 	Key            string      `cli-arg:"#" cli-usage:"ID or NAME"`
 	Deployments    []string    `cli-flag:"deployment" cli-usage:"Deployment ID the API key can access (repeatable)"`
 	Models         []string    `cli-flag:"model" cli-usage:"Public model name the API key can access (repeatable)"`
-	AllModels      bool        `cli-usage:"Grant access to all public models"`
-	AllDeployments bool        `cli-usage:"Grant access to all deployments"`
+	AllModels      bool        `cli-usage:"Grant access to all public models; set --all-models=false to revoke"`
+	AllDeployments bool        `cli-usage:"Grant access to all deployments; set --all-deployments=false to revoke"`
 	Zone           v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
@@ -47,7 +47,7 @@ func (c *AIAPIKeyUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
-func (c *AIAPIKeyUpdateCmd) CmdRun(_ *cobra.Command, _ []string) error {
+func (c *AIAPIKeyUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
@@ -59,27 +59,28 @@ func (c *AIAPIKeyUpdateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("ID or NAME is required")
 	}
 
-	if !c.AllModels && len(c.Models) == 0 && !c.AllDeployments && len(c.Deployments) == 0 {
+	allModelsChanged := cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AllModels))
+	allDeploymentsChanged := cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AllDeployments))
+
+	if !allModelsChanged && !allDeploymentsChanged && len(c.Models) == 0 && len(c.Deployments) == 0 {
 		return fmt.Errorf("at least one of --deployment, --model, --all-models or --all-deployments is required")
 	}
-	if c.AllModels && len(c.Models) > 0 {
+	if allModelsChanged && len(c.Models) > 0 {
 		return fmt.Errorf("--model cannot be used together with --all-models")
 	}
-	if c.AllDeployments && len(c.Deployments) > 0 {
+	if allDeploymentsChanged && len(c.Deployments) > 0 {
 		return fmt.Errorf("--deployment cannot be used together with --all-deployments")
 	}
 
 	req := v3.UpdateAIAPIKeyRequest{}
-	if c.AllModels {
-		all := true
-		req.AllModels = &all
+	if allModelsChanged {
+		req.AllModels = &c.AllModels
 	} else if len(c.Models) > 0 {
 		models := v3.AIAPIKeyModels(c.Models)
 		req.Models = &models
 	}
-	if c.AllDeployments {
-		all := true
-		req.AllDeployments = &all
+	if allDeploymentsChanged {
+		req.AllDeployments = &c.AllDeployments
 	} else if len(c.Deployments) > 0 {
 		deployments, err := deploymentsToRefs(c.Deployments)
 		if err != nil {

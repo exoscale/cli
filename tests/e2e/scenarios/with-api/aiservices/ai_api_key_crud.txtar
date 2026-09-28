@@ -1,4 +1,4 @@
-# AI API key lifecycle: create -> list -> show -> revoke.
+# AI API key lifecycle: create -> update -> list -> show -> revoke.
 # Keys live on the zone endpoint, list crawls all zones by default.
 
 # Create a key with access to all public models
@@ -30,6 +30,16 @@ stdout list2.json "ai-key.,.*ai-key-2"
 # Zone filter limits the crawl to the test zone
 exec exo --output-format json ai api-key list -z $TEST_ZONE > list3.json
 stdout list3.json $AI_API_KEY_ID
+
+# Update: --all-deployments=true takes effect, unpassed --all-models is left unchanged
+exec exo --output-format json ai api-key update $AI_API_KEY_ID --all-deployments > update.json
+stdout update.json '"all_deployments":true'
+stdout update.json '"all_models":true'
+
+# Update: explicitly passing --all-models=false revokes all-models access, unpassed --all-deployments is left unchanged
+exec exo --output-format json ai api-key update $AI_API_KEY_ID --all-models=false > update2.json
+stdout update2.json '"all_models":false'
+stdout update2.json '"all_deployments":true'
 
 # Showing an unknown key fails
 ! exec exo --output-format json ai api-key show 00000000-0000-0000-0000-000000000000

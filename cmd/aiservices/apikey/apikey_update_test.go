@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/testutils"
@@ -66,6 +68,27 @@ func newAIAPIKeyUpdateServer(t *testing.T) *aiAPIKeyUpdateServer {
 	return ts
 }
 
+// newAIAPIKeyUpdateCmd registers the update command so the generated flags
+// exist, and marks the given flags as set, so that cmd.Flags().Changed()
+// behaves as it does in production.
+func newAIAPIKeyUpdateCmd(t *testing.T, c *AIAPIKeyUpdateCmd, changed ...string) *cobra.Command {
+	t.Helper()
+
+	parent := &cobra.Command{Use: "test"}
+	if err := exocmd.RegisterCLICommand(parent, c); err != nil {
+		t.Fatalf("register command: %v", err)
+	}
+
+	cmd := parent.Commands()[0]
+	for _, name := range changed {
+		if err := cmd.Flags().Set(name, cmd.Flags().Lookup(name).Value.String()); err != nil {
+			t.Fatalf("set flag %s: %v", name, err)
+		}
+	}
+
+	return cmd
+}
+
 func TestAIAPIKeyUpdate(t *testing.T) {
 	now := time.Now()
 	ts := newAIAPIKeyUpdateServer(t)
@@ -100,7 +123,8 @@ func TestAIAPIKeyUpdate(t *testing.T) {
 		got = o.(*AIAPIKeyUpdateOutput)
 		return nil
 	}
-	if err := c.CmdRun(nil, nil); err != nil {
+	cmd := newAIAPIKeyUpdateCmd(t, c, "all-models", "all-deployments")
+	if err := c.CmdRun(cmd, nil); err != nil {
 		t.Fatalf("api-key update: %v", err)
 	}
 
@@ -154,7 +178,8 @@ func TestAIAPIKeyUpdateAllowlists(t *testing.T) {
 		Deployments:        []string{"cccccccc-cccc-cccc-cccc-cccccccccccc"},
 	}
 	c.OutputFunc = func(output.Outputter, error) error { return nil }
-	if err := c.CmdRun(nil, nil); err != nil {
+	cmd := newAIAPIKeyUpdateCmd(t, c)
+	if err := c.CmdRun(cmd, nil); err != nil {
 		t.Fatalf("api-key update with allowlists: %v", err)
 	}
 
@@ -169,13 +194,111 @@ func TestAIAPIKeyUpdateAllowlists(t *testing.T) {
 	}
 }
 
+func TestAIAPIKeyUpdateAllModelsFalse(t *testing.T) {
+	now := time.Now()
+	ts := newAIAPIKeyUpdateServer(t)
+	defer ts.server.Close()
+	testutils.SetupV3Client(t, ts.server.URL)
+
+	ts.keys = []v3.ListAIAPIKeysResponseEntry{{
+		ID:             v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+		Name:           "alpha",
+		Models:         &v3.AIAPIKeyModels{},
+		Deployments:    &v3.AIAPIKeyDeployments{},
+		AllModels:      boolPtr(true),
+		AllDeployments: boolPtr(false),
+		CreatedAT:      now,
+		UpdatedAT:      now,
+	}}
+
+	var capturedRequest v3.UpdateAIAPIKeyRequest
+	ts.captured = &capturedRequest
+
+	c := &AIAPIKeyUpdateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		Key:                "alpha",
+	}
+	cmd := newAIAPIKeyUpdateCmd(t, c, "all-models")
+	c.OutputFunc = func(output.Outputter, error) error { return nil }
+	if err := c.CmdRun(cmd, nil); err != nil {
+		t.Fatalf("api-key update --all-models=false: %v", err)
+	}
+
+	if capturedRequest.AllModels == nil || *capturedRequest.AllModels {
+		t.Errorf("expected explicit all-models=false in request, got %v", capturedRequest.AllModels)
+	}
+	if capturedRequest.Models != nil {
+		t.Errorf("expected models omitted from request, got %v", *capturedRequest.Models)
+	}
+	if capturedRequest.AllDeployments != nil {
+		t.Errorf("expected all-deployments omitted from request when not passed, got %v", capturedRequest.AllDeployments)
+	}
+	if capturedRequest.Deployments != nil {
+		t.Errorf("expected deployments omitted from request, got %v", *capturedRequest.Deployments)
+	}
+}
+
+func TestAIAPIKeyUpdateAllDeploymentsFalse(t *testing.T) {
+	now := time.Now()
+	ts := newAIAPIKeyUpdateServer(t)
+	defer ts.server.Close()
+	testutils.SetupV3Client(t, ts.server.URL)
+
+	ts.keys = []v3.ListAIAPIKeysResponseEntry{{
+		ID:             v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+		Name:           "alpha",
+		Models:         &v3.AIAPIKeyModels{},
+		Deployments:    &v3.AIAPIKeyDeployments{},
+		AllModels:      boolPtr(false),
+		AllDeployments: boolPtr(true),
+		CreatedAT:      now,
+		UpdatedAT:      now,
+	}}
+
+	var capturedRequest v3.UpdateAIAPIKeyRequest
+	ts.captured = &capturedRequest
+
+	c := &AIAPIKeyUpdateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		Key:                "alpha",
+	}
+	cmd := newAIAPIKeyUpdateCmd(t, c, "all-deployments")
+	c.OutputFunc = func(output.Outputter, error) error { return nil }
+	if err := c.CmdRun(cmd, nil); err != nil {
+		t.Fatalf("api-key update --all-deployments=false: %v", err)
+	}
+
+	if capturedRequest.AllDeployments == nil || *capturedRequest.AllDeployments {
+		t.Errorf("expected explicit all-deployments=false in request, got %v", capturedRequest.AllDeployments)
+	}
+	if capturedRequest.Deployments != nil {
+		t.Errorf("expected deployments omitted from request, got %v", *capturedRequest.Deployments)
+	}
+	if capturedRequest.AllModels != nil {
+		t.Errorf("expected all-models omitted from request when not passed, got %v", capturedRequest.AllModels)
+	}
+	if capturedRequest.Models != nil {
+		t.Errorf("expected models omitted from request, got %v", *capturedRequest.Models)
+	}
+}
+
 func TestAIAPIKeyUpdateConflictingFlags(t *testing.T) {
-	for _, c := range []*AIAPIKeyUpdateCmd{
-		{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Key: "alpha", AllModels: true, Models: []string{"llama-3-8b"}},
-		{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Key: "alpha", AllDeployments: true, Deployments: []string{"cccccccc-cccc-cccc-cccc-cccccccccccc"}},
+	for _, tc := range []struct {
+		c       *AIAPIKeyUpdateCmd
+		changed []string
+	}{
+		{
+			c:       &AIAPIKeyUpdateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Key: "alpha", AllModels: true, Models: []string{"llama-3-8b"}},
+			changed: []string{"all-models"},
+		},
+		{
+			c:       &AIAPIKeyUpdateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Key: "alpha", AllDeployments: true, Deployments: []string{"cccccccc-cccc-cccc-cccc-cccccccccccc"}},
+			changed: []string{"all-deployments"},
+		},
 	} {
-		if err := c.CmdRun(nil, nil); err == nil {
-			t.Errorf("expected conflict error for %+v", c)
+		cmd := newAIAPIKeyUpdateCmd(t, tc.c, tc.changed...)
+		if err := tc.c.CmdRun(cmd, nil); err == nil {
+			t.Errorf("expected conflict error for %+v", tc.c)
 		}
 	}
 }
@@ -206,7 +329,8 @@ func TestAIAPIKeyUpdateOmitsUnsetAccessLists(t *testing.T) {
 		Models:             []string{"llama-3-8b"},
 	}
 	c.OutputFunc = func(output.Outputter, error) error { return nil }
-	if err := c.CmdRun(nil, nil); err != nil {
+	cmd := newAIAPIKeyUpdateCmd(t, c)
+	if err := c.CmdRun(cmd, nil); err != nil {
 		t.Fatalf("api-key update: %v", err)
 	}
 
@@ -226,7 +350,8 @@ func TestAIAPIKeyUpdateWithoutProperties(t *testing.T) {
 		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 		Key:                "alpha",
 	}
-	if err := c.CmdRun(nil, nil); err == nil {
+	cmd := newAIAPIKeyUpdateCmd(t, c)
+	if err := c.CmdRun(cmd, nil); err == nil {
 		t.Fatal("expected error when no access list is updated")
 	}
 }
@@ -249,7 +374,8 @@ func TestAIAPIKeyUpdateUnknownKey(t *testing.T) {
 		Key:                "missing",
 		Models:             []string{"llama-3-8b"},
 	}
-	if err := c.CmdRun(nil, nil); err == nil {
+	cmd := newAIAPIKeyUpdateCmd(t, c)
+	if err := c.CmdRun(cmd, nil); err == nil {
 		t.Fatal("expected not found error")
 	}
 }
