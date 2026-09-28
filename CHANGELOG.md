@@ -5,6 +5,7 @@
 ### Features
 
 - EIP: allows labels + reverse dns at creation - #913
+- chore(api): update commands - #917 - Add FOCUS endpoint
 
 ## 1.101.0
 
