@@ -41,6 +41,17 @@ exec exo --output-format json ai api-key update $AI_API_KEY_ID --all-models=fals
 stdout update2.json '"all_models":false'
 stdout update2.json '"all_deployments":true'
 
+# Update: --model sets an explicit allowlist (name taken from the public catalog)
+exec exo --output-format json ai model list --visibility public -z $TEST_ZONE > models.json
+json-setenv MODEL_NAME name models.json
+exec exo --output-format json ai api-key update $AI_API_KEY_ID --model $MODEL_NAME > update3.json
+stdout update3.json '"all_models":false'
+stdout update3.json $MODEL_NAME
+
+# Update: --all-models and --model are mutually exclusive
+! exec exo --output-format json ai api-key update $AI_API_KEY_ID --model $MODEL_NAME --all-models
+stderr 'cannot be used together'
+
 # Showing an unknown key fails
 ! exec exo --output-format json ai api-key show 00000000-0000-0000-0000-000000000000
 stderr 'not found in ListAIAPIKeysResponse'
