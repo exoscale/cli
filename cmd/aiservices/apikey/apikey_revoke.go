@@ -16,8 +16,9 @@ type AIAPIKeyRevokeCmd struct {
 
 	_ bool `cli-cmd:"revoke"`
 
-	Keys  []string `cli-arg:"#" cli-usage:"ID or NAME..."`
-	Force bool     `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Keys  []string    `cli-arg:"#" cli-usage:"ID or NAME..."`
+	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *AIAPIKeyRevokeCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
@@ -26,11 +27,15 @@ func (c *AIAPIKeyRevokeCmd) CmdLong() string {
 	return "This command revokes AI API keys by ID or name. Revoked keys can no longer be used."
 }
 func (c *AIAPIKeyRevokeCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *AIAPIKeyRevokeCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
-	client := globalstate.EgoscaleV3Client
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	if len(c.Keys) == 0 {
 		return fmt.Errorf("at least one key is required")

@@ -137,6 +137,40 @@ func TestAIAPIKeyRevokeUnknownKey(t *testing.T) {
 	}
 }
 
+func TestAIAPIKeyRevokeWithZone(t *testing.T) {
+	now := time.Now()
+	ts := newAIAPIKeyRevokeServer(t)
+	defer ts.server.Close()
+
+	controlMux := http.NewServeMux()
+	controlMux.HandleFunc("/zone", func(w http.ResponseWriter, r *http.Request) {
+		testutils.WriteJSON(t, w, http.StatusOK, v3.ListZonesResponse{
+			Zones: []v3.Zone{{Name: v3.ZoneName("z1"), APIEndpoint: v3.Endpoint(ts.server.URL)}},
+		})
+	})
+	controlSrv := httptest.NewServer(controlMux)
+	defer controlSrv.Close()
+	testutils.SetupV3Client(t, controlSrv.URL)
+
+	ts.keys = []v3.ListAIAPIKeysResponseEntry{
+		{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", CreatedAT: now, UpdatedAT: now},
+	}
+
+	c := &AIAPIKeyRevokeCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		Keys:               []string{"alpha"},
+		Force:              true,
+		Zone:               "z1",
+	}
+	if err := c.CmdRun(nil, nil); err != nil {
+		t.Fatalf("api-key revoke with zone: %v", err)
+	}
+	ids := ts.revokedIDs()
+	if len(ids) != 1 || ids[0] != "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" {
+		t.Fatalf("expected alpha revoked on the zoned endpoint, got %v", ids)
+	}
+}
+
 func TestAIAPIKeyRevokeFailure(t *testing.T) {
 	ts := newAIAPIKeyRevokeServer(t)
 	defer ts.server.Close()

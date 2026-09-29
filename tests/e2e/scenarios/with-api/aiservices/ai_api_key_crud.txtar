@@ -45,8 +45,8 @@ stdout update2.json '"all_deployments":true'
 ! exec exo --output-format json ai api-key show 00000000-0000-0000-0000-000000000000
 stderr 'not found in ListAIAPIKeysResponse'
 
-# Revoke both keys (force skips the confirmation prompt)
-exec exo ai api-key revoke -f $AI_API_KEY_ID $AI_API_KEY_ID2
+# Revoke both keys in the test zone (force skips the confirmation prompt)
+exec exo ai api-key revoke -f -z $TEST_ZONE $AI_API_KEY_ID $AI_API_KEY_ID2
 stdout 'revoked'
 
 # Revoked keys remain listed with a revoked_at stamp
