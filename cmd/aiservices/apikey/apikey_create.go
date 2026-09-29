@@ -73,15 +73,13 @@ func (c *AIAPIKeyCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	req := v3.CreateAIAPIKeyRequest{Name: c.Name}
 	if c.AllModels {
-		all := true
-		req.AllModels = &all
+		req.AllModels = new(true)
 	} else if len(c.Models) > 0 {
 		models := v3.AIAPIKeyModels(c.Models)
 		req.Models = &models
 	}
 	if c.AllDeployments {
-		all := true
-		req.AllDeployments = &all
+		req.AllDeployments = new(true)
 	} else if len(c.Deployments) > 0 {
 		deployments, err := deploymentsToRefs(c.Deployments)
 		if err != nil {

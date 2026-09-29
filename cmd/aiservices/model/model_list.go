@@ -53,10 +53,8 @@ func runModelList(c *ModelListCmd, stdout, stderr io.Writer) error {
 	ctx := exocmd.GContext
 	client := globalstate.EgoscaleV3Client
 
-	if c.Visibility != "" &&
-		c.Visibility != v3.ListModelsResponseEntryVisibilityPublic &&
-		c.Visibility != v3.ListModelsResponseEntryVisibilityPrivate {
-		return fmt.Errorf("invalid --visibility %q: must be 'public' or 'private'", c.Visibility)
+	if err := validateVisibility(c.Visibility); err != nil {
+		return err
 	}
 
 	var listOpts []v3.ListModelsOpt

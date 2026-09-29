@@ -10,9 +10,11 @@ stdout public.json "model_size"
 
 # Zone filter limits the crawl to the test zone
 exec exo --output-format json ai model list --visibility public -z $TEST_ZONE > zone.json
+stdout zone.json $TEST_ZONE
 
 # Private visibility uses the same output shape
 exec exo --output-format json ai model list --visibility private > private.json
+stdout private.json '^\['
 
 # Invalid visibility is rejected
 ! exec exo --output-format json ai model list --visibility bogus
