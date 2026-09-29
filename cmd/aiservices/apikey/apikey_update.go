@@ -66,10 +66,10 @@ func (c *AIAPIKeyUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("at least one of --deployment, --model, --all-models or --all-deployments is required")
 	}
 	if allModelsChanged && len(c.Models) > 0 {
-		return fmt.Errorf("--model cannot be used together with --all-models")
+		return conflictingFlagsErr("model", "all-models")
 	}
 	if allDeploymentsChanged && len(c.Deployments) > 0 {
-		return fmt.Errorf("--deployment cannot be used together with --all-deployments")
+		return conflictingFlagsErr("deployment", "all-deployments")
 	}
 
 	req := v3.UpdateAIAPIKeyRequest{}

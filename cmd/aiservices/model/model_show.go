@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -53,10 +52,8 @@ func (c *ModelShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	// Resolve model ID using the SDK helper
 	var listOpts []v3.ListModelsOpt
-	if c.Visibility != "" &&
-		c.Visibility != v3.ListModelsResponseEntryVisibilityPublic &&
-		c.Visibility != v3.ListModelsResponseEntryVisibilityPrivate {
-		return fmt.Errorf("invalid --visibility %q: must be 'public' or 'private'", c.Visibility)
+	if err := validateVisibility(c.Visibility); err != nil {
+		return err
 	}
 	if c.Visibility != "" {
 		listOpts = append(listOpts, v3.ListModelsWithVisibility(string(c.Visibility)))

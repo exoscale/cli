@@ -13,6 +13,10 @@ var Cmd = &cobra.Command{
 	Short: "Manage AI API keys",
 }
 
+func conflictingFlagsErr(a, b string) error {
+	return fmt.Errorf("--%s cannot be used together with --%s", a, b)
+}
+
 func derefBool(b *bool) bool {
 	return b != nil && *b
 }

@@ -65,10 +65,10 @@ func (c *AIAPIKeyCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.AllModels && len(c.Models) > 0 {
-		return fmt.Errorf("--model cannot be used together with --all-models")
+		return conflictingFlagsErr("model", "all-models")
 	}
 	if c.AllDeployments && len(c.Deployments) > 0 {
-		return fmt.Errorf("--deployment cannot be used together with --all-deployments")
+		return conflictingFlagsErr("deployment", "all-deployments")
 	}
 
 	req := v3.CreateAIAPIKeyRequest{Name: c.Name}
