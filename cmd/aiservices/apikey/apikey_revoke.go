@@ -66,6 +66,13 @@ func (c *AIAPIKeyRevokeCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		ids = append(ids, entry.ID)
 	}
 
+	if len(ids) == 0 {
+		if !globalstate.Quiet {
+			fmt.Fprintln(os.Stderr, "No matching AI API keys found.")
+		}
+		return nil
+	}
+
 	var fns []func() error
 	for _, id := range ids {
 		fns = append(fns, func() error {
