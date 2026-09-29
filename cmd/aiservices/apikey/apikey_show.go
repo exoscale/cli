@@ -30,7 +30,8 @@ type AIAPIKeyShowCmd struct {
 
 	_ bool `cli-cmd:"show"`
 
-	Key string `cli-arg:"#" cli-usage:"ID or NAME"`
+	Key  string      `cli-arg:"#"  cli-usage:"ID or NAME"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *AIAPIKeyShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
@@ -39,11 +40,15 @@ func (c *AIAPIKeyShowCmd) CmdLong() string {
 	return "This command shows details of an AI API key by ID or name."
 }
 func (c *AIAPIKeyShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *AIAPIKeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
-	client := globalstate.EgoscaleV3Client
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	list, err := client.ListAIAPIKeys(ctx)
 	if err != nil {
