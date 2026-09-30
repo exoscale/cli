@@ -37,7 +37,7 @@ if [ -f /etc/os-release ]; then
     # shellcheck disable=SC1091
     . /etc/os-release
     case "$ID" in
-        debian | ubuntu | pop | neon | zorin | linuxmint | elementary | parrot | mendel | galliumos | pureos | raspian | kali | Deepin)
+        debian | ubuntu | pop | neon | zorin | linuxmint | elementary | parrot | mendel | galliumos | pureos | raspian | kali | Deepin | tuxedo)
             if is_apt_newer_than_v2_2; then
                 PACKAGETYPE="apt"
             else
