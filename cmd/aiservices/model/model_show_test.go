@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path"
+	"sync"
 	"testing"
 	"time"
 
@@ -17,6 +18,18 @@ import (
 type modelTestServer struct {
 	server *httptest.Server
 	models []v3.ListModelsResponseEntry
+
+	mu              sync.Mutex
+	visibilityCalls []string
+}
+
+func (ts *modelTestServer) lastVisibility() (string, bool) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+	if len(ts.visibilityCalls) == 0 {
+		return "", false
+	}
+	return ts.visibilityCalls[len(ts.visibilityCalls)-1], true
 }
 
 func newModelTestServer(t *testing.T) *modelTestServer {
@@ -25,6 +38,11 @@ func newModelTestServer(t *testing.T) *modelTestServer {
 	mux.HandleFunc("/ai/model", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
+			if v := r.URL.Query().Get("visibility"); v != "" {
+				ts.mu.Lock()
+				ts.visibilityCalls = append(ts.visibilityCalls, v)
+				ts.mu.Unlock()
+			}
 			resp := v3.ListModelsResponse{Models: ts.models}
 			testutils.WriteJSON(t, w, http.StatusOK, resp)
 		case http.MethodPost:
@@ -127,5 +145,96 @@ func TestModelShow(t *testing.T) {
 	}
 	if string(got.ID) != "11111111-1111-1111-1111-111111111111" || got.Name != "m1" {
 		t.Fatalf("unexpected model show output (by name): %+v", got)
+	}
+}
+
+func TestModelShowVisibility(t *testing.T) {
+	ts := newModelTestServer(t)
+	defer ts.server.Close()
+	testutils.SetupV3Client(t, ts.server.URL)
+	now := time.Now()
+	ts.models = []v3.ListModelsResponseEntry{{
+		ID:        v3.UUID("11111111-1111-1111-1111-111111111111"),
+		Name:      "m1",
+		State:     v3.ListModelsResponseEntryStateReady,
+		ModelSize: 1024 * 1024 * 1024 * 2,
+		CreatedAT: now,
+		UpdatedAT: now,
+	}}
+
+	cmd := &ModelShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		Model:              "m1",
+		Visibility:         v3.ListModelsResponseEntryVisibilityPublic,
+	}
+	var got ModelShowOutput
+	cmd.OutputFunc = func(o output.Outputter, err error) error {
+		if err != nil {
+			return err
+		}
+		got = *(o.(*ModelShowOutput))
+		return nil
+	}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("model show with visibility: %v", err)
+	}
+	if string(got.ID) != "11111111-1111-1111-1111-111111111111" || got.Name != "m1" {
+		t.Fatalf("unexpected model show output (visibility): %+v", got)
+	}
+	vis, ok := ts.lastVisibility()
+	if !ok {
+		t.Fatal("expected visibility query parameter to be sent")
+	}
+	if vis != "public" {
+		t.Errorf("expected visibility %q, got %q", "public", vis)
+	}
+}
+
+func TestModelShowVisibilityPrivate(t *testing.T) {
+	ts := newModelTestServer(t)
+	defer ts.server.Close()
+	testutils.SetupV3Client(t, ts.server.URL)
+	now := time.Now()
+	ts.models = []v3.ListModelsResponseEntry{{
+		ID:        v3.UUID("11111111-1111-1111-1111-111111111111"),
+		Name:      "m1",
+		State:     v3.ListModelsResponseEntryStateReady,
+		ModelSize: 1024 * 1024 * 1024 * 2,
+		CreatedAT: now,
+		UpdatedAT: now,
+	}}
+
+	cmd := &ModelShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		Model:              "m1",
+		Visibility:         v3.ListModelsResponseEntryVisibilityPrivate,
+	}
+	if err := cmd.CmdRun(nil, nil); err != nil {
+		t.Fatalf("model show with private visibility: %v", err)
+	}
+	vis, ok := ts.lastVisibility()
+	if !ok {
+		t.Fatal("expected visibility query parameter to be sent")
+	}
+	if vis != "private" {
+		t.Errorf("expected visibility %q, got %q", "private", vis)
+	}
+}
+
+func TestModelShowInvalidVisibility(t *testing.T) {
+	ts := newModelTestServer(t)
+	defer ts.server.Close()
+	testutils.SetupV3Client(t, ts.server.URL)
+
+	cmd := &ModelShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		Model:              "m1",
+		Visibility:         v3.ListModelsResponseEntryVisibility("bogus"),
+	}
+	if err := cmd.CmdRun(nil, nil); err == nil {
+		t.Fatal("expected error for invalid visibility")
+	}
+	if _, ok := ts.lastVisibility(); ok {
+		t.Error("expected no model list call for invalid visibility")
 	}
 }

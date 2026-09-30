@@ -1,0 +1,20 @@
+# AI model list: supports a visibility filter; table shows the size column.
+
+# Table output carries the size column
+exec exo ai model list --visibility public > listing.txt
+stdout listing.txt "Size"
+
+# JSON output carries the model_size field
+exec exo --output-format json ai model list --visibility public > public.json
+stdout public.json "model_size"
+
+# Zone filter limits the crawl to the test zone
+exec exo --output-format json ai model list --visibility public -z $TEST_ZONE > zone.json
+stdout zone.json $TEST_ZONE
+
+# Private visibility uses the same output shape
+exec exo --output-format json ai model list --visibility private > private.json
+stdout private.json '^\['
+
+# Invalid visibility is rejected
+! exec exo --output-format json ai model list --visibility bogus

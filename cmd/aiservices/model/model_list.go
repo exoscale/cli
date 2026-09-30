@@ -29,7 +29,8 @@ type ModelListCmd struct {
 
 	_ bool `cli-cmd:"list"`
 
-	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
+	Zone       v3.ZoneName                          `cli-short:"z" cli-usage:"zone"`
+	Visibility v3.ListModelsResponseEntryVisibility `cli-usage:"Model visibility: public or private"`
 }
 
 func (c *ModelListCmd) CmdAliases() []string { return exocmd.GListAlias }
@@ -52,6 +53,15 @@ func runModelList(c *ModelListCmd, stdout, stderr io.Writer) error {
 	ctx := exocmd.GContext
 	client := globalstate.EgoscaleV3Client
 
+	if err := validateVisibility(c.Visibility); err != nil {
+		return err
+	}
+
+	var listOpts []v3.ListModelsOpt
+	if c.Visibility != "" {
+		listOpts = append(listOpts, v3.ListModelsWithVisibility(string(c.Visibility)))
+	}
+
 	zones, err := utils.AllZonesV3(ctx, client, c.Zone)
 	if err != nil {
 		return err
@@ -70,12 +80,12 @@ func runModelList(c *ModelListCmd, stdout, stderr io.Writer) error {
 	failed := utils.ForEveryZoneAsync(ctx, zones, globalstate.RequestTimeout, sink, true,
 		func(ctx context.Context, zone v3.Zone) error {
 			zc := client.WithEndpoint(zone.APIEndpoint)
-			resp, err := zc.ListModels(ctx)
+			resp, err := zc.ListModels(ctx, listOpts...)
 			if err != nil {
 				return err
 			}
+			var size string
 			for _, m := range resp.Models {
-				var size string
 				if m.ModelSize != 0 {
 					size = humanize.IBytes(uint64(m.ModelSize))
 				}

@@ -28,6 +28,11 @@ func TestAPIDBaaSLocal(t *testing.T) {
 	runAPITestSuite(t, "scenarios/with-api/dbaas")
 }
 
+func TestAIServiceLocal(t *testing.T) {
+	loadLocalCreds(t)
+	runAPITestSuite(t, "scenarios/with-api/aiservices")
+}
+
 func loadLocalCreds(t *testing.T) {
 	t.Helper()
 

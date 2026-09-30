@@ -1,0 +1,66 @@
+# AI API key lifecycle: create -> update -> list -> show -> revoke.
+# Keys live on the zone endpoint, list crawls all zones by default.
+
+# Create a key with access to all public models
+exec exo --output-format json ai api-key create $TEST_RUN_ID-ai-key --all-models > create.json
+json-setenv AI_API_KEY_ID id create.json
+stdout create.json "value"
+stdout create.json "all_models"
+
+# The new key shows up in the list
+exec exo --output-format json ai api-key list > list.json
+stdout list.json $AI_API_KEY_ID
+
+# Show the key by ID
+exec exo --output-format json ai api-key show $AI_API_KEY_ID > show.json
+stdout show.json $AI_API_KEY_ID
+
+# Flag variant: create a second key with no access flags
+exec exo --output-format json ai api-key create $TEST_RUN_ID-ai-key-2 > create2.json
+json-setenv AI_API_KEY_ID2 id create2.json
+stdout create2.json "value"
+
+# Both keys are listed
+exec exo --output-format json ai api-key list > list2.json
+stdout list2.json $AI_API_KEY_ID
+stdout list2.json $AI_API_KEY_ID2
+# Rows are sorted by name (active keys first, revoked at the bottom)
+stdout list2.json "ai-key.,.*ai-key-2"
+
+# Zone filter limits the crawl to the test zone
+exec exo --output-format json ai api-key list -z $TEST_ZONE > list3.json
+stdout list3.json $AI_API_KEY_ID
+
+# Update: --all-deployments=true takes effect, unpassed --all-models is left unchanged
+exec exo --output-format json ai api-key update $AI_API_KEY_ID --all-deployments > update.json
+stdout update.json '"all_deployments":true'
+stdout update.json '"all_models":true'
+
+# Update: explicitly passing --all-models=false revokes all-models access, unpassed --all-deployments is left unchanged
+exec exo --output-format json ai api-key update $AI_API_KEY_ID --all-models=false > update2.json
+stdout update2.json '"all_models":false'
+stdout update2.json '"all_deployments":true'
+
+# Update: --model sets an explicit allowlist (name taken from the public catalog)
+exec exo --output-format json ai model list --visibility public -z $TEST_ZONE > models.json
+json-setenv MODEL_NAME name models.json
+exec exo --output-format json ai api-key update $AI_API_KEY_ID --model $MODEL_NAME > update3.json
+stdout update3.json '"all_models":false'
+stdout update3.json $MODEL_NAME
+
+# Update: --all-models and --model are mutually exclusive
+! exec exo --output-format json ai api-key update $AI_API_KEY_ID --model $MODEL_NAME --all-models
+stderr 'cannot be used together'
+
+# Showing an unknown key fails
+! exec exo --output-format json ai api-key show 00000000-0000-0000-0000-000000000000
+stderr 'not found in ListAIAPIKeysResponse'
+
+# Revoke both keys in the test zone (force skips the confirmation prompt)
+exec exo ai api-key revoke -f -z $TEST_ZONE $AI_API_KEY_ID $AI_API_KEY_ID2
+stdout 'revoked'
+
+# Revoked keys remain listed with a revoked_at stamp
+exec exo --output-format json ai api-key list > list4.json
+stdout list4.json $AI_API_KEY_ID
+stdout list4.json "revoked_at"

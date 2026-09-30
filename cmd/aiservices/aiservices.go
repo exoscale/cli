@@ -2,6 +2,7 @@ package aiservices
 
 import (
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/aiservices/apikey"
 	"github.com/exoscale/cli/cmd/aiservices/deployment"
 	"github.com/exoscale/cli/cmd/aiservices/model"
 	"github.com/spf13/cobra"
@@ -18,4 +19,5 @@ func init() {
 	// Attach subcommand groups
 	DedicatedInferenceCmd.AddCommand(model.Cmd)
 	DedicatedInferenceCmd.AddCommand(deployment.Cmd)
+	DedicatedInferenceCmd.AddCommand(apikey.Cmd)
 }

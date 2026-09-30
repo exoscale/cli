@@ -40,6 +40,12 @@ func TestScriptsAPIDBaaS(t *testing.T) {
 	runAPITestSuite(t, "scenarios/with-api/dbaas")
 }
 
+// TestScriptsAPIAIService runs API e2e scenarios under scenarios/with-api/aiservices/.
+// Run with: go test -v -tags=api -timeout 10m -run TestScriptsAPIAIService
+func TestScriptsAPIAIService(t *testing.T) {
+	runAPITestSuite(t, "scenarios/with-api/aiservices")
+}
+
 // runAPITestSuite is the shared runner for per-suite API test functions.
 // dir is the directory of .txtar scenarios to run (relative to the e2e package).
 //

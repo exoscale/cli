@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -20,6 +21,18 @@ type modelListTestServer struct {
 	server        *httptest.Server
 	models        []v3.ListModelsResponseEntry
 	zoneListCount atomic.Int32
+
+	mu              sync.Mutex
+	visibilityCalls []string
+}
+
+func (ts *modelListTestServer) lastVisibility() (string, bool) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+	if len(ts.visibilityCalls) == 0 {
+		return "", false
+	}
+	return ts.visibilityCalls[len(ts.visibilityCalls)-1], true
 }
 
 func newModelListTestServer(t *testing.T) *modelListTestServer {
@@ -28,6 +41,11 @@ func newModelListTestServer(t *testing.T) *modelListTestServer {
 	mux.HandleFunc("/ai/model", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
+			if v := r.URL.Query().Get("visibility"); v != "" {
+				ts.mu.Lock()
+				ts.visibilityCalls = append(ts.visibilityCalls, v)
+				ts.mu.Unlock()
+			}
 			testutils.WriteJSON(t, w, http.StatusOK, v3.ListModelsResponse{Models: ts.models})
 		case http.MethodPost:
 			testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-model-create"), State: v3.OperationStateSuccess})
@@ -61,12 +79,13 @@ func newModelListTestServer(t *testing.T) *modelListTestServer {
 	return ts
 }
 
-func runModelListTest(t *testing.T, zoneFilter v3.ZoneName) (stdout, stderr string, err error) {
+func runModelListTest(t *testing.T, zoneFilter v3.ZoneName, visibility v3.ListModelsResponseEntryVisibility) (stdout, stderr string, err error) {
 	t.Helper()
 	var outBuf, errBuf bytes.Buffer
 	cmd := &ModelListCmd{
 		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 		Zone:               zoneFilter,
+		Visibility:         visibility,
 	}
 	err = runModelList(cmd, &outBuf, &errBuf)
 	return outBuf.String(), errBuf.String(), err
@@ -84,7 +103,7 @@ func TestModelList(t *testing.T) {
 	}
 	defer withFormat(t, "json")()
 
-	stdout, _, err := runModelListTest(t, "")
+	stdout, _, err := runModelListTest(t, "", "")
 	if err != nil {
 		t.Fatalf("model list: %v", err)
 	}
@@ -138,7 +157,7 @@ func TestModelList_ZoneEmpty(t *testing.T) {
 	defer withFormat(t, "json")()
 	ts.models = nil
 
-	stdout, _, err := runModelListTest(t, "")
+	stdout, _, err := runModelListTest(t, "", "")
 	if err != nil {
 		t.Fatalf("model list: %v", err)
 	}
@@ -149,6 +168,64 @@ func TestModelList_ZoneEmpty(t *testing.T) {
 	}
 	if len(rows) != 0 {
 		t.Errorf("expected 0 models, got %d", len(rows))
+	}
+}
+
+func TestModelListVisibilityFilter(t *testing.T) {
+	ts := newModelListTestServer(t)
+	defer ts.server.Close()
+	testutils.SetupV3Client(t, ts.server.URL)
+	defer withFormat(t, "json")()
+
+	stdout, _, err := runModelListTest(t, "", v3.ListModelsResponseEntryVisibilityPublic)
+	if err != nil {
+		t.Fatalf("model list with visibility: %v", err)
+	}
+
+	var rows []ModelListItemOutput
+	if err := json.Unmarshal([]byte(stdout), &rows); err != nil {
+		t.Fatalf("invalid json: %v\nstdout: %s", err, stdout)
+	}
+
+	vis, ok := ts.lastVisibility()
+	if !ok {
+		t.Fatal("expected visibility query parameter to be sent")
+	}
+	if vis != "public" {
+		t.Errorf("expected visibility %q, got %q", "public", vis)
+	}
+}
+
+func TestModelListVisibilityPrivate(t *testing.T) {
+	ts := newModelListTestServer(t)
+	defer ts.server.Close()
+	testutils.SetupV3Client(t, ts.server.URL)
+	defer withFormat(t, "json")()
+
+	if _, _, err := runModelListTest(t, "", v3.ListModelsResponseEntryVisibilityPrivate); err != nil {
+		t.Fatalf("model list with private visibility: %v", err)
+	}
+
+	vis, ok := ts.lastVisibility()
+	if !ok {
+		t.Fatal("expected visibility query parameter to be sent")
+	}
+	if vis != "private" {
+		t.Errorf("expected visibility %q, got %q", "private", vis)
+	}
+}
+
+func TestModelListInvalidVisibility(t *testing.T) {
+	ts := newModelListTestServer(t)
+	defer ts.server.Close()
+	testutils.SetupV3Client(t, ts.server.URL)
+
+	_, _, err := runModelListTest(t, "", v3.ListModelsResponseEntryVisibility("bogus"))
+	if err == nil {
+		t.Fatal("expected error for invalid visibility")
+	}
+	if _, ok := ts.lastVisibility(); ok {
+		t.Error("expected no model list call for invalid visibility")
 	}
 }
 
