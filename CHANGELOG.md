@@ -7,6 +7,8 @@
 - EIP: allows labels + reverse dns at creation - #913
 - chore(api): update commands - #917 - Add FOCUS endpoint
 - sks: add `--karpenter-feature-gates` flag to `sks create`/`update` and surface the value in `sks show`
+- ai: add `exo ai api-key` create/list/show/update/revoke commands (#828)
+- ai: add `--visibility` flag to `exo ai model list`/`show` to filter public or private models (#828)
 
 ## 1.101.0
 
@@ -17,7 +19,6 @@
 - NLB: Add ipv6 support- #910
 - Show VPC & KMS quotas
 - vpc: Add support for VPC dhcp options (dns/ntp servers and domain search list) (#912)
-- AI: Add `exo ai api-key` create/list/show/update/revoke commands (#828)
 
 ### Bug fixes
 
