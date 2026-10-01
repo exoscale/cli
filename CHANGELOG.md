@@ -8,7 +8,7 @@
 
 ### Bug fixes
 
-- NLB: `--description ""` now empties the description on `load-balancer update` and `load-balancer service update`
+- NLB: `--description ""` now empties the description on `load-balancer update` and `load-balancer service update` (#919)
 
 ### Improvements
 
