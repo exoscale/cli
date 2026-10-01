@@ -65,7 +65,7 @@ func (c *nlbUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	nlbRequest := v3.UpdateLoadBalancerRequest{}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
-		nlbRequest.Description = c.Description
+		nlbRequest.Description = &c.Description
 		updated = true
 	}
 
@@ -75,7 +75,7 @@ func (c *nlbUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
-		nlbRequest.Name = c.Name
+		nlbRequest.Name = &c.Name
 		updated = true
 	}
 

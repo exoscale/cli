@@ -267,6 +267,22 @@ type CreateDeploymentRequest struct {
 	Replicas int64 `json:"replicas" validate:"required,gte=1"`
 }
 
+type CreateKeyStoreRequestType string
+
+const (
+	CreateKeyStoreRequestTypeExternalKeyStore CreateKeyStoreRequestType = "external-key-store"
+)
+
+type CreateKeyStoreRequest struct {
+	// An optional detailed description providing additional context about the key store's intended use case.
+	Description string `json:"description,omitempty" validate:"omitempty,lte=1024"`
+	// A human-readable display name uniquely identifying the key store within the organization.
+	Name  string         `json:"name" validate:"required,gte=1,lte=256"`
+	Proxy *KeyStoreProxy `json:"proxy" validate:"required"`
+	// The key store type. Only external key stores are supported for this API version.
+	Type CreateKeyStoreRequestType `json:"type,omitempty"`
+}
+
 type CreateKmsKeyRequestUsage string
 
 const (
@@ -2707,6 +2723,9 @@ type GetInferenceEngineHelpResponse struct {
 	Parameters []InferenceEngineParameterEntry `json:"parameters" validate:"required"`
 }
 
+type GetKeyStoreResponse struct {
+}
+
 type GetKmsKeyResponseSource string
 
 const (
@@ -2797,12 +2816,6 @@ type GetModelResponse struct {
 	UpdatedAT time.Time `json:"updated-at" validate:"required"`
 	// Model visibility
 	Visibility GetModelResponseVisibility `json:"visibility,omitempty"`
-}
-
-// GPU usage for an organization
-type GetOrganizationUsageResponse struct {
-	// Total GPU count
-	Gpu int64 `json:"gpu" validate:"required,gte=0"`
 }
 
 // IAM API Key
@@ -4675,6 +4688,51 @@ type KeyRotationConfig struct {
 	RotationPeriod int `json:"rotation-period" validate:"required"`
 }
 
+type KeyStoreHealthStatus string
+
+const (
+	KeyStoreHealthStatusHealthy   KeyStoreHealthStatus = "healthy"
+	KeyStoreHealthStatusUnhealthy KeyStoreHealthStatus = "unhealthy"
+	KeyStoreHealthStatusUnknown   KeyStoreHealthStatus = "unknown"
+)
+
+type KeyStoreHealth struct {
+	// Timestamp of the latest completed health check.
+	CheckedAT time.Time `json:"checked-at,omitempty"`
+	// Normalized error detail for unhealthy observations.
+	ErrorDetail string `json:"error-detail,omitempty"`
+	// Base64-encoded raw successful AWS GetHealthStatus JSON metadata.
+	MetadataJSON []byte `json:"metadata-json,omitempty"`
+	// Latest normalized XKS proxy health status.
+	Status KeyStoreHealthStatus `json:"status,omitempty"`
+	// Normalized reason for the latest status.
+	StatusReason string `json:"status-reason,omitempty"`
+}
+
+type KeyStoreProxy struct {
+	Auth *KeyStoreProxyAuth `json:"auth" validate:"required"`
+	// Public URL used to route communication to the customer-managed XKS proxy.
+	Endpoint string `json:"endpoint" validate:"required"`
+}
+
+type KeyStoreProxyAuth struct {
+	// Access key used to sign requests sent to the XKS proxy.
+	Key string `json:"key" validate:"required"`
+	// Secret key used to sign requests sent to the XKS proxy. This value is never returned by the API.
+	Secret string `json:"secret" validate:"required"`
+}
+
+type KeyStoreProxyAuthResponse struct {
+	// Access key used to sign requests sent to the XKS proxy.
+	Key string `json:"key,omitempty"`
+}
+
+type KeyStoreProxyResponse struct {
+	Auth *KeyStoreProxyAuthResponse `json:"auth,omitempty"`
+	// Public URL used to route communication to the customer-managed XKS proxy.
+	Endpoint string `json:"endpoint,omitempty"`
+}
+
 // Kubelet image GC options
 type KubeletImageGC struct {
 	HighThreshold int64  `json:"high-threshold,omitempty" validate:"omitempty,gte=0"`
@@ -4753,6 +4811,42 @@ type ListDeploymentsResponseEntry struct {
 	State ListDeploymentsResponseEntryState `json:"state" validate:"required"`
 	// Update time
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
+}
+
+type ListKeyStoresResponse struct {
+	// The key stores configured for the organization.
+	KeyStores []ListKeyStoresResponseEntry `json:"key-stores,omitempty"`
+}
+
+type ListKeyStoresResponseEntryStatus string
+
+const (
+	ListKeyStoresResponseEntryStatusConnected    ListKeyStoresResponseEntryStatus = "connected"
+	ListKeyStoresResponseEntryStatusDisconnected ListKeyStoresResponseEntryStatus = "disconnected"
+)
+
+type ListKeyStoresResponseEntryType string
+
+const (
+	ListKeyStoresResponseEntryTypeExternalKeyStore ListKeyStoresResponseEntryType = "external-key-store"
+)
+
+type ListKeyStoresResponseEntry struct {
+	// The creation timestamp.
+	CreatedAT time.Time `json:"created-at,omitempty"`
+	// An optional detailed description providing additional context about the key store's intended use case.
+	Description string `json:"description,omitempty"`
+	// The globally unique identifier assigned to the key store.
+	ID UUID `json:"id,omitempty"`
+	// The display name assigned to the key store.
+	Name  string                 `json:"name,omitempty"`
+	Proxy *KeyStoreProxyResponse `json:"proxy,omitempty"`
+	// The current connection status of the key store.
+	Status ListKeyStoresResponseEntryStatus `json:"status,omitempty"`
+	// The timestamp indicating when the current key store status last transitioned.
+	StatusSince time.Time `json:"status-since,omitempty"`
+	// The key store type.
+	Type ListKeyStoresResponseEntryType `json:"type,omitempty"`
 }
 
 type ListKmsKeyRotationsResponse struct {
@@ -5243,10 +5337,10 @@ type Organization struct {
 	Postcode string `json:"postcode,omitempty"`
 }
 
-// Organization GPU usage
+// Organization usage
 type OrganizationUsage struct {
-	// Total GPU count (sum of all GPU types)
-	Gpu int64 `json:"gpu" validate:"required,gte=0"`
+	// Count of active AI API keys
+	AIAPIKey int64 `json:"ai-api-key,omitempty" validate:"omitempty,gte=0"`
 	// GPU3 count
 	Gpu3 int64 `json:"gpu3,omitempty" validate:"omitempty,gte=0"`
 	// GPU3080TI count
@@ -6019,6 +6113,20 @@ type UpdateDeploymentRequest struct {
 	InferenceEngineVersion InferenceEngineVersion `json:"inference-engine-version,omitempty"`
 	// Deployment name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1"`
+}
+
+// New customer-managed XKS proxy settings.
+type UpdateKeyStoreProxy struct {
+	Auth *KeyStoreProxyAuth `json:"auth,omitempty"`
+	// New public URL used to route communication to the customer-managed XKS proxy.
+	Endpoint string `json:"endpoint,omitempty"`
+}
+
+type UpdateKeyStoreRequest struct {
+	// A new detailed description providing additional context about the key store's intended use case.
+	Description string `json:"description,omitempty" validate:"omitempty,lte=1024"`
+	// New customer-managed XKS proxy settings.
+	Proxy *UpdateKeyStoreProxy `json:"proxy,omitempty"`
 }
 
 // User
