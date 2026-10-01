@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+
+### Features
+
+### Bug fixes
+
+- NLB: `--description ""` now empties the description on `load-balancer update` and `load-balancer service update`
+
+### Improvements
+
 ## 1.102.0
 
 ### Features

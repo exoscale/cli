@@ -89,7 +89,7 @@ func (c *nlbServiceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
-		svc.Description = c.Description
+		svc.Description = &c.Description
 		updated = true
 	}
 
@@ -136,12 +136,12 @@ func (c *nlbServiceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
-		svc.Name = c.Name
+		svc.Name = &c.Name
 		updated = true
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Port)) {
-		svc.Port = c.Port
+		svc.Port = &c.Port
 		updated = true
 	}
 
@@ -156,7 +156,7 @@ func (c *nlbServiceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.TargetPort)) {
-		svc.TargetPort = c.TargetPort
+		svc.TargetPort = &c.TargetPort
 		updated = true
 	}
 
