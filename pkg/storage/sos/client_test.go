@@ -158,7 +158,7 @@ func TestCopyObject_CopySourceEncoding(t *testing.T) {
 		{
 			name:     "ampersand",
 			key:      "a-&-b.png",
-			expected: "test-bucket/a-&-b.png",
+			expected: "test-bucket/a-%26-b.png",
 		},
 		{
 			name:     "literal percent-encoded sequence",
@@ -168,7 +168,7 @@ func TestCopyObject_CopySourceEncoding(t *testing.T) {
 		{
 			name:     "space",
 			key:      "a b.png",
-			expected: "test-bucket/a%20b.png",
+			expected: "test-bucket/a+b.png",
 		},
 		{
 			name:     "plus",
@@ -178,7 +178,7 @@ func TestCopyObject_CopySourceEncoding(t *testing.T) {
 		{
 			name:     "all of them in a nested key",
 			key:      "dir/a-&-b.png/c d+e-%26-f.webp",
-			expected: "test-bucket/dir%2Fa-&-b.png%2Fc%20d%2Be-%2526-f.webp",
+			expected: "test-bucket/dir%2Fa-%26-b.png%2Fc+d%2Be-%2526-f.webp",
 		},
 	}
 

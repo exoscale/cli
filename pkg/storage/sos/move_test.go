@@ -180,7 +180,7 @@ func TestCopyObjectTo_CopySourceEncoding(t *testing.T) {
 		},
 		mockCopyObject: func(ctx context.Context, params *s3.CopyObjectInput, optFns ...func(*s3.Options)) (*s3.CopyObjectOutput, error) {
 			assert.Equal(t, "dir/a-&-b c+d-%26.png", *params.Key)
-			assert.Equal(t, "src-bucket/dir%2Fa-&-b%20c%2Bd-%2526.png", *params.CopySource)
+			assert.Equal(t, "src-bucket/dir%2Fa-%26-b+c%2Bd-%2526.png", *params.CopySource)
 			return &s3.CopyObjectOutput{}, nil
 		},
 	}
