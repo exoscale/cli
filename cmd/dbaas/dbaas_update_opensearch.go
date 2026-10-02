@@ -61,33 +61,35 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) {
-		db.OpensearchDashboards.Enabled = &c.OpensearchDashboardEnabled
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardMaxOldSpaceSize)) {
+		db.OpensearchDashboards = &v3.UpdateDBAASServiceOpensearchRequestOpensearchDashboards{}
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) {
+			db.OpensearchDashboards.Enabled = &c.OpensearchDashboardEnabled
+		}
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
+			db.OpensearchDashboards.OpensearchRequestTimeout = c.OpensearchDashboardRequestTimeout
+		}
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardMaxOldSpaceSize)) {
+			db.OpensearchDashboards.MaxOldSpaceSize = c.OpensearchDashboardMaxOldSpaceSize
+		}
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
-		db.OpensearchDashboards.OpensearchRequestTimeout = c.OpensearchDashboardRequestTimeout
-		updated = true
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
-		db.OpensearchDashboards.MaxOldSpaceSize = c.OpensearchDashboardMaxOldSpaceSize
-		updated = true
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
-		db.IndexTemplate.MappingNestedObjectsLimit = &c.OpensearchIndexTemplateMappingNestedObjectsLimit
-		updated = true
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
-		db.IndexTemplate.NumberOfReplicas = &c.OpensearchIndexTemplateNumberOfReplicas
-		updated = true
-	}
-
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
-		db.IndexTemplate.NumberOfShards = c.OpensearchIndexTemplateNumberOfShards
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
+		db.IndexTemplate = &v3.UpdateDBAASServiceOpensearchRequestIndexTemplate{}
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
+			db.IndexTemplate.MappingNestedObjectsLimit = &c.OpensearchIndexTemplateMappingNestedObjectsLimit
+		}
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
+			db.IndexTemplate.NumberOfReplicas = &c.OpensearchIndexTemplateNumberOfReplicas
+		}
+		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
+			db.IndexTemplate.NumberOfShards = c.OpensearchIndexTemplateNumberOfShards
+		}
 		updated = true
 	}
 
