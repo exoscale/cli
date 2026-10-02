@@ -81,7 +81,7 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 		db.OpensearchDashboards.OpensearchRequestTimeout = c.OpensearchDashboardRequestTimeout
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardMaxOldSpaceSize)) {
 		db.OpensearchDashboards.MaxOldSpaceSize = c.OpensearchDashboardMaxOldSpaceSize
 	}
 
