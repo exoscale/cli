@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -121,8 +122,11 @@ func (c *Client) DeleteObject(ctx context.Context, bucket, key string) error {
 	return err
 }
 
+// copySource returns the URL-encoded source of a copy operation. The server
+// decodes it the way it decodes a query string, so "+" has to be encoded too
+// or it would be read as a space.
 func copySource(bucket, key string) string {
-	return bucket + "/" + url.PathEscape(key)
+	return bucket + "/" + strings.ReplaceAll(url.PathEscape(key), "+", "%2B")
 }
 
 // getACLFromGrants maps S3 object grants to a canned ACL. Note: complex

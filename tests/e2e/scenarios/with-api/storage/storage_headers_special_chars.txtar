@@ -1,0 +1,51 @@
+# Regression test for: setting headers or metadata on an existing object reports a 404
+# Root cause: headers/metadata are updated with an in-place CopyObject whose copy source
+# was sent unencoded. The server URL-decodes it, so a key containing a percent-encoded
+# sequence ("%26") or a "+" pointed at another, non-existent object.
+# Fix: URL-encode the copy source, "+" included.
+
+# Setup: create a bucket for this test run
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-hdr-$TEST_RUN_ID
+stdout '"name"'
+
+# Upload an object whose key holds "&", a space, "+" and a literal "%26"
+cp hello.txt 'a-&-b c+d-%26.txt'
+exec exo storage upload 'a-&-b c+d-%26.txt' sos://sto-hdr-$TEST_RUN_ID/dir/
+
+# Add a header - before the fix: "CopyObject, https response error StatusCode: 404"
+exec exo --output-format json storage headers add 'sos://sto-hdr-'$TEST_RUN_ID'/dir/a-&-b c+d-%26.txt' --cache-control no-cache
+stdout 'no-cache'
+
+# Add a metadata entry - same in-place copy
+exec exo --output-format json storage metadata add 'sos://sto-hdr-'$TEST_RUN_ID'/dir/a-&-b c+d-%26.txt' owner=e2e
+stdout '"owner"'
+
+# Both are still there, on the same object
+exec exo --output-format json storage show 'sos://sto-hdr-'$TEST_RUN_ID'/dir/a-&-b c+d-%26.txt'
+stdout 'no-cache'
+stdout '"owner"'
+
+# Removing them goes through the same in-place copy
+exec exo --output-format json storage headers delete 'sos://sto-hdr-'$TEST_RUN_ID'/dir/a-&-b c+d-%26.txt' --cache-control
+! stdout 'no-cache'
+exec exo --output-format json storage metadata delete 'sos://sto-hdr-'$TEST_RUN_ID'/dir/a-&-b c+d-%26.txt' owner
+! stdout '"owner"'
+
+# Recursive variant on the prefix
+exec exo storage headers add --recursive sos://sto-hdr-$TEST_RUN_ID/dir/ --cache-control no-store
+exec exo --output-format json storage show 'sos://sto-hdr-'$TEST_RUN_ID'/dir/a-&-b c+d-%26.txt'
+stdout 'no-store'
+
+# A server-side copy encodes its source the same way
+exec exo storage copy 'sos://sto-hdr-'$TEST_RUN_ID'/dir/a-&-b c+d-%26.txt' sos://sto-hdr-$TEST_RUN_ID/copy.txt
+
+# The object content is untouched
+exec exo storage download sos://sto-hdr-$TEST_RUN_ID/copy.txt downloaded.txt
+exec cat downloaded.txt
+stdout 'hello from e2e test'
+
+# Teardown: delete the bucket and its objects
+exec exo storage rb -r -f sos://sto-hdr-$TEST_RUN_ID
+
+-- hello.txt --
+hello from e2e test

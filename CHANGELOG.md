@@ -9,6 +9,7 @@
 ### Bug fixes
 
 - NLB: `--description ""` now empties the description on `load-balancer update` and `load-balancer service update` (#919)
+- storage: `headers add/delete`, `metadata add/delete`, `copy` and `move` no longer report a 404 on an existing object whose key contains `+` or a percent-encoded sequence such as `%26`
 
 ### Improvements
 
