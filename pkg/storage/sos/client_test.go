@@ -4,11 +4,15 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go/middleware"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -134,4 +138,77 @@ func TestClientOptZoneFromBucket_NoIMDSFallback(t *testing.T) {
 		sos.ClientOptZoneFromBucket(context.Background(), "my-bucket"),
 	)
 	require.NoError(t, err, "must not fall through to EC2 IMDS when static credentials are available")
+}
+
+// TestCopyObject_CopySourceEncoding verifies that the copy source of an
+// in-place copy (headers/metadata manipulation) is URL-encoded: the server
+// decodes it, so a raw key containing "+" or a percent-encoded sequence would
+// point at another, non-existent object.
+func TestCopyObject_CopySourceEncoding(t *testing.T) {
+	testCases := []struct {
+		name     string
+		key      string
+		expected string
+	}{
+		{
+			name:     "plain key",
+			key:      "test-key",
+			expected: "test-bucket/test-key",
+		},
+		{
+			name:     "ampersand",
+			key:      "a-&-b.png",
+			expected: "test-bucket/a-%26-b.png",
+		},
+		{
+			name:     "literal percent-encoded sequence",
+			key:      "a-%26-b.png",
+			expected: "test-bucket/a-%2526-b.png",
+		},
+		{
+			name:     "space",
+			key:      "a b.png",
+			expected: "test-bucket/a+b.png",
+		},
+		{
+			name:     "plus",
+			key:      "a+b.png",
+			expected: "test-bucket/a%2Bb.png",
+		},
+		{
+			name:     "all of them in a nested key",
+			key:      "dir/a-&-b.png/c d+e-%26-f.webp",
+			expected: "test-bucket/dir%2Fa-%26-b.png%2Fc+d%2Be-%2526-f.webp",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &sos.Client{
+				S3Client: &MockS3API{
+					mockGetObject: func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+						return &s3.GetObjectOutput{}, nil
+					},
+					mockGetObjectAcl: func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
+						return &s3.GetObjectAclOutput{
+							Owner: &types.Owner{
+								ID: aws.String("sarah"),
+							},
+						}, nil
+					},
+				},
+			}
+
+			object, err := client.CopyObject(context.Background(), "test-bucket", tc.key)
+			require.NoError(t, err)
+			assert.Equal(t, tc.key, *object.Key)
+			assert.Equal(t, tc.expected, *object.CopySource)
+
+			// Decoding the copy source the way the server does must give
+			// the key back.
+			decoded, err := url.QueryUnescape(*object.CopySource)
+			require.NoError(t, err)
+			assert.Equal(t, "test-bucket/"+tc.key, decoded)
+		})
+	}
 }

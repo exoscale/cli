@@ -170,6 +170,26 @@ func TestCopyObjectToDoesNotDeleteSource(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestCopyObjectTo_CopySourceEncoding(t *testing.T) {
+	mockS3API := &MockS3API{
+		mockHeadObject: func(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options)) (*s3.HeadObjectOutput, error) {
+			return &s3.HeadObjectOutput{ContentLength: aws.Int64(1024)}, nil
+		},
+		mockGetObjectAcl: func(ctx context.Context, params *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
+			return &s3.GetObjectAclOutput{}, nil
+		},
+		mockCopyObject: func(ctx context.Context, params *s3.CopyObjectInput, optFns ...func(*s3.Options)) (*s3.CopyObjectOutput, error) {
+			assert.Equal(t, "dir/a-&-b c+d-%26.png", *params.Key)
+			assert.Equal(t, "src-bucket/dir%2Fa-%26-b+c%2Bd-%2526.png", *params.CopySource)
+			return &s3.CopyObjectOutput{}, nil
+		},
+	}
+
+	client := &sos.Client{S3Client: mockS3API}
+	err := client.CopyObjectTo(context.Background(), "src-bucket", "dir/a-&-b c+d-%26.png", "dst-bucket", "dir/a-&-b c+d-%26.png", 1, false)
+	assert.NoError(t, err)
+}
+
 func TestCopyObjectTo_Multipart(t *testing.T) {
 	t.Run("successful multipart copy", func(t *testing.T) {
 		mockS3API := &MockS3API{
