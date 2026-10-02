@@ -8,6 +8,7 @@
 
 ### Bug fixes
 
+- storage: use `--zone` when listing objects in a bucket (#924)
 - NLB: `--description ""` now empties the description on `load-balancer update` and `load-balancer service update` (#919)
 
 ### Improvements
