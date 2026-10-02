@@ -1,0 +1,40 @@
+# Recursive download must not write outside of the destination folder.
+# An object key such as "public/../pwned.txt" is a valid in-bucket path, but once
+# the "public/" prefix is stripped it would land one level above the destination.
+
+# Setup: create a bucket for this test run
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://dl-$TEST_RUN_ID
+stdout '"name"'
+
+exec exo storage upload payload.txt sos://dl-$TEST_RUN_ID/public/../pwned.txt
+exec exo storage upload hello.txt sos://dl-$TEST_RUN_ID/public/hello.txt
+exec exo storage upload hello.txt sos://dl-$TEST_RUN_ID/public/sub/hello.txt
+
+# The escaping object is skipped with a warning, the others are downloaded
+mkdir victim
+exec exo storage download --recursive sos://dl-$TEST_RUN_ID/public/ victim
+stderr 'Skipping file public/../pwned.txt'
+! exists pwned.txt
+exists victim/hello.txt
+exists victim/sub/hello.txt
+
+# Dry-run skips it as well
+exec exo storage download --recursive --dry-run sos://dl-$TEST_RUN_ID/public/ victim
+stderr 'Skipping file public/../pwned.txt'
+! stdout 'pwned.txt'
+
+# Downloading from the bucket root keeps the object inside the destination
+mkdir root
+exec exo storage download --recursive sos://dl-$TEST_RUN_ID/ root
+exists root/pwned.txt
+exists root/public/hello.txt
+! exists pwned.txt
+
+# Teardown
+exec exo storage delete --force --recursive sos://dl-$TEST_RUN_ID/
+exec exo storage rb -f sos://dl-$TEST_RUN_ID
+
+-- payload.txt --
+escaped
+-- hello.txt --
+hello from e2e test

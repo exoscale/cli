@@ -9,6 +9,7 @@
 ### Bug fixes
 
 - NLB: `--description ""` now empties the description on `load-balancer update` and `load-balancer service update` (#919)
+- storage: `download -r` now skips objects whose name would be written outside of the destination folder once the prefix is stripped (e.g. `public/../file` downloaded from `public/`)
 
 ### Improvements
 
