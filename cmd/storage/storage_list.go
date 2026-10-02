@@ -82,10 +82,12 @@ Supported output template annotations:
 			return err
 		}
 
-		storage, err := sos.NewStorageClient(
-			exocmd.GContext,
-			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
-		)
+		zoneOpt := sos.ClientOptZoneFromBucket(exocmd.GContext, bucket)
+		if zone != "" {
+			zoneOpt = sos.ClientOptWithZone(zone)
+		}
+
+		storage, err := sos.NewStorageClient(exocmd.GContext, zoneOpt)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
