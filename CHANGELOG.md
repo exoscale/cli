@@ -6,6 +6,8 @@
 
 ### Features
 
+- dbaas: add `exo dbaas acl` list/create/delete/update commands for Kafka and OpenSearch, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
+
 ### Bug fixes
 
 - NLB: `--description ""` now empties the description on `load-balancer update` and `load-balancer service update` (#919)
