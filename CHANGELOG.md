@@ -6,7 +6,7 @@
 
 ### Features
 
-- dbaas: add `exo dbaas acl` list/create/delete/update commands for Kafka and OpenSearch, and Kafka and OpenSearch support in `exo dbaas acl show`
+- dbaas: add `exo dbaas acl` list/create/delete/update commands for Kafka and OpenSearch, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
 
 ### Bug fixes
 
