@@ -613,6 +613,116 @@ func Test_IsTraversalPath(t *testing.T) {
 	}
 }
 
+func TestDownloadDestination(t *testing.T) {
+	tests := []struct {
+		name    string
+		dst     string
+		prefix  string
+		key     string
+		expect  string
+		wantErr bool
+	}{
+		{
+			name:   "object under prefix",
+			dst:    "/tmp/victim",
+			prefix: "public/",
+			key:    "public/a/file.txt",
+			expect: "/tmp/victim/a/file.txt",
+		},
+		{
+			name:   "bucket root prefix",
+			dst:    "/tmp/victim",
+			prefix: "/",
+			key:    "public/file.txt",
+			expect: "/tmp/victim/public/file.txt",
+		},
+		{
+			name:   "prefix without trailing separator",
+			dst:    "/tmp/victim",
+			prefix: "public",
+			key:    "public/file.txt",
+			expect: "/tmp/victim/file.txt",
+		},
+		{
+			name:   "parent reference staying in destination",
+			dst:    "/tmp/victim",
+			prefix: "public/",
+			key:    "public/a/../file.txt",
+			expect: "/tmp/victim/file.txt",
+		},
+		{
+			name:   "no destination",
+			prefix: "public/",
+			key:    "public/a/file.txt",
+			expect: "a/file.txt",
+		},
+		{
+			name:    "parent reference in bucket escaping destination",
+			dst:     "/tmp/victim",
+			prefix:  "public/",
+			key:     "public/../pwned.txt",
+			wantErr: true,
+		},
+		{
+			name:    "nested parent references escaping destination",
+			dst:     "/tmp/victim",
+			prefix:  "public/",
+			key:     "public/a/../../pwned.txt",
+			wantErr: true,
+		},
+		{
+			name:    "parent reference with relative destination",
+			dst:     "downloads",
+			prefix:  "public/",
+			key:     "public/../pwned.txt",
+			wantErr: true,
+		},
+		{
+			name:    "parent reference without destination",
+			prefix:  "public/",
+			key:     "public/../pwned.txt",
+			wantErr: true,
+		},
+		{
+			name:   "absolute path without destination",
+			prefix: "public",
+			key:    "public/etc/pwned.txt",
+			expect: "etc/pwned.txt",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := sos.DownloadDestination(tt.dst, tt.prefix, tt.key)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, filepath.FromSlash(tt.expect), got)
+		})
+	}
+}
+
+func TestDownloadFiles_SkipsObjectsEscapingDestination(t *testing.T) {
+	parent := t.TempDir()
+	dst := filepath.Join(parent, "victim")
+	assert.NoError(t, os.Mkdir(dst, 0o755))
+
+	// The object is skipped before reaching the API, so no S3 client is needed.
+	client := &sos.Client{}
+	err := client.DownloadFiles(
+		context.Background(),
+		"bucket", "public/", "bucket/public/", dst,
+		[]*types.Object{
+			{Key: aws.String("public/../pwned/file.txt"), Size: aws.Int64(1)},
+		},
+		true, false,
+	)
+	assert.NoError(t, err)
+	assert.NoDirExists(t, filepath.Join(parent, "pwned"))
+}
+
 func drainDeleteObjectVersions(deletedChan <-chan types.DeletedObject, errChan <-chan error) ([]types.DeletedObject, []error) {
 	var deleted []types.DeletedObject
 	var errs []error

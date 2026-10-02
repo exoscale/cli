@@ -243,8 +243,11 @@ func (c *Client) DownloadFiles(
 
 	for _, object := range objects {
 		key := aws.ToString(object.Key)
-		subpath := strings.TrimPrefix(key, prefix)
-		dst := filepath.Join(dst, subpath) // new local-scope dst variable!
+		dst, err := DownloadDestination(dst, prefix, key) // new local-scope dst variable!
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: Skipping file %s. File references a parent directory\n", key)
+			continue
+		}
 
 		if !dryRun {
 			err := os.MkdirAll(filepath.Dir(dst), 0o755)
@@ -253,7 +256,7 @@ func (c *Client) DownloadFiles(
 			}
 		}
 
-		err := c.DownloadFile(ctx, bucket, dst, object, overwrite, dryRun)
+		err = c.DownloadFile(ctx, bucket, dst, object, overwrite, dryRun)
 		if err != nil {
 			// We might have downloaded files succesfuly before this error,
 			// to quit with error now does not make much sense.
@@ -846,6 +849,26 @@ func (o *ShowObjectOutput) ToTable() {
 
 		return buf.String()
 	}()})
+}
+
+// DownloadDestination returns the local path an object is written to when
+// downloading the objects under prefix into the dst folder. It returns an error
+// if that path is outside of dst, which happens if what is left of the key once
+// the prefix is stripped references a parent directory (e.g. "public/../file"
+// downloaded from the "public/" prefix).
+func DownloadDestination(dst, prefix, key string) (string, error) {
+	if dst == "" {
+		dst = "."
+	}
+
+	file := filepath.Join(dst, strings.TrimPrefix(key, prefix))
+
+	rel, err := filepath.Rel(dst, file)
+	if err != nil || !filepath.IsLocal(rel) {
+		return "", fmt.Errorf("object %q would be written outside of %q", key, dst)
+	}
+
+	return file, nil
 }
 
 func IsTraversalPath(key string) bool {
