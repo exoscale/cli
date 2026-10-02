@@ -1,0 +1,53 @@
+# Test: dbaas acl create/list/show/update/delete on an OpenSearch service
+# Covers the ACL toggles, the entries of a user for several index patterns,
+# and deletion of one entry or of all the entries of a user.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# Create an OpenSearch service (disable termination protection for cleanup)
+exec exo --zone $TEST_ZONE --output-format json dbaas create opensearch startup-4 os-acl-$TEST_RUN_ID --termination-protection=false
+
+# Wait for the service to be running
+wait-dbaas-state $TEST_ZONE os-acl-$TEST_RUN_ID running 1200
+
+# The user the entries apply to
+exec exo --zone $TEST_ZONE dbaas user create os-acl-$TEST_RUN_ID acluser
+
+# Enable ACLs
+exec exo --zone $TEST_ZONE --output-format json dbaas acl update os-acl-$TEST_RUN_ID --opensearch-acl-enabled
+stdout '"acl-enabled":true'
+
+# Create two entries for the same user
+exec exo --zone $TEST_ZONE --output-format json dbaas acl create os-acl-$TEST_RUN_ID acluser --opensearch-index 'logs-*' --permission read
+stdout '"resource":"logs-\*"'
+exec exo --zone $TEST_ZONE dbaas acl create os-acl-$TEST_RUN_ID acluser --opensearch-index 'metrics-*' --permission write
+
+# An entry for the same user and index already exists
+! exec exo --zone $TEST_ZONE dbaas acl create os-acl-$TEST_RUN_ID acluser --opensearch-index 'logs-*' --permission write
+stderr 'already exists'
+
+# List returns both entries
+exec exo --zone $TEST_ZONE --output-format json dbaas acl list os-acl-$TEST_RUN_ID
+stdout '"resource":"logs-\*"'
+stdout '"resource":"metrics-\*"'
+
+# Change the permission of an entry
+exec exo --zone $TEST_ZONE --output-format json dbaas acl update os-acl-$TEST_RUN_ID acluser --opensearch-index 'logs-*' --permission readwrite
+stdout '"permission":"readwrite"'
+
+# Show renders the toggles and the entries
+exec exo --zone $TEST_ZONE dbaas acl show os-acl-$TEST_RUN_ID
+stdout 'ACL Enabled'
+stdout 'acluser'
+
+# Delete one entry, then all the remaining entries of the user
+exec exo --zone $TEST_ZONE dbaas acl delete os-acl-$TEST_RUN_ID acluser --opensearch-index 'logs-*' -f
+exec exo --zone $TEST_ZONE --output-format json dbaas acl list os-acl-$TEST_RUN_ID
+! stdout '"resource":"logs-\*"'
+stdout '"resource":"metrics-\*"'
+exec exo --zone $TEST_ZONE dbaas acl delete os-acl-$TEST_RUN_ID acluser -f
+exec exo --zone $TEST_ZONE --output-format json dbaas acl list os-acl-$TEST_RUN_ID
+! stdout 'acluser'
+! exec exo --zone $TEST_ZONE dbaas acl delete os-acl-$TEST_RUN_ID acluser -f
+
+# Teardown: delete the service
+exec exo --zone $TEST_ZONE dbaas delete -f os-acl-$TEST_RUN_ID
