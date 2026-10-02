@@ -9,7 +9,7 @@
 ### Bug fixes
 
 - NLB: `--description ""` now empties the description on `load-balancer update` and `load-balancer service update` (#919)
-- dbaas: fix `dbaas update` crashing on the `--opensearch-dashboard-*` and `--opensearch-index-template-*` flags, and `--opensearch-dashboard-max-old-space-size` being ignored on `dbaas create` and `dbaas update`
+- dbaas: fix `dbaas update` crashing on the `--opensearch-dashboard-*` and `--opensearch-index-template-*` flags, and `--opensearch-dashboard-max-old-space-size` being ignored on `dbaas create` and `dbaas update` (#921)
 
 ### Improvements
 
