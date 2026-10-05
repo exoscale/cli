@@ -121,8 +121,11 @@ func (c *Client) DeleteObject(ctx context.Context, bucket, key string) error {
 	return err
 }
 
+// copySource returns the URL-encoded source of a copy operation. The server
+// decodes it the way it decodes a query string ("+" is read as a space), so
+// the key is encoded as one.
 func copySource(bucket, key string) string {
-	return bucket + "/" + url.PathEscape(key)
+	return bucket + "/" + url.QueryEscape(key)
 }
 
 // getACLFromGrants maps S3 object grants to a canned ACL. Note: complex

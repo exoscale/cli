@@ -143,7 +143,7 @@ func (c *Client) CopyObject(ctx context.Context, bucket, key string) (*s3.CopyOb
 	copyObject := s3.CopyObjectInput{
 		Bucket:            aws.String(bucket),
 		Key:               aws.String(key),
-		CopySource:        aws.String(bucket + "/" + key),
+		CopySource:        aws.String(copySource(bucket, key)),
 		Metadata:          srcObject.Metadata,
 		MetadataDirective: s3types.MetadataDirectiveReplace,
 
