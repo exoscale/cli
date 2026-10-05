@@ -870,8 +870,3 @@ func DownloadDestination(dst, prefix, key string) (string, error) {
 
 	return file, nil
 }
-
-func IsTraversalPath(key string) bool {
-	cleaned := path.Clean(key)
-	return strings.HasPrefix(cleaned, "..")
-}

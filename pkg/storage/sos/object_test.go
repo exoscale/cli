@@ -579,40 +579,6 @@ func TestUploadFiles(t *testing.T) {
 	}
 }
 
-func Test_IsTraversalPath(t *testing.T) {
-	tests := []struct {
-		path   string
-		expect bool
-	}{
-		{
-			path:   "test.txt",
-			expect: false,
-		},
-		{
-			path:   "../test.txt",
-			expect: true,
-		},
-		{
-			path:   "a/b/../../../test.text",
-			expect: true,
-		},
-		{
-			path:   "a/b/../../test.txt",
-			expect: false,
-		},
-		{
-			path:   "../a/b/test.txt",
-			expect: true,
-		},
-	}
-
-	for _, ut := range tests {
-		t.Run(ut.path, func(t *testing.T) {
-			assert.Equal(t, ut.expect, sos.IsTraversalPath(ut.path))
-		})
-	}
-}
-
 func TestDownloadDestination(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -668,6 +634,13 @@ func TestDownloadDestination(t *testing.T) {
 			dst:     "/tmp/victim",
 			prefix:  "public/",
 			key:     "public/a/../../pwned.txt",
+			wantErr: true,
+		},
+		{
+			name:    "parent reference from the bucket root",
+			dst:     "/tmp/victim",
+			prefix:  "/",
+			key:     "../pwned.txt",
 			wantErr: true,
 		},
 		{
