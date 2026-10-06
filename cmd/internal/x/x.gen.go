@@ -9156,8 +9156,8 @@ func XDetachInstanceFromElasticIp(paramId string, params *viper.Viper, body stri
 	return resp, decoded, nil
 }
 
-// XGetEnvImpact [DEPRECATED] use get-impact-report endpoint
-func XGetEnvImpact(paramPeriod string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+// XGetEnvImpact [REMOVED] use get-impact-report endpoint
+func XGetEnvImpact(paramPeriod string, params *viper.Viper) (*gentleman.Response, interface{}, error) {
 	handlerPath := "get-env-impact"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
@@ -9180,7 +9180,7 @@ func XGetEnvImpact(paramPeriod string, params *viper.Viper) (*gentleman.Response
 		return nil, nil, errors.Wrap(err, "Request failed")
 	}
 
-	var decoded map[string]interface{}
+	var decoded interface{}
 
 	if resp.StatusCode < 400 {
 		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
@@ -9192,7 +9192,7 @@ func XGetEnvImpact(paramPeriod string, params *viper.Viper) (*gentleman.Response
 
 	after := cli.HandleAfter(handlerPath, params, resp, decoded)
 	if after != nil {
-		decoded = after.(map[string]interface{})
+		decoded = after
 	}
 
 	return resp, decoded, nil
@@ -11169,6 +11169,314 @@ func XRevertInstanceToSnapshot(paramInstanceId string, params *viper.Viper, body
 	return resp, decoded, nil
 }
 
+// XCreateKeyStore [BETA] Create Key Store
+func XCreateKeyStore(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-key-store"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/key-store"
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListKeyStores [BETA] List Key Stores
+func XListKeyStores(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-key-stores"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/key-store"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteKeyStore [BETA] Delete Key Store
+func XDeleteKeyStore(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-key-store"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/key-store/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetKeyStore [BETA] Get Key Store
+func XGetKeyStore(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-key-store"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/key-store/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XConnectKeyStore [BETA] Connect Key Store
+func XConnectKeyStore(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "connect-key-store"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/key-store/{id}/connect"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDisconnectKeyStore [BETA] Disconnect Key Store
+func XDisconnectKeyStore(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "disconnect-key-store"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/key-store/{id}/disconnect"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XUpdateKeyStore [BETA] Update Key Store
+func XUpdateKeyStore(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "update-key-store"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/key-store/{id}/update"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XCreateKmsKey Create KMS Key
 func XCreateKmsKey(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-kms-key"
@@ -11665,6 +11973,48 @@ func XGenerateDataKey(paramId string, params *viper.Viper, body string) (*gentle
 	return resp, decoded, nil
 }
 
+// XGetPublicKey Get Public Key
+func XGetPublicKey(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-public-key"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/kms-key/{id}/get-public-key"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XListKmsKeyRotations List KMS Key Rotations
 func XListKmsKeyRotations(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-kms-key-rotations"
@@ -11858,6 +12208,98 @@ func XScheduleKmsKeyDeletion(paramId string, params *viper.Viper, body string) (
 	}
 
 	url := server + "/kms-key/{id}/schedule-deletion"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XSign Sign
+func XSign(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "sign"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/kms-key/{id}/sign"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XVerify Verify
+func XVerify(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "verify"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/kms-key/{id}/verify"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
 	req := cli.Client.Post().URL(url)
@@ -24197,8 +24639,8 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "get-env-impact period",
-			Short:   "[DEPRECATED] use get-impact-report endpoint",
-			Long:    cli.Markdown("[DEPRECATED] use get-impact-report endpoint"),
+			Short:   "[REMOVED] use get-impact-report endpoint",
+			Long:    cli.Markdown("[REMOVED] This endpoint is no longer available: it always returns 410 Gone with a message. Use get-impact-report endpoint instead."),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -24792,7 +25234,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-instance",
 			Short:   "Create a Compute instance",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Instance Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    type: array\n    uniqueItems: true\n  application-consistent-snapshot-enabled:\n    description: Enable application-consistent snapshot for the instance\n    type: boolean\n  auto-start:\n    description: 'Start Instance on creation (default: true)'\n    type: boolean\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  disk-size:\n    description: Instance disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 10\n    type: integer\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  ip-forwarding:\n    description: VPC ip forwarding\n    type: boolean\n  ipv6-enabled:\n    description: 'Enable IPv6. DEPRECATED: use `public-ip-assignments`.'\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Instance name\n    maxLength: 255\n    minLength: 1\n    type: string\n  public-ip-assignment:\n    $ref: '#/components/schemas/public-ip-assignment'\n  secureboot-enabled:\n    description: Enable secure boot\n    type: boolean\n  security-groups:\n    description: Instance Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    type: array\n    uniqueItems: true\n  ssh-key:\n    $ref: '#/components/schemas/ssh-key-ref'\n  ssh-keys:\n    description: Instance SSH Keys\n    items:\n      $ref: '#/components/schemas/ssh-key-ref'\n    type: array\n    uniqueItems: true\n  template:\n    $ref: '#/components/schemas/template-ref'\n  tpm-enabled:\n    description: Enable Trusted Platform Module (TPM)\n    type: boolean\n  user-data:\n    description: Instance Cloud-init user-data (base64 encoded)\n    maxLength: 32768\n    minLength: 1\n    type: string\nrequired:\n- disk-size\n- instance-type\n- template\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Instance Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    type: array\n    uniqueItems: true\n  application-consistent-snapshot-enabled:\n    description: Enable application-consistent snapshot for the instance\n    type: boolean\n  auto-start:\n    description: 'Start Instance on creation (default: true)'\n    type: boolean\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  disk-size:\n    description: Instance disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 10\n    type: integer\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  ip-forwarding:\n    description: VPC ip forwarding\n    type: boolean\n  ipv6-enabled:\n    description: 'Enable IPv6. DEPRECATED: use `public-ip-assignments`.'\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Instance name\n    maxLength: 255\n    minLength: 1\n    type: string\n  public-ip-assignment:\n    $ref: '#/components/schemas/public-ip-assignment'\n  secureboot-enabled:\n    description: Enable secure boot\n    type: boolean\n  security-groups:\n    description: Instance Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    type: array\n    uniqueItems: true\n  ssh-key:\n    $ref: '#/components/schemas/ssh-key-ref'\n  ssh-keys:\n    description: Instance SSH Keys\n    items:\n      $ref: '#/components/schemas/ssh-key-ref'\n    type: array\n    uniqueItems: true\n  template:\n    $ref: '#/components/schemas/template-ref'\n  tpm-enabled:\n    description: Enable Trusted Platform Module (TPM)\n    type: boolean\n  user-data:\n    description: Instance Cloud-init user-data (base64 encoded)\n    maxLength: 32768\n    minLength: 1\n    type: string\n  vpc:\n    description: Attach the Instance to VPC Subnets\n    properties:\n      id:\n        description: VPC ID\n        format: uuid\n        type: string\n      subnets:\n        description: VPC Subnets to attach the Instance to\n        items:\n          description: VPC Subnet attachment\n          properties:\n            id:\n              description: Subnet ID\n              format: uuid\n              type: string\n            ipv4:\n              description: Instance IPv4. Random one if unset\n              format: ipv4\n              type: string\n          required:\n          - id\n          type: object\n        type: array\n    required:\n    - id\n    - subnets\n    type: object\nrequired:\n- disk-size\n- instance-type\n- template\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -25882,9 +26324,270 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "create-key-store",
+			Short:   "[BETA] Create Key Store",
+			Long:    cli.Markdown("Create an External Key Store after validating the configured customer-managed XKS proxy.\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: An optional detailed description providing additional context about the key store's intended use case.\n    maxLength: 1024\n    type: string\n  name:\n    description: A human-readable display name uniquely identifying the key store within the organization.\n    maxLength: 256\n    minLength: 1\n    type: string\n  proxy:\n    $ref: '#/components/schemas/key-store-proxy'\n  type:\n    default: external-key-store\n    description: The key store type. Only external key stores are supported for this API version.\n    enum:\n    - external-key-store\n    type: string\nrequired:\n- name\n- proxy\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[0:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateKeyStore(params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-key-stores",
+			Short:   "[BETA] List Key Stores",
+			Long:    cli.Markdown("Lists all key stores configured for an organization."),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListKeyStores(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-key-store id",
+			Short:   "[BETA] Delete Key Store",
+			Long:    cli.Markdown("Deletes an External Key Store when no KMS keys reference it."),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteKeyStore(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-key-store id",
+			Short:   "[BETA] Get Key Store",
+			Long:    cli.Markdown("Fetch an External Key Store including its latest XKS health observation when available."),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetKeyStore(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "connect-key-store id",
+			Short:   "[BETA] Connect Key Store",
+			Long:    cli.Markdown("Connects an External Key Store once its customer-managed XKS proxy passes a health check, then resumes periodic proxy health checks and lets keys backed by this store be used for cryptographic operations."),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XConnectKeyStore(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "disconnect-key-store id",
+			Short:   "[BETA] Disconnect Key Store",
+			Long:    cli.Markdown("Disconnects an External Key Store and suspends periodic proxy health checks; keys backed by this store remain intact but cannot be used for cryptographic operations until it is reconnected."),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XDisconnectKeyStore(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "update-key-store id",
+			Short:   "[BETA] Update Key Store",
+			Long:    cli.Markdown("Updates an External Key Store with a new description, endpoint, or credentials.\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: A new detailed description providing additional context about the key store's intended use case.\n    maxLength: 1024\n    type: string\n  proxy:\n    $ref: '#/components/schemas/update-key-store-proxy'\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XUpdateKeyStore(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "create-kms-key",
 			Short:   "Create KMS Key",
-			Long:    cli.Markdown("Create a customer-managed unique KMS Key in your organization. A KMS Key is a logical representation of a cryptographic key material. It also includes metadata such as a UUID, a name and its state.\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: An optional detailed description providing additional context about the key's intended use case.\n    type: string\n  multi-zone:\n    default: false\n    description: True if this is a multi-zone key.\n    type: boolean\n  name:\n    description: A human-readable display name uniquely identifying the KMS key within the tenant space.\n    type: string\n  usage:\n    default: encrypt-decrypt\n    enum:\n    - encrypt-decrypt\n    type: string\nrequired:\n- name\ntype: object\n"),
+			Long:    cli.Markdown("Create a customer-managed unique KMS Key in your organization. A KMS Key is a logical representation of a cryptographic key material. It also includes metadata such as a UUID, a name and its state.\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: An optional detailed description providing additional context about the key's intended use case.\n    type: string\n  key-spec:\n    default: AES_256\n    description: The cryptographic key specification defining the key's algorithm and, for asymmetric keys, its curve or modulus size.\n    enum:\n    - AES_256\n    - ECC_NIST_P256\n    - ECC_NIST_P384\n    - ECC_NIST_P521\n    - ECC_EDWARDS25519\n    - RSA_3072\n    - RSA_4096\n    type: string\n  multi-zone:\n    default: false\n    description: True if this is a multi-zone key.\n    type: boolean\n  name:\n    description: A human-readable display name uniquely identifying the KMS key within the tenant space.\n    type: string\n  source:\n    default: exoscale-kms\n    description: Indicates the source of the key material, either generated and held within Exoscale KMS, or backed by an external key store.\n    enum:\n    - exoscale-kms\n    - external-key-store\n    type: string\n  usage:\n    default: encrypt-decrypt\n    enum:\n    - encrypt-decrypt\n    - sign-verify\n    type: string\n  xks:\n    $ref: '#/components/schemas/xks-key'\nrequired:\n- name\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -26303,6 +27006,41 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "get-public-key id",
+			Short:   "Get Public Key",
+			Long:    cli.Markdown("Retrieve the public key material of an asymmetric KMS key."),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetPublicKey(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "list-kms-key-rotations id",
 			Short:   "List KMS Key Rotations",
 			Long:    cli.Markdown("List all the key material versions of a KMS Key."),
@@ -26467,6 +27205,84 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XScheduleKmsKeyDeletion(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "sign id",
+			Short:   "Sign",
+			Long:    cli.Markdown("Signs a message or digest using a KMS key with usage `sign-verify`.\n## Request Schema (application/json)\n\nproperties:\n  message:\n    description: The Base64-encoded message to sign (1-4096 decoded bytes). Its meaning depends on `message-type`, either the raw plaintext message or an already-hashed digest.\n    format: byte\n    maxLength: 5464\n    minLength: 1\n    type: string\n  message-type:\n    default: raw\n    description: How `message` should be interpreted.\n    enum:\n    - raw\n    - digest\n    type: string\n  signing-algorithm:\n    description: The signing algorithm to use. Must match the family implied by the key's `key-spec`.\n    enum:\n    - RSASSA_PSS_SHA_256\n    - RSASSA_PSS_SHA_384\n    - RSASSA_PSS_SHA_512\n    - ECDSA_SHA_256\n    - ECDSA_SHA_384\n    - ECDSA_SHA_512\n    - EDDSA_ED25519\n    - ED25519_PH_SHA_512\n    type: string\nrequired:\n- message\n- signing-algorithm\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XSign(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "verify id",
+			Short:   "Verify",
+			Long:    cli.Markdown("Verifies a signature against the public key of a KMS key with usage `sign-verify`.\n## Request Schema (application/json)\n\nproperties:\n  message:\n    description: The Base64-encoded message to verify (1-4096 decoded bytes), with the same semantics as `sign`'s `message` field.\n    format: byte\n    maxLength: 5464\n    minLength: 1\n    type: string\n  message-type:\n    default: raw\n    description: How `message` should be interpreted, with the same semantics as `sign`'s `message-type` field.\n    enum:\n    - raw\n    - digest\n    type: string\n  signature:\n    description: The Base64-encoded signature to verify against `message` (1-6144 decoded bytes).\n    format: byte\n    maxLength: 8192\n    minLength: 1\n    type: string\n  signing-algorithm:\n    description: The signing algorithm `signature` was produced with. Must match the family implied by the key's `key-spec`, with the same semantics as `sign`'s `signing-algorithm` field.\n    enum:\n    - RSASSA_PSS_SHA_256\n    - RSASSA_PSS_SHA_384\n    - RSASSA_PSS_SHA_512\n    - ECDSA_SHA_256\n    - ECDSA_SHA_384\n    - ECDSA_SHA_512\n    - EDDSA_ED25519\n    - ED25519_PH_SHA_512\n    type: string\nrequired:\n- message\n- signature\n- signing-algorithm\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XVerify(args[0], params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -26675,7 +27491,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-load-balancer id",
 			Short:   "Update a Load Balancer",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Load Balancer description\n    maxLength: 255\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Load Balancer name\n    maxLength: 255\n    minLength: 1\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Load Balancer description\n    maxLength: 255\n    nullable: true\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Load Balancer name\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -26823,7 +27639,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-load-balancer-service id service-id",
 			Short:   "Update a Load Balancer Service",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Load Balancer Service description\n    maxLength: 255\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/load-balancer-service-healthcheck'\n  name:\n    description: Load Balancer Service name\n    maxLength: 255\n    type: string\n  port:\n    description: Port exposed on the Load Balancer's public IP\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 65535\n    minimum: 1\n    type: integer\n  protocol:\n    description: Network traffic protocol\n    enum:\n    - tcp\n    - udp\n    type: string\n  strategy:\n    description: Load balancing strategy\n    enum:\n    - round-robin\n    - maglev-hash\n    - source-hash\n    type: string\n  target-port:\n    description: Port on which the network traffic will be forwarded to on the receiving instance\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 65535\n    minimum: 1\n    type: integer\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Load Balancer Service description\n    maxLength: 255\n    nullable: true\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/load-balancer-service-healthcheck'\n  name:\n    description: Load Balancer Service name\n    maxLength: 255\n    nullable: true\n    type: string\n  port:\n    description: Port exposed on the Load Balancer's public IP\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 65535\n    minimum: 1\n    nullable: true\n    type: integer\n  protocol:\n    description: Network traffic protocol\n    enum:\n    - tcp\n    - udp\n    nullable: true\n    type: string\n  strategy:\n    description: Load balancing strategy\n    enum:\n    - round-robin\n    - maglev-hash\n    - source-hash\n    nullable: true\n    type: string\n  target-port:\n    description: Port on which the network traffic will be forwarded to on the receiving instance\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 65535\n    minimum: 1\n    nullable: true\n    type: integer\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -28001,7 +28817,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-sks-cluster",
 			Short:   "Create an SKS cluster",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Cluster addons\n    items:\n      enum:\n      - exoscale-cloud-controller\n      - exoscale-container-storage-interface\n      - metrics-server\n      - karpenter\n      type: string\n    type: array\n    uniqueItems: true\n  audit:\n    $ref: '#/components/schemas/sks-audit-create'\n  auto-upgrade:\n    description: Enable auto upgrade of the control plane to the latest patch version available\n    type: boolean\n  cni:\n    description: Cluster CNI\n    enum:\n    - calico\n    - cilium\n    type: string\n  create-default-security-group:\n    description: Creates an ad-hoc security group based on the choice of the selected CNI\n    nullable: true\n    type: boolean\n  description:\n    description: Cluster description\n    maxLength: 255\n    nullable: true\n    type: string\n  enable-kube-proxy:\n    description: Indicates whether to deploy the Kubernetes network proxy. When unspecified, defaults to `true` unless Cilium CNI is selected\n    type: boolean\n  feature-gates:\n    description: A list of Kubernetes-only Alpha features to enable for API server component\n    items:\n      type: string\n    type: array\n    uniqueItems: true\n  labels:\n    $ref: '#/components/schemas/sks-cluster-labels'\n  level:\n    description: Cluster service level\n    enum:\n    - starter\n    - pro\n    type: string\n  name:\n    description: Cluster name\n    maxLength: 255\n    minLength: 1\n    type: string\n  networking:\n    $ref: '#/components/schemas/networking'\n  oidc:\n    $ref: '#/components/schemas/sks-oidc'\n  version:\n    description: Control plane Kubernetes version\n    type: string\nrequired:\n- name\n- level\n- version\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Cluster addons\n    items:\n      enum:\n      - exoscale-cloud-controller\n      - exoscale-container-storage-interface\n      - metrics-server\n      - karpenter\n      type: string\n    type: array\n    uniqueItems: true\n  allowed-networks:\n    $ref: '#/components/schemas/sks-cluster-allowed-networks'\n  audit:\n    $ref: '#/components/schemas/sks-audit-create'\n  auto-upgrade:\n    description: Enable auto upgrade of the control plane to the latest patch version available\n    type: boolean\n  cni:\n    description: Cluster CNI\n    enum:\n    - calico\n    - cilium\n    type: string\n  create-default-security-group:\n    description: Creates an ad-hoc security group based on the choice of the selected CNI\n    nullable: true\n    type: boolean\n  description:\n    description: Cluster description\n    maxLength: 255\n    nullable: true\n    type: string\n  enable-kube-proxy:\n    description: Indicates whether to deploy the Kubernetes network proxy. When unspecified, defaults to `true` unless Cilium CNI is selected\n    type: boolean\n  feature-gates:\n    description: A list of Kubernetes-only Alpha features to enable for API server component\n    items:\n      type: string\n    type: array\n    uniqueItems: true\n  karpenter-feature-gates:\n    description: A list of Karpenter controller feature gates to enable for the Karpenter controller binary\n    items:\n      type: string\n    type: array\n    uniqueItems: true\n  labels:\n    $ref: '#/components/schemas/sks-cluster-labels'\n  level:\n    description: Cluster service level\n    enum:\n    - starter\n    - pro\n    type: string\n  name:\n    description: Cluster name\n    maxLength: 255\n    minLength: 1\n    type: string\n  networking:\n    $ref: '#/components/schemas/networking'\n  oidc:\n    $ref: '#/components/schemas/sks-oidc'\n  version:\n    description: Control plane Kubernetes version\n    type: string\nrequired:\n- name\n- level\n- version\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -28256,7 +29072,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-sks-cluster id",
 			Short:   "Update an SKS cluster",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Cluster addons\n    items:\n      enum:\n      - exoscale-cloud-controller\n      - exoscale-container-storage-interface\n      - metrics-server\n      - karpenter\n      type: string\n    type: array\n    uniqueItems: true\n  audit:\n    $ref: '#/components/schemas/sks-audit-update'\n  auto-upgrade:\n    description: Enable auto upgrade of the control plane to the latest patch version available\n    type: boolean\n  description:\n    description: Cluster description\n    maxLength: 255\n    nullable: true\n    type: string\n  enable-operators-ca:\n    description: Add or remove the operators certificate authority (CA) from the list of trusted CAs of the api server. The default value is true\n    type: boolean\n  feature-gates:\n    description: A list of Kubernetes-only Alpha features to enable for API server component\n    items:\n      type: string\n    nullable: true\n    type: array\n    uniqueItems: true\n  labels:\n    $ref: '#/components/schemas/sks-cluster-labels'\n  name:\n    description: Cluster name\n    maxLength: 255\n    minLength: 1\n    type: string\n  oidc:\n    $ref: '#/components/schemas/sks-oidc'\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Cluster addons\n    items:\n      enum:\n      - exoscale-cloud-controller\n      - exoscale-container-storage-interface\n      - metrics-server\n      - karpenter\n      type: string\n    type: array\n    uniqueItems: true\n  allowed-networks:\n    $ref: '#/components/schemas/sks-cluster-allowed-networks'\n  audit:\n    $ref: '#/components/schemas/sks-audit-update'\n  auto-upgrade:\n    description: Enable auto upgrade of the control plane to the latest patch version available\n    type: boolean\n  description:\n    description: Cluster description\n    maxLength: 255\n    nullable: true\n    type: string\n  enable-operators-ca:\n    description: Add or remove the operators certificate authority (CA) from the list of trusted CAs of the api server. The default value is true\n    type: boolean\n  feature-gates:\n    description: A list of Kubernetes-only Alpha features to enable for API server component\n    items:\n      type: string\n    nullable: true\n    type: array\n    uniqueItems: true\n  karpenter-feature-gates:\n    description: A list of Karpenter controller feature gates to enable for the Karpenter controller binary\n    items:\n      type: string\n    nullable: true\n    type: array\n    uniqueItems: true\n  labels:\n    $ref: '#/components/schemas/sks-cluster-labels'\n  name:\n    description: Cluster name\n    maxLength: 255\n    minLength: 1\n    type: string\n  oidc:\n    $ref: '#/components/schemas/sks-oidc'\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {

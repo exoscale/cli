@@ -6,6 +6,8 @@
 
 ### Features
 
+- update exo x
+
 ### Bug fixes
 
 - storage: use `--zone` when listing objects in a bucket (#924)
