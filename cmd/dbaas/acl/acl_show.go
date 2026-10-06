@@ -2,6 +2,7 @@ package acl
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 
@@ -52,9 +53,11 @@ type dbaasAclShowCmd struct {
 }
 
 func (c *dbaasAclShowCmd) CmdAliases() []string { return nil }
-func (c *dbaasAclShowCmd) CmdShort() string     { return "Show ClickHouse ACL configuration" }
+func (c *dbaasAclShowCmd) CmdShort() string {
+	return "Show the ACL configuration of a Database Service"
+}
 func (c *dbaasAclShowCmd) CmdLong() string {
-	return "Show the current ClickHouse ACL configuration for a DBaaS service."
+	return "Show the current ACL configuration of a ClickHouse, Kafka or OpenSearch DBaaS service."
 }
 
 func (c *dbaasAclShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -70,9 +73,27 @@ func (c *dbaasAclShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	acl, err := client.GetDBAASClickhouseAclConfig(ctx, c.Name)
+	dbType, err := dbaasServiceType(ctx, client, c.Name, c.Zone)
 	if err != nil {
 		return err
+	}
+
+	switch dbType {
+	case "clickhouse":
+		return c.OutputFunc(showClickhouseAcl(ctx, client, c.Name))
+	case "kafka":
+		return c.OutputFunc(listAcl(ctx, client, dbType, c.Name))
+	case "opensearch":
+		return c.OutputFunc(showOpensearchAcl(ctx, client, c.Name))
+	default:
+		return fmt.Errorf("showing ACL configuration unsupported for service of type %q", dbType)
+	}
+}
+
+func showClickhouseAcl(ctx context.Context, client *v3.Client, name string) (output.Outputter, error) {
+	acl, err := client.GetDBAASClickhouseAclConfig(ctx, name)
+	if err != nil {
+		return nil, err
 	}
 
 	out := &dbaasAclShowOutput{}
@@ -100,7 +121,7 @@ func (c *dbaasAclShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		out.Users = append(out.Users, userOut)
 	}
 
-	return c.OutputFunc(out, nil)
+	return out, nil
 }
 
 func (o *dbaasAclShowOutput) ToTable() {
@@ -145,6 +166,44 @@ func (o *dbaasAclShowOutput) ToTable() {
 		t.Append([]string{"Privileges", buf.String()})
 		t.Append([]string{"", ""})
 	}
+}
+
+type dbaasAclOpensearchShowOutput struct {
+	ACLEnabled         bool               `json:"acl-enabled"`
+	ExtendedACLEnabled bool               `json:"extended-acl-enabled"`
+	ACL                dbaasAclListOutput `json:"acl"`
+}
+
+func (o *dbaasAclOpensearchShowOutput) ToJSON() { output.JSON(o) }
+func (o *dbaasAclOpensearchShowOutput) ToText() { output.Text(o) }
+func (o *dbaasAclOpensearchShowOutput) ToTable() {
+	t := table.NewTable(os.Stdout)
+	defer t.Render()
+
+	t.Append([]string{"ACL Enabled", fmt.Sprint(o.ACLEnabled)})
+	t.Append([]string{"Extended ACL Enabled", fmt.Sprint(o.ExtendedACLEnabled)})
+
+	buf := bytes.NewBuffer(nil)
+	at := table.NewEmbeddedTable(buf)
+	at.SetHeader([]string{"Username", "Index", "Permission"})
+	for _, acl := range o.ACL {
+		at.Append([]string{acl.Username, acl.Resource, acl.Permission})
+	}
+	at.Render()
+	t.Append([]string{"ACL", buf.String()})
+}
+
+func showOpensearchAcl(ctx context.Context, client *v3.Client, name string) (output.Outputter, error) {
+	config, err := client.GetDBAASOpensearchAclConfig(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dbaasAclOpensearchShowOutput{
+		ACLEnabled:         utils.DefaultBool(config.AclEnabled, false),
+		ExtendedACLEnabled: utils.DefaultBool(config.ExtendedAclEnabled, false),
+		ACL:                *opensearchAclListOutput(config),
+	}, nil
 }
 
 func init() {
