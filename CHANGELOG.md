@@ -8,6 +8,7 @@
 
 ### Bug fixes
 
+- storage: use `--zone` when listing objects in a bucket (#924)
 - NLB: `--description ""` now empties the description on `load-balancer update` and `load-balancer service update` (#919)
 - dbaas: fix `dbaas update` crashing on the `--opensearch-dashboard-*` and `--opensearch-index-template-*` flags, and `--opensearch-dashboard-max-old-space-size` being ignored on `dbaas create` and `dbaas update` (#921)
 - storage: `headers add/delete`, `metadata add/delete`, `copy` and `move` no longer report a 404 on an existing object whose key contains `+` or a percent-encoded sequence such as `%26` (#922)
