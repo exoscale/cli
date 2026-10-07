@@ -7,6 +7,7 @@
 ### Features
 
 - kms: add `exo kms keystore` create/get/update/connect/disconnect/list/delete commands to manage external key stores (XKS), with a `--connect-on-create` flag on `create`
+- update exo x
 
 ### Bug fixes
 
