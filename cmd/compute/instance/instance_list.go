@@ -148,7 +148,10 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	close(res)
 	<-done
 
-	return c.OutputFunc(&out, nil)
+	if outputErr := c.OutputFunc(&out, nil); outputErr != nil {
+		return outputErr
+	}
+	return err
 }
 
 func init() {
