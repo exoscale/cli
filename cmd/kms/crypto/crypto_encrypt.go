@@ -40,8 +40,9 @@ type cryptoEncryptCmd struct {
 	Key       string `cli-arg:"#" cli-usage:"ID"`
 	Plaintext string `cli-arg:"#" cli-usage:"PLAINTEXT_b64"`
 
-	EncryptionContext string      `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for encryption"`
-	Zone              v3.ZoneName `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
+	EncryptionContext   string                               `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for encryption"`
+	EncryptionAlgorithm v3.EncryptRequestEncryptionAlgorithm `cli-flag:"encryption-algorithm" cli-usage:"encryption algorithm, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
+	Zone                v3.ZoneName                          `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
 }
 
 func (c *cryptoEncryptCmd) CmdAliases() []string { return nil }
@@ -72,7 +73,8 @@ func (c *cryptoEncryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	req := v3.EncryptRequest{
-		Plaintext: decoded,
+		Plaintext:           decoded,
+		EncryptionAlgorithm: c.EncryptionAlgorithm,
 	}
 
 	if cmd.Flags().Changed("encryption-context") {
