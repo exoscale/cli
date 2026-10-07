@@ -5,11 +5,13 @@ package v3
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"runtime"
+	"slices"
 	"time"
 
 	"github.com/exoscale/egoscale/v3/credentials"
@@ -29,6 +31,7 @@ const (
 	ATVie2 Endpoint = "https://api-at-vie-2.exoscale.com/v2"
 	BGSof1 Endpoint = "https://api-bg-sof-1.exoscale.com/v2"
 	HrZag1 Endpoint = "https://api-hr-zag-1.exoscale.com/v2"
+	ESMad1 Endpoint = "https://api-es-mad-1.exoscale.com/v2"
 )
 
 // defaultHTTPClient is HTTP client with retry logic.
@@ -41,31 +44,57 @@ var defaultHTTPClient = func() *http.Client {
 }()
 
 func (c Client) GetZoneName(ctx context.Context, endpoint Endpoint) (ZoneName, error) {
-	resp, err := c.ListZones(ctx)
+	zone, err := c.findZone(ctx, string(endpoint))
 	if err != nil {
-		return "", fmt.Errorf("get zone name: list zones: %w", err)
-	}
-
-	zone, err := resp.FindZone(string(endpoint))
-	if err != nil {
-		return "", fmt.Errorf("get zone name: find zone: %w", err)
+		return "", fmt.Errorf("get zone name: %w", err)
 	}
 
 	return zone.Name, nil
 }
 
 func (c Client) GetZoneAPIEndpoint(ctx context.Context, zoneName ZoneName) (Endpoint, error) {
-	resp, err := c.ListZones(ctx)
+	zone, err := c.findZone(ctx, string(zoneName))
 	if err != nil {
-		return "", fmt.Errorf("get zone api endpoint: list zones: %w", err)
-	}
-
-	zone, err := resp.FindZone(string(zoneName))
-	if err != nil {
-		return "", fmt.Errorf("get zone api endpoint: find zone: %w", err)
+		return "", fmt.Errorf("get zone api endpoint: %w", err)
 	}
 
 	return zone.APIEndpoint, nil
+}
+
+// findZone looks a zone up by name or API endpoint.
+// ListZones is sent unauthenticated (signing it makes IAM reject restricted keys),
+// so zones only enabled for some organizations are missing from its response:
+// on a miss, retry once with a signed request.
+func (c Client) findZone(ctx context.Context, nameOrAPIEndpoint string) (Zone, error) {
+	resp, err := c.ListZones(ctx)
+	if err != nil {
+		return Zone{}, fmt.Errorf("list zones: %w", err)
+	}
+
+	zone, err := resp.FindZone(nameOrAPIEndpoint)
+	if err == nil {
+		return zone, nil
+	}
+	if !errors.Is(err, ErrNotFound) {
+		return Zone{}, fmt.Errorf("find zone: %w", err)
+	}
+
+	signed := cloneClient(&c)
+
+	signed.requestInterceptors = append(slices.Clip(c.requestInterceptors), func(_ context.Context, req *http.Request) error {
+		return c.signRequest(req)
+	})
+	signedResp, signedErr := signed.ListZones(ctx)
+	if signedErr != nil {
+		return Zone{}, fmt.Errorf("find zone: %w", err)
+	}
+
+	zone, err = signedResp.FindZone(nameOrAPIEndpoint)
+	if err != nil {
+		return Zone{}, fmt.Errorf("find zone: %w", err)
+	}
+
+	return zone, nil
 }
 
 // Client represents an Exoscale API client.

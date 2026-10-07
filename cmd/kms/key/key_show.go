@@ -21,6 +21,7 @@ type KeyShowOutput struct {
 	Material       string                     `json:"material" validate:"required"`
 	Rotation       string                     `json:"rotation" validate:"required"`
 	Usage          string                     `json:"usage" validate:"required"`
+	KeySpec        string                     `json:"key-spec" validate:"required"`
 	Source         v3.GetKmsKeyResponseSource `json:"source" validate:"required"`
 	Description    string                     `json:"description,omitempty"`
 	DeleteAt       time.Time                  `json:"delete-at,omitempty"`
@@ -79,6 +80,7 @@ func (c *KeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		Material:       formatKeyMaterial(resp.Material),
 		Rotation:       formatKeyRotationConfig(resp.Rotation),
 		Usage:          resp.Usage,
+		KeySpec:        resp.KeySpec,
 		Source:         resp.Source,
 		Description:    resp.Description,
 		DeleteAt:       resp.DeleteAT,
