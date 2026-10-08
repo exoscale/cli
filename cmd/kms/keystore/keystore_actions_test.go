@@ -1,6 +1,8 @@
 package keystore
 
 import (
+	"errors"
+	"slices"
 	"testing"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -11,7 +13,7 @@ func TestKeyStoreConnectDisconnect(t *testing.T) {
 	api := newFakeKeyStoreAPI(t)
 	ks := api.addKeyStore("my-xks", v3.GetKeyStoreResponseStatusDisconnected)
 
-	connect := &keyStoreConnectCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: "my-xks"}
+	connect := &keyStoreConnectCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: string(testKeyStoreID)}
 	if err := connect.CmdRun(nil, nil); err != nil {
 		t.Fatalf("keystore connect: %v", err)
 	}
@@ -26,10 +28,9 @@ func TestKeyStoreConnectDisconnect(t *testing.T) {
 	if ks.Status != v3.GetKeyStoreResponseStatusDisconnected {
 		t.Errorf("expected disconnected, got %q", ks.Status)
 	}
-
-	connect = &keyStoreConnectCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: "unknown"}
-	if err := connect.CmdRun(nil, nil); err == nil {
-		t.Error("expected an error for an unknown key store")
+	connect = &keyStoreConnectCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: unknownKeyStoreID}
+	if err := connect.CmdRun(nil, nil); !errors.Is(err, v3.ErrNotFound) {
+		t.Errorf("expected not found for an unknown key store, got %v", err)
 	}
 }
 
@@ -50,22 +51,20 @@ func TestKeyStoreDelete(t *testing.T) {
 	api := newFakeKeyStoreAPI(t)
 	api.addKeyStore("my-xks", v3.GetKeyStoreResponseStatusDisconnected)
 
-	// Unknown key store without --force fails before deleting anything.
-	c := &keyStoreDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStores: []string{"unknown"}}
-	if err := c.CmdRun(nil, nil); err == nil {
-		t.Fatal("expected an error for an unknown key store")
-	}
-
-	// With --force, unknown key stores are skipped and known ones deleted.
-	c = &keyStoreDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
-		KeyStores:          []string{"unknown", "my-xks"},
-		Force:              true,
-	}
+	// --force skips the confirmation prompt.
+	c := &keyStoreDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: string(testKeyStoreID), Force: true}
 	if err := c.CmdRun(nil, nil); err != nil {
 		t.Fatalf("keystore delete: %v", err)
 	}
 	if _, ok := api.stores[testKeyStoreID]; ok {
 		t.Error("expected the key store to be deleted")
+	}
+	if want := []string{"delete"}; !slices.Equal(api.calls, want) {
+		t.Errorf("expected API calls %v, got %v", want, api.calls)
+	}
+
+	c = &keyStoreDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: unknownKeyStoreID, Force: true}
+	if err := c.CmdRun(nil, nil); !errors.Is(err, v3.ErrNotFound) {
+		t.Errorf("expected not found for an unknown key store, got %v", err)
 	}
 }

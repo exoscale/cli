@@ -1,26 +1,51 @@
 package keystore
 
 import (
+	"errors"
+	"slices"
+	"strings"
 	"testing"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func TestKeyStoreShowByNameOrID(t *testing.T) {
+func TestKeyStoreShowByID(t *testing.T) {
 	api := newFakeKeyStoreAPI(t)
 	api.addKeyStore("my-xks", v3.GetKeyStoreResponseStatusConnected)
 
-	for _, ref := range []string{"my-xks", string(testKeyStoreID)} {
-		c := &KeyStoreShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: ref}
-		if err := c.CmdRun(nil, nil); err != nil {
-			t.Fatalf("keystore get %s: %v", ref, err)
+	c := &KeyStoreShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: string(testKeyStoreID)}
+	if err := c.CmdRun(nil, nil); err != nil {
+		t.Fatalf("keystore show: %v", err)
+	}
+	if want := []string{"get"}; !slices.Equal(api.calls, want) {
+		t.Errorf("expected API calls %v, got %v", want, api.calls)
+	}
+
+	c = &KeyStoreShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: unknownKeyStoreID}
+	if err := c.CmdRun(nil, nil); !errors.Is(err, v3.ErrNotFound) {
+		t.Errorf("expected not found for an unknown key store, got %v", err)
+	}
+}
+
+func TestKeyStoreCommandsRejectInvalidID(t *testing.T) {
+	api := newFakeKeyStoreAPI(t)
+	settings := exocmd.DefaultCLICmdSettings()
+
+	for name, err := range map[string]error{
+		"get":        (&KeyStoreShowCmd{CliCommandSettings: settings, KeyStore: "my-xks"}).CmdRun(nil, nil),
+		"update":     (&keyStoreUpdateCmd{CliCommandSettings: settings, KeyStore: "my-xks", Description: "d"}).CmdRun(nil, nil),
+		"connect":    (&keyStoreConnectCmd{CliCommandSettings: settings, KeyStore: "my-xks"}).CmdRun(nil, nil),
+		"disconnect": (&keyStoreDisconnectCmd{CliCommandSettings: settings, KeyStore: "my-xks"}).CmdRun(nil, nil),
+		"delete":     (&keyStoreDeleteCmd{CliCommandSettings: settings, KeyStore: "my-xks", Force: true}).CmdRun(nil, nil),
+	} {
+		if err == nil || !strings.Contains(err.Error(), "invalid key store ID") {
+			t.Errorf("%s: expected an invalid key store ID error, got %v", name, err)
 		}
 	}
 
-	c := &KeyStoreShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: "unknown"}
-	if err := c.CmdRun(nil, nil); err == nil {
-		t.Fatal("expected an error for an unknown key store")
+	if len(api.calls) != 0 {
+		t.Fatalf("expected no API calls, got %v", api.calls)
 	}
 }
 

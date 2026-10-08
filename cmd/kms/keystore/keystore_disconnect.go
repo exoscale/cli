@@ -12,7 +12,7 @@ type keyStoreDisconnectCmd struct {
 
 	_ bool `cli-cmd:"disconnect"`
 
-	KeyStore string `cli-arg:"#" cli-usage:"NAME|ID"`
+	KeyStore string `cli-arg:"#" cli-usage:"ID"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
@@ -28,13 +28,13 @@ func (c *keyStoreDisconnectCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *keyStoreDisconnectCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exocmd.GContext
-	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	id, err := parseKeyStoreID(c.KeyStore)
 	if err != nil {
 		return err
 	}
 
-	id, err := resolveKeyStoreID(ctx, client, c.KeyStore)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}

@@ -14,7 +14,7 @@ type keyStoreUpdateCmd struct {
 
 	_ bool `cli-cmd:"update"`
 
-	KeyStore string `cli-arg:"#" cli-usage:"NAME|ID"`
+	KeyStore string `cli-arg:"#" cli-usage:"ID"`
 
 	Description string      `cli-short:"d" cli-usage:"key store description"`
 	Endpoint    string      `cli-short:"e" cli-usage:"public URL of the XKS proxy"`
@@ -34,6 +34,11 @@ func (c *keyStoreUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *keyStoreUpdateCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	id, err := parseKeyStoreID(c.KeyStore)
+	if err != nil {
+		return err
+	}
+
 	if (c.AccessKey == "") != (c.SecretKey == "") {
 		return fmt.Errorf("--access-key and --secret-key must be set together")
 	}
@@ -54,11 +59,6 @@ func (c *keyStoreUpdateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
-	if err != nil {
-		return err
-	}
-
-	id, err := resolveKeyStoreID(ctx, client, c.KeyStore)
 	if err != nil {
 		return err
 	}

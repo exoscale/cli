@@ -13,6 +13,9 @@ import (
 
 const testKeyStoreID = v3.UUID("2b1e4e2a-6b0c-4f5c-9d6e-6f1f0f3a7c11")
 
+// unknownKeyStoreID is a well-formed ID that the fake API does not know.
+const unknownKeyStoreID = "8f3e6a1c-2d4b-4c5e-9f7a-1b2c3d4e5f60"
+
 // fakeKeyStoreAPI is an in-memory key store API recording the calls it receives.
 type fakeKeyStoreAPI struct {
 	stores    map[v3.UUID]*v3.GetKeyStoreResponse

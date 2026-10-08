@@ -12,10 +12,10 @@ func TestKeyStoreUpdateValidation(t *testing.T) {
 	api.addKeyStore("my-xks", v3.GetKeyStoreResponseStatusConnected)
 
 	for name, c := range map[string]*keyStoreUpdateCmd{
-		"nothing to update":     {KeyStore: "my-xks"},
-		"access key alone":      {KeyStore: "my-xks", AccessKey: "ak"},
-		"secret key alone":      {KeyStore: "my-xks", SecretKey: "sk"},
-		"unknown key store ref": {KeyStore: "unknown", Description: "d"},
+		"nothing to update": {KeyStore: string(testKeyStoreID)},
+		"access key alone":  {KeyStore: string(testKeyStoreID), AccessKey: "ak"},
+		"secret key alone":  {KeyStore: string(testKeyStoreID), SecretKey: "sk"},
+		"unknown key store": {KeyStore: unknownKeyStoreID, Description: "d"},
 	} {
 		c.CliCommandSettings = exocmd.DefaultCLICmdSettings()
 		if err := c.CmdRun(nil, nil); err == nil {
@@ -34,7 +34,7 @@ func TestKeyStoreUpdate(t *testing.T) {
 
 	c := &keyStoreUpdateCmd{
 		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
-		KeyStore:           "my-xks",
+		KeyStore:           string(testKeyStoreID),
 		Description:        "new description",
 	}
 	if err := c.CmdRun(nil, nil); err != nil {
@@ -62,7 +62,7 @@ func TestKeyStoreUpdate(t *testing.T) {
 
 	c = &keyStoreUpdateCmd{
 		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
-		KeyStore:           "my-xks",
+		KeyStore:           string(testKeyStoreID),
 		Endpoint:           "https://xks3.example.com",
 	}
 	if err := c.CmdRun(nil, nil); err != nil {

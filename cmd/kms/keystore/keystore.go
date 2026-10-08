@@ -1,7 +1,7 @@
 package keystore
 
 import (
-	"context"
+	"fmt"
 
 	"github.com/exoscale/cli/cmd/kms"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -17,17 +17,11 @@ func init() {
 	kms.KMSCmd.AddCommand(Cmd)
 }
 
-// resolveKeyStoreID returns the ID of the key store matching nameOrID.
-func resolveKeyStoreID(ctx context.Context, client *v3.Client, nameOrID string) (v3.UUID, error) {
-	list, err := client.ListKeyStores(ctx)
+// parseKeyStoreID validates a key store ID. Key stores are referenced by ID only.
+func parseKeyStoreID(id string) (v3.UUID, error) {
+	uuid, err := v3.ParseUUID(id)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("invalid key store ID %q: %w", id, err)
 	}
-
-	entry, err := list.FindListKeyStoresResponseEntry(nameOrID)
-	if err != nil {
-		return "", err
-	}
-
-	return entry.ID, nil
+	return uuid, nil
 }

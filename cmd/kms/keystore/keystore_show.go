@@ -59,14 +59,14 @@ func newKeyStoreShowOutput(ks *v3.GetKeyStoreResponse) *KeyStoreShowOutput {
 type KeyStoreShowCmd struct {
 	exocmd.CliCommandSettings `cli-cmd:"-"`
 
-	_ bool `cli-cmd:"get"`
+	_ bool `cli-cmd:"show"`
 
-	KeyStore string `cli-arg:"#" cli-usage:"NAME|ID"`
+	KeyStore string `cli-arg:"#" cli-usage:"ID"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *KeyStoreShowCmd) CmdAliases() []string { return []string{"info", "show"} }
+func (c *KeyStoreShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 func (c *KeyStoreShowCmd) CmdShort() string     { return "Retrieve key store details" }
 func (c *KeyStoreShowCmd) CmdLong() string {
 	return "This command retrieves an external key store's details, including the latest health check of its XKS proxy."
@@ -77,13 +77,13 @@ func (c *KeyStoreShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *KeyStoreShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exocmd.GContext
-	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	id, err := parseKeyStoreID(c.KeyStore)
 	if err != nil {
 		return err
 	}
 
-	id, err := resolveKeyStoreID(ctx, client, c.KeyStore)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
