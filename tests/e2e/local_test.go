@@ -33,6 +33,11 @@ func TestAIServiceLocal(t *testing.T) {
 	runAPITestSuite(t, "scenarios/with-api/aiservices")
 }
 
+func TestAPIKMSLocal(t *testing.T) {
+	loadLocalCreds(t)
+	runAPITestSuite(t, "scenarios/with-api/kms")
+}
+
 func loadLocalCreds(t *testing.T) {
 	t.Helper()
 

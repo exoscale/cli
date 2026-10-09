@@ -6,6 +6,7 @@
 
 ### Features
 
+- kms: add `exo kms keystore` create/show/update/connect/disconnect/list/delete commands to manage external key stores
 - update exo x
 
 ### Bug fixes
@@ -17,6 +18,8 @@
 - storage: `download -r` now skips objects whose name would be written outside of the destination folder once the prefix is stripped (e.g. `public/../file` downloaded from `public/`) (#920)
 
 ### Improvements
+
+- deps: bump egoscale v3 to v3.1.59
 
 ## 1.102.0
 
