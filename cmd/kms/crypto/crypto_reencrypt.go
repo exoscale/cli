@@ -19,9 +19,11 @@ type cryptoReencryptCmd struct {
 	DestinationKey string `cli-arg:"#" cli-usage:"DEST_ID"`
 	Ciphertext     string `cli-arg:"#" cli-usage:"CIPHERTEXT"`
 
-	SourceEncryptionContext string      `cli-short:"s" cli-flag:"source-encryption-context" cli-usage:"encryption context to use for source ciphertext decryption"`
-	DestEncryptionContext   string      `cli-short:"d" cli-flag:"dest-encryption-context" cli-usage:"encryption context to use for destination ciphertext encryption"`
-	Zone                    v3.ZoneName `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
+	SourceEncryptionContext   string                                            `cli-short:"s" cli-flag:"source-encryption-context" cli-usage:"encryption context to use for source ciphertext decryption"`
+	DestEncryptionContext     string                                            `cli-short:"d" cli-flag:"dest-encryption-context" cli-usage:"encryption context to use for destination ciphertext encryption"`
+	SourceEncryptionAlgorithm v3.ReEncryptRequestSourceEncryptionAlgorithm      `cli-flag:"source-encryption-algorithm" cli-usage:"encryption algorithm of the source ciphertext, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
+	DestEncryptionAlgorithm   v3.ReEncryptRequestDestinationEncryptionAlgorithm `cli-flag:"dest-encryption-algorithm" cli-usage:"encryption algorithm for the destination ciphertext, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
+	Zone                      v3.ZoneName                                       `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
 }
 
 func (c *cryptoReencryptCmd) CmdAliases() []string { return nil }
@@ -51,8 +53,9 @@ func (c *cryptoReencryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 	source := &v3.ReEncryptRequestSource{
-		Ciphertext: decodedCipher,
-		Key:        v3.UUID(c.Key),
+		Ciphertext:          decodedCipher,
+		Key:                 v3.UUID(c.Key),
+		EncryptionAlgorithm: c.SourceEncryptionAlgorithm,
 	}
 
 	if cmd.Flags().Changed("source-encryption-context") {
@@ -64,7 +67,8 @@ func (c *cryptoReencryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	dest := &v3.ReEncryptRequestDestination{
-		Key: v3.UUID(c.DestinationKey),
+		Key:                 v3.UUID(c.DestinationKey),
+		EncryptionAlgorithm: c.DestEncryptionAlgorithm,
 	}
 
 	if cmd.Flags().Changed("dest-encryption-context") {
