@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -27,13 +26,13 @@ type cryptoVerifyCmd struct {
 
 	_ bool `cli-cmd:"verify"`
 
-	Key       string `cli-arg:"#" cli-usage:"ID"`
-	Message   string `cli-arg:"#" cli-usage:"MESSAGE_b64"`
-	Signature string `cli-arg:"#" cli-usage:"SIGNATURE_b64"`
+	Key              string                           `cli-arg:"#" cli-usage:"ID"`
+	Message          string                           `cli-arg:"#" cli-usage:"MESSAGE_b64"`
+	Signature        string                           `cli-arg:"#" cli-usage:"SIGNATURE_b64"`
+	SigningAlgorithm v3.VerifyRequestSigningAlgorithm `cli-arg:"#" cli-usage:"SIGNING_ALGORITHM"`
 
-	SigningAlgorithm v3.VerifyRequestSigningAlgorithm `cli-flag:"signing-algorithm" cli-usage:"signing algorithm the signature was produced with, required [RSASSA_PSS_SHA_256|RSASSA_PSS_SHA_384|RSASSA_PSS_SHA_512|ECDSA_SHA_256|ECDSA_SHA_384|ECDSA_SHA_512|EDDSA_ED25519|ED25519_PH_SHA_512|ML_DSA_SHAKE_256]"`
-	MessageType      v3.VerifyRequestMessageType      `cli-flag:"message-type" cli-usage:"how the message is interpreted [raw|digest] (default: raw)"`
-	Zone             v3.ZoneName                      `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
+	MessageType v3.VerifyRequestMessageType `cli-flag:"message-type" cli-usage:"how the message is interpreted [raw|digest] (default: raw)"`
+	Zone        v3.ZoneName                 `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
 }
 
 func (c *cryptoVerifyCmd) CmdAliases() []string { return nil }
@@ -43,7 +42,9 @@ func (c *cryptoVerifyCmd) CmdShort() string {
 }
 
 func (c *cryptoVerifyCmd) CmdLong() string {
-	return `Verify a base64-encoded signature against a base64-encoded message or digest with a KMS Key of usage "sign-verify".`
+	return `Verify a base64-encoded signature against a base64-encoded message or digest with a KMS Key of usage "sign-verify". The signing algorithm must be the one the signature was produced with.
+
+Supported signing algorithms: RSASSA_PSS_SHA_256, RSASSA_PSS_SHA_384, RSASSA_PSS_SHA_512, ECDSA_SHA_256, ECDSA_SHA_384, ECDSA_SHA_512, EDDSA_ED25519, ED25519_PH_SHA_512, ML_DSA_SHAKE_256`
 }
 
 func (c *cryptoVerifyCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -56,10 +57,6 @@ func (c *cryptoVerifyCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
-	}
-
-	if c.SigningAlgorithm == "" {
-		return errors.New("--signing-algorithm is required")
 	}
 
 	message, err := base64.StdEncoding.DecodeString(c.Message)

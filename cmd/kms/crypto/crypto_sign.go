@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -27,12 +26,12 @@ type cryptoSignCmd struct {
 
 	_ bool `cli-cmd:"sign"`
 
-	Key     string `cli-arg:"#" cli-usage:"ID"`
-	Message string `cli-arg:"#" cli-usage:"MESSAGE_b64"`
+	Key              string                         `cli-arg:"#" cli-usage:"ID"`
+	Message          string                         `cli-arg:"#" cli-usage:"MESSAGE_b64"`
+	SigningAlgorithm v3.SignRequestSigningAlgorithm `cli-arg:"#" cli-usage:"SIGNING_ALGORITHM"`
 
-	SigningAlgorithm v3.SignRequestSigningAlgorithm `cli-flag:"signing-algorithm" cli-usage:"signing algorithm, required [RSASSA_PSS_SHA_256|RSASSA_PSS_SHA_384|RSASSA_PSS_SHA_512|ECDSA_SHA_256|ECDSA_SHA_384|ECDSA_SHA_512|EDDSA_ED25519|ED25519_PH_SHA_512|ML_DSA_SHAKE_256]"`
-	MessageType      v3.SignRequestMessageType      `cli-flag:"message-type" cli-usage:"how the message is interpreted [raw|digest] (default: raw)"`
-	Zone             v3.ZoneName                    `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
+	MessageType v3.SignRequestMessageType `cli-flag:"message-type" cli-usage:"how the message is interpreted [raw|digest] (default: raw)"`
+	Zone        v3.ZoneName               `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
 }
 
 func (c *cryptoSignCmd) CmdAliases() []string { return nil }
@@ -42,7 +41,9 @@ func (c *cryptoSignCmd) CmdShort() string {
 }
 
 func (c *cryptoSignCmd) CmdLong() string {
-	return `Sign a base64-encoded message or digest with a KMS Key of usage "sign-verify". The signing algorithm must match the key spec of the KMS Key.`
+	return `Sign a base64-encoded message or digest with a KMS Key of usage "sign-verify". The signing algorithm must match the key spec of the KMS Key.
+
+Supported signing algorithms: RSASSA_PSS_SHA_256, RSASSA_PSS_SHA_384, RSASSA_PSS_SHA_512, ECDSA_SHA_256, ECDSA_SHA_384, ECDSA_SHA_512, EDDSA_ED25519, ED25519_PH_SHA_512, ML_DSA_SHAKE_256`
 }
 
 func (c *cryptoSignCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -55,10 +56,6 @@ func (c *cryptoSignCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
-	}
-
-	if c.SigningAlgorithm == "" {
-		return errors.New("--signing-algorithm is required")
 	}
 
 	message, err := base64.StdEncoding.DecodeString(c.Message)
