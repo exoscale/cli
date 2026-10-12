@@ -58,7 +58,7 @@ docker: ## Builds a Docker image containing the exo CLI
 		-t exoscale/cli \
 		--build-arg VERSION="${VERSION}" \
 		--build-arg VCS_REF="${GIT_REVISION}" \
-		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%m:%SZ")" \
+		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")" \
 		.
 	docker tag exoscale/cli:latest exoscale/cli:${VERSION}
 
