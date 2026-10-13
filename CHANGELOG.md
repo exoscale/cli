@@ -9,6 +9,11 @@
 - client: when no API endpoint is configured, zone lookups fall back to the other zones if `ch-gva-2` is unavailable; a configured endpoint is used as is (#931)
 - deps: bump egoscale v3 to use `ZoneEndpoints` (#931, exoscale/egoscale#832)
 
+### Bug fixes
+
+- sks: `sks list` and `sks nodepool list` with `--zone` now fill the zone column, as does `blockstorage snapshot list` (#931)
+- list commands: `--zone` now finds zones only enabled for some organizations (#931)
+
 ## 1.102.1
 
 ### Breaking changes

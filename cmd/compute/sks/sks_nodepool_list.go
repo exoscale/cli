@@ -12,7 +12,6 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/pkg/zonelookup"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -57,18 +56,9 @@ func runSksNodepoolList(c *sksNodepoolListCmd, stdout, stderr io.Writer) error {
 	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
-	resp, err := zonelookup.ListZones(ctx, client)
+	zones, err := utils.AllZonesV3(ctx, client, c.Zone)
 	if err != nil {
 		return err
-	}
-	zones := resp.Zones
-
-	if c.Zone != "" {
-		endpoint, err := zonelookup.GetZoneAPIEndpoint(ctx, client, c.Zone)
-		if err != nil {
-			return err
-		}
-		zones = []v3.Zone{{APIEndpoint: endpoint}}
 	}
 
 	sink := utils.NewWarningSinkTo(stderr)

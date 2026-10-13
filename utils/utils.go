@@ -36,22 +36,23 @@ var (
 	}
 )
 
+// AllZonesV3 returns every zone, or only zoneName when it is set.
 func AllZonesV3(ctx context.Context, client *v3.Client, zoneName v3.ZoneName) ([]v3.Zone, error) {
+	if zoneName != "" {
+		// Unlike the public zone list, this also finds zones only enabled for some organizations.
+		endpoint, err := zonelookup.GetZoneAPIEndpoint(ctx, client, zoneName)
+		if err != nil {
+			return nil, err
+		}
+		return []v3.Zone{{Name: zoneName, APIEndpoint: endpoint}}, nil
+	}
+
 	resp, err := zonelookup.ListZones(ctx, client)
 	if err != nil {
 		return nil, err
 	}
-	zones := resp.Zones
 
-	if zoneName != "" {
-		zone, err := resp.FindZone(string(zoneName))
-		if err != nil {
-			return nil, fmt.Errorf("get zone api endpoint: find zone: %w", err)
-		}
-		zones = []v3.Zone{zone}
-	}
-
-	return zones, nil
+	return resp.Zones, nil
 }
 
 const (
