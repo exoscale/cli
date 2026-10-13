@@ -18,6 +18,8 @@ import (
 	"github.com/hashicorp/go-multierror"
 
 	v3 "github.com/exoscale/egoscale/v3"
+
+	"github.com/exoscale/cli/pkg/zonelookup"
 )
 
 var (
@@ -35,7 +37,7 @@ var (
 )
 
 func AllZonesV3(ctx context.Context, client *v3.Client, zoneName v3.ZoneName) ([]v3.Zone, error) {
-	resp, err := client.ListZones(ctx)
+	resp, err := zonelookup.ListZones(ctx, client)
 	if err != nil {
 		return nil, err
 	}

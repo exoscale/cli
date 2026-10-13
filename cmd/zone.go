@@ -9,6 +9,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/zonelookup"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -47,7 +48,7 @@ func listZones() (output.Outputter, error) {
 	ctx := GContext
 	client := globalstate.EgoscaleV3Client
 
-	zones, err := client.ListZones(ctx)
+	zones, err := zonelookup.ListZones(ctx, client)
 	if err != nil {
 		return nil, err
 	}
