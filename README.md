@@ -56,6 +56,12 @@ name. Each account supports these parameters:
 
 The current configuration and configuration file path can be shown with `exo config show`.
 
+When no `endpoint` is configured, the CLI looks up the zone list on `ch-gva-2`
+first, then on the other zones if `ch-gva-2` is unavailable. A configured
+`endpoint` (or `EXOSCALE_API_ENDPOINT`) is always used as is, without fallback:
+set it to pin the zone the CLI starts from, for example
+`endpoint = "https://api-ch-dk-2.exoscale.com/v2"`.
+
 ### Environment variables
 
 Command-line flags take precedence over environment variables. Environment

@@ -26,8 +26,7 @@ func buildClient() {
 		account.CurrentAccount.APISecret(),
 	)
 
-	clientV3, err := v3.NewClient(
-		creds,
+	opts := []v3.ClientOpt{
 		v3.ClientOptWithRequestInterceptors(func(ctx context.Context, req *http.Request) error {
 			for k, v := range account.CurrentAccount.CustomHeaders {
 				req.Header.Add(k, v)
@@ -36,13 +35,23 @@ func buildClient() {
 			return nil
 		}),
 		v3.ClientOptWithUserAgent(fmt.Sprintf("exocli/%s/%s", globalstate.GitVersion, globalstate.GitCommit)),
-	)
-	if err != nil {
-		panic(fmt.Sprintf("unable to initialize Exoscale API V3 client: %v", err))
 	}
 
+	// An endpoint set in the profile or EXOSCALE_API_ENDPOINT is an explicit
+	// choice (e.g. preprod or another zone): it is used as is, without fallback.
 	if account.CurrentAccount.Endpoint != "" {
-		clientV3 = clientV3.WithEndpoint(v3.Endpoint(account.CurrentAccount.Endpoint))
+		opts = append(opts, v3.ClientOptWithEndpoint(v3.Endpoint(account.CurrentAccount.Endpoint)))
+	} else {
+		httpClient, err := newZoneListFallbackHTTPClient()
+		if err != nil {
+			panic(fmt.Sprintf("unable to initialize Exoscale API V3 client: %v", err))
+		}
+		opts = append(opts, v3.ClientOptWithHTTPClient(httpClient))
+	}
+
+	clientV3, err := v3.NewClient(creds, opts...)
+	if err != nil {
+		panic(fmt.Sprintf("unable to initialize Exoscale API V3 client: %v", err))
 	}
 
 	if v := os.Getenv("EXOSCALE_TRACE"); v != "" {

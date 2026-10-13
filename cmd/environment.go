@@ -56,6 +56,12 @@ Command-line flags take precedence over environment variables, which take
 precedence over the selected configuration profile. To override profile API
 credentials, both EXOSCALE_API_KEY and EXOSCALE_API_SECRET must be set.
 
+When no API endpoint is configured, the zone list is looked up on ch-gva-2
+first, then on the other zones if it is unavailable. A configured endpoint
+(EXOSCALE_API_ENDPOINT or the profile "endpoint" setting) is always used as is,
+without fallback: set it to pin the zone the CLI starts from, e.g.
+EXOSCALE_API_ENDPOINT=https://api-ch-dk-2.exoscale.com/v2
+
 Compatibility aliases:
   * API key: EXOSCALE_KEY, CLOUDSTACK_KEY, CLOUDSTACK_API_KEY
   * API secret: EXOSCALE_SECRET, EXOSCALE_SECRET_KEY, CLOUDSTACK_SECRET,
