@@ -5,6 +5,8 @@
 ### Improvements
 
 - Upgrade go.mk and goreleaser (#930)
+- Upgrade golang.org/x/net and related dependencies (#932)
+- Build with Go 1.27 (#932)
 
 
 ## 1.102.1
