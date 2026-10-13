@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -20,17 +22,20 @@ import (
 // endpoint doesn't hold the CLI before the next one is tried.
 const zoneListAttemptTimeout = 10 * time.Second
 
-// zoneListEndpoints lists the public API endpoints the zone list is looked up on,
-// in order, when no API endpoint is configured.
-var zoneListEndpoints = []v3.Endpoint{
-	v3.CHGva2,
-	v3.CHDk2,
-	v3.DEFra1,
-	v3.DEMuc1,
-	v3.ATVie1,
-	v3.ATVie2,
-	v3.BGSof1,
-	v3.HrZag1,
+// zoneListEndpoints returns the public API endpoints the zone list is looked up
+// on, in order, when no API endpoint is configured: the egoscale default
+// endpoint first, then the other zones sorted by name.
+func zoneListEndpoints() []v3.Endpoint {
+	zones := slices.Sorted(maps.Keys(v3.ZoneEndpoints))
+
+	endpoints := []v3.Endpoint{v3.CHGva2}
+	for _, z := range zones {
+		if e := v3.ZoneEndpoints[z]; e != v3.CHGva2 {
+			endpoints = append(endpoints, e)
+		}
+	}
+
+	return endpoints
 }
 
 // zoneListFallbackTransport sends the zone list request (GET /v2/zone) made on
@@ -53,7 +58,7 @@ func newZoneListFallbackHTTPClient() (*http.Client, error) {
 	rc := retryablehttp.NewClient()
 	rc.Logger = nil
 
-	transport, err := newZoneListFallbackTransport(rc.StandardClient().Transport, zoneListEndpoints)
+	transport, err := newZoneListFallbackTransport(rc.StandardClient().Transport, zoneListEndpoints())
 	if err != nil {
 		return nil, err
 	}

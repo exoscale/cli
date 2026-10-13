@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"context"
+	"maps"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"sync/atomic"
 	"testing"
 
@@ -130,4 +132,11 @@ func TestZoneListFallback(t *testing.T) {
 		require.Error(t, err)
 		require.EqualValues(t, 0, hits.Load())
 	})
+}
+
+func TestZoneListEndpoints(t *testing.T) {
+	endpoints := zoneListEndpoints()
+
+	require.Equal(t, v3.CHGva2, endpoints[0])
+	require.ElementsMatch(t, slices.Collect(maps.Values(v3.ZoneEndpoints)), endpoints)
 }

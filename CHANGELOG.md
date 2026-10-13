@@ -7,6 +7,7 @@
 - Upgrade go.mk and goreleaser (#930)
 - deps: bump Go to 1.26.9 and golang.org/x/net to v0.60.0 to fix govulncheck findings (#933)
 - client: when no API endpoint is configured, zone lookups fall back to the other zones if `ch-gva-2` is unavailable; a configured endpoint is used as is (#931)
+- deps: bump egoscale v3 to use `ZoneEndpoints` (#931, exoscale/egoscale#832)
 
 ## 1.102.1
 
