@@ -9,6 +9,7 @@
 - client: when no API endpoint is configured, zone lookups are retried once on another zone if `ch-gva-2` fails; a configured endpoint is used as is (#931)
 - anti-affinity group, dns, iam api-key and ssh-key commands use the default zone endpoint like the other commands, instead of always `ch-gva-2` (#931)
 - deps: bump egoscale v3 to v3.1.60 to use `ZoneEndpoints` (#931)
+- build: publish arm64 OCI images (#934)
 
 ### Bug fixes
 
