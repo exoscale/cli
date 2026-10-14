@@ -1,11 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- dbaas: add `exo dbaas acl list` for Kafka and OpenSearch, `exo dbaas acl create` and `delete` for Kafka, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
+
 ## 1.103.2
 
 ### Bug fixes
 
 - ci: fix errors with multiarch OCI builds (#936)
-
 
 ## 1.103.1
 
