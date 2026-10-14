@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"log"
 	mathrand "math/rand/v2"
@@ -21,6 +22,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 )
 
 var (
@@ -58,24 +60,48 @@ func AllZonesV3(ctx context.Context, client *v3.Client, zoneName v3.ZoneName) ([
 
 // ListZonesV3 lists the zones, falling back to another zone like GetZoneAPIEndpointV3.
 func ListZonesV3(ctx context.Context, client *v3.Client) (*v3.ListZonesResponse, error) {
-	resp, err := client.ListZones(ctx)
-	if err != nil && account.CurrentAccount.Endpoint == "" {
-		resp, err = client.WithEndpoint(fallbackEndpoint()).ListZones(ctx)
-	}
-
-	return resp, err
+	return lookupZone(client, func(c *v3.Client) (*v3.ListZonesResponse, error) {
+		return c.ListZones(ctx)
+	})
 }
 
 // GetZoneAPIEndpointV3 returns the API endpoint of zone. When the lookup fails on
 // the default endpoint (ch-gva-2), it is retried once on another zone, unless an
 // API endpoint is configured: that one is then used as is.
 func GetZoneAPIEndpointV3(ctx context.Context, client *v3.Client, zone v3.ZoneName) (v3.Endpoint, error) {
-	endpoint, err := client.GetZoneAPIEndpoint(ctx, zone)
-	if err != nil && account.CurrentAccount.Endpoint == "" {
-		endpoint, err = client.WithEndpoint(fallbackEndpoint()).GetZoneAPIEndpoint(ctx, zone)
+	return lookupZone(client, func(c *v3.Client) (v3.Endpoint, error) {
+		return c.GetZoneAPIEndpoint(ctx, zone)
+	})
+}
+
+// lookupEndpoint is the zone endpoint a lookup fell back to: the next lookups go
+// there directly instead of waiting for ch-gva-2 again.
+var lookupEndpoint atomic.Pointer[v3.Endpoint]
+
+// lookupZone runs lookup on client, or on another zone if it fails and no API
+// endpoint is configured. A missing zone is missing everywhere: no retry then.
+func lookupZone[T any](client *v3.Client, lookup func(*v3.Client) (T, error)) (T, error) {
+	if account.CurrentAccount.Endpoint != "" {
+		return lookup(client)
+	}
+	if e := lookupEndpoint.Load(); e != nil {
+		return lookup(client.WithEndpoint(*e))
 	}
 
-	return endpoint, err
+	res, err := lookup(client)
+	if err == nil || errors.Is(err, v3.ErrNotFound) {
+		return res, err
+	}
+
+	e := fallbackEndpoint()
+	if res, err = lookup(client.WithEndpoint(e)); err == nil {
+		lookupEndpoint.Store(&e)
+		if !globalstate.Quiet {
+			fmt.Fprintf(os.Stderr, "warning: the default API endpoint is unavailable, zones are looked up on %s\n", e)
+		}
+	}
+
+	return res, err
 }
 
 // fallbackEndpoint returns a random zone endpoint other than the default one.
