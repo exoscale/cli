@@ -63,9 +63,6 @@ oci-image: ## Builds a local OCI image containing the exo CLI (dev/testing only)
 		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")" \
 		.
 
-docker-push: ## Pushes the Docker image to the public Docker registry
-	docker push exoscale/cli:latest && docker push exoscale/cli:${VERSION}
-
 .PHONY: release
 release:
 	$(MAKE) PROJECT_URL=$(PROJECT_URL) VERSION=$(VERSION) -f go.mk/public.mk release-default
