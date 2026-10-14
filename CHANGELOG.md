@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.103.2
 
 ### Bug fixes
 
