@@ -52,15 +52,16 @@ x-cmd: $(OAS_FILE) ## Generates code for "exo x" experimental subcommands
 	wget -q https://api-ch-gva-2.exoscale.com/v2/openapi.json
 	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go $(OAS_FILE)
 
-.PHONY: docker
-docker: ## Builds a Docker image containing the exo CLI
-	docker build  \
-		-t exoscale/cli \
+# Only used for development. Release images are built and published by goreleaser.
+.PHONY: oci-image
+oci-image: ## Builds a local OCI image containing the exo CLI (dev/testing only)
+	docker build \
+		-t exoscale/cli:latest \
+		-t exoscale/cli:${VERSION} \
 		--build-arg VERSION="${VERSION}" \
 		--build-arg VCS_REF="${GIT_REVISION}" \
 		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")" \
 		.
-	docker tag exoscale/cli:latest exoscale/cli:${VERSION}
 
 docker-push: ## Pushes the Docker image to the public Docker registry
 	docker push exoscale/cli:latest && docker push exoscale/cli:${VERSION}
