@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Bug fixes
+
+- ci: fix errors with multiarch OCI builds (#936)
+
+
 ## 1.103.1
 
 ### Improvements
