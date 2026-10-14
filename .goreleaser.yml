@@ -111,6 +111,9 @@ dockers_v2:
       - "{{ .Major }}"
       - "{{ .Major }}.{{ .Minor }}"
       - "{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+    sbom: false
+    flags:
+      - "--provenance=false"
     platforms:
       - linux/amd64
       - linux/arm64
