@@ -1,10 +1,10 @@
 # Test: dbaas acl create/list/show/delete on a Kafka service
-# Covers topic and Schema Registry entries, the --permission selector of
-# delete, and the unsupported update.
+# Covers topic and Schema Registry entries and the --permission selector of
+# delete.
 # TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
 
 # Create a Kafka service (disable termination protection for cleanup)
-exec exo --zone $TEST_ZONE --output-format json dbaas create kafka startup-2 kafka-acl-$TEST_RUN_ID --kafka-enable-schema-registry --termination-protection=false
+exec exo --zone $TEST_ZONE --output-format json dbaas create kafka startup-4 kafka-acl-$TEST_RUN_ID --kafka-enable-schema-registry --termination-protection=false
 
 # Wait for the service to be running
 wait-dbaas-state $TEST_ZONE kafka-acl-$TEST_RUN_ID running 1200
@@ -28,10 +28,6 @@ stdout '"kind":"schema-registry"'
 stdout '"permission":"schema_registry_read"'
 exec exo --zone $TEST_ZONE dbaas acl show kafka-acl-$TEST_RUN_ID
 stdout 'acluser'
-
-# Kafka entries cannot be updated
-! exec exo --zone $TEST_ZONE dbaas acl update kafka-acl-$TEST_RUN_ID --opensearch-acl-enabled
-stderr 'unsupported'
 
 # Two entries match the user and topic: --permission is needed
 ! exec exo --zone $TEST_ZONE dbaas acl delete kafka-acl-$TEST_RUN_ID acluser --kafka-topic orders -f

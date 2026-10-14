@@ -21,27 +21,22 @@ type dbaasAclDeleteCmd struct {
 	Username string `cli-arg:"#" cli-usage:"USERNAME"`
 
 	Force      bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Permission string `cli-usage:"only delete the kafka entry granting this permission"`
+	Permission string `cli-usage:"only delete the entry granting this permission"`
 	Zone       string `cli-short:"z" cli-usage:"Database Service zone"`
 
 	// "kafka" type specific flags
 	KafkaTopic                  string `cli-flag:"kafka-topic" cli-usage:"Kafka topic name or pattern of the entry to delete"`
 	KafkaSchemaRegistryResource string `cli-flag:"kafka-schema-registry-resource" cli-usage:"Kafka Schema Registry resource name or pattern of the entry to delete"`
-
-	// "opensearch" type specific flags
-	OpensearchIndex string `cli-flag:"opensearch-index" cli-usage:"OpenSearch index pattern of the entry to delete (default: all the entries of the user)"`
 }
 
 func (c *dbaasAclDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
 func (c *dbaasAclDeleteCmd) CmdShort() string     { return "Delete an ACL entry of a Database Service" }
 func (c *dbaasAclDeleteCmd) CmdLong() string {
-	return `This command deletes an ACL entry of a user of a Kafka or OpenSearch
-Database Service.
+	return `This command deletes an ACL entry of a user of a Kafka Database Service.
 
-A Kafka entry is selected by its topic (--kafka-topic) or its Schema Registry
+The entry is selected by its topic (--kafka-topic) or its Schema Registry
 resource (--kafka-schema-registry-resource), and by --permission if the user
-has several entries for it. For an OpenSearch service, all the entries of the
-user are deleted unless --opensearch-index is set.`
+has several entries for it.`
 }
 
 func (c *dbaasAclDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -62,14 +57,11 @@ func (c *dbaasAclDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	switch dbType {
-	case "kafka":
-		return c.deleteKafka(ctx, client)
-	case "opensearch":
-		return c.deleteOpensearch(ctx, client)
-	default:
+	if dbType != "kafka" {
 		return fmt.Errorf("deleting ACL entries unsupported for service of type %q", dbType)
 	}
+
+	return c.deleteKafka(ctx, client)
 }
 
 func (c *dbaasAclDeleteCmd) confirm(ctx context.Context) bool {
@@ -80,7 +72,7 @@ func (c *dbaasAclDeleteCmd) confirm(ctx context.Context) bool {
 	return utils.AskQuestion(
 		ctx,
 		fmt.Sprintf(
-			"Are you sure you want to delete the ACL of user %q from service %q?",
+			"Are you sure you want to delete the ACL entry of user %q from service %q?",
 			c.Username,
 			c.Name,
 		),
@@ -140,50 +132,6 @@ func (c *dbaasAclDeleteCmd) deleteKafka(ctx context.Context, client *v3.Client) 
 	})
 
 	return err
-}
-
-func (c *dbaasAclDeleteCmd) deleteOpensearch(ctx context.Context, client *v3.Client) error {
-	config, err := client.GetDBAASOpensearchAclConfig(ctx, c.Name)
-	if err != nil {
-		return err
-	}
-
-	found := false
-	acls := make([]v3.DBAASOpensearchAclConfigAcls, 0, len(config.Acls))
-	for _, acl := range config.Acls {
-		if string(acl.Username) != c.Username {
-			acls = append(acls, acl)
-			continue
-		}
-
-		if c.OpensearchIndex == "" {
-			found = true
-			continue
-		}
-
-		rules := make([]v3.DBAASOpensearchAclConfigAclsRules, 0, len(acl.Rules))
-		for _, r := range acl.Rules {
-			if r.Index == c.OpensearchIndex {
-				found = true
-				continue
-			}
-			rules = append(rules, r)
-		}
-		if len(rules) > 0 {
-			acl.Rules = rules
-			acls = append(acls, acl)
-		}
-	}
-	if !found {
-		return fmt.Errorf("no matching ACL entry found for user %q in service %q", c.Username, c.Name)
-	}
-
-	if !c.confirm(ctx) {
-		return nil
-	}
-
-	config.Acls = acls
-	return updateOpensearchAclConfig(ctx, client, c.Name, *config, fmt.Sprintf("Deleting ACL entry of user %q", c.Username))
 }
 
 func init() {

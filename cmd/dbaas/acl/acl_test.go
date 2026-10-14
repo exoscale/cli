@@ -24,8 +24,6 @@ type aclTestServerOpts struct {
 
 	// Requests received by the server, as "METHOD PATH".
 	Requests []string
-	// Last OpenSearch ACL configuration sent to the server.
-	OpensearchAclUpdate *v3.DBAASOpensearchAclConfig
 	// Last Kafka ACL entries sent to the server.
 	KafkaTopicAclCreate          *v3.DBAASKafkaTopicAclEntry
 	KafkaSchemaRegistryAclCreate *v3.DBAASKafkaSchemaRegistryAclEntry
@@ -101,16 +99,11 @@ func setupAclTestServer(t *testing.T, opts *aclTestServerOpts) *httptest.Server 
 	})
 
 	mux.HandleFunc("/dbaas-opensearch/"+opts.ServiceName+"/acl-config", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			testutils.WriteJSON(t, w, http.StatusOK, opts.OpensearchAcl)
-		case http.MethodPut:
-			opts.OpensearchAclUpdate = &v3.DBAASOpensearchAclConfig{}
-			require.NoError(t, json.NewDecoder(r.Body).Decode(opts.OpensearchAclUpdate))
-			writeOperation(w)
-		default:
+		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
 		}
+		testutils.WriteJSON(t, w, http.StatusOK, opts.OpensearchAcl)
 	})
 
 	ts := httptest.NewUnstartedServer(mux)
@@ -140,7 +133,6 @@ func runAclCmd(t *testing.T, args ...string) error {
 		&dbaasAclListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()},
 		&dbaasAclCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()},
 		&dbaasAclDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()},
-		&dbaasAclUpdateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()},
 	} {
 		require.NoError(t, exocmd.RegisterCLICommand(aclCmd, c))
 	}
@@ -337,62 +329,18 @@ func TestDBAASAclCreate(t *testing.T) {
 		require.Empty(t, opts.Requests)
 	})
 
-	t.Run("opensearch new user", func(t *testing.T) {
-		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "opensearch", OpensearchAcl: testOpensearchAcl()}
-		ts := setupAclTestServer(t, opts)
-		defer ts.Close()
+	for _, dbType := range []string{"clickhouse", "opensearch"} {
+		t.Run("unsupported type "+dbType, func(t *testing.T) {
+			opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: dbType}
+			ts := setupAclTestServer(t, opts)
+			defer ts.Close()
 
-		testutils.SetupV3Client(t, ts.URL)
+			testutils.SetupV3Client(t, ts.URL)
 
-		require.NoError(t, runAclCmd(t, "create", "testdb", "carol", "--opensearch-index", "logs-*", "--permission", "deny"))
-
-		want := testOpensearchAcl()
-		want.Acls = append(want.Acls, v3.DBAASOpensearchAclConfigAcls{
-			Username: "carol",
-			Rules:    []v3.DBAASOpensearchAclConfigAclsRules{{Index: "logs-*", Permission: v3.EnumOpensearchRulePermissionDeny}},
+			require.ErrorContains(t, runAclCmd(t, "create", "testdb", "carol", "--permission", "read"),
+				`unsupported for service of type "`+dbType+`"`)
 		})
-		require.Equal(t, &want, opts.OpensearchAclUpdate)
-	})
-
-	t.Run("opensearch existing user", func(t *testing.T) {
-		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "opensearch", OpensearchAcl: testOpensearchAcl()}
-		ts := setupAclTestServer(t, opts)
-		defer ts.Close()
-
-		testutils.SetupV3Client(t, ts.URL)
-
-		require.NoError(t, runAclCmd(t, "create", "testdb", "bob", "--opensearch-index", "logs-*", "--permission", "read"))
-
-		want := testOpensearchAcl()
-		want.Acls[1].Rules = append(want.Acls[1].Rules,
-			v3.DBAASOpensearchAclConfigAclsRules{Index: "logs-*", Permission: v3.EnumOpensearchRulePermissionRead})
-		require.Equal(t, &want, opts.OpensearchAclUpdate)
-	})
-
-	t.Run("opensearch existing entry", func(t *testing.T) {
-		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "opensearch", OpensearchAcl: testOpensearchAcl()}
-		ts := setupAclTestServer(t, opts)
-		defer ts.Close()
-
-		testutils.SetupV3Client(t, ts.URL)
-
-		require.ErrorContains(t,
-			runAclCmd(t, "create", "testdb", "alice", "--opensearch-index", "logs-*", "--permission", "write"),
-			"already exists")
-		require.ErrorContains(t, runAclCmd(t, "create", "testdb", "alice", "--permission", "write"), "--opensearch-index is required")
-		require.Nil(t, opts.OpensearchAclUpdate)
-	})
-
-	t.Run("unsupported type", func(t *testing.T) {
-		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "clickhouse"}
-		ts := setupAclTestServer(t, opts)
-		defer ts.Close()
-
-		testutils.SetupV3Client(t, ts.URL)
-
-		require.ErrorContains(t, runAclCmd(t, "create", "testdb", "carol", "--permission", "read"),
-			`unsupported for service of type "clickhouse"`)
-	})
+	}
 }
 
 func TestDBAASAclDelete(t *testing.T) {
@@ -433,115 +381,14 @@ func TestDBAASAclDelete(t *testing.T) {
 		}
 	})
 
-	t.Run("opensearch user", func(t *testing.T) {
+	t.Run("opensearch unsupported", func(t *testing.T) {
 		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "opensearch", OpensearchAcl: testOpensearchAcl()}
 		ts := setupAclTestServer(t, opts)
 		defer ts.Close()
 
 		testutils.SetupV3Client(t, ts.URL)
 
-		require.NoError(t, runAclCmd(t, "delete", "testdb", "alice", "--force"))
-
-		want := testOpensearchAcl()
-		want.Acls = want.Acls[1:]
-		require.Equal(t, &want, opts.OpensearchAclUpdate)
-	})
-
-	t.Run("opensearch index", func(t *testing.T) {
-		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "opensearch", OpensearchAcl: testOpensearchAcl()}
-		ts := setupAclTestServer(t, opts)
-		defer ts.Close()
-
-		testutils.SetupV3Client(t, ts.URL)
-
-		require.NoError(t, runAclCmd(t, "delete", "testdb", "alice", "--opensearch-index", "logs-*", "--force"))
-
-		want := testOpensearchAcl()
-		want.Acls[0].Rules = want.Acls[0].Rules[1:]
-		require.Equal(t, &want, opts.OpensearchAclUpdate)
-	})
-
-	t.Run("opensearch last index of a user", func(t *testing.T) {
-		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "opensearch", OpensearchAcl: testOpensearchAcl()}
-		ts := setupAclTestServer(t, opts)
-		defer ts.Close()
-
-		testutils.SetupV3Client(t, ts.URL)
-
-		require.NoError(t, runAclCmd(t, "delete", "testdb", "bob", "--opensearch-index", "*", "--force"))
-
-		want := testOpensearchAcl()
-		want.Acls = want.Acls[:1]
-		require.Equal(t, &want, opts.OpensearchAclUpdate)
-	})
-
-	t.Run("opensearch no match", func(t *testing.T) {
-		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "opensearch", OpensearchAcl: testOpensearchAcl()}
-		ts := setupAclTestServer(t, opts)
-		defer ts.Close()
-
-		testutils.SetupV3Client(t, ts.URL)
-
-		require.ErrorContains(t, runAclCmd(t, "delete", "testdb", "carol", "--force"), "no matching ACL entry")
-		require.ErrorContains(t, runAclCmd(t, "delete", "testdb", "alice", "--opensearch-index", "nope", "--force"), "no matching ACL entry")
-		require.Nil(t, opts.OpensearchAclUpdate)
-	})
-}
-
-func TestDBAASAclUpdate(t *testing.T) {
-	t.Run("opensearch permission", func(t *testing.T) {
-		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "opensearch", OpensearchAcl: testOpensearchAcl()}
-		ts := setupAclTestServer(t, opts)
-		defer ts.Close()
-
-		testutils.SetupV3Client(t, ts.URL)
-
-		require.NoError(t, runAclCmd(t, "update", "testdb", "alice", "--opensearch-index", "logs-*", "--permission", "readwrite"))
-
-		want := testOpensearchAcl()
-		want.Acls[0].Rules[0].Permission = v3.EnumOpensearchRulePermissionReadwrite
-		require.Equal(t, &want, opts.OpensearchAclUpdate)
-	})
-
-	t.Run("opensearch toggles", func(t *testing.T) {
-		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "opensearch", OpensearchAcl: testOpensearchAcl()}
-		ts := setupAclTestServer(t, opts)
-		defer ts.Close()
-
-		testutils.SetupV3Client(t, ts.URL)
-
-		require.NoError(t, runAclCmd(t, "update", "testdb", "--opensearch-acl-enabled=false", "--opensearch-extended-acl-enabled"))
-
-		want := testOpensearchAcl()
-		disabled, enabled := false, true
-		want.AclEnabled = &disabled
-		want.ExtendedAclEnabled = &enabled
-		require.Equal(t, &want, opts.OpensearchAclUpdate)
-	})
-
-	t.Run("opensearch invalid", func(t *testing.T) {
-		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "opensearch", OpensearchAcl: testOpensearchAcl()}
-		ts := setupAclTestServer(t, opts)
-		defer ts.Close()
-
-		testutils.SetupV3Client(t, ts.URL)
-
-		require.ErrorContains(t, runAclCmd(t, "update", "testdb"), "nothing to update")
-		require.ErrorContains(t, runAclCmd(t, "update", "testdb", "alice", "--permission", "read"), "must be specified together")
-		require.ErrorContains(t,
-			runAclCmd(t, "update", "testdb", "alice", "--opensearch-index", "nope", "--permission", "read"),
-			"no ACL entry found")
-		require.Nil(t, opts.OpensearchAclUpdate)
-	})
-
-	t.Run("kafka", func(t *testing.T) {
-		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "kafka", KafkaAcls: testKafkaAcls()}
-		ts := setupAclTestServer(t, opts)
-		defer ts.Close()
-
-		testutils.SetupV3Client(t, ts.URL)
-
-		require.ErrorContains(t, runAclCmd(t, "update", "testdb", "--opensearch-acl-enabled"), `unsupported for service of type "kafka"`)
+		require.ErrorContains(t, runAclCmd(t, "delete", "testdb", "alice", "--force"), `unsupported for service of type "opensearch"`)
 		require.Empty(t, opts.Requests)
 	})
 }
