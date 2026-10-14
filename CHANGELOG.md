@@ -7,7 +7,7 @@
 - kms: add `exo kms crypto sign`, `exo kms crypto verify` and `exo kms key get-public-key`, and a `--key-spec` flag on `exo kms key create` to create asymmetric keys
 - kms: add `--encryption-algorithm` to `exo kms crypto encrypt` and `decrypt`, and `--source-encryption-algorithm` and `--dest-encryption-algorithm` to `reencrypt`, to use RSA keys
 - kms: show the key spec in `exo kms key show` and `exo kms key list`
-- dbaas: add `exo dbaas acl` list/create/delete/update commands for Kafka and OpenSearch, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
+- dbaas: add `exo dbaas acl list` for Kafka and OpenSearch, `exo dbaas acl create` and `delete` for Kafka, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
 
 ## 1.103.2
 
