@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -21,6 +22,7 @@ type dbaasAclDeleteCmd struct {
 	Username string `cli-arg:"#" cli-usage:"USERNAME"`
 
 	Force      bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	ID         string `cli-usage:"ID of the entry to delete, as shown by \"exo dbaas acl list\""`
 	Permission string `cli-usage:"only delete the entry granting this permission"`
 	Zone       string `cli-short:"z" cli-usage:"Database Service zone"`
 
@@ -34,9 +36,10 @@ func (c *dbaasAclDeleteCmd) CmdShort() string     { return "Delete an ACL entry 
 func (c *dbaasAclDeleteCmd) CmdLong() string {
 	return `This command deletes an ACL entry of a user of a Kafka Database Service.
 
-The entry is selected by its topic (--kafka-topic) or its Schema Registry
-resource (--kafka-schema-registry-resource), and by --permission if the user
-has several entries for it.`
+The entry is selected by its ID (--id, as shown by "exo dbaas acl list"), or
+by its topic (--kafka-topic) or its Schema Registry resource
+(--kafka-schema-registry-resource), and by --permission if the user has
+several entries for it.`
 }
 
 func (c *dbaasAclDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -80,8 +83,12 @@ func (c *dbaasAclDeleteCmd) confirm(ctx context.Context) bool {
 }
 
 func (c *dbaasAclDeleteCmd) deleteKafka(ctx context.Context, client *v3.Client) error {
-	if (c.KafkaTopic == "") == (c.KafkaSchemaRegistryResource == "") {
-		return errors.New("exactly one of --kafka-topic or --kafka-schema-registry-resource is required for a kafka service")
+	if c.ID != "" {
+		if c.KafkaTopic != "" || c.KafkaSchemaRegistryResource != "" || c.Permission != "" {
+			return errors.New("--id can't be used with --kafka-topic, --kafka-schema-registry-resource or --permission")
+		}
+	} else if (c.KafkaTopic == "") == (c.KafkaSchemaRegistryResource == "") {
+		return errors.New("exactly one of --id, --kafka-topic or --kafka-schema-registry-resource is required for a kafka service")
 	}
 
 	acls, err := client.GetDBAASKafkaAclConfig(ctx, c.Name)
@@ -89,28 +96,29 @@ func (c *dbaasAclDeleteCmd) deleteKafka(ctx context.Context, client *v3.Client) 
 		return err
 	}
 
-	var ids []string
-	if c.KafkaTopic != "" {
-		for _, acl := range acls.TopicAcl {
-			if acl.Username == c.Username && acl.Topic == c.KafkaTopic &&
-				(c.Permission == "" || string(acl.Permission) == c.Permission) {
-				ids = append(ids, string(acl.ID))
-			}
+	var topicIDs, schemaRegistryIDs []string
+	for _, acl := range acls.TopicAcl {
+		if acl.Username == c.Username && (c.ID != "" && string(acl.ID) == c.ID ||
+			c.KafkaTopic != "" && acl.Topic == c.KafkaTopic &&
+				(c.Permission == "" || string(acl.Permission) == c.Permission)) {
+			topicIDs = append(topicIDs, string(acl.ID))
 		}
-	} else {
-		for _, acl := range acls.SchemaRegistryAcl {
-			if acl.Username == c.Username && acl.Resource == c.KafkaSchemaRegistryResource &&
-				(c.Permission == "" || string(acl.Permission) == c.Permission) {
-				ids = append(ids, string(acl.ID))
-			}
+	}
+	for _, acl := range acls.SchemaRegistryAcl {
+		if acl.Username == c.Username && (c.ID != "" && string(acl.ID) == c.ID ||
+			c.KafkaSchemaRegistryResource != "" && acl.Resource == c.KafkaSchemaRegistryResource &&
+				(c.Permission == "" || string(acl.Permission) == c.Permission)) {
+			schemaRegistryIDs = append(schemaRegistryIDs, string(acl.ID))
 		}
 	}
 
+	ids := append(append([]string{}, topicIDs...), schemaRegistryIDs...)
 	switch {
 	case len(ids) == 0:
 		return fmt.Errorf("no matching ACL entry found for user %q in service %q", c.Username, c.Name)
 	case len(ids) > 1:
-		return fmt.Errorf("%d ACL entries match for user %q, use --permission to select one", len(ids), c.Username)
+		return fmt.Errorf("%d ACL entries match for user %q (%s), use --permission or --id to select one",
+			len(ids), c.Username, strings.Join(ids, ", "))
 	}
 
 	if !c.confirm(ctx) {
@@ -118,7 +126,7 @@ func (c *dbaasAclDeleteCmd) deleteKafka(ctx context.Context, client *v3.Client) 
 	}
 
 	var op *v3.Operation
-	if c.KafkaTopic != "" {
+	if len(topicIDs) == 1 {
 		op, err = client.DeleteDBAASKafkaTopicAclConfig(ctx, c.Name, ids[0])
 	} else {
 		op, err = client.DeleteDBAASKafkaSchemaRegistryAclConfig(ctx, c.Name, ids[0])

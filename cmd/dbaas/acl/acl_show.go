@@ -3,6 +3,7 @@ package acl
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -75,6 +76,12 @@ func (c *dbaasAclShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	dbType, err := dbaasServiceType(ctx, client, c.Name, c.Zone)
 	if err != nil {
+		// "acl show" used to only cover ClickHouse, with a single call to its ACL
+		// endpoint: keep it working for API keys allowed that call but not to
+		// list the services.
+		if errors.Is(err, v3.ErrForbidden) {
+			return c.OutputFunc(showClickhouseAcl(ctx, client, c.Name))
+		}
 		return err
 	}
 
