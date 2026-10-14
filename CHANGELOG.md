@@ -8,7 +8,7 @@
 - deps: bump Go to 1.26.9 and golang.org/x/net to v0.60.0 to fix govulncheck findings (#933)
 - client: when no API endpoint is configured, zone lookups are retried once on another zone if `ch-gva-2` fails; a configured endpoint is used as is (#931)
 - anti-affinity group, dns, iam api-key and ssh-key commands use the default zone endpoint like the other commands, instead of always `ch-gva-2` (#931)
-- deps: bump egoscale v3 to use `ZoneEndpoints` (#931, exoscale/egoscale#832)
+- deps: bump egoscale v3 to v3.1.60 to use `ZoneEndpoints` (#931)
 
 ### Bug fixes
 
