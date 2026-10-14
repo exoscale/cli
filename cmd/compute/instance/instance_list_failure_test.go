@@ -14,15 +14,21 @@ import (
 func TestInstanceListPartialFailure(t *testing.T) {
 	instanceTypeID := v3.UUID("00000000-0000-0000-0000-000000000001")
 	healthyZone := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/instance" {
+		switch r.URL.Path {
+		case "/instance":
+			testutils.WriteJSON(t, w, http.StatusOK, v3.ListInstancesResponse{Instances: []v3.ListInstancesResponseInstances{{
+				ID:           "00000000-0000-0000-0000-000000000002",
+				Name:         "healthy-instance",
+				InstanceType: &v3.InstanceType{ID: instanceTypeID},
+				State:        v3.InstanceStateRunning,
+			}}})
+		case "/instance-type/" + string(instanceTypeID):
+			testutils.WriteJSON(t, w, http.StatusOK, v3.InstanceType{
+				ID: instanceTypeID, Family: "standard", Size: "medium",
+			})
+		default:
 			t.Fatalf("unexpected zone request path %q", r.URL.Path)
 		}
-		testutils.WriteJSON(t, w, http.StatusOK, v3.ListInstancesResponse{Instances: []v3.ListInstancesResponseInstances{{
-			ID:           "00000000-0000-0000-0000-000000000002",
-			Name:         "healthy-instance",
-			InstanceType: &v3.InstanceType{ID: instanceTypeID},
-			State:        v3.InstanceStateRunning,
-		}}})
 	}))
 	defer healthyZone.Close()
 
@@ -38,10 +44,6 @@ func TestInstanceListPartialFailure(t *testing.T) {
 				{Name: "healthy-zone", APIEndpoint: v3.Endpoint(healthyZone.URL)},
 				{Name: "failing-zone", APIEndpoint: v3.Endpoint(failingZone.URL)},
 			}})
-		case "/instance-type/" + string(instanceTypeID):
-			testutils.WriteJSON(t, w, http.StatusOK, v3.InstanceType{
-				ID: instanceTypeID, Family: "standard", Size: "medium",
-			})
 		default:
 			t.Fatalf("unexpected request path %q", r.URL.Path)
 		}
