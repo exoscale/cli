@@ -8,7 +8,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/pkg/zonelookup"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/exoscale/egoscale/v3/credentials"
 )
@@ -56,7 +56,7 @@ func SwitchClientZoneV3(ctx context.Context, client *v3.Client, zone v3.ZoneName
 	if zone == "" {
 		return client, nil
 	}
-	endpoint, err := zonelookup.GetZoneAPIEndpoint(ctx, client, zone)
+	endpoint, err := utils.GetZoneAPIEndpointV3(ctx, client, zone)
 	if err != nil {
 		return nil, fmt.Errorf("switch client zone v3: %w", err)
 	}

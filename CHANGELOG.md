@@ -6,13 +6,14 @@
 
 - Upgrade go.mk and goreleaser (#930)
 - deps: bump Go to 1.26.9 and golang.org/x/net to v0.60.0 to fix govulncheck findings (#933)
-- client: when no API endpoint is configured, zone lookups fall back to the other zones if `ch-gva-2` is unavailable; a configured endpoint is used as is (#931)
+- client: when no API endpoint is configured, zone lookups are retried once on another zone if `ch-gva-2` fails; a configured endpoint is used as is (#931)
 - deps: bump egoscale v3 to use `ZoneEndpoints` (#931, exoscale/egoscale#832)
 
 ### Bug fixes
 
 - sks: `sks list` and `sks nodepool list` with `--zone` now fill the zone column, as does `blockstorage snapshot list` (#931)
 - list commands: `--zone` now finds zones only enabled for some organizations (#931)
+- instance: `instance list` looks instance types up in each zone, not only on `ch-gva-2` (#931)
 
 ## 1.102.1
 

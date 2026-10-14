@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	mathrand "math/rand/v2"
 	"net"
 	"os"
 	"strconv"
@@ -19,7 +20,7 @@ import (
 
 	v3 "github.com/exoscale/egoscale/v3"
 
-	"github.com/exoscale/cli/pkg/zonelookup"
+	"github.com/exoscale/cli/pkg/account"
 )
 
 var (
@@ -40,19 +41,53 @@ var (
 func AllZonesV3(ctx context.Context, client *v3.Client, zoneName v3.ZoneName) ([]v3.Zone, error) {
 	if zoneName != "" {
 		// Unlike the public zone list, this also finds zones only enabled for some organizations.
-		endpoint, err := zonelookup.GetZoneAPIEndpoint(ctx, client, zoneName)
+		endpoint, err := GetZoneAPIEndpointV3(ctx, client, zoneName)
 		if err != nil {
 			return nil, err
 		}
 		return []v3.Zone{{Name: zoneName, APIEndpoint: endpoint}}, nil
 	}
 
-	resp, err := zonelookup.ListZones(ctx, client)
+	resp, err := ListZonesV3(ctx, client)
 	if err != nil {
 		return nil, err
 	}
 
 	return resp.Zones, nil
+}
+
+// ListZonesV3 lists the zones, falling back to another zone like GetZoneAPIEndpointV3.
+func ListZonesV3(ctx context.Context, client *v3.Client) (*v3.ListZonesResponse, error) {
+	resp, err := client.ListZones(ctx)
+	if err != nil && account.CurrentAccount.Endpoint == "" {
+		resp, err = client.WithEndpoint(fallbackEndpoint()).ListZones(ctx)
+	}
+
+	return resp, err
+}
+
+// GetZoneAPIEndpointV3 returns the API endpoint of zone. When the lookup fails on
+// the default endpoint (ch-gva-2), it is retried once on another zone, unless an
+// API endpoint is configured: that one is then used as is.
+func GetZoneAPIEndpointV3(ctx context.Context, client *v3.Client, zone v3.ZoneName) (v3.Endpoint, error) {
+	endpoint, err := client.GetZoneAPIEndpoint(ctx, zone)
+	if err != nil && account.CurrentAccount.Endpoint == "" {
+		endpoint, err = client.WithEndpoint(fallbackEndpoint()).GetZoneAPIEndpoint(ctx, zone)
+	}
+
+	return endpoint, err
+}
+
+// fallbackEndpoint returns a random zone endpoint other than the default one.
+var fallbackEndpoint = func() v3.Endpoint {
+	var endpoints []v3.Endpoint
+	for _, e := range v3.ZoneEndpoints {
+		if e != v3.CHGva2 {
+			endpoints = append(endpoints, e)
+		}
+	}
+
+	return endpoints[mathrand.IntN(len(endpoints))]
 }
 
 const (

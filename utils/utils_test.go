@@ -14,6 +14,8 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/exoscale/egoscale/v3/credentials"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/exoscale/cli/pkg/account"
 )
 
 func TestParseInstanceType(t *testing.T) {
@@ -147,4 +149,60 @@ func TestForEveryZoneAsync_FastZoneNotBlockedBySlow(t *testing.T) {
 
 	sink.Flush()
 	assert.Contains(t, buf.String(), "zone slow")
+}
+
+func TestZoneLookupFallback(t *testing.T) {
+	var hits atomic.Int32
+	fallbackSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits.Add(1)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"zones":[{"name":"ch-dk-2","api-endpoint":"https://api-ch-dk-2.exoscale.com/v2"}]}`))
+	}))
+	defer fallbackSrv.Close()
+
+	downSrv := httptest.NewServer(http.NotFoundHandler())
+	downSrv.Close()
+
+	oldAccount, oldFallback := account.CurrentAccount, fallbackEndpoint
+	t.Cleanup(func() { account.CurrentAccount, fallbackEndpoint = oldAccount, oldFallback })
+	fallbackEndpoint = func() v3.Endpoint { return v3.Endpoint(fallbackSrv.URL + "/v2") }
+
+	// No egoscale retries, so that the down endpoint fails right away.
+	client, err := v3.NewClient(
+		credentials.NewStaticCredentials("key", "secret"),
+		v3.ClientOptWithHTTPClient(&http.Client{}),
+		v3.ClientOptWithEndpoint(v3.Endpoint(downSrv.URL+"/v2")),
+	)
+	assert.NoError(t, err)
+
+	t.Run("default endpoint down", func(t *testing.T) {
+		hits.Store(0)
+		account.CurrentAccount = &account.Account{}
+
+		endpoint, err := GetZoneAPIEndpointV3(context.Background(), client, "ch-dk-2")
+		assert.NoError(t, err)
+		assert.Equal(t, v3.CHDk2, endpoint)
+
+		_, err = ListZonesV3(context.Background(), client)
+		assert.NoError(t, err)
+		assert.EqualValues(t, 2, hits.Load())
+	})
+
+	t.Run("configured endpoint down", func(t *testing.T) {
+		hits.Store(0)
+		account.CurrentAccount = &account.Account{Endpoint: downSrv.URL + "/v2"}
+
+		_, err := GetZoneAPIEndpointV3(context.Background(), client, "ch-dk-2")
+		assert.Error(t, err)
+
+		_, err = ListZonesV3(context.Background(), client)
+		assert.Error(t, err)
+		assert.EqualValues(t, 0, hits.Load())
+	})
+}
+
+func TestFallbackEndpoint(t *testing.T) {
+	for range 100 {
+		assert.NotEqual(t, v3.CHGva2, fallbackEndpoint())
+	}
 }

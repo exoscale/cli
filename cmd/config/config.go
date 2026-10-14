@@ -14,7 +14,7 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/pkg/zonelookup"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -229,7 +229,7 @@ func chooseZone(client *v3.Client, zones []string) (string, error) {
 
 		ctx := exocmd.GContext
 		var err error
-		zonesResp, err := zonelookup.ListZones(ctx, client)
+		zonesResp, err := utils.ListZonesV3(ctx, client)
 		if err != nil {
 			return "", err
 		}
