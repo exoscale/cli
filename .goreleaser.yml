@@ -113,6 +113,7 @@ dockers_v2:
       - "{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
     platforms:
       - linux/amd64
+      - linux/arm64
     build_args:
       VERSION: "{{.Version}}"
       VCS_REF: "{{.ShortCommit}}"
