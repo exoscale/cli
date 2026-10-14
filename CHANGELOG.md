@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- deps: bump Go to 1.27
+
+
 ## 1.103.0
 
 ### Improvements
