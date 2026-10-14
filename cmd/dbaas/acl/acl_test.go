@@ -18,6 +18,8 @@ type aclTestServerOpts struct {
 	ServerURL   string
 	ServiceName string
 	ServiceType string
+	// HTTP status of the service list, 200 if unset.
+	ListServicesStatus int
 
 	KafkaAcls     v3.DBAASKafkaAcls
 	OpensearchAcl v3.DBAASOpensearchAclConfig
@@ -48,6 +50,10 @@ func setupAclTestServer(t *testing.T, opts *aclTestServerOpts) *httptest.Server 
 	})
 
 	mux.HandleFunc("/dbaas-service", func(w http.ResponseWriter, r *http.Request) {
+		if opts.ListServicesStatus != 0 && opts.ListServicesStatus != http.StatusOK {
+			testutils.WriteJSON(t, w, opts.ListServicesStatus, map[string]string{"message": "forbidden"})
+			return
+		}
 		testutils.WriteJSON(t, w, http.StatusOK, v3.ListDBAASServicesResponse{
 			DBAASServices: []v3.DBAASServiceCommon{{
 				Name: v3.DBAASServiceName(opts.ServiceName),
@@ -61,6 +67,7 @@ func setupAclTestServer(t *testing.T, opts *aclTestServerOpts) *httptest.Server 
 	})
 
 	mux.HandleFunc("/dbaas-clickhouse/"+opts.ServiceName+"/acl-config", func(w http.ResponseWriter, r *http.Request) {
+		opts.Requests = append(opts.Requests, r.Method+" "+r.URL.Path)
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
@@ -193,6 +200,19 @@ func TestDBAASClickhouseAclShow(t *testing.T) {
 	rootCmd.SetArgs([]string{"acl", "show", "testdb", "--zone", "test-zone"})
 	err = rootCmd.Execute()
 	require.NoError(t, err)
+}
+
+// API keys that may read the ClickHouse ACL but not list the services keep
+// working, as before Kafka and OpenSearch support.
+func TestDBAASClickhouseAclShowWithoutServiceList(t *testing.T) {
+	opts := &aclTestServerOpts{ServiceName: "testdb", ListServicesStatus: http.StatusForbidden}
+	ts := setupAclTestServer(t, opts)
+	defer ts.Close()
+
+	testutils.SetupV3Client(t, ts.URL)
+
+	require.NoError(t, runAclCmd(t, "show", "testdb"))
+	require.Equal(t, []string{"GET /dbaas-clickhouse/testdb/acl-config"}, opts.Requests)
 }
 
 func TestDBAASAclShow(t *testing.T) {
@@ -364,6 +384,40 @@ func TestDBAASAclDelete(t *testing.T) {
 
 		require.NoError(t, runAclCmd(t, "delete", "testdb", "alice", "--kafka-schema-registry-resource", "Subject:orders", "--force"))
 		require.Equal(t, []string{"GET /acl-config", "DELETE /schema-registry/acl-config/schema-1"}, opts.Requests)
+	})
+
+	t.Run("kafka by id", func(t *testing.T) {
+		acls := testKafkaAcls()
+		// An exact duplicate, which only its ID can select.
+		acls.TopicAcl = append(acls.TopicAcl, v3.DBAASKafkaTopicAclEntry{
+			ID: "topic-duplicate", Username: "alice", Topic: "orders", Permission: v3.DBAASKafkaTopicAclEntryPermissionRead,
+		})
+		opts := &aclTestServerOpts{ServiceName: "testdb", ServiceType: "kafka", KafkaAcls: acls}
+		ts := setupAclTestServer(t, opts)
+		defer ts.Close()
+
+		testutils.SetupV3Client(t, ts.URL)
+
+		require.ErrorContains(t, runAclCmd(t, "delete", "testdb", "alice", "--kafka-topic", "orders", "--permission", "read", "--force"),
+			"(topic-1, topic-duplicate), use --permission or --id")
+
+		opts.Requests = nil
+		require.NoError(t, runAclCmd(t, "delete", "testdb", "alice", "--id", "topic-duplicate", "--force"))
+		require.Equal(t, []string{"GET /acl-config", "DELETE /topic/acl-config/topic-duplicate"}, opts.Requests)
+
+		opts.Requests = nil
+		require.NoError(t, runAclCmd(t, "delete", "testdb", "alice", "--id", "schema-1", "--force"))
+		require.Equal(t, []string{"GET /acl-config", "DELETE /schema-registry/acl-config/schema-1"}, opts.Requests)
+
+		// The ID must belong to the user given.
+		opts.Requests = nil
+		require.ErrorContains(t, runAclCmd(t, "delete", "testdb", "alice", "--id", "topic-3", "--force"), "no matching ACL entry")
+		require.Equal(t, []string{"GET /acl-config"}, opts.Requests)
+
+		opts.Requests = nil
+		require.ErrorContains(t, runAclCmd(t, "delete", "testdb", "alice", "--id", "topic-1", "--kafka-topic", "orders", "--force"),
+			"--id can't be used with")
+		require.Empty(t, opts.Requests)
 	})
 
 	t.Run("kafka no single match", func(t *testing.T) {
