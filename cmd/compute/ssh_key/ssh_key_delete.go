@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -35,6 +36,10 @@ func (c *computeSSHKeyDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) er
 
 func (c *computeSSHKeyDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 
 	if !c.Force {
 		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete SSH key %s?", c.Name)) {
@@ -42,13 +47,13 @@ func (c *computeSSHKeyDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	err := utils.DecorateAsyncOperations(fmt.Sprintf("Deleting SSH key %s...", c.Name), func() error {
-		op, err := globalstate.EgoscaleV3Client.DeleteSSHKey(ctx, c.Name)
+	err = utils.DecorateAsyncOperations(fmt.Sprintf("Deleting SSH key %s...", c.Name), func() error {
+		op, err := client.DeleteSSHKey(ctx, c.Name)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while deleting SSH key: %w", err)
 		}
 
-		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while waiting for SSH key deletion: %w", err)
 		}

@@ -7,8 +7,10 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type computeSSHKeyShowOutput struct {
@@ -48,8 +50,12 @@ func (c *computeSSHKeyShowCmd) CmdPreRun(cmd *cobra.Command, args []string) erro
 
 func (c *computeSSHKeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 
-	sshKey, err := globalstate.EgoscaleV3Client.GetSSHKey(ctx, c.Key)
+	sshKey, err := client.GetSSHKey(ctx, c.Key)
 	if err != nil {
 		return err
 	}

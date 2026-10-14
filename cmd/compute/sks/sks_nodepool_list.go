@@ -56,18 +56,9 @@ func runSksNodepoolList(c *sksNodepoolListCmd, stdout, stderr io.Writer) error {
 	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
-	resp, err := client.ListZones(ctx)
+	zones, err := utils.AllZonesV3(ctx, client, c.Zone)
 	if err != nil {
 		return err
-	}
-	zones := resp.Zones
-
-	if c.Zone != "" {
-		endpoint, err := client.GetZoneAPIEndpoint(ctx, c.Zone)
-		if err != nil {
-			return err
-		}
-		zones = []v3.Zone{{APIEndpoint: endpoint}}
 	}
 
 	sink := utils.NewWarningSinkTo(stderr)

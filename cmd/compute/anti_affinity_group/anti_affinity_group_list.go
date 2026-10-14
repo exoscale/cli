@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -46,8 +47,12 @@ func (c *antiAffinityGroupListCmd) CmdPreRun(cmd *cobra.Command, args []string) 
 
 func (c *antiAffinityGroupListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 
-	antiAffinityGroups, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
+	antiAffinityGroups, err := client.ListAntiAffinityGroups(ctx)
 	if err != nil {
 		return err
 	}
