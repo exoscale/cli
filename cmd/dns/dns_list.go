@@ -10,9 +10,11 @@ import (
 	"github.com/exoscale/cli/utils"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dnsListItemOutput struct {
@@ -58,7 +60,10 @@ Supported output template annotations: %s`,
 
 func listDomains(filters []string) (output.Outputter, error) {
 	ctx := exocmd.GContext
-	client := globalstate.EgoscaleV3Client
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return nil, err
+	}
 
 	domainsList, err := client.ListDNSDomains(ctx)
 	if err != nil {

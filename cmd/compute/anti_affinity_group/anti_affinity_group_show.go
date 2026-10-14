@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -49,8 +50,12 @@ func (c *antiAffinityGroupShowCmd) CmdPreRun(cmd *cobra.Command, args []string) 
 
 func (c *antiAffinityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 
-	antiAffinityGroupsResp, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
+	antiAffinityGroupsResp, err := client.ListAntiAffinityGroups(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve list of anti-affinity groups: %w", err)
 	}
@@ -65,7 +70,7 @@ func (c *antiAffinityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		Description: antiAffinityGroup.Description,
 	}
 
-	antiAffinityGroupWithInstanceDetails, err := globalstate.EgoscaleV3Client.GetAntiAffinityGroup(ctx, antiAffinityGroup.ID)
+	antiAffinityGroupWithInstanceDetails, err := client.GetAntiAffinityGroup(ctx, antiAffinityGroup.ID)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve anti-affinity group with instance details %q: %w", c.AntiAffinityGroup, err)
 	}
