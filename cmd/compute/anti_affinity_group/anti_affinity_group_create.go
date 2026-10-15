@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -43,19 +44,23 @@ func (c *antiAffinityGroupCreateCmd) CmdPreRun(cmd *cobra.Command, args []string
 
 func (c *antiAffinityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 
 	antiAffinityGroupCreateRequest := v3.CreateAntiAffinityGroupRequest{
 		Description: c.Description,
 		Name:        c.Name,
 	}
 
-	err := utils.DecorateAsyncOperations(fmt.Sprintf("Creating Anti-Affinity Group %q...", c.Name), func() error {
-		op, err := globalstate.EgoscaleV3Client.CreateAntiAffinityGroup(ctx, antiAffinityGroupCreateRequest)
+	err = utils.DecorateAsyncOperations(fmt.Sprintf("Creating Anti-Affinity Group %q...", c.Name), func() error {
+		op, err := client.CreateAntiAffinityGroup(ctx, antiAffinityGroupCreateRequest)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while creating Anti Affinity Group: %w", err)
 		}
 
-		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while waiting for Anti Affinity Group creation: %w", err)
 		}
@@ -66,7 +71,7 @@ func (c *antiAffinityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error 
 		return err
 	}
 
-	antiAffinityGroupsResp, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
+	antiAffinityGroupsResp, err := client.ListAntiAffinityGroups(ctx)
 	if err != nil {
 		return err
 	}

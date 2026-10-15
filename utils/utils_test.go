@@ -14,6 +14,10 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/exoscale/egoscale/v3/credentials"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 )
 
 func TestParseInstanceType(t *testing.T) {
@@ -147,4 +151,91 @@ func TestForEveryZoneAsync_FastZoneNotBlockedBySlow(t *testing.T) {
 
 	sink.Flush()
 	assert.Contains(t, buf.String(), "zone slow")
+}
+
+func TestZoneLookupFallback(t *testing.T) {
+	// countingServer answers the zone list with status, and counts the requests it gets.
+	countingServer := func(status int, hits *atomic.Int32) *httptest.Server {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			hits.Add(1)
+			if status != http.StatusOK {
+				w.WriteHeader(status)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"zones":[{"name":"ch-dk-2","api-endpoint":"https://api-ch-dk-2.exoscale.com/v2"}]}`))
+		}))
+		t.Cleanup(srv.Close)
+		return srv
+	}
+
+	var defaultHits, fallbackHits atomic.Int32
+	defaultSrv := countingServer(http.StatusBadGateway, &defaultHits)
+	fallbackSrv := countingServer(http.StatusOK, &fallbackHits)
+
+	oldAccount, oldFallback, oldQuiet := account.CurrentAccount, fallbackEndpoint, globalstate.Quiet
+	t.Cleanup(func() {
+		account.CurrentAccount, fallbackEndpoint, globalstate.Quiet = oldAccount, oldFallback, oldQuiet
+		lookupEndpoint.Store(nil)
+	})
+	fallbackEndpoint = func() v3.Endpoint { return v3.Endpoint(fallbackSrv.URL + "/v2") }
+	globalstate.Quiet = true
+
+	// No egoscale retries, so that the default endpoint fails right away.
+	newClient := func(endpoint string) *v3.Client {
+		client, err := v3.NewClient(
+			credentials.NewStaticCredentials("key", "secret"),
+			v3.ClientOptWithHTTPClient(&http.Client{}),
+			v3.ClientOptWithEndpoint(v3.Endpoint(endpoint+"/v2")),
+		)
+		require.NoError(t, err)
+		return client
+	}
+	client := newClient(defaultSrv.URL)
+
+	reset := func(endpoint string) {
+		defaultHits.Store(0)
+		fallbackHits.Store(0)
+		lookupEndpoint.Store(nil)
+		account.CurrentAccount = &account.Account{Endpoint: endpoint}
+	}
+
+	t.Run("default endpoint down, next lookups go to the fallback", func(t *testing.T) {
+		reset("")
+
+		endpoint, err := GetZoneAPIEndpointV3(context.Background(), client, "ch-dk-2")
+		require.NoError(t, err)
+		assert.Equal(t, v3.CHDk2, endpoint)
+
+		_, err = ListZonesV3(context.Background(), client)
+		require.NoError(t, err)
+		assert.EqualValues(t, 1, defaultHits.Load())
+		assert.EqualValues(t, 2, fallbackHits.Load())
+	})
+
+	t.Run("unknown zone", func(t *testing.T) {
+		reset("")
+
+		_, err := GetZoneAPIEndpointV3(context.Background(), newClient(fallbackSrv.URL), "xx-nowhere-1")
+		require.ErrorIs(t, err, v3.ErrNotFound)
+		// The public then the signed zone list, on the given endpoint only.
+		assert.EqualValues(t, 2, fallbackHits.Load())
+	})
+
+	t.Run("configured endpoint down", func(t *testing.T) {
+		reset(defaultSrv.URL + "/v2")
+
+		_, err := GetZoneAPIEndpointV3(context.Background(), client, "ch-dk-2")
+		require.Error(t, err)
+
+		_, err = ListZonesV3(context.Background(), client)
+		require.Error(t, err)
+		assert.EqualValues(t, 0, fallbackHits.Load())
+	})
+}
+
+func TestFallbackEndpoint(t *testing.T) {
+	for range 100 {
+		assert.NotEqual(t, v3.CHGva2, fallbackEndpoint())
+	}
 }

@@ -34,6 +34,19 @@ const (
 	ESMad1 Endpoint = "https://api-es-mad-1.exoscale.com/v2"
 )
 
+// ZoneEndpoints maps each zone name to its API endpoint.
+var ZoneEndpoints = map[ZoneName]Endpoint{
+	ZoneName("ch-gva-2"): CHGva2,
+	ZoneName("ch-dk-2"):  CHDk2,
+	ZoneName("de-fra-1"): DEFra1,
+	ZoneName("de-muc-1"): DEMuc1,
+	ZoneName("at-vie-1"): ATVie1,
+	ZoneName("at-vie-2"): ATVie2,
+	ZoneName("bg-sof-1"): BGSof1,
+	ZoneName("hr-zag-1"): HrZag1,
+	ZoneName("es-mad-1"): ESMad1,
+}
+
 // defaultHTTPClient is HTTP client with retry logic.
 // Default retry configuration can be found in go-retryablehttp repo.
 var defaultHTTPClient = func() *http.Client {

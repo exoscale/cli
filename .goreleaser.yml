@@ -78,34 +78,49 @@ nfpms:
       - src: "./contrib/completion/zsh/_exo"
         dst: "/usr/share/zsh/vendor-completions/_exo"
 
-brews:
-  - repository:
+homebrew_casks:
+  - name: exo
+    binaries:
+      - exo
+    manpages: ["manpage/exo*.1"]
+    completions:
+      bash: contrib/completion/bash/exo
+      zsh: contrib/completion/zsh/_exo
+      fish: contrib/completion/fish/exo
+    repository:
       owner: exoscale
       name: homebrew-tap
-    directory: Formula
+    directory: Casks
     homepage: "https://community.exoscale.com/tools/command-line-interface/"
     description: Manage easily your Exoscale infrastructure from the command-line.
-    install: |
-      bin.install "exo"
-      man1.install Dir["manpage/exo*.1"]
-      bash_completion.install "contrib/completion/bash/exo"
-      fish_completion.install "contrib/completion/fish/exo"
-      zsh_completion.install "contrib/completion/zsh/_exo"
+    hooks:
+      post:
+        # The binary is not notarized, so avoid blocking by Gatekeeper.
+        # See https://goreleaser.com/customization/publish/homebrew_casks/#signing-and-notarizing
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/exo"]
+          end
 
-dockers:
-  - goos: linux
-    goarch: amd64
-    image_templates:
-      - "exoscale/cli:latest"
-      - "exoscale/cli:{{ .Major }}"
-      - "exoscale/cli:{{ .Major }}.{{ .Minor }}"
-      - "exoscale/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-    dockerfile: Dockerfile.goreleaser
-    build_flag_templates:
-      - --pull
-      - --build-arg="VERSION={{.Version}}"
-      - --build-arg="VCS_REF={{.ShortCommit}}"
-      - --build-arg="BUILD_DATE={{.Date}}"
+dockers_v2:
+  - dockerfile: Dockerfile.goreleaser
+    images:
+      - "exoscale/cli"
+    tags:
+      - "latest"
+      - "{{ .Major }}"
+      - "{{ .Major }}.{{ .Minor }}"
+      - "{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+    sbom: false
+    flags:
+      - "--provenance=false"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    build_args:
+      VERSION: "{{.Version}}"
+      VCS_REF: "{{.ShortCommit}}"
+      BUILD_DATE: "{{.Date}}"
 
 source:
   enabled: true

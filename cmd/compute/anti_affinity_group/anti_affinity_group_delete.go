@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -35,8 +36,12 @@ func (c *antiAffinityGroupDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string
 
 func (c *antiAffinityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 
-	antiAffinityGroupsResp, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
+	antiAffinityGroupsResp, err := client.ListAntiAffinityGroups(ctx)
 	if err != nil {
 		return err
 	}
@@ -56,12 +61,12 @@ func (c *antiAffinityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error 
 	}
 
 	return utils.DecorateAsyncOperations(fmt.Sprintf("Deleting Anti-Affinity Group %s...", c.AntiAffinityGroup), func() error {
-		op, err := globalstate.EgoscaleV3Client.DeleteAntiAffinityGroup(ctx, antiAffinityGroup.ID)
+		op, err := client.DeleteAntiAffinityGroup(ctx, antiAffinityGroup.ID)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while deleting Anti Affinity Group: %w", err)
 		}
 
-		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while waiting for Anti Affinity Group deletion: %w", err)
 		}

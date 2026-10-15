@@ -116,7 +116,7 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			if cached {
 				instanceType = instanceTypeI.(*v3.InstanceType)
 			} else {
-				instanceType, err = client.GetInstanceType(ctx, i.InstanceType.ID)
+				instanceType, err = c.GetInstanceType(ctx, i.InstanceType.ID)
 				if err != nil {
 					return fmt.Errorf(
 						"unable to retrieve Compute instance type %q: %w",
@@ -148,7 +148,10 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	close(res)
 	<-done
 
-	return c.OutputFunc(&out, nil)
+	if outputErr := c.OutputFunc(&out, nil); outputErr != nil {
+		return outputErr
+	}
+	return err
 }
 
 func init() {

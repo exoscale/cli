@@ -10,6 +10,7 @@ import (
 	"github.com/exoscale/cli/cmd/internal/x"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 )
 
 var xCmd *cobra.Command
@@ -42,7 +43,7 @@ input parameters can be supplied either via stdin or using Shorthands[2].
 				zone = z
 			}
 
-			endpoint, err := globalstate.EgoscaleV3Client.GetZoneAPIEndpoint(GContext, egoscale.ZoneName(zone))
+			endpoint, err := utils.GetZoneAPIEndpointV3(GContext, globalstate.EgoscaleV3Client, egoscale.ZoneName(zone))
 			if err != nil {
 				return err
 			}

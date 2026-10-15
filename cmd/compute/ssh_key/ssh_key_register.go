@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -43,11 +44,14 @@ func (c *computeSSHKeyRegisterCmd) CmdPreRun(cmd *cobra.Command, args []string) 
 }
 
 func (c *computeSSHKeyRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 	// Template registration can take a _long time_, raising
 	// the Exoscale API client timeout as a precaution.
-	client := globalstate.EgoscaleV3Client.WithHttpClient(&http.Client{Timeout: 30 * time.Minute})
-
-	ctx := exocmd.GContext
+	client = client.WithHttpClient(&http.Client{Timeout: 30 * time.Minute})
 
 	publicKey, err := os.ReadFile(c.PublicKeyFile)
 	if err != nil {

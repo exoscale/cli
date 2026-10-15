@@ -2,6 +2,45 @@
 
 ## Unreleased
 
+### Features
+
+- kms: add `exo kms crypto sign`, `exo kms crypto verify` and `exo kms key get-public-key`, and a `--key-spec` flag on `exo kms key create` to create asymmetric keys
+- kms: add `--encryption-algorithm` to `exo kms crypto encrypt` and `decrypt`, and `--source-encryption-algorithm` and `--dest-encryption-algorithm` to `reencrypt`, to use RSA keys
+- kms: show the key spec in `exo kms key show` and `exo kms key list`
+
+## 1.103.2
+
+### Bug fixes
+
+- ci: fix errors with multiarch OCI builds (#936)
+
+
+## 1.103.1
+
+### Improvements
+
+- deps: bump Go to 1.27 (#935)
+
+
+## 1.103.0
+
+### Improvements
+
+- Upgrade go.mk and goreleaser (#930)
+- deps: bump Go to 1.26.9 and golang.org/x/net to v0.60.0 to fix govulncheck findings (#933)
+- client: when no API endpoint is configured, zone lookups are retried once on another zone if `ch-gva-2` fails; a configured endpoint is used as is (#931)
+- anti-affinity group, dns, iam api-key and ssh-key commands use the default zone endpoint like the other commands, instead of always `ch-gva-2` (#931)
+- deps: bump egoscale v3 to v3.1.60 to use `ZoneEndpoints` (#931)
+- build: publish arm64 OCI images (#934)
+
+### Bug fixes
+
+- sks: `sks list` and `sks nodepool list` with `--zone` now fill the zone column, as does `blockstorage snapshot list` (#931)
+- list commands: `--zone` now finds zones only enabled for some organizations (#931)
+- instance: `instance list` looks instance types up in each zone, not only on `ch-gva-2` (#931)
+
+## 1.102.1
+
 ### Breaking changes
 
 ### Features

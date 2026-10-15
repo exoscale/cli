@@ -47,7 +47,7 @@ func listZones() (output.Outputter, error) {
 	ctx := GContext
 	client := globalstate.EgoscaleV3Client
 
-	zones, err := client.ListZones(ctx)
+	zones, err := utils.ListZonesV3(ctx, client)
 	if err != nil {
 		return nil, err
 	}
