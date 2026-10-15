@@ -1,3 +1,4 @@
+// AI-modified by claude-opus-5-5 - not reviewed yet
 package cmd
 
 import (
@@ -125,6 +126,14 @@ func formatError(err error) string {
 			msg += fmt.Sprintf("\n  - %s: %s", field, detail)
 		} else {
 			msg += fmt.Sprintf("\n  - %s", detail)
+		}
+	}
+
+	// KMS reports errors returned by a customer's XKS proxy in a dedicated field.
+	if resp, ok := apiErr.Response.(*v3.ErrorResponse); ok && resp.XksProxyError != nil {
+		msg += "\n  - XKS proxy error: " + resp.XksProxyError.ErrorName
+		if resp.XksProxyError.ErrorMessage != "" {
+			msg += ": " + resp.XksProxyError.ErrorMessage
 		}
 	}
 	return msg

@@ -46,6 +46,17 @@ func TestScriptsAPIAIService(t *testing.T) {
 	runAPITestSuite(t, "scenarios/with-api/aiservices")
 }
 
+// TestScriptsAPIKMS runs API e2e scenarios under scenarios/with-api/kms/.
+// Key store scenarios need a reachable XKS proxy, see xksProxyEnv.
+// Run with: go test -v -tags=api -timeout 10m -run TestScriptsAPIKMS
+func TestScriptsAPIKMS(t *testing.T) {
+	runAPITestSuite(t, "scenarios/with-api/kms")
+}
+
+// xksProxyEnv lists the variables describing a customer-managed XKS proxy.
+// Scenarios guarded by the [xks] condition are skipped unless all are set.
+var xksProxyEnv = []string{"XKS_PROXY_ENDPOINT", "XKS_PROXY_ACCESS_KEY", "XKS_PROXY_SECRET_KEY"}
+
 // runAPITestSuite is the shared runner for per-suite API test functions.
 // dir is the directory of .txtar scenarios to run (relative to the e2e package).
 //
@@ -96,6 +107,17 @@ func runAPITestSuite(t *testing.T, dir string) {
 		Setup: func(e *testscript.Env) error {
 			return setupAPITestEnv(e, suite)
 		},
+		Condition: func(cond string) (bool, error) {
+			if cond != "xks" {
+				return false, fmt.Errorf("unknown condition %q", cond)
+			}
+			for _, k := range xksProxyEnv {
+				if os.Getenv(k) == "" {
+					return false, nil
+				}
+			}
+			return true, nil
+		},
 	})
 }
 
@@ -117,6 +139,13 @@ func setupAPITestEnv(e *testscript.Env, suite *APITestSuite) error {
 	// for CI: the variable is unset, so the CLI uses the production default.
 	if endpoint := os.Getenv("EXOSCALE_API_ENDPOINT"); endpoint != "" {
 		e.Setenv("EXOSCALE_API_ENDPOINT", endpoint)
+	}
+
+	// Optional XKS proxy settings for key store scenarios.
+	for _, k := range xksProxyEnv {
+		if v := os.Getenv(k); v != "" {
+			e.Setenv(k, v)
+		}
 	}
 
 	// Zone and run metadata

@@ -37,6 +37,8 @@ jobs:
             run: TestScriptsAPIDBaaS
           - suite: storage
             run: TestScriptsAPIStorage
+          - suite: kms
+            run: TestScriptsAPIKMS
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -53,6 +55,10 @@ jobs:
           EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_API_KEY }}
           EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
           EXOSCALE_ZONE: ch-gva-2
+          # Test XKS proxy used by the KMS key store scenarios; the credentials are dummies.
+          XKS_PROXY_ENDPOINT: https://kms-test-xks-proxy.gva2-prod.exoscale.ch/example/uri/path/prefix/kms/xks/v1
+          XKS_PROXY_ACCESS_KEY: BETWEEN2TENAND3TENCHARACTERS
+          XKS_PROXY_SECRET_KEY: PleaseReplaceThisWithSomeSecretOfLength43To64
         run: |
           cd tests/e2e
           go test -v -tags=api -timeout 30m -run "${{ matrix.run }}" 2>&1
