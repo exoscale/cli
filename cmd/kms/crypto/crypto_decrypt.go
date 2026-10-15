@@ -40,8 +40,9 @@ type cryptoDecryptCmd struct {
 	Key        string `cli-arg:"#" cli-usage:"ID"`
 	Ciphertext string `cli-arg:"#" cli-usage:"CIPHERTEXT"`
 
-	EncryptionContext string      `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for decryption"`
-	Zone              v3.ZoneName `cli-short:"z" cli-flag:"zone" cli-usage:"crypto zone"`
+	EncryptionContext   string                               `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for decryption"`
+	EncryptionAlgorithm v3.DecryptRequestEncryptionAlgorithm `cli-flag:"encryption-algorithm" cli-usage:"encryption algorithm, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
+	Zone                v3.ZoneName                          `cli-short:"z" cli-flag:"zone" cli-usage:"crypto zone"`
 }
 
 func (c *cryptoDecryptCmd) CmdAliases() []string { return nil }
@@ -71,7 +72,8 @@ func (c *cryptoDecryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("ciphertext is not valid base64: %w", err)
 	}
 	req := v3.DecryptRequest{
-		Ciphertext: decoded,
+		Ciphertext:          decoded,
+		EncryptionAlgorithm: c.EncryptionAlgorithm,
 	}
 
 	if cmd.Flags().Changed("encryption-context") {

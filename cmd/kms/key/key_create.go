@@ -15,7 +15,8 @@ type keyCreateCmd struct {
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
 	Description string      `cli-short:"d" cli-flag:"description" cli-usage:"key description"`
-	Usage       string      `cli-short:"u" cli-flag:"usage" cli-usage:"key usage [encrypt-decrypt]"`
+	Usage       string      `cli-short:"u" cli-flag:"usage" cli-usage:"key usage [encrypt-decrypt|sign-verify] (default: encrypt-decrypt)"`
+	KeySpec     string      `cli-flag:"key-spec" cli-usage:"key spec [AES_256|ECC_NIST_P256|ECC_NIST_P384|ECC_NIST_P521|ECC_EDWARDS25519|RSA_3072|RSA_4096|ML_DSA_65|ML_DSA_87] (default: AES_256)"`
 	Multizone   bool        `cli-short:"m" cli-flag:"multizone" cli-usage:"allow replication accross zones (default: false)"`
 	Zone        v3.ZoneName `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
 }
@@ -48,6 +49,10 @@ func (c *keyCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	if cmd.Flags().Changed("usage") {
 		req.Usage = v3.CreateKmsKeyRequestUsage(c.Usage)
+	}
+
+	if cmd.Flags().Changed("key-spec") {
+		req.KeySpec = v3.CreateKmsKeyRequestKeySpec(c.KeySpec)
 	}
 
 	if cmd.Flags().Changed("description") {

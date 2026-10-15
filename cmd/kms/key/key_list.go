@@ -26,6 +26,7 @@ func (o *keyListOutput) ToTable() {
 	t.SetHeader([]string{
 		"ID",
 		"NAME",
+		"KEYSPEC",
 		"ORIGINZONE",
 		"STATUS",
 		"MULTIZONE",
@@ -36,6 +37,7 @@ func (o *keyListOutput) ToTable() {
 		t.Append([]string{
 			string(key.ID),
 			key.Name,
+			key.KeySpec,
 			string(key.OriginZone),
 			string(key.Status),
 			strconv.FormatBool(*key.MultiZone),
