@@ -42,6 +42,7 @@ Placeholders that intentionally don't exist (for not-found error tests) are fine
 - File goes under `scenarios/with-api/<area>/`.
 - `exec exo ...` runs the binary against the isolated workdir and env the runner sets up.
 - `json-setenv VAR FIELD FILE` reads `FILE` (relative to workdir) and sets `VAR` to a top-level JSON field.
+- `json-setenv-match VAR FIELD KEY=VALUE... FILE` does the same on the first element of a JSON array whose `KEY` fields equal the given `VALUE`s.
 - `wait-instance-state ZONE ID TARGET [SECS]` polls instance show until state matches, default 300s.
 - `wait-dbaas-state ZONE NAME TARGET [SECS]` same for dbaas, default 600s.
 - `execpty --stdin=<file> <bin> [args...]` runs `<bin>` inside a PTY and feeds tokens from `<file>`. Tokens can be literals, arrow key names (`@down`, `@up`, ...), or `@wait:<pattern>` to delay the next input until `<pattern>` appears in PTY output.

@@ -1,0 +1,26 @@
+# Test: dbaas acl list/show on an OpenSearch service
+# ACL entries of an OpenSearch service are read-only from the CLI: the API
+# only replaces the whole configuration, so writes could drop concurrent ones.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# Create an OpenSearch service (disable termination protection for cleanup)
+exec exo --zone $TEST_ZONE --output-format json dbaas create opensearch startup-4 os-acl-$TEST_RUN_ID --termination-protection=false
+
+# Wait for the service to be running
+wait-dbaas-state $TEST_ZONE os-acl-$TEST_RUN_ID running 1200
+
+# List and show succeed on a fresh service
+exec exo --zone $TEST_ZONE --output-format json dbaas acl list os-acl-$TEST_RUN_ID
+exec exo --zone $TEST_ZONE --output-format json dbaas acl show os-acl-$TEST_RUN_ID
+stdout '"acl-enabled"'
+exec exo --zone $TEST_ZONE dbaas acl show os-acl-$TEST_RUN_ID
+stdout 'ACL Enabled'
+
+# Writes are rejected before any API call
+! exec exo --zone $TEST_ZONE dbaas acl create os-acl-$TEST_RUN_ID acluser --kafka-topic orders --permission read
+stderr 'unsupported for service of type "opensearch"'
+! exec exo --zone $TEST_ZONE dbaas acl delete os-acl-$TEST_RUN_ID acluser --kafka-topic orders -f
+stderr 'unsupported for service of type "opensearch"'
+
+# Teardown: delete the service
+exec exo --zone $TEST_ZONE dbaas delete -f os-acl-$TEST_RUN_ID
