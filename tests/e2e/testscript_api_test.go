@@ -101,6 +101,7 @@ func runAPITestSuite(t *testing.T, dir string) {
 		Cmds: map[string]func(ts *testscript.TestScript, neg bool, args []string){
 			"execpty":             cmdExecPTY,
 			"json-setenv":         cmdJSONSetenv,
+			"json-setenv-match":   cmdJSONSetenvMatch,
 			"wait-instance-state": cmdWaitInstanceState,
 			"wait-dbaas-state":    cmdWaitDBAASState,
 		},
@@ -180,6 +181,57 @@ func cmdJSONSetenv(ts *testscript.TestScript, neg bool, args []string) {
 		ts.Fatalf("json-setenv: %v", err)
 	}
 	ts.Setenv(varName, val)
+}
+
+// cmdJSONSetenvMatch is a testscript custom command:
+//
+//	json-setenv-match VARNAME FIELD KEY=VALUE [KEY=VALUE...] FILE
+//
+// Reads FILE (relative to WorkDir), parses it as a JSON array of objects, and
+// sets the env var VARNAME to the string value of FIELD in the first element
+// whose KEY fields all equal the given VALUEs.
+//
+// Typical use to pick one entry out of a list:
+//
+//	exec exo --output-format json dbaas acl list svc
+//	json-setenv-match ACL_ID id username=bob permission=read stdout
+func cmdJSONSetenvMatch(ts *testscript.TestScript, neg bool, args []string) {
+	if len(args) < 4 {
+		ts.Fatalf("usage: json-setenv-match VARNAME FIELD KEY=VALUE [KEY=VALUE...] FILE")
+	}
+	varName, field, file := args[0], args[1], args[len(args)-1]
+	want := map[string]string{}
+	for _, kv := range args[2 : len(args)-1] {
+		k, v, ok := strings.Cut(kv, "=")
+		if !ok {
+			ts.Fatalf("json-setenv-match: invalid KEY=VALUE %q", kv)
+		}
+		want[k] = v
+	}
+
+	var arr []map[string]interface{}
+	if err := json.Unmarshal([]byte(ts.ReadFile(file)), &arr); err != nil {
+		ts.Fatalf("json-setenv-match: failed to parse JSON array: %v", err)
+	}
+	for _, obj := range arr {
+		matched := true
+		for k, v := range want {
+			if fmt.Sprintf("%v", obj[k]) != v {
+				matched = false
+				break
+			}
+		}
+		if !matched {
+			continue
+		}
+		val, ok := obj[field]
+		if !ok {
+			ts.Fatalf("json-setenv-match: field %q not found in matching element", field)
+		}
+		ts.Setenv(varName, fmt.Sprintf("%v", val))
+		return
+	}
+	ts.Fatalf("json-setenv-match: no element matches %v", want)
 }
 
 // cmdWaitInstanceState is a testscript custom command:

@@ -12,7 +12,7 @@ wait-dbaas-state $TEST_ZONE kafka-acl-$TEST_RUN_ID running 1200
 # Create two topic entries for the same user and topic
 exec exo --zone $TEST_ZONE --output-format json dbaas acl create kafka-acl-$TEST_RUN_ID acluser --kafka-topic orders --permission read
 stdout '"resource":"orders"'
-json-setenv READ_ACL_ID id stdout
+json-setenv-match READ_ACL_ID id username=acluser permission=read stdout
 exec exo --zone $TEST_ZONE dbaas acl create kafka-acl-$TEST_RUN_ID acluser --kafka-topic orders --permission write
 
 # Create a Schema Registry entry
