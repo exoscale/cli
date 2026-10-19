@@ -53,6 +53,7 @@ input parameters can be supplied either via stdin or using Shorthands[2].
 			}
 		}
 
+		x.SetClientContext(GContext)
 		x.SetClientUserAgent(fmt.Sprintf(
 			"Exoscale-CLI-X/%s (%s) %s",
 			globalstate.GitVersion,

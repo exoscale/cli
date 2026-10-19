@@ -1,6 +1,7 @@
 package x
 
 import (
+	stdcontext "context"
 	"os"
 
 	"github.com/exoscale/openapi-cli-generator/cli"
@@ -28,6 +29,15 @@ func InitCommand() *cobra.Command {
 	xRegister(false)
 
 	return cli.Root
+}
+
+// SetClientContext propagates cancellation to outgoing API requests.
+func SetClientContext(parent stdcontext.Context) {
+	cli.Client.UseRequest(func(ctx *context.Context, h context.Handler) {
+		requestContext := stdcontext.WithValue(parent, context.Key, ctx.Request.Context().Value(context.Key))
+		ctx.Request = ctx.Request.WithContext(requestContext)
+		h.Next(ctx)
+	})
 }
 
 // SetClientCredentials adds a pre-request hook to sign outgoing requests using specified API credentials.
