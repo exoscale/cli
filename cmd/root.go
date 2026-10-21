@@ -80,7 +80,6 @@ func Execute(version, commit string) {
 	go func() {
 		select {
 		case <-c:
-			signal.Stop(c)
 			cancel()
 		case <-ctx.Done():
 		}
