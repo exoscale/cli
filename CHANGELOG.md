@@ -9,6 +9,10 @@
 - kms: show the key spec in `exo kms key show` and `exo kms key list`
 - dbaas: add `exo dbaas acl list` for Kafka and OpenSearch, `exo dbaas acl create` and `delete` for Kafka, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
 
+### Bug fixes
+
+- api: make hanging `exo api` requests exit on SIGINT (#937)
+
 ## 1.103.2
 
 ### Bug fixes
