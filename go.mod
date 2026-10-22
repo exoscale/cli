@@ -1,6 +1,6 @@
 module github.com/exoscale/cli
 
-go 1.27
+go 1.27.3
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.42.1
