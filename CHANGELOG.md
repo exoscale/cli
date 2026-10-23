@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- ai: remove `exo ai deployment reveal-api-key`, use `exo ai api-key` commands to manage AI API keys instead
+
 ### Features
 
 - kms: add `exo kms crypto sign`, `exo kms crypto verify` and `exo kms key get-public-key`, and a `--key-spec` flag on `exo kms key create` to create asymmetric keys

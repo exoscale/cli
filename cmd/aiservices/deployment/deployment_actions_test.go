@@ -11,7 +11,6 @@ import (
 	"time"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -65,10 +64,6 @@ func newDepActionsServer(t *testing.T) *depActionsServer {
 			testutils.WriteJSON(t, w, http.StatusOK, v3.Operation{ID: v3.UUID("op-deploy-scale"), State: v3.OperationStateSuccess})
 			return
 		}
-		if len(parts) == 2 && parts[1] == "api-key" && r.Method == http.MethodGet {
-			testutils.WriteJSON(t, w, http.StatusOK, v3.RevealDeploymentAPIKeyResponse{APIKey: "secret"})
-			return
-		}
 		if len(parts) == 2 && parts[1] == "logs" && r.Method == http.MethodGet {
 			testutils.WriteJSON(t, w, http.StatusOK, v3.GetDeploymentLogsResponse{
 				Logs: []v3.GetDeploymentLogsEntry{
@@ -113,23 +108,6 @@ func TestDeploymentDeleteScaleRevealLogs(t *testing.T) {
 	sc := &DeploymentScaleCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", Size: 3}
 	if err := sc.CmdRun(nil, nil); err != nil {
 		t.Fatalf("scale: %v", err)
-	}
-	// reveal api key
-	reveal := &DeploymentRevealAPIKeyCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha"}
-	var got string
-	reveal.OutputFunc = func(o output.Outputter, err error) error {
-		if err != nil {
-			return err
-		}
-		out := o.(*DeploymentRevealAPIKeyOutput)
-		got = out.APIKey
-		return nil
-	}
-	if err := reveal.CmdRun(nil, nil); err != nil {
-		t.Fatalf("reveal: %v", err)
-	}
-	if got != "secret" {
-		t.Fatalf("unexpected api key: %s", got)
 	}
 	// logs
 	logs := &DeploymentLogsCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha"}
