@@ -199,6 +199,22 @@ func MustCLICommandFlagName(c cliCommand, field interface{}) string {
 	return v
 }
 
+// isPflagValue returns true if a pointer to the specified type implements
+// the pflag.Value interface.
+func isPflagValue(t reflect.Type) bool {
+	return reflect.PointerTo(t).Implements(reflect.TypeFor[pflag.Value]())
+}
+
+// cliCommandArgLabel returns the label of the positional argument
+// corresponding to the specified struct field.
+func cliCommandArgLabel(f reflect.StructField) string {
+	if u, ok := f.Tag.Lookup("cli-usage"); ok {
+		return u
+	}
+
+	return strings.ToUpper(strcase.ToKebab(f.Name))
+}
+
 // cliCommandFlagSet generates a pflag.FlagSet struct from the specified
 // cliCommand struct tags. Supported tags are:
 //   - cli-flag:"<flag name>": override the flag name derived by default from
@@ -211,6 +227,9 @@ func MustCLICommandFlagName(c cliCommand, field interface{}) string {
 //   - cli-hidden:"": mark the corresponding flag "hidden"
 //   - cli-deprecated:"<deprecation message>": mark the corresponding flag as hidden
 //     and display the deprecation message when used.
+//
+// Fields of a type implementing pflag.Value (through a pointer receiver) are
+// registered as generic flags, cf. BinaryValue.
 func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 	fs := pflag.NewFlagSet("", pflag.ExitOnError)
 	cv := reflect.ValueOf(c)
@@ -256,17 +275,24 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 
 		flagDefaultValue := cv.Field(i).Interface()
 
-		switch t := cTypeField.Type.Kind(); t {
-		case reflect.String:
+		switch t := cTypeField.Type.Kind(); {
+		case isPflagValue(cTypeField.Type):
+			// The flag holds its own copy of the value, which is copied back
+			// to the struct field by CliCommandDefaultPreRun().
+			v := reflect.New(cTypeField.Type)
+			v.Elem().Set(cv.Field(i))
+			fs.VarP(v.Interface().(pflag.Value), flagName, flagShort, flagUsage)
+
+		case t == reflect.String:
 			fs.StringP(flagName, flagShort, fmt.Sprint(flagDefaultValue), flagUsage)
 
-		case reflect.Int64:
+		case t == reflect.Int64:
 			fs.Int64P(flagName, flagShort, flagDefaultValue.(int64), flagUsage)
 
-		case reflect.Bool:
+		case t == reflect.Bool:
 			fs.BoolP(flagName, flagShort, flagDefaultValue.(bool), flagUsage)
 
-		case reflect.Slice:
+		case t == reflect.Slice:
 			if cTypeField.Type.Elem().Kind() != reflect.String {
 				return nil, cliCommandImplemError{
 					fmt.Sprintf("unsupported type []%s for field %s.%s", t, cv.Type(), cTypeField.Name),
@@ -275,7 +301,7 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 
 			fs.StringSliceP(flagName, flagShort, flagDefaultValue.([]string), flagUsage)
 
-		case reflect.Map:
+		case t == reflect.Map:
 			if cTypeField.Type.Elem().Kind() != reflect.String {
 				return nil, cliCommandImplemError{
 					fmt.Sprintf(
@@ -346,20 +372,17 @@ func cliCommandUse(c cliCommand) (string, error) {
 		}
 
 		if v, ok := cTypeField.Tag.Lookup("cli-arg"); ok {
-			argLabel := strings.ToUpper(strcase.ToKebab(cv.Type().Field(i).Name))
-			if u, ok := cTypeField.Tag.Lookup("cli-usage"); ok {
-				argLabel = u
-			}
+			argLabel := cliCommandArgLabel(cTypeField)
 
-			switch cTypeField.Type.Kind() {
-			case reflect.Int64, reflect.String:
+			switch t := cTypeField.Type.Kind(); {
+			case isPflagValue(cTypeField.Type), t == reflect.Int64, t == reflect.String:
 				if v == "?" {
 					use = append(use, "["+argLabel+"]")
 				} else {
 					use = append(use, argLabel)
 				}
 
-			case reflect.Slice:
+			case t == reflect.Slice:
 				if cTypeField.Type.Elem().Kind() != reflect.String {
 					return "", cliCommandImplemError{fmt.Sprintf(
 						"unsupported type []%s for field %s.%s",
@@ -423,8 +446,20 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 
 		// Positional args handling:
 		if argMode, ok := cTypeField.Tag.Lookup("cli-arg"); ok {
-			switch t := cTypeField.Type.Kind(); t {
-			case reflect.Int64:
+			switch t := cTypeField.Type.Kind(); {
+			case isPflagValue(cTypeField.Type):
+				if argp >= len(args) {
+					if argMode == "#" {
+						return fmt.Errorf("missing arguments, run with --help for usage")
+					}
+					break
+				}
+
+				if err := cField.Addr().Interface().(pflag.Value).Set(args[argp]); err != nil {
+					return fmt.Errorf("invalid value for %s: %w", cliCommandArgLabel(cTypeField), err)
+				}
+
+			case t == reflect.Int64:
 				switch argMode {
 				case "#":
 					// Required arg
@@ -448,7 +483,7 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 					}
 				}
 
-			case reflect.String:
+			case t == reflect.String:
 				switch argMode {
 				case "#":
 					// Required arg
@@ -463,7 +498,7 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 					}
 				}
 
-			case reflect.Slice:
+			case t == reflect.Slice:
 				if cTypeField.Type.Elem().Kind() != reflect.String {
 					return cliCommandImplemError{fmt.Sprintf(
 						"unsupported type []%s for field %s.%s",
@@ -502,29 +537,44 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 			)}
 		}
 
-		switch t := cTypeField.Type.Kind(); t {
-		case reflect.String:
+		switch t := cTypeField.Type.Kind(); {
+		case isPflagValue(cTypeField.Type):
+			// The value has already been parsed by pflag, copy it to the struct field.
+			fv := reflect.ValueOf(cmd.Flags().Lookup(flagName).Value)
+			if fv.Type() != reflect.PointerTo(cTypeField.Type) {
+				return cliCommandImplemError{fmt.Sprintf(
+					"flag --%s has type %s, expected %s for field %s.%s",
+					flagName,
+					fv.Type(),
+					reflect.PointerTo(cTypeField.Type),
+					cv.Type(),
+					cTypeField.Name,
+				)}
+			}
+			cField.Set(fv.Elem())
+
+		case t == reflect.String:
 			v, err := cmd.Flags().GetString(flagName)
 			if err != nil {
 				return fmt.Errorf("error retrieving value for flag --%s: %s", flagName, err)
 			}
 			cField.SetString(v)
 
-		case reflect.Int64:
+		case t == reflect.Int64:
 			v, err := cmd.Flags().GetInt64(flagName)
 			if err != nil {
 				return fmt.Errorf("error retrieving value for flag --%s: %s", flagName, err)
 			}
 			cField.SetInt(v)
 
-		case reflect.Bool:
+		case t == reflect.Bool:
 			v, err := cmd.Flags().GetBool(flagName)
 			if err != nil {
 				return fmt.Errorf("error retrieving value for flag %s: --%s", flagName, err)
 			}
 			cField.SetBool(v)
 
-		case reflect.Slice:
+		case t == reflect.Slice:
 			if cv.Type().Field(i).Type.Elem().Kind() != reflect.String {
 				return cliCommandImplemError{
 					fmt.Sprintf(
@@ -541,7 +591,7 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 			}
 			cField.Set(reflect.ValueOf(v))
 
-		case reflect.Map:
+		case t == reflect.Map:
 			if cv.Type().Field(i).Type.Elem().Kind() != reflect.String {
 				return cliCommandImplemError{
 					fmt.Sprintf(
