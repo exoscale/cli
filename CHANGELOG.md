@@ -17,6 +17,9 @@
 
 - api: make hanging `exo api` requests exit on SIGINT (#937)
 
+### Improvements
+- cmd: commands can take binary arguments and flags given as base64, as `file://<path>` (file holding base64) or as `fileb://<path>` (raw binary file)
+
 ## 1.103.2
 
 ### Bug fixes
