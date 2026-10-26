@@ -43,7 +43,6 @@ func Test_BinaryValue_Set(t *testing.T) {
 			err := b.Set(tt.input)
 			if tt.wantErr != "" {
 				assert.ErrorContains(t, err, tt.wantErr)
-				return
 			} else {
 				assert.NoError(t, err)
 			}
