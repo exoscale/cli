@@ -16,6 +16,7 @@
 ### Bug fixes
 
 - api: make hanging `exo api` requests exit on SIGINT (#937)
+- deps: build with Go 1.27.3 to reject TLS certificate chains containing the compromised eMudhra intermediates (CVE-2026-111943) (#938)
 
 ## 1.103.2
 
