@@ -16,7 +16,7 @@ go test -v -tags=api -run X      # api only, set EXOSCALE_API_KEY and EXOSCALE_A
 KMS key store scenarios (`[xks]` condition) also need a reachable XKS proxy, and are skipped otherwise. Use the test proxy configured in `.github/workflows/e2e.yml`:
 
 ```bash
-export XKS_PROXY_ENDPOINT=https://kms-test-xks-proxy.gva2-prod.exoscale.ch/example/uri/path/prefix/kms/xks/v1
+export XKS_PROXY_ENDPOINT=https://gva2.prod.kms-test.exoscale.ch/example/uri/path/prefix/kms/xks/v1
 export XKS_PROXY_ACCESS_KEY=BETWEEN2TENAND3TENCHARACTERS
 export XKS_PROXY_SECRET_KEY=PleaseReplaceThisWithSomeSecretOfLength43To64
 go test -v -tags=local_integration -timeout 30m -run TestAPIKMSLocal -account=<name>
