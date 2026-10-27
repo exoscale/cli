@@ -18,6 +18,9 @@
 - api: make hanging `exo api` requests exit on SIGINT (#937)
 - deps: build with Go 1.27.3 to reject TLS certificate chains containing the compromised eMudhra intermediates (CVE-2026-111943) (#938)
 
+### Improvements
+- cmd: commands can take binary arguments and flags given as base64, as `file://<path>` (file holding base64) or as `fileb://<path>` (raw binary file)
+
 ## 1.103.2
 
 ### Bug fixes

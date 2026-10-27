@@ -59,8 +59,22 @@ Supported struct tags:
 | `cli-hidden:""` | Mark flag hidden |
 | `cli-deprecated:"msg"` | Mark flag deprecated |
 
-Supported field types: `string`, `int64`, `bool`, `[]string`, `map[string]string`.
-Any other type panics at startup.
+Supported field types: `string`, `int64`, `bool`, `[]string`, `map[string]string`,
+and any type whose pointer implements `pflag.Value` (flag or single positional arg,
+not variadic). Any other type panics at startup.
+
+For binary input (keys, ciphertexts, signatures...) use `exocmd.BinaryValue`
+(`cmd/binary_value.go`) instead of a base64 `string`. The field holds the
+decoded bytes, and users can pass:
+
+- `<base64>` - the value itself, base64-encoded
+- `file://<path>` - a file containing the base64-encoded value
+- `fileb://<path>` - a file containing the raw bytes
+
+```go
+Payload exocmd.BinaryValue `cli-arg:"#" cli-usage:"PAYLOAD"`
+Context exocmd.BinaryValue `cli-usage:"encryption context"` // --context flag
+```
 
 Global alias vars to use for `CmdAliases()`:
 `exocmd.GListAlias`, `GShowAlias`, `GCreateAlias`, `GDeleteAlias`, `GRemoveAlias`.

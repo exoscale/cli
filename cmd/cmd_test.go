@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -296,5 +298,146 @@ func Test_registerCobraCommand(t *testing.T) {
 	))
 	require.NoError(t, rootCmd.Execute())
 	require.True(t, testCmdPreRunOK)
+	require.True(t, testCmdRunOK)
+}
+
+// testValueCLICmd exercises fields whose type implements pflag.Value.
+type testValueCLICmd struct {
+	_ bool `cli-cmd:"test-value"`
+
+	RequiredValue BinaryValue `cli-arg:"#"`
+	OptionalValue BinaryValue `cli-arg:"?" cli-usage:"OPTIONAL"`
+
+	FlagValue BinaryValue `cli-short:"b" cli-usage:"binary flag"`
+
+	preRun func(_ *cobra.Command, _ []string) error `cli:"-"`
+	run    func(_ *cobra.Command, _ []string) error `cli:"-"`
+}
+
+func (c *testValueCLICmd) CmdAliases() []string { return nil }
+func (c *testValueCLICmd) CmdShort() string     { return "" }
+func (c *testValueCLICmd) CmdLong() string      { return "" }
+func (c *testValueCLICmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return c.preRun(cmd, args)
+}
+func (c *testValueCLICmd) CmdRun(cmd *cobra.Command, args []string) error { return c.run(cmd, args) }
+
+func Test_cliCommandFlagSet_pflagValue(t *testing.T) {
+	cmd := &testValueCLICmd{FlagValue: BinaryValue("default")}
+
+	actual, err := cliCommandFlagSet(cmd)
+	require.NoError(t, err)
+
+	expected := &pflag.Flag{
+		Name:      "flag-value",
+		Shorthand: "b",
+		Usage:     "binary flag",
+		Value:     new(BinaryValue("default")),
+		DefValue:  "ZGVmYXVsdA==",
+	}
+	require.Equal(t, expected, actual.Lookup("flag-value"))
+}
+
+func Test_cliCommandUse_pflagValue(t *testing.T) {
+	actual, err := cliCommandUse(&testValueCLICmd{})
+	require.NoError(t, err)
+	require.Equal(t, "test-value REQUIRED-VALUE [OPTIONAL]", actual)
+}
+
+func Test_cliCommandDefaultPreRun_pflagValue(t *testing.T) {
+	newTestCmd := func(flagValue string) *cobra.Command {
+		fs, err := cliCommandFlagSet(&testValueCLICmd{})
+		require.NoError(t, err)
+		if flagValue != "" {
+			require.NoError(t, fs.Set("flag-value", flagValue))
+		}
+
+		testCmd := new(cobra.Command)
+		fs.VisitAll(func(flag *pflag.Flag) { testCmd.Flags().AddFlag(flag) })
+		return testCmd
+	}
+
+	tests := []struct {
+		name      string
+		flagValue string
+		args      []string
+		expected  *testValueCLICmd
+		wantErr   bool
+	}{
+		{
+			name:    "error required arg missing",
+			args:    []string{},
+			wantErr: true,
+		},
+		{
+			name:    "error invalid arg value",
+			args:    []string{"not base64!"},
+			wantErr: true,
+		},
+		{
+			name:     "ok without optional arg",
+			args:     []string{"AP8Q"},
+			expected: &testValueCLICmd{RequiredValue: BinaryValue{0x00, 0xff, 0x10}},
+		},
+		{
+			name: "ok with optional arg and flag",
+			args: []string{"AP8Q", "aGk="},
+			// Set on the flagset as cobra would do when parsing "--flag-value".
+			flagValue: "ZGVmYXVsdA==",
+			expected: &testValueCLICmd{
+				RequiredValue: BinaryValue{0x00, 0xff, 0x10},
+				OptionalValue: BinaryValue("hi"),
+				FlagValue:     BinaryValue("default"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := new(testValueCLICmd)
+			err := CliCommandDefaultPreRun(actual, newTestCmd(tt.flagValue), tt.args)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func Test_cliCommandDefaultPreRun_pflagValueTypeMismatch(t *testing.T) {
+	testCmd := new(cobra.Command)
+	testCmd.Flags().String("flag-value", "", "")
+
+	err := CliCommandDefaultPreRun(new(testValueCLICmd), testCmd, []string{"AP8Q"})
+	require.ErrorAs(t, err, new(cliCommandImplemError))
+}
+
+func Test_registerCobraCommand_pflagValue(t *testing.T) {
+	raw := []byte{0x00, 0xff, 0x10, 'h', 'i', '\n'}
+	binFile := filepath.Join(t.TempDir(), "data.bin")
+	require.NoError(t, os.WriteFile(binFile, raw, 0o600))
+
+	var testCmdRunOK bool
+
+	rootCmd := &cobra.Command{}
+	testCmd := &testValueCLICmd{}
+	testCmd.preRun = func(cmd *cobra.Command, args []string) error {
+		return CliCommandDefaultPreRun(testCmd, cmd, args)
+	}
+	testCmd.run = func(_ *cobra.Command, _ []string) error {
+		require.Equal(t, BinaryValue{0x00, 0xff, 0x10}, testCmd.RequiredValue)
+		require.Equal(t, BinaryValue(raw), testCmd.OptionalValue)
+		require.Equal(t, BinaryValue("hi"), testCmd.FlagValue)
+
+		testCmdRunOK = true
+		return nil
+	}
+
+	require.NoError(t, RegisterCLICommand(rootCmd, testCmd))
+
+	rootCmd.SetArgs([]string{"test-value", "-b", "aGk=", "AP8Q", "fileb://" + binFile})
+	require.NoError(t, rootCmd.Execute())
 	require.True(t, testCmdRunOK)
 }

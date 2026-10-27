@@ -56,7 +56,7 @@ jobs:
           EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
           EXOSCALE_ZONE: ch-gva-2
           # Test XKS proxy used by the KMS key store scenarios; the credentials are dummies.
-          XKS_PROXY_ENDPOINT: https://kms-test-xks-proxy.gva2-prod.exoscale.ch/example/uri/path/prefix/kms/xks/v1
+          XKS_PROXY_ENDPOINT: https://gva2.prod.kms-test.exoscale.ch/example/uri/path/prefix/kms/xks/v1
           XKS_PROXY_ACCESS_KEY: BETWEEN2TENAND3TENCHARACTERS
           XKS_PROXY_SECRET_KEY: PleaseReplaceThisWithSomeSecretOfLength43To64
         run: |
