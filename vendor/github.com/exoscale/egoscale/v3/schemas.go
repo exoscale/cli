@@ -262,7 +262,7 @@ type CreateDeploymentRequest struct {
 	// Deployment name
 	Name string `json:"name" validate:"required,gte=1"`
 	// Billing identifier for this deployment. Used by the Router for usage counters and Kafka events.
-	ProductName string `json:"product-name,omitempty" validate:"omitempty,gte=1"`
+	ProductName string `json:"product-name,omitempty" validate:"omitempty,gte=1,lte=256"`
 	// Number of replicas (>=1)
 	Replicas int64 `json:"replicas" validate:"required,gte=1"`
 }
@@ -1183,7 +1183,7 @@ type DBAASServiceClickhouse struct {
 	ConnectionInfo *DBAASServiceClickhouseConnectionInfo `json:"connection-info,omitempty"`
 	// Service creation timestamp (ISO 8601)
 	CreatedAT time.Time `json:"created-at,omitempty"`
-	// TODO UNIT disk space for data storage
+	// Disk space for data storage, in bytes
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
 	// Service integrations
 	Integrations []DBAASIntegration `json:"integrations,omitempty"`
@@ -1196,7 +1196,7 @@ type DBAASServiceClickhouse struct {
 	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
 	// Number of CPUs for each node
 	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
-	// TODO UNIT of memory for each node
+	// Memory of each node, in bytes
 	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
 	// State of individual service nodes
 	NodeStates []DBAASNodeState `json:"node-states,omitempty"`
@@ -1227,7 +1227,7 @@ type DBAASServiceClickhouse struct {
 type DBAASServiceCommon struct {
 	// Service creation timestamp (ISO 8601)
 	CreatedAT time.Time `json:"created-at,omitempty"`
-	// TODO UNIT disk space for data storage
+	// Disk space for data storage, in bytes
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
 	// Service integrations
 	Integrations []DBAASIntegration `json:"integrations,omitempty"`
@@ -1236,7 +1236,7 @@ type DBAASServiceCommon struct {
 	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
 	// Number of CPUs for each node
 	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
-	// TODO UNIT of memory for each node
+	// Memory of each node, in bytes
 	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
 	// Service notifications
 	Notifications []DBAASServiceNotification `json:"notifications,omitempty"`
@@ -1330,7 +1330,7 @@ type DBAASServiceGrafana struct {
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// DbaaS service description
 	Description string `json:"description,omitempty"`
-	// TODO UNIT disk space for data storage
+	// Disk space for data storage, in bytes
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
 	// Grafana settings
 	GrafanaSettings *JSONSchemaGrafana `json:"grafana-settings,omitempty"`
@@ -1345,7 +1345,7 @@ type DBAASServiceGrafana struct {
 	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
 	// Number of CPUs for each node
 	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
-	// TODO UNIT of memory for each node
+	// Memory of each node, in bytes
 	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
 	// State of individual service nodes
 	NodeStates []DBAASNodeState `json:"node-states,omitempty"`
@@ -1429,7 +1429,7 @@ type DBAASServiceKafka struct {
 	ConnectionInfo *DBAASServiceKafkaConnectionInfo `json:"connection-info,omitempty"`
 	// Service creation timestamp (ISO 8601)
 	CreatedAT time.Time `json:"created-at,omitempty"`
-	// TODO UNIT disk space for data storage
+	// Disk space for data storage, in bytes
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
 	// Service integrations
 	Integrations []DBAASIntegration `json:"integrations,omitempty"`
@@ -1452,7 +1452,7 @@ type DBAASServiceKafka struct {
 	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
 	// Number of CPUs for each node
 	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
-	// TODO UNIT of memory for each node
+	// Memory of each node, in bytes
 	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
 	// State of individual service nodes
 	NodeStates []DBAASNodeState `json:"node-states,omitempty"`
@@ -1574,7 +1574,7 @@ type DBAASServiceMysql struct {
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// List of MySQL databases
 	Databases []DBAASMysqlDatabaseName `json:"databases,omitempty"`
-	// TODO UNIT disk space for data storage
+	// Disk space for data storage, in bytes
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
 	// Service integrations
 	Integrations []DBAASIntegration `json:"integrations,omitempty"`
@@ -1589,7 +1589,7 @@ type DBAASServiceMysql struct {
 	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
 	// Number of CPUs for each node
 	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
-	// TODO UNIT of memory for each node
+	// Memory of each node, in bytes
 	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
 	// State of individual service nodes
 	NodeStates []DBAASNodeState `json:"node-states,omitempty"`
@@ -1723,7 +1723,7 @@ type DBAASServiceOpensearch struct {
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// DbaaS service description
 	Description string `json:"description,omitempty"`
-	// TODO UNIT disk space for data storage
+	// Disk space for data storage, in bytes
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
 	// Allows you to create glob style patterns and set a max number of indexes matching this pattern you want to keep. Creating indexes exceeding this value will cause the oldest one to get deleted. You could for example create a pattern looking like 'logs.?' and then create index logs.1, logs.2 etc, it will delete logs.1 once you create logs.6. Do note 'logs.?' does not apply to logs.10. Note: Setting max_index_count to 0 will do nothing and the pattern gets ignored.
 	IndexPatterns []DBAASServiceOpensearchIndexPatterns `json:"index-patterns,omitempty"`
@@ -1744,7 +1744,7 @@ type DBAASServiceOpensearch struct {
 	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
 	// Number of CPUs for each node
 	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
-	// TODO UNIT of memory for each node
+	// Memory of each node, in bytes
 	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
 	// State of individual service nodes
 	NodeStates []DBAASNodeState `json:"node-states,omitempty"`
@@ -1845,7 +1845,7 @@ type DBAASServicePG struct {
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// List of PostgreSQL databases
 	Databases []DBAASDatabaseName `json:"databases,omitempty"`
-	// TODO UNIT disk space for data storage
+	// Disk space for data storage, in bytes
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
 	// Service integrations
 	Integrations []DBAASIntegration `json:"integrations,omitempty"`
@@ -1860,7 +1860,7 @@ type DBAASServicePG struct {
 	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
 	// Number of CPUs for each node
 	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
-	// TODO UNIT of memory for each node
+	// Memory of each node, in bytes
 	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
 	// State of individual service nodes
 	NodeStates []DBAASNodeState `json:"node-states,omitempty"`
@@ -1947,7 +1947,7 @@ type DBAASServiceThanos struct {
 	ConnectionInfo *DBAASServiceThanosConnectionInfo `json:"connection-info,omitempty"`
 	// Service creation timestamp (ISO 8601)
 	CreatedAT time.Time `json:"created-at,omitempty"`
-	// TODO UNIT disk space for data storage
+	// Disk space for data storage, in bytes
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
 	// Service integrations
 	Integrations []DBAASIntegration `json:"integrations,omitempty"`
@@ -1960,7 +1960,7 @@ type DBAASServiceThanos struct {
 	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
 	// Number of CPUs for each node
 	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
-	// TODO UNIT of memory for each node
+	// Memory of each node, in bytes
 	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
 	// State of individual service nodes
 	NodeStates []DBAASNodeState `json:"node-states,omitempty"`
@@ -2066,7 +2066,7 @@ type DBAASServiceValkey struct {
 	ConnectionInfo *DBAASServiceValkeyConnectionInfo `json:"connection-info,omitempty"`
 	// Service creation timestamp (ISO 8601)
 	CreatedAT time.Time `json:"created-at,omitempty"`
-	// TODO UNIT disk space for data storage
+	// Disk space for data storage, in bytes
 	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
 	// Service integrations
 	Integrations []DBAASIntegration `json:"integrations,omitempty"`
@@ -2079,7 +2079,7 @@ type DBAASServiceValkey struct {
 	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
 	// Number of CPUs for each node
 	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
-	// TODO UNIT of memory for each node
+	// Memory of each node, in bytes
 	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
 	// State of individual service nodes
 	NodeStates []DBAASNodeState `json:"node-states,omitempty"`
@@ -3119,6 +3119,7 @@ const (
 	InferenceEngineVersion0290 InferenceEngineVersion = "0.29.0"
 	InferenceEngineVersion0300 InferenceEngineVersion = "0.30.0"
 	InferenceEngineVersion0310 InferenceEngineVersion = "0.31.0"
+	InferenceEngineVersion0320 InferenceEngineVersion = "0.32.0"
 )
 
 // Router flush payload: the router's full in-memory usage map with flush identity fields
@@ -3189,7 +3190,7 @@ type Instance struct {
 	ID UUID `json:"id,omitempty"`
 	// Compute instance type
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
-	// VPC ip forwarding
+	// Indicates if the instance can act as a router in a VPC network
 	IPForwarding *bool `json:"ip-forwarding,omitempty"`
 	// Instance IPv6 address
 	Ipv6Address string `json:"ipv6-address,omitempty"`
@@ -4686,23 +4687,23 @@ type JSONSchemaSchemaRegistry struct {
 // Configuration options for Thanos Compactor.
 type JSONSchemaThanosCompactor struct {
 	// Retention time for data in days for each resolution (5m, 1h, raw)
-	RetentionDays int `json:"retention.days,omitempty" validate:"omitempty,gte=0"`
+	RetentionDays int `json:"retention-days,omitempty" validate:"omitempty,gte=0"`
 }
 
 // Configuration options for Thanos Query.
 type JSONSchemaThanosQuery struct {
 	// Set the default evaluation interval for subqueries.
-	QueryDefaultEvaluationInterval string `json:"query.default-evaluation-interval,omitempty" validate:"omitempty,lte=20"`
+	DefaultEvaluationInterval string `json:"default-evaluation-interval,omitempty" validate:"omitempty,lte=20"`
 	// The maximum lookback duration for retrieving metrics during expression evaluations in PromQL. PromQL always evaluates the query for a certain timestamp, and it looks back for the given amount of time to get the latest sample. If it exceeds the maximum lookback delta, it assumes the series is stale and returns none (a gap). The lookback delta should be set to at least 2 times the slowest scrape interval. If unset, it will use the promql default of 5m.
-	QueryLookbackDelta string `json:"query.lookback-delta,omitempty" validate:"omitempty,lte=20"`
+	LookbackDelta string `json:"lookback-delta,omitempty" validate:"omitempty,lte=20"`
 	// The default metadata time range duration for retrieving labels through Labels and Series API when the range parameters are not specified. The zero value means the range covers the time since the beginning.
-	QueryMetadataDefaultTimeRange string `json:"query.metadata.default-time-range,omitempty" validate:"omitempty,lte=20"`
-	// Maximum time to process a query by the query node.
-	QueryTimeout string `json:"query.timeout,omitempty" validate:"omitempty,lte=20"`
+	MetadataDefaultTimeRange string `json:"metadata-default-time-range,omitempty" validate:"omitempty,lte=20"`
 	// The maximum samples allowed for a single Series request. The Series call fails if this limit is exceeded. Set to 0 for no limit. NOTE: For efficiency, the limit is internally implemented as 'chunks limit' considering each chunk contains a maximum of 120 samples. The default value is 100 * store.limits.request-series.
-	StoreLimitsRequestSamples int `json:"store.limits.request-samples,omitempty" validate:"omitempty,gte=0,lte=1e+08"`
+	RequestSamplesLimits int `json:"request-samples-limits,omitempty" validate:"omitempty,gte=0,lte=1e+08"`
 	// The maximum series allowed for a single Series request. The Series call fails if this limit is exceeded. Set to 0 for no limit. The default value is 1000 * cpu_count.
-	StoreLimitsRequestSeries int `json:"store.limits.request-series,omitempty" validate:"omitempty,gte=0,lte=1e+08"`
+	RequestSeriesLimits int `json:"request-series-limits,omitempty" validate:"omitempty,gte=0,lte=1e+08"`
+	// Maximum time to process a query by the query node.
+	Timeout string `json:"timeout,omitempty" validate:"omitempty,lte=20"`
 }
 
 // Configuration options for Thanos Query Frontend.
@@ -5316,9 +5317,13 @@ type ModelRef struct {
 
 // Accumulated Unit Of Measurement (UOM) counters for one model over a flush window
 type ModelUsageCounters struct {
+	// Prompt/input UOM served from prefix cache across all calls in this flush window (excluded from input-uom); optional, defaults to 0
+	CacheReadInputUom int `json:"cache-read-input-uom,omitempty" validate:"omitempty,gte=0"`
+	// Subset of input-uom written to prefix cache across all calls in this flush window; optional, defaults to 0
+	CacheWriteInputUom int `json:"cache-write-input-uom,omitempty" validate:"omitempty,gte=0"`
 	// Number of inference calls in this flush window
 	CallCount int `json:"call-count" validate:"required,gte=1"`
-	// Total prompt/input Unit Of Measurement (UOM) across all calls in this flush window (e.g., tokens for LLMs, minutes for TTS, pages for OCR)
+	// Uncached prompt/input Unit Of Measurement (UOM) across all calls in this flush window (total prompt minus cache-read)
 	InputUom int `json:"input-uom" validate:"required,gte=0"`
 	// Total completion/output Unit Of Measurement (UOM) across all calls in this flush window (e.g., tokens for LLMs, minutes for TTS, pages for OCR)
 	OutputUom int `json:"output-uom" validate:"required,gte=0"`
@@ -5655,12 +5660,6 @@ type Resource struct {
 	ID UUID `json:"id,omitempty"`
 	// Resource name
 	Name string `json:"name,omitempty"`
-}
-
-// AI deployment inference endpoint authentication key
-type RevealDeploymentAPIKeyResponse struct {
-	// Inference endpoint authentication key
-	APIKey string `json:"api-key" validate:"required"`
 }
 
 type ReverseDNSRecord struct {
@@ -6173,7 +6172,7 @@ const (
 	SubnetAddressfamilyDual  SubnetAddressfamily = "dual"
 )
 
-// Subnet attachements
+// Subnet attachments
 type SubnetInstances struct {
 	// Instance uuid
 	ID UUID `json:"id,omitempty"`

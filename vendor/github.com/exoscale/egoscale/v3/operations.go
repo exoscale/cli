@@ -552,52 +552,6 @@ func (c Client) UpdateDeployment(ctx context.Context, id UUID, req UpdateDeploym
 	return bodyresp, nil
 }
 
-// Get Deployment API Key
-func (c Client) RevealDeploymentAPIKey(ctx context.Context, id UUID) (*RevealDeploymentAPIKeyResponse, error) {
-	path := fmt.Sprintf("/ai/deployment/%v/api-key", id)
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: new request: %w", err)
-	}
-
-	request.Header.Add("User-Agent", c.getUserAgent())
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "reveal-deployment-api-key")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: http response: %w", decodeAPIErrorResponse(err, map[int]func() any{
-			404: func() any { return new(ErrorResponse) },
-		}))
-	}
-
-	bodyresp := new(RevealDeploymentAPIKeyResponse)
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("RevealDeploymentAPIKey: prepare JSON response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
 type GetDeploymentLogsOpt func(url.Values)
 
 func GetDeploymentLogsWithStream(stream bool) GetDeploymentLogsOpt {
@@ -612,7 +566,7 @@ func GetDeploymentLogsWithTail(tail int64) GetDeploymentLogsOpt {
 	}
 }
 
-// Return logs for the vLLM deployment (deploy/<release-name>--deployment-vllm). Optional ?stream=true to request streaming (may not be supported).
+// Return logs for the vLLM deployment (dedicated inference: deploy/<release-name>--deployment-vllm; llm-d: deploy/<release-name>-vllm). Optional ?stream=true to request streaming (may not be supported).
 func (c Client) GetDeploymentLogs(ctx context.Context, id UUID, opts ...GetDeploymentLogsOpt) (*GetDeploymentLogsResponse, error) {
 	path := fmt.Sprintf("/ai/deployment/%v/logs", id)
 
@@ -5043,7 +4997,7 @@ type UpdateDBAASIntegrationRequest struct {
 	Settings map[string]any `json:"settings" validate:"required"`
 }
 
-// [BETA] Update a existing DBaaS integration
+// [BETA] Update an existing DBaaS integration
 func (c Client) UpdateDBAASIntegration(ctx context.Context, id UUID, req UpdateDBAASIntegrationRequest) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-integration/%v", id)
 
@@ -11775,7 +11729,7 @@ func ListEventsWithTo(to time.Time) ListEventsOpt {
 
 // Retrieve Mutation Events for a given date range. Defaults to retrieving Events for the past 24 hours.
 // Both a `from` and `to` arguments can be specified to filter Events over a specific period.
-// Events will be the the most descriptive possible but not all fields are mandatory
+// Events will be the most descriptive possible but not all fields are mandatory
 func (c Client) ListEvents(ctx context.Context, opts ...ListEventsOpt) ([]Event, error) {
 	path := "/event"
 
@@ -12659,7 +12613,7 @@ type CreateInstanceRequest struct {
 	DiskSize int64 `json:"disk-size" validate:"required,gte=10,lte=51200"`
 	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type" validate:"required"`
-	// VPC ip forwarding
+	// Whether the instance can act as a router in a VPC network
 	IPForwarding *bool `json:"ip-forwarding,omitempty"`
 	// Enable IPv6. DEPRECATED: use `public-ip-assignments`.
 	Ipv6Enabled *bool  `json:"ipv6-enabled,omitempty"`
@@ -15224,7 +15178,7 @@ func (c Client) ListKmsKeyRotations(ctx context.Context, id UUID) (*ListKmsKeyRo
 	return bodyresp, nil
 }
 
-// Decrypts an existing ciphertext using its original key material and re-encrypts the underlying plaintext using a specified KMS key or the latest key material of the same KMS Key. Source and destination keys must belong to the same key family.
+// Decrypts an existing ciphertext using its original key material and re-encrypts the underlying plaintext using a specified KMS key or the latest key material of the same KMS Key. Source and destination keys must belong to the same key family. IAM policies are evaluated for both the source and the destination key.
 func (c Client) ReEncrypt(ctx context.Context, id UUID, req ReEncryptRequest) (*ReEncryptResponse, error) {
 	path := fmt.Sprintf("/kms-key/%v/re-encrypt", id)
 

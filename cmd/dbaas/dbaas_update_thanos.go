@@ -50,42 +50,25 @@ func (c *dbaasServiceUpdateCmd) updateThanos(cmd *cobra.Command, _ []string) err
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ThanosSettings)) {
 		if c.ThanosSettings != "" {
-			var settings map[string]interface{}
-
-			if err := json.Unmarshal([]byte(c.ThanosSettings), &settings); err != nil {
-				return err
+			settingsSchema, err := client.GetDBAASSettingsThanos(ctx)
+			if err != nil {
+				return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 			}
 
-			thanosSettings := &v3.JSONSchemaThanos{}
-
-			// Parse compactor settings
-			if compactor, ok := settings["compactor"].(map[string]interface{}); ok {
-				thanosSettings.Compactor = &v3.JSONSchemaThanosCompactor{
-					RetentionDays: int(utils.GetSettingFloat64(compactor, "retention.days")),
-				}
+			_, err = validateDatabaseServiceSettings(
+				c.ThanosSettings,
+				settingsSchema.Settings.Thanos,
+			)
+			if err != nil {
+				return fmt.Errorf("invalid settings: %w", err)
 			}
 
-			// Parse query settings
-			if query, ok := settings["query"].(map[string]interface{}); ok {
-				thanosSettings.Query = &v3.JSONSchemaThanosQuery{
-					QueryDefaultEvaluationInterval: utils.GetSettingString(query, "query.default-evaluation-interval"),
-					QueryLookbackDelta:             utils.GetSettingString(query, "query.lookback-delta"),
-					QueryMetadataDefaultTimeRange:  utils.GetSettingString(query, "query.metadata.default-time-range"),
-					QueryTimeout:                   utils.GetSettingString(query, "query.timeout"),
-					StoreLimitsRequestSamples:      int(utils.GetSettingFloat64(query, "store.limits.request-samples")),
-					StoreLimitsRequestSeries:       int(utils.GetSettingFloat64(query, "store.limits.request-series")),
-				}
+			settings := &v3.JSONSchemaThanos{}
+			if err = json.Unmarshal([]byte(c.ThanosSettings), settings); err != nil {
+				return fmt.Errorf("invalid settings: %w", err)
 			}
 
-			// Parse query-frontend settings
-			if queryFrontend, ok := settings["query-frontend"].(map[string]interface{}); ok {
-				alignRangeWithStep := utils.GetSettingBool(queryFrontend, "query-range.align-range-with-step")
-				thanosSettings.QueryFrontend = &v3.JSONSchemaThanosQueryFrontend{
-					QueryRangeAlignRangeWithStep: &alignRangeWithStep,
-				}
-			}
-
-			databaseService.ThanosSettings = thanosSettings
+			databaseService.ThanosSettings = settings
 		}
 		updated = true
 	}
