@@ -1,9 +1,6 @@
 package crypto
 
 import (
-	"encoding/base64"
-	"fmt"
-
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -27,8 +24,8 @@ type cryptoVerifyCmd struct {
 	_ bool `cli-cmd:"verify"`
 
 	Key              string                           `cli-arg:"#" cli-usage:"ID"`
-	Message          string                           `cli-arg:"#" cli-usage:"MESSAGE_b64"`
-	Signature        string                           `cli-arg:"#" cli-usage:"SIGNATURE_b64"`
+	Message          exocmd.BinaryValue               `cli-arg:"#" cli-usage:"MESSAGE"`
+	Signature        exocmd.BinaryValue               `cli-arg:"#" cli-usage:"SIGNATURE"`
 	SigningAlgorithm v3.VerifyRequestSigningAlgorithm `cli-arg:"#" cli-usage:"SIGNING_ALGORITHM"`
 
 	MessageType v3.VerifyRequestMessageType `cli-flag:"message-type" cli-usage:"how the message is interpreted [raw|digest] (default: raw)"`
@@ -42,9 +39,11 @@ func (c *cryptoVerifyCmd) CmdShort() string {
 }
 
 func (c *cryptoVerifyCmd) CmdLong() string {
-	return `Verify a base64-encoded signature against a base64-encoded message or digest with a KMS Key of usage "sign-verify". The signing algorithm must be the one the signature was produced with.
+	return `Verify a signature against a message or digest with a KMS Key of usage "sign-verify". The signing algorithm must be the one the signature was produced with.
 
-Supported signing algorithms: RSASSA_PSS_SHA_256, RSASSA_PSS_SHA_384, RSASSA_PSS_SHA_512, RSASSA_PKCS1_V1_5_SHA_256, RSASSA_PKCS1_V1_5_SHA_384, RSASSA_PKCS1_V1_5_SHA_512, ECDSA_SHA_256, ECDSA_SHA_384, ECDSA_SHA_512, EDDSA_ED25519, ED25519_PH_SHA_512, ML_DSA_SHAKE_256`
+Supported signing algorithms: RSASSA_PSS_SHA_256, RSASSA_PSS_SHA_384, RSASSA_PSS_SHA_512, RSASSA_PKCS1_V1_5_SHA_256, RSASSA_PKCS1_V1_5_SHA_384, RSASSA_PKCS1_V1_5_SHA_512, ECDSA_SHA_256, ECDSA_SHA_384, ECDSA_SHA_512, EDDSA_ED25519, ED25519_PH_SHA_512, ML_DSA_SHAKE_256
+
+` + binaryInputHelp
 }
 
 func (c *cryptoVerifyCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -59,20 +58,10 @@ func (c *cryptoVerifyCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	message, err := base64.StdEncoding.DecodeString(c.Message)
-	if err != nil {
-		return fmt.Errorf("message is not valid base64: %w", err)
-	}
-
-	signature, err := base64.StdEncoding.DecodeString(c.Signature)
-	if err != nil {
-		return fmt.Errorf("signature is not valid base64: %w", err)
-	}
-
 	resp, err := client.Verify(ctx, v3.UUID(c.Key), v3.VerifyRequest{
-		Message:          message,
+		Message:          c.Message,
 		MessageType:      c.MessageType,
-		Signature:        signature,
+		Signature:        c.Signature,
 		SigningAlgorithm: c.SigningAlgorithm,
 	})
 	if err != nil {

@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"encoding/base64"
-	"fmt"
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -37,10 +36,10 @@ type cryptoDecryptCmd struct {
 
 	_ bool `cli-cmd:"decrypt"`
 
-	Key        string `cli-arg:"#" cli-usage:"ID"`
-	Ciphertext string `cli-arg:"#" cli-usage:"CIPHERTEXT"`
+	Key        string             `cli-arg:"#" cli-usage:"ID"`
+	Ciphertext exocmd.BinaryValue `cli-arg:"#" cli-usage:"CIPHERTEXT"`
 
-	EncryptionContext   string                               `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for decryption"`
+	EncryptionContext   exocmd.BinaryValue                   `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for decryption"`
 	EncryptionAlgorithm v3.DecryptRequestEncryptionAlgorithm `cli-flag:"encryption-algorithm" cli-usage:"encryption algorithm, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
 	Zone                v3.ZoneName                          `cli-short:"z" cli-flag:"zone" cli-usage:"crypto zone"`
 }
@@ -52,7 +51,7 @@ func (c *cryptoDecryptCmd) CmdShort() string {
 }
 
 func (c *cryptoDecryptCmd) CmdLong() string {
-	return "Decrypt a ciphertext."
+	return "Decrypt a ciphertext.\n\n" + binaryInputHelp
 }
 
 func (c *cryptoDecryptCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -67,20 +66,13 @@ func (c *cryptoDecryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decoded, err := base64.StdEncoding.DecodeString(c.Ciphertext)
-	if err != nil {
-		return fmt.Errorf("ciphertext is not valid base64: %w", err)
-	}
 	req := v3.DecryptRequest{
-		Ciphertext:          decoded,
+		Ciphertext:          c.Ciphertext,
 		EncryptionAlgorithm: c.EncryptionAlgorithm,
 	}
 
 	if cmd.Flags().Changed("encryption-context") {
-		ec, err := base64.StdEncoding.DecodeString(c.EncryptionContext)
-		if err != nil {
-			return fmt.Errorf("encryption-context is not valid base64: %w", err)
-		}
+		ec := []byte(c.EncryptionContext)
 		req.EncryptionContext = &ec
 	}
 

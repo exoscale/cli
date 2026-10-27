@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"encoding/base64"
-	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -15,12 +14,12 @@ type cryptoReencryptCmd struct {
 
 	_ bool `cli-cmd:"reencrypt"`
 
-	Key            string `cli-arg:"#" cli-usage:"SRC_ID"`
-	DestinationKey string `cli-arg:"#" cli-usage:"DEST_ID"`
-	Ciphertext     string `cli-arg:"#" cli-usage:"CIPHERTEXT"`
+	Key            string             `cli-arg:"#" cli-usage:"SRC_ID"`
+	DestinationKey string             `cli-arg:"#" cli-usage:"DEST_ID"`
+	Ciphertext     exocmd.BinaryValue `cli-arg:"#" cli-usage:"CIPHERTEXT"`
 
-	SourceEncryptionContext   string                                            `cli-short:"s" cli-flag:"source-encryption-context" cli-usage:"encryption context to use for source ciphertext decryption"`
-	DestEncryptionContext     string                                            `cli-short:"d" cli-flag:"dest-encryption-context" cli-usage:"encryption context to use for destination ciphertext encryption"`
+	SourceEncryptionContext   exocmd.BinaryValue                                `cli-short:"s" cli-flag:"source-encryption-context" cli-usage:"encryption context to use for source ciphertext decryption"`
+	DestEncryptionContext     exocmd.BinaryValue                                `cli-short:"d" cli-flag:"dest-encryption-context" cli-usage:"encryption context to use for destination ciphertext encryption"`
 	SourceEncryptionAlgorithm v3.ReEncryptRequestSourceEncryptionAlgorithm      `cli-flag:"source-encryption-algorithm" cli-usage:"encryption algorithm of the source ciphertext, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
 	DestEncryptionAlgorithm   v3.ReEncryptRequestDestinationEncryptionAlgorithm `cli-flag:"dest-encryption-algorithm" cli-usage:"encryption algorithm for the destination ciphertext, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
 	Zone                      v3.ZoneName                                       `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
@@ -33,7 +32,7 @@ func (c *cryptoReencryptCmd) CmdShort() string {
 }
 
 func (c *cryptoReencryptCmd) CmdLong() string {
-	return "Decrypts an existing ciphertext using its original key material and re-encrypts the underlying plaintext using a specified KMS key or the latest key material of the same KMS Key."
+	return "Decrypts an existing ciphertext using its original key material and re-encrypts the underlying plaintext using a specified KMS key or the latest key material of the same KMS Key.\n\n" + binaryInputHelp
 }
 
 func (c *cryptoReencryptCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -48,21 +47,14 @@ func (c *cryptoReencryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decodedCipher, err := base64.StdEncoding.DecodeString(c.Ciphertext)
-	if err != nil {
-		return err
-	}
 	source := &v3.ReEncryptRequestSource{
-		Ciphertext:          decodedCipher,
+		Ciphertext:          c.Ciphertext,
 		Key:                 v3.UUID(c.Key),
 		EncryptionAlgorithm: c.SourceEncryptionAlgorithm,
 	}
 
 	if cmd.Flags().Changed("source-encryption-context") {
-		ec, err := base64.StdEncoding.DecodeString(c.SourceEncryptionContext)
-		if err != nil {
-			return fmt.Errorf("source-encryption-context is not valid base64: %w", err)
-		}
+		ec := []byte(c.SourceEncryptionContext)
 		source.EncryptionContext = &ec
 	}
 
@@ -72,10 +64,7 @@ func (c *cryptoReencryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed("dest-encryption-context") {
-		ec, err := base64.StdEncoding.DecodeString(c.DestEncryptionContext)
-		if err != nil {
-			return fmt.Errorf("dest-encryption-context is not valid base64: %w", err)
-		}
+		ec := []byte(c.DestEncryptionContext)
 		dest.EncryptionContext = &ec
 	}
 

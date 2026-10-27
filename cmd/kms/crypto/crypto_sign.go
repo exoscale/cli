@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"encoding/base64"
-	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -27,7 +26,7 @@ type cryptoSignCmd struct {
 	_ bool `cli-cmd:"sign"`
 
 	Key              string                         `cli-arg:"#" cli-usage:"ID"`
-	Message          string                         `cli-arg:"#" cli-usage:"MESSAGE_b64"`
+	Message          exocmd.BinaryValue             `cli-arg:"#" cli-usage:"MESSAGE"`
 	SigningAlgorithm v3.SignRequestSigningAlgorithm `cli-arg:"#" cli-usage:"SIGNING_ALGORITHM"`
 
 	MessageType v3.SignRequestMessageType `cli-flag:"message-type" cli-usage:"how the message is interpreted [raw|digest] (default: raw)"`
@@ -41,9 +40,11 @@ func (c *cryptoSignCmd) CmdShort() string {
 }
 
 func (c *cryptoSignCmd) CmdLong() string {
-	return `Sign a base64-encoded message or digest with a KMS Key of usage "sign-verify". The signing algorithm must match the key spec of the KMS Key.
+	return `Sign a message or digest with a KMS Key of usage "sign-verify". The signing algorithm must match the key spec of the KMS Key.
 
-Supported signing algorithms: RSASSA_PSS_SHA_256, RSASSA_PSS_SHA_384, RSASSA_PSS_SHA_512, RSASSA_PKCS1_V1_5_SHA_256, RSASSA_PKCS1_V1_5_SHA_384, RSASSA_PKCS1_V1_5_SHA_512, ECDSA_SHA_256, ECDSA_SHA_384, ECDSA_SHA_512, EDDSA_ED25519, ED25519_PH_SHA_512, ML_DSA_SHAKE_256`
+Supported signing algorithms: RSASSA_PSS_SHA_256, RSASSA_PSS_SHA_384, RSASSA_PSS_SHA_512, RSASSA_PKCS1_V1_5_SHA_256, RSASSA_PKCS1_V1_5_SHA_384, RSASSA_PKCS1_V1_5_SHA_512, ECDSA_SHA_256, ECDSA_SHA_384, ECDSA_SHA_512, EDDSA_ED25519, ED25519_PH_SHA_512, ML_DSA_SHAKE_256
+
+` + binaryInputHelp
 }
 
 func (c *cryptoSignCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -58,13 +59,8 @@ func (c *cryptoSignCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	message, err := base64.StdEncoding.DecodeString(c.Message)
-	if err != nil {
-		return fmt.Errorf("message is not valid base64: %w", err)
-	}
-
 	resp, err := client.Sign(ctx, v3.UUID(c.Key), v3.SignRequest{
-		Message:          message,
+		Message:          c.Message,
 		MessageType:      c.MessageType,
 		SigningAlgorithm: c.SigningAlgorithm,
 	})
