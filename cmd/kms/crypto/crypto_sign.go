@@ -43,7 +43,7 @@ func (c *cryptoSignCmd) CmdShort() string {
 func (c *cryptoSignCmd) CmdLong() string {
 	return `Sign a base64-encoded message or digest with a KMS Key of usage "sign-verify". The signing algorithm must match the key spec of the KMS Key.
 
-Supported signing algorithms: RSASSA_PSS_SHA_256, RSASSA_PSS_SHA_384, RSASSA_PSS_SHA_512, ECDSA_SHA_256, ECDSA_SHA_384, ECDSA_SHA_512, EDDSA_ED25519, ED25519_PH_SHA_512, ML_DSA_SHAKE_256`
+Supported signing algorithms: RSASSA_PSS_SHA_256, RSASSA_PSS_SHA_384, RSASSA_PSS_SHA_512, RSASSA_PKCS1_V1_5_SHA_256, RSASSA_PKCS1_V1_5_SHA_384, RSASSA_PKCS1_V1_5_SHA_512, ECDSA_SHA_256, ECDSA_SHA_384, ECDSA_SHA_512, EDDSA_ED25519, ED25519_PH_SHA_512, ML_DSA_SHAKE_256`
 }
 
 func (c *cryptoSignCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
