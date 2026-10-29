@@ -131,3 +131,108 @@ func TestBuildNvidiaMigProfiles(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildCPUManagerConfig(t *testing.T) {
+	tests := []struct {
+		name      string
+		policy    string
+		opts      []string
+		reconcile string
+		kubeRes   *v3.ReservedResources
+		sysRes    *v3.ReservedResources
+		expected  *v3.CPUManagerConfig
+		expectErr bool
+	}{
+		{
+			name:     "no options returns nil",
+			expected: nil,
+		},
+		{
+			name:     "empty policy with no other options returns nil",
+			policy:   "",
+			expected: nil,
+		},
+		{
+			name:      "static policy with options and reservations",
+			policy:    "static",
+			opts:      []string{"group-by-cores", "dedicated-cpu-id"},
+			reconcile: "10s",
+			kubeRes:   &v3.ReservedResources{CPU: "200m", Memory: "512Mi"},
+			sysRes:    &v3.ReservedResources{CPU: "100m", EphemeralStorage: "1Gi"},
+			expected: &v3.CPUManagerConfig{
+				CPUManagerPolicy:          v3.CPUManagerConfigCPUManagerPolicyStatic,
+				CPUManagerPolicyOptions:   []string{"group-by-cores", "dedicated-cpu-id"},
+				CPUManagerReconcilePeriod: "10s",
+				KubeReserved:              &v3.ReservedResources{CPU: "200m", Memory: "512Mi"},
+				SystemReserved:            &v3.ReservedResources{CPU: "100m", EphemeralStorage: "1Gi"},
+			},
+		},
+		{
+			name:     "none policy",
+			policy:   "none",
+			expected: &v3.CPUManagerConfig{CPUManagerPolicy: v3.CPUManagerConfigCPUManagerPolicyNone},
+		},
+		{
+			name:      "static policy without CPU reservation returns error",
+			policy:    "static",
+			expectErr: true,
+		},
+		{
+			name:      "static policy with reservation lacking CPU returns error",
+			policy:    "static",
+			kubeRes:   &v3.ReservedResources{Memory: "512Mi"},
+			expectErr: true,
+		},
+		{
+			name:      "reservations without static policy return error",
+			kubeRes:   &v3.ReservedResources{CPU: "200m"},
+			expectErr: true,
+		},
+		{
+			name:      "reservations with none policy return error",
+			policy:    "none",
+			sysRes:    &v3.ReservedResources{CPU: "100m"},
+			expectErr: true,
+		},
+		{
+			name:      "reconcile period without policy",
+			reconcile: "5s",
+			expected:  &v3.CPUManagerConfig{CPUManagerReconcilePeriod: "5s"},
+		},
+		{
+			name:      "invalid policy returns error",
+			policy:    "bogus",
+			expectErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := buildCPUManagerConfig(test.policy, test.opts, test.reconcile, test.kubeRes, test.sysRes)
+			if test.expectErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, test.expected, got)
+		})
+	}
+}
+
+func TestReservedResourcesFromFlags(t *testing.T) {
+	t.Run("all empty returns nil", func(t *testing.T) {
+		require.Nil(t, reservedResourcesFromFlags("", "", ""))
+	})
+
+	t.Run("cpu only", func(t *testing.T) {
+		require.Equal(t, &v3.ReservedResources{CPU: "200m"}, reservedResourcesFromFlags("200m", "", ""))
+	})
+
+	t.Run("all three", func(t *testing.T) {
+		require.Equal(
+			t,
+			&v3.ReservedResources{CPU: "200m", Memory: "512Mi", EphemeralStorage: "1Gi"},
+			reservedResourcesFromFlags("200m", "512Mi", "1Gi"),
+		)
+	})
+}

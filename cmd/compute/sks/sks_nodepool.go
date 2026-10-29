@@ -68,6 +68,9 @@ type CreateNodepoolOpts struct {
 	// The GPU family it applies to is inferred from the Nodepool instance type.
 	// Empty means "leave unset".
 	NvidiaMigProfile string
+
+	// CPU manager configuration. nil means "not configured".
+	CPUManagerConfig *v3.CPUManagerConfig
 }
 
 // nvidiaMigProfilesA30 and nvidiaMigProfilesRtxpro6000 list the MIG profiles
@@ -141,6 +144,72 @@ func buildNvidiaMigProfiles(family v3.InstanceTypeFamily, profile string) (*v3.N
 	}
 }
 
+// buildCPUManagerConfig assembles a v3.CPUManagerConfig from individual CLI
+// options. It returns nil when no CPU manager option has been provided.
+//
+// The "static" policy grants exclusive CPUs to Guaranteed pods requesting
+// integer CPU limits, and requires a CPU reservation to be provided via
+// kube-reserved or system-reserved. CPU reservations are not allowed with any
+// other policy.
+func buildCPUManagerConfig(
+	policy string,
+	policyOptions []string,
+	reconcilePeriod string,
+	kubeReserved, systemReserved *v3.ReservedResources,
+) (*v3.CPUManagerConfig, error) {
+	if policy == "" && len(policyOptions) == 0 && reconcilePeriod == "" &&
+		kubeReserved == nil && systemReserved == nil {
+		return nil, nil
+	}
+
+	if policy != "" &&
+		policy != string(v3.CPUManagerConfigCPUManagerPolicyStatic) &&
+		policy != string(v3.CPUManagerConfigCPUManagerPolicyNone) {
+		return nil, fmt.Errorf(
+			"invalid CPU manager policy %q: supported values are %q, %q",
+			policy,
+			v3.CPUManagerConfigCPUManagerPolicyStatic,
+			v3.CPUManagerConfigCPUManagerPolicyNone,
+		)
+	}
+
+	isStatic := policy == string(v3.CPUManagerConfigCPUManagerPolicyStatic)
+	hasCPUReservation := (kubeReserved != nil && kubeReserved.CPU != "") ||
+		(systemReserved != nil && systemReserved.CPU != "")
+
+	switch {
+	case isStatic && !hasCPUReservation:
+		return nil, errors.New(
+			`the "static" CPU manager policy requires a CPU reservation via --kube-reserved-cpu or --system-reserved-cpu`,
+		)
+	case !isStatic && (kubeReserved != nil || systemReserved != nil):
+		return nil, errors.New(
+			"CPU reservations (--kube-reserved-*, --system-reserved-*) are only supported with the \"static\" CPU manager policy",
+		)
+	}
+
+	return &v3.CPUManagerConfig{
+		CPUManagerPolicy:          v3.CPUManagerConfigCPUManagerPolicy(policy),
+		CPUManagerPolicyOptions:   policyOptions,
+		CPUManagerReconcilePeriod: reconcilePeriod,
+		KubeReserved:              kubeReserved,
+		SystemReserved:            systemReserved,
+	}, nil
+}
+
+// reservedResourcesFromFlags builds a *v3.ReservedResources from individual
+// CLI flag values. It returns nil when no reservation has been provided.
+func reservedResourcesFromFlags(cpu, memory, ephemeralStorage string) *v3.ReservedResources {
+	if cpu == "" && memory == "" && ephemeralStorage == "" {
+		return nil
+	}
+	return &v3.ReservedResources{
+		CPU:              cpu,
+		Memory:           memory,
+		EphemeralStorage: ephemeralStorage,
+	}
+}
+
 func createNodepoolRequest(
 	ctx context.Context,
 	client *v3.Client,
@@ -156,6 +225,7 @@ func createNodepoolRequest(
 		Labels:             opts.Labels,
 		KubeletImageGC:     opts.KubeletImageGC,
 		PublicIPAssignment: opts.PublicIPAssignment,
+		CPUManagerConfig:   opts.CPUManagerConfig,
 	}
 
 	aaGroups, err := lookupAntiAffinityGroups(ctx, client, opts.AntiAffinityGroups)

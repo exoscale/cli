@@ -13,6 +13,7 @@
 - kms: show the key spec in `exo kms key show` and `exo kms key list`
 - dbaas: add `exo dbaas acl list` for Kafka and OpenSearch, `exo dbaas acl create` and `delete` for Kafka, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
 - compute: add `--vpc` and `--vpc-subnet` to `exo compute instance create` to attach an instance to VPC Subnets at creation (#927)
+- sks: add `--cpu-manager-policy`, `--cpu-manager-policy-option`, `--cpu-manager-reconcile-period`, `--kube-reserved-cpu`, `--kube-reserved-memory`, `--kube-reserved-ephemeral-storage`, `--system-reserved-cpu`, `--system-reserved-memory` and `--system-reserved-ephemeral-storage` options to `exo compute sks nodepool add` and `exo compute sks nodepool update` to configure the Nodepool CPU manager, and report the CPU manager config in `exo compute sks nodepool show`
 
 ### Bug fixes
 

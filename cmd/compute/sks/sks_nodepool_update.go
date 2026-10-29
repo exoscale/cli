@@ -22,21 +22,30 @@ type sksNodepoolUpdateCmd struct {
 	Cluster  string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
 	Nodepool string `cli-arg:"#" cli-usage:"NODEPOOL-NAME|ID"`
 
-	AntiAffinityGroups []string    `cli-flag:"anti-affinity-group" cli-usage:"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
-	DeployTarget       string      `cli-usage:"Nodepool Deploy Target NAME|ID"`
-	Description        string      `cli-usage:"Nodepool description"`
-	DiskSize           int64       `cli-usage:"Nodepool Compute instances disk size"`
-	InstancePrefix     string      `cli-usage:"string to prefix Nodepool member names with"`
-	InstanceType       string      `cli-usage:"Nodepool Compute instances type"`
-	Labels             []string    `cli-flag:"label" cli-usage:"Nodepool label (format: KEY=VALUE, can be repeated multiple times)"`
-	Name               string      `cli-usage:"Nodepool name"`
-	NvidiaMigProfile   string      `cli-flag:"nvidia-mig-profile" cli-usage:"Nvidia MIG profile to enable on the Nodepool GPUs (e.g. 4g.24gb), empty to disable; the GPU family is inferred from the instance type"`
-	PrivateNetworks    []string    `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
-	SecurityGroups     []string    `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
-	Taints             []string    `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
-	Zone               v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
-	IPv6               bool        `cli-flag:"ipv6" cli-usage:"Enable public IPv6 assignment to Nodepool nodes"`
-	KubeletMaxPods     int64       `cli-flag:"kubelet-max-pods" cli-usage:"maximum number of pods that can run on a node"`
+	AntiAffinityGroups             []string    `cli-flag:"anti-affinity-group" cli-usage:"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	DeployTarget                   string      `cli-usage:"Nodepool Deploy Target NAME|ID"`
+	Description                    string      `cli-usage:"Nodepool description"`
+	DiskSize                       int64       `cli-usage:"Nodepool Compute instances disk size"`
+	InstancePrefix                 string      `cli-usage:"string to prefix Nodepool member names with"`
+	InstanceType                   string      `cli-usage:"Nodepool Compute instances type"`
+	Labels                         []string    `cli-flag:"label" cli-usage:"Nodepool label (format: KEY=VALUE, can be repeated multiple times)"`
+	Name                           string      `cli-usage:"Nodepool name"`
+	NvidiaMigProfile               string      `cli-flag:"nvidia-mig-profile" cli-usage:"Nvidia MIG profile to enable on the Nodepool GPUs (e.g. 4g.24gb), empty to disable; the GPU family is inferred from the instance type"`
+	PrivateNetworks                []string    `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
+	SecurityGroups                 []string    `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
+	Taints                         []string    `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
+	Zone                           v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
+	IPv6                           bool        `cli-flag:"ipv6" cli-usage:"Enable public IPv6 assignment to Nodepool nodes"`
+	KubeletMaxPods                 int64       `cli-flag:"kubelet-max-pods" cli-usage:"maximum number of pods that can run on a node"`
+	CPUManagerPolicy               string      `cli-flag:"cpu-manager-policy" cli-usage:"CPU manager policy used by the kubelet (static|none)"`
+	CPUManagerPolicyOptions        []string    `cli-flag:"cpu-manager-policy-option" cli-usage:"CPU manager policy option (only valid with the static policy, can be specified multiple times)"`
+	CPUManagerReconcilePeriod      string      `cli-flag:"cpu-manager-reconcile-period" cli-usage:"CPU manager reconcile period, as a duration string (e.g. 10s)"`
+	KubeReservedCPU                string      `cli-flag:"kube-reserved-cpu" cli-usage:"CPU reserved for kube components (e.g. 200m)"`
+	KubeReservedMemory             string      `cli-flag:"kube-reserved-memory" cli-usage:"Memory reserved for kube components (e.g. 512Mi)"`
+	KubeReservedEphemeralStorage   string      `cli-flag:"kube-reserved-ephemeral-storage" cli-usage:"Ephemeral storage reserved for kube components (e.g. 1Gi)"`
+	SystemReservedCPU              string      `cli-flag:"system-reserved-cpu" cli-usage:"CPU reserved for system components (e.g. 200m)"`
+	SystemReservedMemory           string      `cli-flag:"system-reserved-memory" cli-usage:"Memory reserved for system components (e.g. 512Mi)"`
+	SystemReservedEphemeralStorage string      `cli-flag:"system-reserved-ephemeral-storage" cli-usage:"Ephemeral storage reserved for system components (e.g. 1Gi)"`
 }
 
 func (c *sksNodepoolUpdateCmd) CmdAliases() []string { return nil }
@@ -240,6 +249,32 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 			updateReq.KubeletMaxPods = &maxPods
 		}
 		updated = true
+	}
+
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.CPUManagerPolicy)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.CPUManagerPolicyOptions)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.CPUManagerReconcilePeriod)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KubeReservedCPU)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KubeReservedMemory)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KubeReservedEphemeralStorage)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.SystemReservedCPU)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.SystemReservedMemory)) ||
+		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.SystemReservedEphemeralStorage)) {
+
+		cpuManagerConfig, err := buildCPUManagerConfig(
+			c.CPUManagerPolicy,
+			c.CPUManagerPolicyOptions,
+			c.CPUManagerReconcilePeriod,
+			reservedResourcesFromFlags(c.KubeReservedCPU, c.KubeReservedMemory, c.KubeReservedEphemeralStorage),
+			reservedResourcesFromFlags(c.SystemReservedCPU, c.SystemReservedMemory, c.SystemReservedEphemeralStorage),
+		)
+		if err != nil {
+			return err
+		}
+		if cpuManagerConfig != nil {
+			updateReq.CPUManagerConfig = cpuManagerConfig
+			updated = true
+		}
 	}
 
 	if updated {

@@ -463,48 +463,6 @@ func XUpdateDeployment(paramId string, params *viper.Viper, body string) (*gentl
 	return resp, decoded, nil
 }
 
-// XRevealDeploymentApiKey Reveal Deployment API Key
-func XRevealDeploymentApiKey(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "reveal-deployment-api-key"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/ai/deployment/{id}/api-key"
-	url = strings.Replace(url, "{id}", paramId, 1)
-
-	req := cli.Client.Get().URL(url)
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
 // XGetDeploymentLogs Get Deployment Logs
 func XGetDeploymentLogs(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "get-deployment-logs"
@@ -5605,7 +5563,7 @@ func XCreateDbaasServiceOpensearch(paramName string, params *viper.Viper, body s
 	return resp, decoded, nil
 }
 
-// XDeleteDbaasServiceOpensearch Delete a OpenSearch service
+// XDeleteDbaasServiceOpensearch Delete an OpenSearch service
 func XDeleteDbaasServiceOpensearch(paramName string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "delete-dbaas-service-opensearch"
 	if xSubcommand {
@@ -14927,6 +14885,53 @@ func XScaleSksNodepool(paramId string, paramSksNodepoolId string, params *viper.
 	return resp, decoded, nil
 }
 
+// XSetSksNodepoolTemplate Set the template of an SKS Nodepool
+func XSetSksNodepoolTemplate(paramId string, paramSksNodepoolId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "set-sks-nodepool-template"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster/{id}/nodepool/{sks-nodepool-id}:set-template"
+	url = strings.Replace(url, "{id}", paramId, 1)
+	url = strings.Replace(url, "{sks-nodepool-id}", paramSksNodepoolId, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XRotateSksCcmCredentials Rotate Exoscale CCM credentials
 func XRotateSksCcmCredentials(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "rotate-sks-ccm-credentials"
@@ -15176,6 +15181,53 @@ func XUpgradeSksClusterServiceLevel(paramId string, params *viper.Viper, body st
 
 	if body != "" {
 		req = req.AddHeader("Content-Type", "").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListSksNodepoolTemplates list-sks-nodepool-templates
+func XListSksNodepoolTemplates(paramKubeVersion string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-sks-nodepool-templates"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-template/{kube-version}"
+	url = strings.Replace(url, "{kube-version}", paramKubeVersion, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	paramVariant := params.GetString("variant")
+	if paramVariant != "" {
+		req = req.AddQuery("variant", fmt.Sprintf("%v", paramVariant))
 	}
 
 	cli.HandleBefore(handlerPath, params, req)
@@ -16212,7 +16264,7 @@ func XUpdateUserRole(paramId string, params *viper.Viper, body string) (*gentlem
 	return resp, decoded, nil
 }
 
-// XCreateVpc [BETA] Create a VPC
+// XCreateVpc Create a VPC
 func XCreateVpc(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-vpc"
 	if xSubcommand {
@@ -16257,7 +16309,7 @@ func XCreateVpc(params *viper.Viper, body string) (*gentleman.Response, map[stri
 	return resp, decoded, nil
 }
 
-// XListVpcs [BETA] List VPCs
+// XListVpcs List VPCs
 func XListVpcs(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-vpcs"
 	if xSubcommand {
@@ -16298,7 +16350,7 @@ func XListVpcs(params *viper.Viper) (*gentleman.Response, map[string]interface{}
 	return resp, decoded, nil
 }
 
-// XDeleteVpc [BETA] Delete a VPC
+// XDeleteVpc Delete a VPC
 func XDeleteVpc(paramId string, params *viper.Viper) (*gentleman.Response, interface{}, error) {
 	handlerPath := "delete-vpc"
 	if xSubcommand {
@@ -16340,7 +16392,7 @@ func XDeleteVpc(paramId string, params *viper.Viper) (*gentleman.Response, inter
 	return resp, decoded, nil
 }
 
-// XGetVpc [BETA] Retrieve VPC details
+// XGetVpc Retrieve VPC details
 func XGetVpc(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "get-vpc"
 	if xSubcommand {
@@ -16382,7 +16434,7 @@ func XGetVpc(paramId string, params *viper.Viper) (*gentleman.Response, map[stri
 	return resp, decoded, nil
 }
 
-// XUpdateVpc [BETA] Update a VPC
+// XUpdateVpc Update a VPC
 func XUpdateVpc(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "update-vpc"
 	if xSubcommand {
@@ -16428,7 +16480,7 @@ func XUpdateVpc(paramId string, params *viper.Viper, body string) (*gentleman.Re
 	return resp, decoded, nil
 }
 
-// XListVpcRoutes [BETA] List VPC routes
+// XListVpcRoutes List VPC routes
 func XListVpcRoutes(paramVpcId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-vpc-routes"
 	if xSubcommand {
@@ -16470,7 +16522,7 @@ func XListVpcRoutes(paramVpcId string, params *viper.Viper) (*gentleman.Response
 	return resp, decoded, nil
 }
 
-// XCreateSubnet [BETA] Create a Subnet
+// XCreateSubnet Create a Subnet
 func XCreateSubnet(paramVpcId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-subnet"
 	if xSubcommand {
@@ -16516,7 +16568,7 @@ func XCreateSubnet(paramVpcId string, params *viper.Viper, body string) (*gentle
 	return resp, decoded, nil
 }
 
-// XListSubnets [BETA] List Subnets
+// XListSubnets List Subnets
 func XListSubnets(paramVpcId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-subnets"
 	if xSubcommand {
@@ -16558,7 +16610,7 @@ func XListSubnets(paramVpcId string, params *viper.Viper) (*gentleman.Response, 
 	return resp, decoded, nil
 }
 
-// XDeleteSubnet [BETA] Delete a Subnet
+// XDeleteSubnet Delete a Subnet
 func XDeleteSubnet(paramVpcId string, paramId string, params *viper.Viper) (*gentleman.Response, interface{}, error) {
 	handlerPath := "delete-subnet"
 	if xSubcommand {
@@ -16601,7 +16653,7 @@ func XDeleteSubnet(paramVpcId string, paramId string, params *viper.Viper) (*gen
 	return resp, decoded, nil
 }
 
-// XGetSubnet [BETA] Retrieve Subnet details
+// XGetSubnet Retrieve Subnet details
 func XGetSubnet(paramVpcId string, paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "get-subnet"
 	if xSubcommand {
@@ -16644,7 +16696,7 @@ func XGetSubnet(paramVpcId string, paramId string, params *viper.Viper) (*gentle
 	return resp, decoded, nil
 }
 
-// XUpdateSubnet [BETA] Update a Subnet
+// XUpdateSubnet Update a Subnet
 func XUpdateSubnet(paramVpcId string, paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "update-subnet"
 	if xSubcommand {
@@ -16691,7 +16743,7 @@ func XUpdateSubnet(paramVpcId string, paramId string, params *viper.Viper, body 
 	return resp, decoded, nil
 }
 
-// XAttachInstanceToSubnet [BETA] Attach a Compute instance to a Subnet
+// XAttachInstanceToSubnet Attach a Compute instance to a Subnet
 func XAttachInstanceToSubnet(paramVpcId string, paramSubnetId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "attach-instance-to-subnet"
 	if xSubcommand {
@@ -16738,7 +16790,7 @@ func XAttachInstanceToSubnet(paramVpcId string, paramSubnetId string, params *vi
 	return resp, decoded, nil
 }
 
-// XDetachInstanceFromSubnet [BETA] Detach a Compute instance from a Subnet
+// XDetachInstanceFromSubnet Detach a Compute instance from a Subnet
 func XDetachInstanceFromSubnet(paramVpcId string, paramSubnetId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "detach-instance-from-subnet"
 	if xSubcommand {
@@ -16785,7 +16837,7 @@ func XDetachInstanceFromSubnet(paramVpcId string, paramSubnetId string, params *
 	return resp, decoded, nil
 }
 
-// XCreateRoute [BETA] Create a route
+// XCreateRoute Create a route
 func XCreateRoute(paramVpcId string, paramSubnetId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-route"
 	if xSubcommand {
@@ -16832,7 +16884,7 @@ func XCreateRoute(paramVpcId string, paramSubnetId string, params *viper.Viper, 
 	return resp, decoded, nil
 }
 
-// XListRoutes [BETA] List Subnet routes
+// XListRoutes List Subnet routes
 func XListRoutes(paramVpcId string, paramSubnetId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-routes"
 	if xSubcommand {
@@ -16875,7 +16927,7 @@ func XListRoutes(paramVpcId string, paramSubnetId string, params *viper.Viper) (
 	return resp, decoded, nil
 }
 
-// XDeleteRoute [BETA] Delete a route
+// XDeleteRoute Delete a route
 func XDeleteRoute(paramVpcId string, paramSubnetId string, paramId string, params *viper.Viper) (*gentleman.Response, interface{}, error) {
 	handlerPath := "delete-route"
 	if xSubcommand {
@@ -17170,7 +17222,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-deployment",
 			Short:   "Create Deployment",
-			Long:    cli.Markdown("Deploy a model on an inference server\n## Request Schema (application/json)\n\ndescription: Deploy an AI model onto a set of GPUs\nproperties:\n  gpu-count:\n    description: Number of GPUs (1-8)\n    format: int64\n    minimum: 1\n    type: integer\n  gpu-type:\n    description: GPU type family (e.g., gpua5000, gpu3080ti)\n    type: string\n  inference-engine-parameters:\n    description: Optional extra inference engine server CLI args\n    items:\n      type: string\n    type: array\n  inference-engine-version:\n    $ref: '#/components/schemas/inference-engine-version'\n  model:\n    $ref: '#/components/schemas/model-ref'\n  name:\n    description: Deployment name\n    minLength: 1\n    type: string\n  product-name:\n    description: Billing identifier for this deployment. Used by the Router for usage counters and Kafka events.\n    minLength: 1\n    type: string\n  replicas:\n    description: Number of replicas (>=1)\n    format: int64\n    minimum: 1\n    type: integer\nrequired:\n- model\n- name\n- gpu-type\n- gpu-count\n- replicas\ntype: object\n"),
+			Long:    cli.Markdown("Deploy a model on an inference server\n## Request Schema (application/json)\n\ndescription: Deploy an AI model onto a set of GPUs\nproperties:\n  gpu-count:\n    description: Number of GPUs (1-8)\n    format: int64\n    minimum: 1\n    type: integer\n  gpu-type:\n    description: GPU type family (e.g., gpua5000, gpu3080ti)\n    type: string\n  inference-engine-parameters:\n    description: Optional extra inference engine server CLI args\n    items:\n      type: string\n    type: array\n  inference-engine-version:\n    $ref: '#/components/schemas/inference-engine-version'\n  model:\n    $ref: '#/components/schemas/model-ref'\n  name:\n    description: Deployment name\n    minLength: 1\n    type: string\n  product-name:\n    description: Billing identifier for this deployment. Used by the Router for usage counters and Kafka events.\n    maxLength: 256\n    minLength: 1\n    pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$\n    type: string\n  replicas:\n    description: Number of replicas (>=1)\n    format: int64\n    minimum: 1\n    type: integer\nrequired:\n- model\n- name\n- gpu-type\n- gpu-count\n- replicas\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -17351,44 +17403,9 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "reveal-deployment-api-key id",
-			Short:   "Reveal Deployment API Key",
-			Long:    cli.Markdown("Get Deployment API Key"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XRevealDeploymentApiKey(args[0], params)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
 			Use:     "get-deployment-logs id",
 			Short:   "Get Deployment Logs",
-			Long:    cli.Markdown("Return logs for the vLLM deployment (deploy/<release-name>--deployment-vllm). Optional ?stream=true to request streaming (may not be supported)."),
+			Long:    cli.Markdown("Return logs for the vLLM deployment (dedicated inference: deploy/<release-name>--deployment-vllm; llm-d: deploy/<release-name>-vllm). Optional ?stream=true to request streaming (may not be supported)."),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -20508,7 +20525,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-integration id",
 			Short:   "update-dbaas-integration",
-			Long:    cli.Markdown("[BETA] Update a existing DBaaS integration\n## Request Schema (application/json)\n\nproperties:\n  settings:\n    description: Integration settings\n    type: object\nrequired:\n- settings\ntype: object\n"),
+			Long:    cli.Markdown("[BETA] Update an existing DBaaS integration\n## Request Schema (application/json)\n\nproperties:\n  settings:\n    description: Integration settings\n    type: object\nrequired:\n- settings\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -21660,7 +21677,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "delete-dbaas-service-opensearch name",
-			Short:   "Delete a OpenSearch service",
+			Short:   "Delete an OpenSearch service",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -24752,7 +24769,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "list-events",
 			Short:   "List Events",
-			Long:    cli.Markdown("Retrieve Mutation Events for a given date range. Defaults to retrieving Events for the past 24 hours.\n         Both a `from` and `to` arguments can be specified to filter Events over a specific period.\n         Events will be the the most descriptive possible but not all fields are mandatory"),
+			Long:    cli.Markdown("Retrieve Mutation Events for a given date range. Defaults to retrieving Events for the past 24 hours.\n         Both a `from` and `to` arguments can be specified to filter Events over a specific period.\n         Events will be the most descriptive possible but not all fields are mandatory"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -25234,7 +25251,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-instance",
 			Short:   "Create a Compute instance",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Instance Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    type: array\n    uniqueItems: true\n  application-consistent-snapshot-enabled:\n    description: Enable application-consistent snapshot for the instance\n    type: boolean\n  auto-start:\n    description: 'Start Instance on creation (default: true)'\n    type: boolean\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  disk-size:\n    description: Instance disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 10\n    type: integer\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  ip-forwarding:\n    description: VPC ip forwarding\n    type: boolean\n  ipv6-enabled:\n    description: 'Enable IPv6. DEPRECATED: use `public-ip-assignments`.'\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Instance name\n    maxLength: 255\n    minLength: 1\n    type: string\n  public-ip-assignment:\n    $ref: '#/components/schemas/public-ip-assignment'\n  secureboot-enabled:\n    description: Enable secure boot\n    type: boolean\n  security-groups:\n    description: Instance Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    type: array\n    uniqueItems: true\n  ssh-key:\n    $ref: '#/components/schemas/ssh-key-ref'\n  ssh-keys:\n    description: Instance SSH Keys\n    items:\n      $ref: '#/components/schemas/ssh-key-ref'\n    type: array\n    uniqueItems: true\n  template:\n    $ref: '#/components/schemas/template-ref'\n  tpm-enabled:\n    description: Enable Trusted Platform Module (TPM)\n    type: boolean\n  user-data:\n    description: Instance Cloud-init user-data (base64 encoded)\n    maxLength: 32768\n    minLength: 1\n    type: string\n  vpc:\n    description: Attach the Instance to VPC Subnets\n    properties:\n      id:\n        description: VPC ID\n        format: uuid\n        type: string\n      subnets:\n        description: VPC Subnets to attach the Instance to\n        items:\n          description: VPC Subnet attachment\n          properties:\n            id:\n              description: Subnet ID\n              format: uuid\n              type: string\n            ipv4:\n              description: Instance IPv4. Random one if unset\n              format: ipv4\n              type: string\n          required:\n          - id\n          type: object\n        type: array\n    required:\n    - id\n    - subnets\n    type: object\nrequired:\n- disk-size\n- instance-type\n- template\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Instance Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    type: array\n    uniqueItems: true\n  application-consistent-snapshot-enabled:\n    description: Enable application-consistent snapshot for the instance\n    type: boolean\n  auto-start:\n    description: 'Start Instance on creation (default: true)'\n    type: boolean\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  disk-size:\n    description: Instance disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 10\n    type: integer\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  ip-forwarding:\n    description: Whether the instance can act as a router in a VPC network\n    type: boolean\n  ipv6-enabled:\n    description: 'Enable IPv6. DEPRECATED: use `public-ip-assignments`.'\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Instance name\n    maxLength: 255\n    minLength: 1\n    type: string\n  public-ip-assignment:\n    $ref: '#/components/schemas/public-ip-assignment'\n  secureboot-enabled:\n    description: Enable secure boot\n    type: boolean\n  security-groups:\n    description: Instance Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    type: array\n    uniqueItems: true\n  ssh-key:\n    $ref: '#/components/schemas/ssh-key-ref'\n  ssh-keys:\n    description: Instance SSH Keys\n    items:\n      $ref: '#/components/schemas/ssh-key-ref'\n    type: array\n    uniqueItems: true\n  template:\n    $ref: '#/components/schemas/template-ref'\n  tpm-enabled:\n    description: Enable Trusted Platform Module (TPM)\n    type: boolean\n  user-data:\n    description: Instance Cloud-init user-data (base64 encoded)\n    maxLength: 32768\n    minLength: 1\n    type: string\n  vpc:\n    description: Attach the Instance to VPC Subnets\n    properties:\n      id:\n        description: VPC ID\n        format: uuid\n        type: string\n      subnets:\n        description: VPC Subnets to attach the Instance to\n        items:\n          description: VPC Subnet attachment\n          properties:\n            id:\n              description: Subnet ID\n              format: uuid\n              type: string\n            ipv4:\n              description: Instance IPv4. Random one if unset\n              format: ipv4\n              type: string\n          required:\n          - id\n          type: object\n        type: array\n    required:\n    - id\n    - subnets\n    type: object\nrequired:\n- disk-size\n- instance-type\n- template\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -27078,7 +27095,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "re-encrypt id",
 			Short:   "Re-encrypt",
-			Long:    cli.Markdown("Decrypts an existing ciphertext using its original key material and re-encrypts the underlying plaintext using a specified KMS key or the latest key material of the same KMS Key. Source and destination keys must belong to the same key family.\n## Request Schema (application/json)\n\nproperties:\n  destination:\n    properties:\n      encryption-algorithm:\n        description: The encryption algorithm the destination key must use. Validated against the key's actual cryptographic profile. Required for asymmetric keys. Symmetric keys use AES_256 when it is omitted.\n        enum:\n        - AES_256\n        - RSAES_OAEP_SHA_256\n        type: string\n      encryption-context:\n        description: Optional new Base64-encoded encryption context to apply under the target destination envelope.\n        format: byte\n        nullable: true\n        type: string\n      key:\n        description: The ID of the target key chosen to encapsulate the newly shifted data translation.\n        format: uuid\n        type: string\n    required:\n    - key\n    type: object\n  source:\n    properties:\n      ciphertext:\n        description: The Base64-encoded encrypted payload package ready to undergo source-side key decryption.\n        format: byte\n        type: string\n      encryption-algorithm:\n        description: The encryption algorithm the source key must use. Validated against the key's actual cryptographic profile. Required for asymmetric keys. Symmetric keys use AES_256 when it is omitted.\n        enum:\n        - AES_256\n        - RSAES_OAEP_SHA_256\n        type: string\n      encryption-context:\n        description: Optional Base64-encoded encryption context originally appended to the AAD to confirm package validation rules.\n        format: byte\n        nullable: true\n        type: string\n      key:\n        description: The ID of the source key currently protecting the data payload.\n        format: uuid\n        type: string\n    required:\n    - key\n    - ciphertext\n    type: object\nrequired:\n- source\n- destination\ntype: object\n"),
+			Long:    cli.Markdown("Decrypts an existing ciphertext using its original key material and re-encrypts the underlying plaintext using a specified KMS key or the latest key material of the same KMS Key. Source and destination keys must belong to the same key family. IAM policies are evaluated for both the source and the destination key.\n## Request Schema (application/json)\n\nproperties:\n  destination:\n    properties:\n      encryption-algorithm:\n        description: The encryption algorithm the destination key must use. Validated against the key's actual cryptographic profile. Required for asymmetric keys. Symmetric keys use AES_256 when it is omitted.\n        enum:\n        - AES_256\n        - RSAES_OAEP_SHA_256\n        type: string\n      encryption-context:\n        description: Optional new Base64-encoded encryption context to apply under the target destination envelope.\n        format: byte\n        nullable: true\n        type: string\n      key:\n        description: The ID of the target key chosen to encapsulate the newly shifted data translation.\n        format: uuid\n        type: string\n    required:\n    - key\n    type: object\n  source:\n    properties:\n      ciphertext:\n        description: The Base64-encoded encrypted payload package ready to undergo source-side key decryption.\n        format: byte\n        type: string\n      encryption-algorithm:\n        description: The encryption algorithm the source key must use. Validated against the key's actual cryptographic profile. Required for asymmetric keys. Symmetric keys use AES_256 when it is omitted.\n        enum:\n        - AES_256\n        - RSAES_OAEP_SHA_256\n        type: string\n      encryption-context:\n        description: Optional Base64-encoded encryption context originally appended to the AAD to confirm package validation rules.\n        format: byte\n        nullable: true\n        type: string\n      key:\n        description: The ID of the source key currently protecting the data payload.\n        format: uuid\n        type: string\n    required:\n    - key\n    - ciphertext\n    type: object\nrequired:\n- source\n- destination\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -28926,7 +28943,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "generate-sks-cluster-kubeconfig id",
 			Short:   "Generate a new Kubeconfig file for a SKS cluster",
-			Long:    cli.Markdown("This operation returns a Kubeconfig file encoded in base64.\n## Request Schema (application/json)\n\ndescription: Kubeconfig request for a SKS cluster\nproperties:\n  groups:\n    description: List of roles. The certificate present in the Kubeconfig will have these roles set in the Org field.\n    items:\n      type: string\n    type: array\n  ttl:\n    description: 'Validity in seconds of the Kubeconfig user certificate (default: 30 days)'\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  user:\n    description: User name in the generated Kubeconfig. The certificate present in the Kubeconfig will also have this name set for the CN field.\n    type: string\nrequired:\n- user\n- groups\ntype: object\n"),
+			Long:    cli.Markdown("This operation returns a Kubeconfig file encoded in base64.\n## Request Schema (application/json)\n\ndescription: Kubeconfig request for a SKS cluster\nproperties:\n  groups:\n    description: List of roles. The certificate present in the Kubeconfig will have these roles set in the Org field.\n    items:\n      type: string\n    type: array\n  name:\n    description: 'Cluster and context name in the generated Kubeconfig (default: cluster ID)'\n    maxLength: 255\n    minLength: 1\n    type: string\n  ttl:\n    description: 'Validity in seconds of the Kubeconfig user certificate (default: 30 days)'\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  user:\n    description: User name in the generated Kubeconfig. The certificate present in the Kubeconfig will also have this name set for the CN field.\n    type: string\nrequired:\n- user\n- groups\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -29259,7 +29276,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-sks-nodepool id",
 			Short:   "Create a new SKS Nodepool",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Nodepool addons\n    items:\n      enum:\n      - storage-lvm\n      type: string\n    type: array\n    uniqueItems: true\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    maxItems: 8\n    type: array\n    uniqueItems: true\n  cpu-manager-config:\n    $ref: '#/components/schemas/cpu-manager-config'\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to instances names (default: pool), lowercase only'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  kubelet-image-gc:\n    $ref: '#/components/schemas/kubelet-image-gc'\n  kubelet-max-pods:\n    description: Maximum number of pods per node (kubelet setting)\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 65535\n    minimum: 1\n    nullable: true\n    type: integer\n  labels:\n    $ref: '#/components/schemas/sks-nodepool-labels'\n  name:\n    description: Nodepool name, lowercase only\n    maxLength: 255\n    minLength: 1\n    type: string\n  nvidia-mig-profiles:\n    $ref: '#/components/schemas/nvidia-mig-profiles'\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only (default);\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  size:\n    description: Number of instances\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\nrequired:\n- name\n- size\n- disk-size\n- instance-type\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Nodepool addons\n    items:\n      enum:\n      - storage-lvm\n      type: string\n    type: array\n    uniqueItems: true\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    maxItems: 8\n    type: array\n    uniqueItems: true\n  cpu-manager-config:\n    $ref: '#/components/schemas/cpu-manager-config'\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to instances names (default: pool), lowercase only'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  kubelet-image-gc:\n    $ref: '#/components/schemas/kubelet-image-gc'\n  kubelet-max-pods:\n    description: Maximum number of pods per node (kubelet setting)\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 65535\n    minimum: 1\n    nullable: true\n    type: integer\n  labels:\n    $ref: '#/components/schemas/sks-nodepool-labels'\n  name:\n    description: Nodepool name, lowercase only\n    maxLength: 255\n    minLength: 1\n    type: string\n  nvidia-dra-driver:\n    description: Expose the GPUs with the NVIDIA DRA driver instead of the NVIDIA device plugin. Requires a GPU instance type and Kubernetes 1.34 or greater.\n    type: boolean\n  nvidia-mig-profiles:\n    $ref: '#/components/schemas/nvidia-mig-profiles'\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only (default);\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  size:\n    description: Number of instances\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\nrequired:\n- name\n- size\n- disk-size\n- instance-type\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -29368,7 +29385,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-sks-nodepool id sks-nodepool-id",
 			Short:   "Update an SKS Nodepool",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    maxItems: 8\n    type: array\n    uniqueItems: true\n  cpu-manager-config:\n    $ref: '#/components/schemas/cpu-manager-config'\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to managed instances names (default: pool), lowercase only'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  kubelet-image-gc:\n    $ref: '#/components/schemas/kubelet-image-gc'\n  kubelet-max-pods:\n    description: Maximum number of pods per node (kubelet setting)\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 65535\n    minimum: 1\n    nullable: true\n    type: integer\n  labels:\n    $ref: '#/components/schemas/sks-nodepool-labels'\n  name:\n    description: Nodepool name, lowercase only\n    maxLength: 255\n    minLength: 1\n    type: string\n  nvidia-mig-profiles:\n    $ref: '#/components/schemas/nvidia-mig-profiles'\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only;\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group-ref'\n    maxItems: 8\n    type: array\n    uniqueItems: true\n  cpu-manager-config:\n    $ref: '#/components/schemas/cpu-manager-config'\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target-ref'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to managed instances names (default: pool), lowercase only'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type-ref'\n  kubelet-image-gc:\n    $ref: '#/components/schemas/kubelet-image-gc'\n  kubelet-max-pods:\n    description: Maximum number of pods per node (kubelet setting)\n    exclusiveMaximum: false\n    exclusiveMinimum: false\n    format: int64\n    maximum: 65535\n    minimum: 1\n    nullable: true\n    type: integer\n  labels:\n    $ref: '#/components/schemas/sks-nodepool-labels'\n  name:\n    description: Nodepool name, lowercase only\n    maxLength: 255\n    minLength: 1\n    type: string\n  nvidia-dra-driver:\n    description: Expose the GPUs with the NVIDIA DRA driver instead of the NVIDIA device plugin. Requires a GPU instance type and Kubernetes 1.34 or greater.\n    type: boolean\n  nvidia-mig-profiles:\n    $ref: '#/components/schemas/nvidia-mig-profiles'\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only;\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group-ref'\n    maxItems: 16\n    type: array\n    uniqueItems: true\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -29456,6 +29473,45 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XScaleSksNodepool(args[0], args[1], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "set-sks-nodepool-template id sks-nodepool-id",
+			Short:   "Set the template of an SKS Nodepool",
+			Long:    cli.Markdown("Sets the template of the Nodepool instances, among the available templates of its Kubernetes version and variant (see `list-sks-nodepool-templates`). Without template (`null`), the Nodepool follows the latest template of its Kubernetes version.\n## Request Schema (application/json)\n\nproperties:\n  template:\n    $ref: '#/components/schemas/template-ref'\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[2:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XSetSksNodepoolTemplate(args[0], args[1], params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -29702,6 +29758,43 @@ func xRegister(subcommand bool) {
 		}
 
 		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-sks-nodepool-templates kube-version",
+			Short:   "list-sks-nodepool-templates",
+			Long:    cli.Markdown("List the available templates for a given kube version (major.minor or major.minor.patch), of the given variant (standard | nvidia) when provided, latest first"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListSksNodepoolTemplates(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cmd.Flags().String("variant", "", "")
 
 		cli.SetCustomFlags(cmd)
 
@@ -30562,7 +30655,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "create-vpc",
-			Short:   "[BETA] Create a VPC",
+			Short:   "Create a VPC",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: VPC description\n    maxLength: 4096\n    type: string\n  dhcp-options:\n    $ref: '#/components/schemas/vpc-dhcp-options'\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: VPC name\n    maxLength: 255\n    minLength: 1\n    type: string\nrequired:\n- name\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
@@ -30601,7 +30694,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "list-vpcs",
-			Short:   "[BETA] List VPCs",
+			Short:   "List VPCs",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
@@ -30636,7 +30729,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "delete-vpc id",
-			Short:   "[BETA] Delete a VPC",
+			Short:   "Delete a VPC",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -30671,7 +30764,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "get-vpc id",
-			Short:   "[BETA] Retrieve VPC details",
+			Short:   "Retrieve VPC details",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -30706,7 +30799,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "update-vpc id",
-			Short:   "[BETA] Update a VPC",
+			Short:   "Update a VPC",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: VPC description\n    maxLength: 4096\n    nullable: true\n    type: string\n  dhcp-options:\n    $ref: '#/components/schemas/vpc-dhcp-options'\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: VPC name\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -30745,7 +30838,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "list-vpc-routes vpc-id",
-			Short:   "[BETA] List VPC routes",
+			Short:   "List VPC routes",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -30780,7 +30873,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "create-subnet vpc-id",
-			Short:   "[BETA] Create a Subnet",
+			Short:   "Create a Subnet",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  address-space:\n    description: Subnet address space\n    enum:\n    - private\n    type: string\n  addressfamily:\n    description: Subnet address family\n    enum:\n    - inet4\n    type: string\n  description:\n    description: Subnet description\n    maxLength: 4096\n    type: string\n  ipv4-block:\n    description: Subnet ipv4 CIDR\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Subnet name\n    maxLength: 255\n    minLength: 1\n    type: string\nrequired:\n- name\n- addressfamily\n- address-space\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -30819,7 +30912,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "list-subnets vpc-id",
-			Short:   "[BETA] List Subnets",
+			Short:   "List Subnets",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -30854,7 +30947,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "delete-subnet vpc-id id",
-			Short:   "[BETA] Delete a Subnet",
+			Short:   "Delete a Subnet",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -30889,7 +30982,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "get-subnet vpc-id id",
-			Short:   "[BETA] Retrieve Subnet details",
+			Short:   "Retrieve Subnet details",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -30924,7 +31017,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "update-subnet vpc-id id",
-			Short:   "[BETA] Update a Subnet",
+			Short:   "Update a Subnet",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Subnet description\n    maxLength: 4096\n    nullable: true\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Subnet name\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -30963,7 +31056,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "attach-instance-to-subnet vpc-id subnet-id",
-			Short:   "[BETA] Attach a Compute instance to a Subnet",
+			Short:   "Attach a Compute instance to a Subnet",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  instance:\n    $ref: '#/components/schemas/instance-ref'\n  ipv4:\n    description: Instance IPv4\n    format: ipv4\n    type: string\nrequired:\n- instance\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -31002,7 +31095,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "detach-instance-from-subnet vpc-id subnet-id",
-			Short:   "[BETA] Detach a Compute instance from a Subnet",
+			Short:   "Detach a Compute instance from a Subnet",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  instance:\n    $ref: '#/components/schemas/instance-ref'\nrequired:\n- instance\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -31041,7 +31134,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "create-route vpc-id subnet-id",
-			Short:   "[BETA] Create a route",
+			Short:   "Create a route",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Route description\n    maxLength: 4096\n    type: string\n  destination:\n    description: Route destination CIDR\n    type: string\n  target:\n    description: Route target\n    type: string\nrequired:\n- destination\n- target\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -31080,7 +31173,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "list-routes vpc-id subnet-id",
-			Short:   "[BETA] List Subnet routes",
+			Short:   "List Subnet routes",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -31115,7 +31208,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "delete-route vpc-id subnet-id id",
-			Short:   "[BETA] Delete a route",
+			Short:   "Delete a route",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(3),
