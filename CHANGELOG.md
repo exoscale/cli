@@ -12,6 +12,7 @@
 - kms: add `--encryption-algorithm` to `exo kms crypto encrypt` and `decrypt`, and `--source-encryption-algorithm` and `--dest-encryption-algorithm` to `reencrypt`, to use RSA keys
 - kms: show the key spec in `exo kms key show` and `exo kms key list`
 - dbaas: add `exo dbaas acl list` for Kafka and OpenSearch, `exo dbaas acl create` and `delete` for Kafka, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
+- sks: add `--cpu-manager-policy`, `--cpu-manager-policy-option`, `--cpu-manager-reconcile-period`, `--kube-reserved-cpu`, `--kube-reserved-memory`, `--kube-reserved-ephemeral-storage`, `--system-reserved-cpu`, `--system-reserved-memory` and `--system-reserved-ephemeral-storage` options to `exo compute sks nodepool add` and `exo compute sks nodepool update` to configure the Nodepool CPU manager, and report the CPU manager config in `exo compute sks nodepool show`
 
 ### Bug fixes
 
