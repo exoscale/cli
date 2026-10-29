@@ -1,0 +1,35 @@
+# KMS crypto binary inputs: encrypt a raw file given with fileb:// and a
+# wrapped base64 context given with file://, then decrypt with the context
+# inline to check both reached the API decoded.
+# Every command passes -z $TEST_ZONE: the CLI does not read EXO_ZONE, so it
+# would otherwise fall back to its default zone (ch-dk-2).
+
+# Create a symmetric key
+exec exo --output-format json kms key create -z $TEST_ZONE $TEST_RUN_ID-crypto
+cp stdout key.json
+json-setenv KEY_ID id key.json
+
+# fileb:// sends the raw file bytes, file:// decodes base64 wrapped over lines
+exec exo --output-format json kms crypto encrypt -z $TEST_ZONE $KEY_ID fileb://plain.txt -e file://ctx.b64
+cp stdout encrypt.json
+json-setenv CIPHERTEXT ciphertext encrypt.json
+
+# Decrypt with the same context inline: the plaintext is plain.txt in base64
+exec exo --output-format json kms crypto decrypt -z $TEST_ZONE $KEY_ID $CIPHERTEXT -e YWFhYWFh
+stdout '"plaintext":"aGVsbG8K"'
+
+# Decrypt without the context fails
+! exec exo kms crypto decrypt -z $TEST_ZONE $KEY_ID $CIPHERTEXT
+
+# Invalid base64 is rejected before any API call and names the argument
+! exec exo kms crypto encrypt -z $TEST_ZONE $KEY_ID 'not base64!'
+stderr 'invalid value for PLAINTEXT'
+
+# Keys cannot be deleted right away, schedule the shortest delay
+exec exo kms key schedule-deletion -z $TEST_ZONE $KEY_ID -d 7
+
+-- plain.txt --
+hello
+-- ctx.b64 --
+YWFh
+YWFh
