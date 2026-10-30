@@ -5252,6 +5252,8 @@ type LoadBalancerService struct {
 	ID UUID `json:"id,omitempty"`
 	// Instance Pool
 	InstancePool *InstancePool `json:"instance-pool,omitempty"`
+	// Load Balancer Service label selector
+	LabelSelector *LoadBalancerServiceLabelSelector `json:"label-selector,omitempty"`
 	// Load Balancer Service name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Port exposed on the Load Balancer's public IP
@@ -5290,6 +5292,11 @@ type LoadBalancerServiceHealthcheck struct {
 	TlsSNI string `json:"tls-sni,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// An endpoint to use for the HTTP healthcheck, e.g. '/status'
 	URI string `json:"uri,omitempty" validate:"omitempty,gte=1,lte=255"`
+}
+
+// Load Balancer Service label selector
+type LoadBalancerServiceLabelSelector struct {
+	Labels Labels `json:"labels" validate:"required"`
 }
 
 type ManagerType string
@@ -5972,6 +5979,8 @@ type SKSClusterRef struct {
 type SKSKubeconfigRequest struct {
 	// List of roles. The certificate present in the Kubeconfig will have these roles set in the Org field.
 	Groups []string `json:"groups" validate:"required"`
+	// Cluster and context name in the generated Kubeconfig (default: cluster ID)
+	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Validity in seconds of the Kubeconfig user certificate (default: 30 days)
 	Ttl int64 `json:"ttl,omitempty" validate:"omitempty,gt=0"`
 	// User name in the generated Kubeconfig. The certificate present in the Kubeconfig will also have this name set for the CN field.
@@ -6029,6 +6038,8 @@ type SKSNodepool struct {
 	Labels         SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
+	// Expose the GPUs with the NVIDIA DRA driver instead of the NVIDIA device plugin. Requires a GPU instance type and Kubernetes 1.34 or greater.
+	NvidiaDraDriver *bool `json:"nvidia-dra-driver,omitempty"`
 	// Nvidia MIG Profiles enabled
 	NvidiaMigProfiles *NvidiaMigProfiles `json:"nvidia-mig-profiles,omitempty"`
 	// Nodepool Private Networks
@@ -6069,6 +6080,18 @@ type SKSNodepoolTaint struct {
 }
 
 type SKSNodepoolTaints map[string]SKSNodepoolTaint
+
+// SKS Nodepool template
+type SKSNodepoolTemplate struct {
+	// Template registration date
+	CreatedAT time.Time `json:"created-at,omitempty"`
+	// Template ID
+	ID UUID `json:"id,omitempty"`
+	// Template name
+	Name string `json:"name,omitempty"`
+	// Template variant: standard | nvidia
+	Variant string `json:"variant,omitempty"`
+}
 
 // SKS Cluster OpenID config map
 type SKSOidc struct {

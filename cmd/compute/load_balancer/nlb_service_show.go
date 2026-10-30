@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -36,6 +37,7 @@ type nlbServiceShowOutput struct {
 	Name              string                          `json:"name"`
 	Description       string                          `json:"description"`
 	InstancePoolID    string                          `json:"instance_pool_id"`
+	LabelSelector     map[string]string               `json:"label_selector"`
 	Protocol          string                          `json:"protocol"`
 	Port              int64                           `json:"port"`
 	TargetPort        int64                           `json:"target_port"`
@@ -55,7 +57,27 @@ func (o *nlbServiceShowOutput) ToTable() {
 	t.Append([]string{"ID", o.ID})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})
-	t.Append([]string{"Instance Pool ID", o.InstancePoolID})
+	t.Append([]string{"Instance Pool ID", func() string {
+		if o.InstancePoolID != "" {
+			return o.InstancePoolID
+		}
+		return "n/a"
+	}()})
+	t.Append([]string{"Label Selector", func() string {
+		if len(o.LabelSelector) > 0 {
+			keys := make([]string, 0, len(o.LabelSelector))
+			for k := range o.LabelSelector {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			selectors := make([]string, len(keys))
+			for i, k := range keys {
+				selectors[i] = fmt.Sprintf("%s = %s", k, o.LabelSelector[k])
+			}
+			return strings.Join(selectors, "\n")
+		}
+		return "n/a"
+	}()})
 	t.Append([]string{"Protocol", o.Protocol})
 	t.Append([]string{"Port", fmt.Sprint(o.Port)})
 	t.Append([]string{"Target Port", fmt.Sprint(o.TargetPort)})
@@ -146,15 +168,14 @@ func (c *nlbServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	out := nlbServiceShowOutput{
-		ID:             string(svc.ID),
-		Name:           svc.Name,
-		Description:    svc.Description,
-		InstancePoolID: string(svc.InstancePool.ID),
-		Protocol:       string(svc.Protocol),
-		Port:           svc.Port,
-		TargetPort:     svc.TargetPort,
-		Strategy:       string(svc.Strategy),
-		State:          string(svc.State),
+		ID:          string(svc.ID),
+		Name:        svc.Name,
+		Description: svc.Description,
+		Protocol:    string(svc.Protocol),
+		Port:        svc.Port,
+		TargetPort:  svc.TargetPort,
+		Strategy:    string(svc.Strategy),
+		State:       string(svc.State),
 
 		Healthcheck: nlbServiceHealthcheckShowOutput{
 			Mode:     string(svc.Healthcheck.Mode),
@@ -176,6 +197,14 @@ func (c *nlbServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			}
 			return statuses
 		}(),
+	}
+
+	// a service may have no Instance Pool (label selector-only services)
+	if svc.InstancePool != nil {
+		out.InstancePoolID = string(svc.InstancePool.ID)
+	}
+	if svc.LabelSelector != nil {
+		out.LabelSelector = svc.LabelSelector.Labels
 	}
 
 	return c.OutputFunc(&out, nil)

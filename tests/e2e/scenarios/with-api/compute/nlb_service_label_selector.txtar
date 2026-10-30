@@ -1,0 +1,41 @@
+# Test: exo compute load-balancer service label selector lifecycle
+# Selector-only service create/show/update, selector removal on a
+# pool-backed service, and client-side validation errors.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# Setup: create the NLB and an Instance Pool for the pool-backed service
+exec exo --output-format json compute load-balancer create ${TEST_RUN_ID}-nlb --zone ${TEST_ZONE}
+exec exo --output-format json compute instance-pool create ${TEST_RUN_ID}-pool --zone ${TEST_ZONE}
+
+# Add a service with a label selector and no Instance Pool
+exec exo --output-format json compute load-balancer service add ${TEST_RUN_ID}-nlb web --port 8053 --label-selector role=web --zone ${TEST_ZONE}
+
+exec exo --output-format json compute load-balancer service show ${TEST_RUN_ID}-nlb web --zone ${TEST_ZONE}
+stdout '"instance_pool_id":""'
+stdout '"label_selector":{"role":"web"}'
+
+# Replace the selector with a different label
+exec exo --output-format json compute load-balancer service update ${TEST_RUN_ID}-nlb web --label-selector role=api --zone ${TEST_ZONE}
+stdout '"label_selector":{"role":"api"}'
+
+# Removing the selector is rejected for pool-less services (it would leave them with zero backends)
+! exec exo compute load-balancer service update ${TEST_RUN_ID}-nlb web --label-selector '[=]' --zone ${TEST_ZONE}
+stderr 'has no Instance Pool'
+
+# A service can combine an Instance Pool and a label selector...
+exec exo --output-format json compute load-balancer service add ${TEST_RUN_ID}-nlb mix --port 8054 --instance-pool ${TEST_RUN_ID}-pool --label-selector role=web --zone ${TEST_ZONE}
+
+# ...and the selector can then be removed with --label-selector [=]
+exec exo --output-format json compute load-balancer service update ${TEST_RUN_ID}-nlb mix --label-selector '[=]' --zone ${TEST_ZONE}
+stdout '"label_selector":null'
+stdout '"instance_pool_id":"[0-9a-f-]{36}"'
+
+# Adding a service with neither backend source fails before any API call
+! exec exo compute load-balancer service add ${TEST_RUN_ID}-nlb nope --port 8055 --zone ${TEST_ZONE}
+stderr 'either --instance-pool or --label-selector is required'
+
+# Teardown: delete the services, then the NLB and the Instance Pool
+exec exo compute load-balancer service delete --force ${TEST_RUN_ID}-nlb web --zone ${TEST_ZONE}
+exec exo compute load-balancer service delete --force ${TEST_RUN_ID}-nlb mix --zone ${TEST_ZONE}
+exec exo compute load-balancer delete --force ${TEST_RUN_ID}-nlb --zone ${TEST_ZONE}
+exec exo compute instance-pool delete --force ${TEST_RUN_ID}-pool --zone ${TEST_ZONE}

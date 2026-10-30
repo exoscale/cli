@@ -22,20 +22,21 @@ type nlbServiceAddCmd struct {
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
 	Name                string `cli-arg:"#" cli-usage:"SERVICE-NAME"`
 
-	Description         string      `cli-usage:"service description"`
-	HealthcheckInterval int64       `cli-usage:"service health checking interval in seconds"`
-	HealthcheckMode     string      `cli-usage:"service health checking mode (tcp|http|https)"`
-	HealthcheckPort     int64       `cli-usage:"service health checking port (defaults to target port)"`
-	HealthcheckRetries  int64       `cli-usage:"service health checking retries"`
-	HealthcheckTLSSNI   string      `cli-flag:"healthcheck-tls-sni" cli-usage:"service health checking server name to present with SNI in https mode"`
-	HealthcheckTimeout  int64       `cli-usage:"service health checking timeout in seconds"`
-	HealthcheckURI      string      `cli-usage:"service health checking URI (required in http(s) mode)"`
-	InstancePool        string      `cli-usage:"name or ID of the Instance Pool to forward traffic to"`
-	Port                int64       `cli-usage:"service port"`
-	Protocol            string      `cli-usage:"service network protocol (tcp|udp)"`
-	Strategy            string      `cli-usage:"load balancing strategy (round-robin|source-hash)"`
-	TargetPort          int64       `cli-usage:"port to forward traffic to on target instances (defaults to service port)"`
-	Zone                v3.ZoneName `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+	Description         string            `cli-usage:"service description"`
+	HealthcheckInterval int64             `cli-usage:"service health checking interval in seconds"`
+	HealthcheckMode     string            `cli-usage:"service health checking mode (tcp|http|https)"`
+	HealthcheckPort     int64             `cli-usage:"service health checking port (defaults to target port)"`
+	HealthcheckRetries  int64             `cli-usage:"service health checking retries"`
+	HealthcheckTLSSNI   string            `cli-flag:"healthcheck-tls-sni" cli-usage:"service health checking server name to present with SNI in https mode"`
+	HealthcheckTimeout  int64             `cli-usage:"service health checking timeout in seconds"`
+	HealthcheckURI      string            `cli-usage:"service health checking URI (required in http(s) mode)"`
+	InstancePool        string            `cli-usage:"name or ID of the Instance Pool to forward traffic to (either --instance-pool or --label-selector is required)"`
+	LabelSelector       map[string]string `cli-usage:"labels of instances to forward traffic to (format: key=value)"`
+	Port                int64             `cli-usage:"service port"`
+	Protocol            string            `cli-usage:"service network protocol (tcp|udp)"`
+	Strategy            string            `cli-usage:"load balancing strategy (round-robin|source-hash)"`
+	TargetPort          int64             `cli-usage:"port to forward traffic to on target instances (defaults to service port)"`
+	Zone                v3.ZoneName       `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
 func (c *nlbServiceAddCmd) CmdAliases() []string { return nil }
@@ -64,12 +65,11 @@ func (c *nlbServiceAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			Retries:  c.HealthcheckRetries,
 			Timeout:  c.HealthcheckTimeout,
 		},
-		Name:         c.Name,
-		Port:         c.Port,
-		Protocol:     v3.AddServiceToLoadBalancerRequestProtocol(c.Protocol),
-		Strategy:     v3.AddServiceToLoadBalancerRequestStrategy(c.Strategy),
-		TargetPort:   c.TargetPort,
-		InstancePool: &v3.InstancePool{},
+		Name:       c.Name,
+		Port:       c.Port,
+		Protocol:   v3.AddServiceToLoadBalancerRequestProtocol(c.Protocol),
+		Strategy:   v3.AddServiceToLoadBalancerRequestStrategy(c.Strategy),
+		TargetPort: c.TargetPort,
 	}
 
 	ctx := exocmd.GContext
@@ -81,6 +81,20 @@ func (c *nlbServiceAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	if strings.HasPrefix(string(service.Healthcheck.Mode), "http") && c.HealthcheckURI == "" {
 		return errors.New(`a healthcheck URI is required in "http(s)" mode`)
+	}
+
+	if c.InstancePool == "" && len(c.LabelSelector) == 0 {
+		return errors.New("either --instance-pool or --label-selector is required")
+	}
+
+	// an empty label selector is invalid on create (contrary to update, where
+	// it means "remove the selector")
+	labels := exocmd.ConvertIfSpecialEmptyMap(c.LabelSelector)
+	if c.LabelSelector != nil && len(labels) == 0 {
+		return errors.New("--label-selector must contain at least one label (format: key=value)")
+	}
+	if len(labels) > 0 {
+		service.LabelSelector = &v3.LoadBalancerServiceLabelSelector{Labels: labels}
 	}
 
 	if service.TargetPort == 0 {
@@ -106,16 +120,18 @@ func (c *nlbServiceAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	instancePools, err := client.ListInstancePools(ctx)
-	if err != nil {
-		return err
-	}
+	if c.InstancePool != "" {
+		instancePools, err := client.ListInstancePools(ctx)
+		if err != nil {
+			return err
+		}
 
-	instancePool, err := instancePools.FindInstancePool(c.InstancePool)
-	if err != nil {
-		return err
+		instancePool, err := instancePools.FindInstancePool(c.InstancePool)
+		if err != nil {
+			return err
+		}
+		service.InstancePool = &v3.InstancePool{ID: instancePool.ID}
 	}
-	service.InstancePool.ID = instancePool.ID
 
 	op, err := client.AddServiceToLoadBalancer(ctx, nlb.ID, service)
 	if err != nil {

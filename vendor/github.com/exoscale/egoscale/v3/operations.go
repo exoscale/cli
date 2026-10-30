@@ -15838,7 +15838,9 @@ type AddServiceToLoadBalancerRequest struct {
 	// Load Balancer Service healthcheck
 	Healthcheck *LoadBalancerServiceHealthcheck `json:"healthcheck" validate:"required"`
 	// Instance Pool
-	InstancePool *InstancePool `json:"instance-pool" validate:"required"`
+	InstancePool *InstancePool `json:"instance-pool,omitempty"`
+	// Load Balancer Service label selector
+	LabelSelector *LoadBalancerServiceLabelSelector `json:"label-selector,omitempty"`
 	// Load Balancer Service name
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
 	// Port exposed on the Load Balancer's public IP
@@ -16010,6 +16012,8 @@ type UpdateLoadBalancerServiceRequest struct {
 	Description *string `json:"description,omitempty" validate:"omitempty,lte=255"`
 	// Load Balancer Service healthcheck
 	Healthcheck *LoadBalancerServiceHealthcheck `json:"healthcheck,omitempty"`
+	// Load Balancer Service label selector
+	LabelSelector *LoadBalancerServiceLabelSelector `json:"label-selector,omitempty"`
 	// Load Balancer Service name
 	Name *string `json:"name,omitempty" validate:"omitempty,lte=255"`
 	// Port exposed on the Load Balancer's public IP
@@ -16076,7 +16080,8 @@ func (c Client) UpdateLoadBalancerService(ctx context.Context, id UUID, serviceI
 type ResetLoadBalancerServiceFieldField string
 
 const (
-	ResetLoadBalancerServiceFieldFieldDescription ResetLoadBalancerServiceFieldField = "description"
+	ResetLoadBalancerServiceFieldFieldDescription   ResetLoadBalancerServiceFieldField = "description"
+	ResetLoadBalancerServiceFieldFieldLabelSelector ResetLoadBalancerServiceFieldField = "label-selector"
 )
 
 // Reset a Load Balancer Service field to its default value
@@ -18484,6 +18489,8 @@ type CreateSKSNodepoolRequest struct {
 	Labels         SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name, lowercase only
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
+	// Expose the GPUs with the NVIDIA DRA driver instead of the NVIDIA device plugin. Requires a GPU instance type and Kubernetes 1.34 or greater.
+	NvidiaDraDriver *bool `json:"nvidia-dra-driver,omitempty"`
 	// Nvidia MIG Profiles enabled
 	NvidiaMigProfiles *NvidiaMigProfiles `json:"nvidia-mig-profiles,omitempty"`
 	// Nodepool Private Networks
@@ -18667,6 +18674,8 @@ type UpdateSKSNodepoolRequest struct {
 	Labels         SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name, lowercase only
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
+	// Expose the GPUs with the NVIDIA DRA driver instead of the NVIDIA device plugin. Requires a GPU instance type and Kubernetes 1.34 or greater.
+	NvidiaDraDriver *bool `json:"nvidia-dra-driver,omitempty"`
 	// Nvidia MIG Profiles enabled
 	NvidiaMigProfiles *NvidiaMigProfiles `json:"nvidia-mig-profiles"`
 	// Nodepool Private Networks
@@ -18837,6 +18846,62 @@ func (c Client) ScaleSKSNodepool(ctx context.Context, id UUID, sksNodepoolID UUI
 	bodyresp := new(Operation)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ScaleSKSNodepool: prepare JSON response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type SetSKSNodepoolTemplateRequest struct {
+	// Template reference
+	Template *TemplateRef `json:"template"`
+}
+
+// Sets the template of the Nodepool instances, among the available templates of its Kubernetes version and variant (see `list-sks-nodepool-templates`). Without template (`null`), the Nodepool follows the latest template of its Kubernetes version.
+func (c Client) SetSKSNodepoolTemplate(ctx context.Context, id UUID, sksNodepoolID UUID, req SetSKSNodepoolTemplateRequest) (*Operation, error) {
+	path := fmt.Sprintf("/sks-cluster/%v/nodepool/%v:set-template", id, sksNodepoolID)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("SetSKSNodepoolTemplate: prepare JSON body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("SetSKSNodepoolTemplate: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("SetSKSNodepoolTemplate: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("SetSKSNodepoolTemplate: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "set-sks-nodepool-template")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("SetSKSNodepoolTemplate: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("SetSKSNodepoolTemplate: http response: %w", err)
+	}
+
+	bodyresp := new(Operation)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("SetSKSNodepoolTemplate: prepare JSON response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -19113,6 +19178,96 @@ func (c Client) UpgradeSKSClusterServiceLevel(ctx context.Context, id UUID) (*Op
 	bodyresp := new(Operation)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpgradeSKSClusterServiceLevel: prepare JSON response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type ListSKSNodepoolTemplatesResponse struct {
+	SKSNodepoolTemplates []SKSNodepoolTemplate `json:"sks-nodepool-templates,omitempty"`
+}
+
+// FindSKSNodepoolTemplate attempts to find an SKSNodepoolTemplate by nameOrID.
+func (l ListSKSNodepoolTemplatesResponse) FindSKSNodepoolTemplate(nameOrID string) (SKSNodepoolTemplate, error) {
+	var result []SKSNodepoolTemplate
+	for i, elem := range l.SKSNodepoolTemplates {
+		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
+			result = append(result, l.SKSNodepoolTemplates[i])
+		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return SKSNodepoolTemplate{}, fmt.Errorf("%q too many found in ListSKSNodepoolTemplatesResponse: %w", nameOrID, ErrConflict)
+	}
+
+	return SKSNodepoolTemplate{}, fmt.Errorf("%q not found in ListSKSNodepoolTemplatesResponse: %w", nameOrID, ErrNotFound)
+}
+
+type ListSKSNodepoolTemplatesVariant string
+
+const (
+	ListSKSNodepoolTemplatesVariantStandard ListSKSNodepoolTemplatesVariant = "standard"
+	ListSKSNodepoolTemplatesVariantNvidia   ListSKSNodepoolTemplatesVariant = "nvidia"
+)
+
+type ListSKSNodepoolTemplatesOpt func(url.Values)
+
+func ListSKSNodepoolTemplatesWithVariant(variant ListSKSNodepoolTemplatesVariant) ListSKSNodepoolTemplatesOpt {
+	return func(q url.Values) {
+		q.Add("variant", fmt.Sprint(variant))
+	}
+}
+
+// List the available templates for a given kube version (major.minor or major.minor.patch), of the given variant (standard | nvidia) when provided, latest first
+func (c Client) ListSKSNodepoolTemplates(ctx context.Context, kubeVersion string, opts ...ListSKSNodepoolTemplatesOpt) (*ListSKSNodepoolTemplatesResponse, error) {
+	path := fmt.Sprintf("/sks-template/%v", kubeVersion)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if len(opts) > 0 {
+		q := request.URL.Query()
+		for _, opt := range opts {
+			opt(q)
+		}
+		request.URL.RawQuery = q.Encode()
+	}
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "list-sks-nodepool-templates")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: http response: %w", err)
+	}
+
+	bodyresp := new(ListSKSNodepoolTemplatesResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: prepare JSON response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -20491,7 +20646,7 @@ func (l ListVpcsResponse) FindListVpcEntry(nameOrID string) (ListVpcEntry, error
 	return ListVpcEntry{}, fmt.Errorf("%q not found in ListVpcsResponse: %w", nameOrID, ErrNotFound)
 }
 
-// [BETA] List VPCs
+// List VPCs
 func (c Client) ListVpcs(ctx context.Context) (*ListVpcsResponse, error) {
 	path := "/vpc"
 
@@ -20545,7 +20700,7 @@ type CreateVpcRequest struct {
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
 }
 
-// [BETA] Create a VPC
+// Create a VPC
 func (c Client) CreateVpc(ctx context.Context, req CreateVpcRequest) (*Operation, error) {
 	path := "/vpc"
 
@@ -20596,7 +20751,7 @@ func (c Client) CreateVpc(ctx context.Context, req CreateVpcRequest) (*Operation
 	return bodyresp, nil
 }
 
-// [BETA] Delete a VPC
+// Delete a VPC
 func (c Client) DeleteVpc(ctx context.Context, id UUID) error {
 	path := fmt.Sprintf("/vpc/%v", id)
 
@@ -20636,7 +20791,7 @@ func (c Client) DeleteVpc(ctx context.Context, id UUID) error {
 	return nil
 }
 
-// [BETA] Retrieve VPC details
+// Retrieve VPC details
 func (c Client) GetVpc(ctx context.Context, id UUID) (*Vpc, error) {
 	path := fmt.Sprintf("/vpc/%v", id)
 
@@ -20690,7 +20845,7 @@ type UpdateVpcRequest struct {
 	Name *string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 }
 
-// [BETA] Update a VPC
+// Update a VPC
 func (c Client) UpdateVpc(ctx context.Context, id UUID, req UpdateVpcRequest) (*Vpc, error) {
 	path := fmt.Sprintf("/vpc/%v", id)
 
@@ -20764,7 +20919,7 @@ func (l ListVpcRoutesResponse) FindListRouteEntry(id string) (ListRouteEntry, er
 	return ListRouteEntry{}, fmt.Errorf("%q not found in ListVpcRoutesResponse: %w", id, ErrNotFound)
 }
 
-// [BETA] List VPC routes
+// List VPC routes
 func (c Client) ListVpcRoutes(ctx context.Context, vpcID UUID) (*ListVpcRoutesResponse, error) {
 	path := fmt.Sprintf("/vpc/%v/route", vpcID)
 
@@ -20831,7 +20986,7 @@ func (l ListSubnetsResponse) FindListSubnetEntry(nameOrID string) (ListSubnetEnt
 	return ListSubnetEntry{}, fmt.Errorf("%q not found in ListSubnetsResponse: %w", nameOrID, ErrNotFound)
 }
 
-// [BETA] List Subnets
+// List Subnets
 func (c Client) ListSubnets(ctx context.Context, vpcID UUID) (*ListSubnetsResponse, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet", vpcID)
 
@@ -20901,7 +21056,7 @@ type CreateSubnetRequest struct {
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
 }
 
-// [BETA] Create a Subnet
+// Create a Subnet
 func (c Client) CreateSubnet(ctx context.Context, vpcID UUID, req CreateSubnetRequest) (*Operation, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet", vpcID)
 
@@ -20952,7 +21107,7 @@ func (c Client) CreateSubnet(ctx context.Context, vpcID UUID, req CreateSubnetRe
 	return bodyresp, nil
 }
 
-// [BETA] Delete a Subnet
+// Delete a Subnet
 func (c Client) DeleteSubnet(ctx context.Context, vpcID UUID, id UUID) error {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v", vpcID, id)
 
@@ -20992,7 +21147,7 @@ func (c Client) DeleteSubnet(ctx context.Context, vpcID UUID, id UUID) error {
 	return nil
 }
 
-// [BETA] Retrieve Subnet details
+// Retrieve Subnet details
 func (c Client) GetSubnet(ctx context.Context, vpcID UUID, id UUID) (*Subnet, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v", vpcID, id)
 
@@ -21044,7 +21199,7 @@ type UpdateSubnetRequest struct {
 	Name *string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 }
 
-// [BETA] Update a Subnet
+// Update a Subnet
 func (c Client) UpdateSubnet(ctx context.Context, vpcID UUID, id UUID, req UpdateSubnetRequest) (*Subnet, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v", vpcID, id)
 
@@ -21102,7 +21257,7 @@ type AttachInstanceToSubnetRequest struct {
 	Ipv4 net.IP `json:"ipv4,omitempty"`
 }
 
-// [BETA] Attach a Compute instance to a Subnet
+// Attach a Compute instance to a Subnet
 func (c Client) AttachInstanceToSubnet(ctx context.Context, vpcID UUID, subnetID UUID, req AttachInstanceToSubnetRequest) (*Operation, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v/attach", vpcID, subnetID)
 
@@ -21158,7 +21313,7 @@ type DetachInstanceFromSubnetRequest struct {
 	Instance *InstanceRef `json:"instance" validate:"required"`
 }
 
-// [BETA] Detach a Compute instance from a Subnet
+// Detach a Compute instance from a Subnet
 func (c Client) DetachInstanceFromSubnet(ctx context.Context, vpcID UUID, subnetID UUID, req DetachInstanceFromSubnetRequest) (*Operation, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v/detach", vpcID, subnetID)
 
@@ -21232,7 +21387,7 @@ func (l ListRoutesResponse) FindListRouteEntry(id string) (ListRouteEntry, error
 	return ListRouteEntry{}, fmt.Errorf("%q not found in ListRoutesResponse: %w", id, ErrNotFound)
 }
 
-// [BETA] List Subnet routes
+// List Subnet routes
 func (c Client) ListRoutes(ctx context.Context, vpcID UUID, subnetID UUID) (*ListRoutesResponse, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v/route", vpcID, subnetID)
 
@@ -21285,7 +21440,7 @@ type CreateRouteRequest struct {
 	Target string `json:"target" validate:"required"`
 }
 
-// [BETA] Create a route
+// Create a route
 func (c Client) CreateRoute(ctx context.Context, vpcID UUID, subnetID UUID, req CreateRouteRequest) (*Route, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v/route", vpcID, subnetID)
 
@@ -21336,7 +21491,7 @@ func (c Client) CreateRoute(ctx context.Context, vpcID UUID, subnetID UUID, req 
 	return bodyresp, nil
 }
 
-// [BETA] Delete a route
+// Delete a route
 func (c Client) DeleteRoute(ctx context.Context, vpcID UUID, subnetID UUID, id UUID) error {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v/route/%v", vpcID, subnetID, id)
 
