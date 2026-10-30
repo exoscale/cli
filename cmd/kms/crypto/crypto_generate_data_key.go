@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"encoding/base64"
-	"fmt"
 	"os"
 	"strconv"
 
@@ -45,7 +44,7 @@ type cryptoGenerateDataKeyCmd struct {
 
 	KeySpec           v3.GenerateDataKeyRequestKeySpec `cli-short:"s" cli-flag:"key-spec" cli-usage:"key spec for DEK [AES-256]"`
 	BytesCount        string                           `cli-short:"b" cli-flag:"bytes-count" cli-usage:"number of bytes for DEK (1 - 1024)"`
-	EncryptionContext string                           `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for DEK generation"`
+	EncryptionContext exocmd.BinaryValue               `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for DEK generation"`
 	Zone              v3.ZoneName                      `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
 }
 
@@ -56,7 +55,7 @@ func (c *cryptoGenerateDataKeyCmd) CmdShort() string {
 }
 
 func (c *cryptoGenerateDataKeyCmd) CmdLong() string {
-	return "Generate a Data Encryption Key from a given KMS Key."
+	return "Generate a Data Encryption Key from a given KMS Key.\n\n" + binaryInputHelp
 }
 
 func (c *cryptoGenerateDataKeyCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -86,10 +85,7 @@ func (c *cryptoGenerateDataKeyCmd) CmdRun(cmd *cobra.Command, _ []string) error 
 	}
 
 	if cmd.Flags().Changed("encryption-context") {
-		ec, err := base64.StdEncoding.DecodeString(c.EncryptionContext)
-		if err != nil {
-			return fmt.Errorf("encryption-context is not valid base64: %w", err)
-		}
+		ec := []byte(c.EncryptionContext)
 		req.EncryptionContext = &ec
 	}
 

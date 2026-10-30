@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"encoding/base64"
-	"fmt"
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
@@ -37,10 +36,10 @@ type cryptoEncryptCmd struct {
 
 	_ bool `cli-cmd:"encrypt"`
 
-	Key       string `cli-arg:"#" cli-usage:"ID"`
-	Plaintext string `cli-arg:"#" cli-usage:"PLAINTEXT_b64"`
+	Key       string             `cli-arg:"#" cli-usage:"ID"`
+	Plaintext exocmd.BinaryValue `cli-arg:"#" cli-usage:"PLAINTEXT"`
 
-	EncryptionContext   string                               `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for encryption"`
+	EncryptionContext   exocmd.BinaryValue                   `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for encryption"`
 	EncryptionAlgorithm v3.EncryptRequestEncryptionAlgorithm `cli-flag:"encryption-algorithm" cli-usage:"encryption algorithm, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
 	Zone                v3.ZoneName                          `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
 }
@@ -52,7 +51,7 @@ func (c *cryptoEncryptCmd) CmdShort() string {
 }
 
 func (c *cryptoEncryptCmd) CmdLong() string {
-	return "Encrypt a plaintext."
+	return "Encrypt a plaintext.\n\n" + binaryInputHelp
 }
 
 func (c *cryptoEncryptCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -67,21 +66,13 @@ func (c *cryptoEncryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decoded, err := base64.StdEncoding.DecodeString(c.Plaintext)
-	if err != nil {
-		return fmt.Errorf("plaintext is not valid base64: %w", err)
-	}
-
 	req := v3.EncryptRequest{
-		Plaintext:           decoded,
+		Plaintext:           c.Plaintext,
 		EncryptionAlgorithm: c.EncryptionAlgorithm,
 	}
 
 	if cmd.Flags().Changed("encryption-context") {
-		ec, err := base64.StdEncoding.DecodeString(c.EncryptionContext)
-		if err != nil {
-			return fmt.Errorf("encryption-context is not valid base64: %w", err)
-		}
+		ec := []byte(c.EncryptionContext)
 		req.EncryptionContext = &ec
 	}
 
