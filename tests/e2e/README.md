@@ -30,9 +30,10 @@ go test -v -tags=local_integration -timeout 30m -run TestAPIKMSLocal -account=<n
 
 ## Resource naming
 
-API tests share an Exoscale org with other repos (terraform-provider, csi-driver, ...). The runner injects a unique `TEST_RUN_ID` prefixed with `cli-e2e-` into every scenario. Use it for every resource you create.
+API tests share an Exoscale org with other repos. The runner injects a unique `TEST_RUN_ID` into every scenario. Use it for every resource you create.
 
 - good: `${TEST_RUN_ID}-nlb-a`, `pg-$TEST_RUN_ID`, `reboot-$TEST_RUN_ID`
+- shape: `cli-e2e-<short-sha>-<unix>-<rand6>`, the SHA is for traceability
 - bad: hardcoded names, or `e2e-...` without the `cli-` part
 
 Placeholders that intentionally don't exist (for not-found error tests) are fine as-is, e.g. `nonexistent-e2e-instance`.
