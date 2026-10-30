@@ -16,13 +16,15 @@ import (
 )
 
 type iamRoleShowOutput struct {
-	ID          string            `json:"id"`
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Editable    bool              `json:"editable"`
-	Labels      map[string]string `json:"labels"`
-	Permissions []string          `json:"permission"`
-	Policy      *iamPolicyOutput  `json:"policy" output:"-"`
+	ID               string                     `json:"id"`
+	Name             string                     `json:"name"`
+	Description      string                     `json:"description"`
+	Editable         bool                       `json:"editable"`
+	Labels           map[string]string          `json:"labels"`
+	Permissions      []string                   `json:"permission"`
+	MaxSessionTtl    int64                      `json:"max-session-ttl"`
+	Policy           *iamPolicyOutput           `json:"policy" output:"-"`
+	AssumeRolePolicy *iamAssumeRolePolicyOutput `json:"assume-role-policy" output:"-"`
 }
 
 func (o *iamRoleShowOutput) ToJSON() { output.JSON(o) }
@@ -32,6 +34,10 @@ func (o *iamRoleShowOutput) ToTable() {
 	if o.Policy != nil {
 		fmt.Println("\nPolicy:")
 		o.Policy.ToTable()
+	}
+	if o.AssumeRolePolicy != nil {
+		fmt.Println("\nAssume Role Policy:")
+		o.AssumeRolePolicy.ToTable()
 	}
 }
 
@@ -70,7 +76,8 @@ type iamRoleShowCmd struct {
 
 	_ bool `cli-cmd:"show"`
 
-	Policy bool `cli-flag:"policy" cli-usage:"Print IAM Role policy"`
+	Policy           bool `cli-flag:"policy" cli-usage:"Print IAM Role policy"`
+	AssumeRolePolicy bool `cli-flag:"assume-role-policy" cli-usage:"Print IAM Assume Role policy"`
 
 	Role string `cli-arg:"#" cli-usage:"ID|NAME"`
 }
@@ -114,6 +121,8 @@ func (c *iamRoleShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	policy := iamPolicyToOutput(role.Policy)
+	assumeRolePolicy := iamAssumeRolePolicyToOutput(role.AssumeRolePolicy)
+
 	if c.Policy {
 		if policy == nil {
 			return errors.New("role policy not found")
@@ -121,14 +130,23 @@ func (c *iamRoleShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return c.OutputFunc(policy, nil)
 	}
 
+	if c.AssumeRolePolicy {
+		if assumeRolePolicy == nil {
+			return errors.New("role assume role policy not found")
+		}
+		return c.OutputFunc(assumeRolePolicy, nil)
+	}
+
 	out := iamRoleShowOutput{
-		ID:          role.ID.String(),
-		Description: role.Description,
-		Editable:    utils.DefaultBool(role.Editable, false),
-		Labels:      role.Labels,
-		Name:        role.Name,
-		Permissions: role.Permissions,
-		Policy:      policy,
+		ID:               role.ID.String(),
+		Description:      role.Description,
+		Editable:         utils.DefaultBool(role.Editable, false),
+		Labels:           role.Labels,
+		Name:             role.Name,
+		Permissions:      role.Permissions,
+		MaxSessionTtl:    role.MaxSessionTtl,
+		Policy:           policy,
+		AssumeRolePolicy: assumeRolePolicy,
 	}
 
 	return c.OutputFunc(&out, nil)
