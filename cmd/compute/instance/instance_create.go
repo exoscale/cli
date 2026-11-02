@@ -1,11 +1,14 @@
 package instance
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
+	"net"
 	"os"
 	"path"
 	"slices"
@@ -17,6 +20,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/compute"
+	"github.com/exoscale/cli/cmd/networking/vpc"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -52,6 +56,8 @@ type instanceCreateCmd struct {
 	SecurityGroups        []string          `cli-flag:"security-group" cli-usage:"instance Security Group NAME|ID (can be specified multiple times)"`
 	Template              string            `cli-usage:"instance template NAME|ID"`
 	TemplateVisibility    string            `cli-usage:"instance template visibility (public|private)"`
+	VPC                   string            `cli-flag:"vpc" cli-usage:"VPC NAME|ID to attach the instance to (requires --vpc-subnet)"`
+	VPCSubnets            vpcSubnetSpecs    `cli-flag:"vpc-subnet" cli-usage:"VPC Subnet to attach the instance to (format: NAME|ID[,ipv4=IP]; can be specified multiple times)"`
 	Zone                  v3.ZoneName       `cli-short:"z" cli-usage:"instance zone"`
 }
 
@@ -83,6 +89,10 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 		singleUseSSHPrivateKey *rsa.PrivateKey
 		singleUseSSHPublicKey  ssh.PublicKey
 	)
+
+	if err := validateVPCFlags(c.VPC, c.VPCSubnets); err != nil {
+		return err
+	}
 
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
@@ -197,6 +207,13 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
 			privateNetworks[i] = privateNetwork
+		}
+	}
+
+	if c.VPC != "" || len(c.VPCSubnets) > 0 {
+		instanceReq.Vpc, err = resolveCreateInstanceVPC(ctx, client, c.VPC, c.VPCSubnets)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -363,6 +380,119 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 	}
 
 	return nil
+}
+
+// resolveCreateInstanceVPC builds the VPC attachment of an instance creation
+// request from a VPC NAME|ID and a list of NAME|ID[:IPV4] subnet specs.
+func resolveCreateInstanceVPC(
+	ctx context.Context,
+	client *v3.Client,
+	vpcNameOrID string,
+	subnetSpecs []vpcSubnetSpec,
+) (*v3.CreateInstanceRequestVpc, error) {
+	if err := validateVPCFlags(vpcNameOrID, subnetSpecs); err != nil {
+		return nil, err
+	}
+
+	vpcEntry, err := vpc.FindVPC(ctx, client, vpcNameOrID)
+	if err != nil {
+		return nil, err
+	}
+
+	subnets, err := client.ListSubnets(ctx, vpcEntry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error listing VPC Subnets: %w", err)
+	}
+
+	req := &v3.CreateInstanceRequestVpc{ID: vpcEntry.ID}
+	for _, spec := range subnetSpecs {
+		subnet, err := subnets.FindListSubnetEntry(spec.NameOrID)
+		if err != nil {
+			if errors.Is(err, v3.ErrNotFound) {
+				return nil, fmt.Errorf("subnet %q not found in VPC %q", spec.NameOrID, vpcNameOrID)
+			}
+			return nil, fmt.Errorf("error retrieving VPC Subnet: %w", err)
+		}
+
+		req.Subnets = append(req.Subnets, v3.CreateInstanceRequestVpcSubnets{ID: subnet.ID, Ipv4: spec.IPv4})
+	}
+
+	return req, nil
+}
+
+func validateVPCFlags(vpcNameOrID string, subnetSpecs []vpcSubnetSpec) error {
+	if vpcNameOrID == "" && len(subnetSpecs) > 0 {
+		return fmt.Errorf("--vpc is required when --vpc-subnet is specified")
+	}
+	if vpcNameOrID != "" && len(subnetSpecs) == 0 {
+		return fmt.Errorf("at least one --vpc-subnet is required when --vpc is specified")
+	}
+	return nil
+}
+
+// vpcSubnetSpec is one --vpc-subnet value: NAME|ID[,ipv4=IP].
+type vpcSubnetSpec struct {
+	NameOrID string
+	IPv4     net.IP
+}
+
+// vpcSubnetSpecs implements pflag.Value. Unlike a []string flag, it does not
+// split on commas, so each --vpc-subnet occurrence holds one subnet with its
+// key=value options.
+type vpcSubnetSpecs []vpcSubnetSpec
+
+func (s *vpcSubnetSpecs) Set(v string) error {
+	spec, err := parseVPCSubnetSpec(v)
+	if err != nil {
+		return err
+	}
+	*s = append(*s, spec)
+	return nil
+}
+
+func (s *vpcSubnetSpecs) String() string {
+	out := make([]string, len(*s))
+	for i, spec := range *s {
+		out[i] = spec.NameOrID
+		if spec.IPv4 != nil {
+			out[i] += ",ipv4=" + spec.IPv4.String()
+		}
+	}
+	return strings.Join(out, " ")
+}
+
+func (s *vpcSubnetSpecs) Type() string { return "stringArray" }
+
+// parseVPCSubnetSpec parses a NAME|ID[,ipv4=IP] subnet spec.
+func parseVPCSubnetSpec(v string) (vpcSubnetSpec, error) {
+	parts := strings.Split(v, ",")
+	spec := vpcSubnetSpec{NameOrID: parts[0]}
+	if spec.NameOrID == "" || strings.Contains(spec.NameOrID, "=") {
+		return vpcSubnetSpec{}, fmt.Errorf("missing subnet NAME|ID (format: NAME|ID[,ipv4=IP])")
+	}
+
+	for _, opt := range parts[1:] {
+		key, value, ok := strings.Cut(opt, "=")
+		if !ok {
+			return vpcSubnetSpec{}, fmt.Errorf("invalid option %q (expected key=value)", opt)
+		}
+
+		switch key {
+		case "ipv4":
+			if spec.IPv4 != nil {
+				return vpcSubnetSpec{}, fmt.Errorf("ipv4 specified more than once")
+			}
+			ip := net.ParseIP(value)
+			if ip == nil || ip.To4() == nil {
+				return vpcSubnetSpec{}, fmt.Errorf("invalid IPv4 address %q", value)
+			}
+			spec.IPv4 = ip.To4()
+		default:
+			return vpcSubnetSpec{}, fmt.Errorf("unsupported option %q (supported: ipv4)", key)
+		}
+	}
+
+	return spec, nil
 }
 
 func init() {
