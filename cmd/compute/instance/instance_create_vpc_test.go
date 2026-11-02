@@ -162,8 +162,6 @@ func TestResolveCreateInstanceVPCErrors(t *testing.T) {
 		subnets []vpcSubnetSpec
 		wantErr string
 	}{
-		{name: "subnet without vpc", subnets: []vpcSubnetSpec{{NameOrID: "front"}}, wantErr: "--vpc is required"},
-		{name: "vpc without subnet", vpc: "prod", wantErr: "at least one --vpc-subnet"},
 		{name: "unknown vpc", vpc: "nope", subnets: []vpcSubnetSpec{{NameOrID: "front"}}, wantErr: `vpc "nope" not found`},
 		{name: "unknown subnet", vpc: "prod", subnets: []vpcSubnetSpec{{NameOrID: "nope"}}, wantErr: `subnet "nope" not found`},
 	}
@@ -171,6 +169,35 @@ func TestResolveCreateInstanceVPCErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := resolveCreateInstanceVPC(context.Background(), globalstate.EgoscaleV3Client, tt.vpc, tt.subnets)
+			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+				t.Fatalf("expected error containing %q, got %v", tt.wantErr, err)
+			}
+		})
+	}
+}
+
+func TestValidateVPCFlags(t *testing.T) {
+	tests := []struct {
+		name    string
+		vpc     string
+		subnets []vpcSubnetSpec
+		wantErr string
+	}{
+		{name: "no vpc flags"},
+		{name: "vpc and subnet", vpc: "prod", subnets: []vpcSubnetSpec{{NameOrID: "front"}}},
+		{name: "subnet without vpc", subnets: []vpcSubnetSpec{{NameOrID: "front"}}, wantErr: "--vpc is required"},
+		{name: "vpc without subnet", vpc: "prod", wantErr: "at least one --vpc-subnet"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateVPCFlags(tt.vpc, tt.subnets)
+			if tt.wantErr == "" {
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return
+			}
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Fatalf("expected error containing %q, got %v", tt.wantErr, err)
 			}

@@ -12,7 +12,7 @@
 - kms: add `--encryption-algorithm` to `exo kms crypto encrypt` and `decrypt`, and `--source-encryption-algorithm` and `--dest-encryption-algorithm` to `reencrypt`, to use RSA keys
 - kms: show the key spec in `exo kms key show` and `exo kms key list`
 - dbaas: add `exo dbaas acl list` for Kafka and OpenSearch, `exo dbaas acl create` and `delete` for Kafka, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
-- compute: add `--vpc` and `--vpc-subnet` to `exo compute instance create` to attach an instance to VPC Subnets at creation
+- compute: add `--vpc` and `--vpc-subnet` to `exo compute instance create` to attach an instance to VPC Subnets at creation (#927)
 
 ### Bug fixes
 

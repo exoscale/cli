@@ -210,7 +210,7 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 		}
 	}
 
-	if c.VPC != "" || len(c.VPCSubnets) > 0 {
+	if c.VPC != "" {
 		instanceReq.Vpc, err = resolveCreateInstanceVPC(ctx, client, c.VPC, c.VPCSubnets)
 		if err != nil {
 			return err
@@ -383,17 +383,13 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 }
 
 // resolveCreateInstanceVPC builds the VPC attachment of an instance creation
-// request from a VPC NAME|ID and a list of NAME|ID[:IPV4] subnet specs.
+// request from a VPC NAME|ID and a list of subnet specs.
 func resolveCreateInstanceVPC(
 	ctx context.Context,
 	client *v3.Client,
 	vpcNameOrID string,
 	subnetSpecs []vpcSubnetSpec,
 ) (*v3.CreateInstanceRequestVpc, error) {
-	if err := validateVPCFlags(vpcNameOrID, subnetSpecs); err != nil {
-		return nil, err
-	}
-
 	vpcEntry, err := vpc.FindVPC(ctx, client, vpcNameOrID)
 	if err != nil {
 		return nil, err
