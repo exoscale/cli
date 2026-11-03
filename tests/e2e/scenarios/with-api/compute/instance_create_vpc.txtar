@@ -1,0 +1,50 @@
+# Test: exo compute instance create supports --vpc / --vpc-subnet
+# Creates a VPC with a Subnet, then instances attached at creation time:
+# one with a fixed IPv4 (NAME,ipv4=IP syntax), one with a random IPv4 (subnet ID).
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# --vpc and --vpc-subnet must be used together
+! exec exo --zone $TEST_ZONE compute instance create vpc-err-$TEST_RUN_ID --vpc-subnet front
+stderr '--vpc is required when --vpc-subnet is specified'
+
+! exec exo --zone $TEST_ZONE compute instance create vpc-err-$TEST_RUN_ID --vpc whatever
+stderr 'at least one --vpc-subnet is required'
+
+# Setup: VPC + Subnet
+exec exo --zone $TEST_ZONE --output-format json networking vpc create vpc-$TEST_RUN_ID
+json-setenv VPC_ID id stdout
+
+exec exo --zone $TEST_ZONE --output-format json networking vpc subnet create $VPC_ID front-$TEST_RUN_ID --ipv4-block 10.42.0.0/24 --address-family inet4 --address-space private
+json-setenv SUBNET_ID id stdout
+
+# Invalid --vpc-subnet values are rejected
+! exec exo --zone $TEST_ZONE compute instance create vpc-err-$TEST_RUN_ID --vpc vpc-$TEST_RUN_ID --vpc-subnet front-$TEST_RUN_ID,ipv4=not-an-ip
+stderr 'invalid IPv4 address'
+
+! exec exo --zone $TEST_ZONE compute instance create vpc-err-$TEST_RUN_ID --vpc vpc-$TEST_RUN_ID --vpc-subnet front-$TEST_RUN_ID,ipv6=fd00::1
+stderr 'unsupported option "ipv6"'
+
+# Instance with a fixed IPv4, VPC and Subnet referenced by name
+exec exo --zone $TEST_ZONE --output-format json compute instance create vpc-a-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10 --vpc vpc-$TEST_RUN_ID --vpc-subnet front-$TEST_RUN_ID,ipv4=10.42.0.10
+json-setenv INSTANCE_A_ID id stdout
+
+wait-instance-state $TEST_ZONE $INSTANCE_A_ID running 300
+
+exec exo --zone $TEST_ZONE --output-format json compute instance show $INSTANCE_A_ID
+stdout '"vpc":"vpc-[a-z0-9-]+"'
+stdout '"vpc_subnets":\["front-[a-z0-9-]+ 10\.42\.0\.10"\]'
+
+# Instance with a random IPv4, VPC and Subnet referenced by ID
+exec exo --zone $TEST_ZONE --output-format json compute instance create vpc-b-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10 --vpc $VPC_ID --vpc-subnet $SUBNET_ID
+json-setenv INSTANCE_B_ID id stdout
+
+wait-instance-state $TEST_ZONE $INSTANCE_B_ID running 300
+
+exec exo --zone $TEST_ZONE --output-format json compute instance show $INSTANCE_B_ID
+stdout '"vpc_subnets":\["front-[a-z0-9-]+ 10\.42\.0\.[0-9]+"\]'
+
+# Cleanup
+exec exo --zone $TEST_ZONE compute instance delete --force $INSTANCE_A_ID
+exec exo --zone $TEST_ZONE compute instance delete --force $INSTANCE_B_ID
+exec exo --zone $TEST_ZONE networking vpc subnet delete --force $VPC_ID $SUBNET_ID
+exec exo --zone $TEST_ZONE networking vpc delete --force $VPC_ID

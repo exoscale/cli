@@ -1,6 +1,8 @@
-# Test: compute instance create --help shows the reverse DNS flag
+# Test: compute instance create --help shows the reverse DNS and VPC flags
 
 exec exo compute instance create --help
 stdout '--reverse-dns'
 stdout '--instance-type'
 stdout '--template'
+stdout '--vpc string'
+stdout '--vpc-subnet'
