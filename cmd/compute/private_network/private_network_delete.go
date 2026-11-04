@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -25,10 +26,10 @@ type privateNetworkDeleteCmd struct {
 func (c *privateNetworkDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
 
 func (c *privateNetworkDeleteCmd) CmdShort() string {
-	return "Delete a Private Network"
+	return "Delete a Private Network" + compute.PrivateNetworkDeprecatedShort
 }
 
-func (c *privateNetworkDeleteCmd) CmdLong() string { return "" }
+func (c *privateNetworkDeleteCmd) CmdLong() string { return compute.PrivateNetworkDeprecationNotice }
 
 func (c *privateNetworkDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	exocmd.CmdSetZoneFlagFromDefault(cmd)

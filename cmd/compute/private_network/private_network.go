@@ -7,7 +7,8 @@ import (
 
 var privateNetworkCmd = &cobra.Command{
 	Use:     "private-network",
-	Short:   "Private Networks management",
+	Short:   "Private Networks management" + compute.PrivateNetworkDeprecatedShort,
+	Long:    compute.PrivateNetworkDeprecationNotice,
 	Aliases: []string{"privnet"},
 }
 
