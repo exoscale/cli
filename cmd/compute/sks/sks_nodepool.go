@@ -149,8 +149,7 @@ func buildNvidiaMigProfiles(family v3.InstanceTypeFamily, profile string) (*v3.N
 //
 // The "static" policy grants exclusive CPUs to Guaranteed pods requesting
 // integer CPU limits, and requires a CPU reservation to be provided via
-// kube-reserved or system-reserved. CPU reservations are not allowed with any
-// other policy.
+// kube-reserved or system-reserved.
 func buildCPUManagerConfig(
 	policy string,
 	policyOptions []string,
@@ -162,29 +161,13 @@ func buildCPUManagerConfig(
 		return nil, nil
 	}
 
-	if policy != "" &&
-		policy != string(v3.CPUManagerConfigCPUManagerPolicyStatic) &&
-		policy != string(v3.CPUManagerConfigCPUManagerPolicyNone) {
-		return nil, fmt.Errorf(
-			"invalid CPU manager policy %q: supported values are %q, %q",
-			policy,
-			v3.CPUManagerConfigCPUManagerPolicyStatic,
-			v3.CPUManagerConfigCPUManagerPolicyNone,
-		)
-	}
-
 	isStatic := policy == string(v3.CPUManagerConfigCPUManagerPolicyStatic)
 	hasCPUReservation := (kubeReserved != nil && kubeReserved.CPU != "") ||
 		(systemReserved != nil && systemReserved.CPU != "")
 
-	switch {
-	case isStatic && !hasCPUReservation:
+	if isStatic && !hasCPUReservation {
 		return nil, errors.New(
 			`the "static" CPU manager policy requires a CPU reservation via --kube-reserved-cpu or --system-reserved-cpu`,
-		)
-	case !isStatic && (kubeReserved != nil || systemReserved != nil):
-		return nil, errors.New(
-			"CPU reservations (--kube-reserved-*, --system-reserved-*) are only supported with the \"static\" CPU manager policy",
 		)
 	}
 
