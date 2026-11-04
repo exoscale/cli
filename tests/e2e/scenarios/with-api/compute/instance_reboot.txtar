@@ -4,9 +4,8 @@
 
 # Create a fresh instance for this test; testscript captures stdout automatically
 exec exo --zone $TEST_ZONE --output-format json compute instance create reboot-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10
-
-# Extract the instance ID into INSTANCE_ID env var from the captured stdout
 json-setenv INSTANCE_ID id stdout
+defer exo --zone $TEST_ZONE compute instance delete --force $INSTANCE_ID
 
 # Wait for the instance to be fully running before rebooting
 wait-instance-state $TEST_ZONE $INSTANCE_ID running 300
@@ -24,6 +23,3 @@ wait-instance-state $TEST_ZONE $INSTANCE_ID running 300
 # Confirm final state is running
 exec exo --zone $TEST_ZONE --output-format json compute instance show $INSTANCE_ID
 stdout '"state"'
-
-# Teardown: delete the instance
-exec exo --zone $TEST_ZONE compute instance delete --force $INSTANCE_ID
