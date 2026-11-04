@@ -8,6 +8,7 @@ exec exo dbaas type show clickhouse --settings=clickhouse
 
 # Create a ClickHouse service with type-specific flags (disable termination protection for cleanup)
 exec exo --zone $TEST_ZONE --output-format json dbaas create clickhouse startup-8 ch-$TEST_RUN_ID --clickhouse-ip-filter 10.0.0.0/8 --clickhouse-version 25.8 --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f ch-$TEST_RUN_ID
 
 # Wait for the service to be running (ClickHouse provisioning can take 5-10 minutes)
 wait-dbaas-state $TEST_ZONE ch-$TEST_RUN_ID running 900
@@ -27,6 +28,3 @@ exec exo --zone $TEST_ZONE dbaas update ch-$TEST_RUN_ID --clickhouse-ip-filter 1
 
 # Wait for the service to stabilise after update
 wait-dbaas-state $TEST_ZONE ch-$TEST_RUN_ID running 600
-
-# Teardown: delete the service
-exec exo --zone $TEST_ZONE dbaas delete -f ch-$TEST_RUN_ID
