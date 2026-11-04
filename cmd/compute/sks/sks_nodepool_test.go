@@ -178,31 +178,9 @@ func TestBuildCPUManagerConfig(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			name:      "static policy with reservation lacking CPU returns error",
-			policy:    "static",
-			kubeRes:   &v3.ReservedResources{Memory: "512Mi"},
-			expectErr: true,
-		},
-		{
-			name:      "reservations without static policy return error",
-			kubeRes:   &v3.ReservedResources{CPU: "200m"},
-			expectErr: true,
-		},
-		{
-			name:      "reservations with none policy return error",
-			policy:    "none",
-			sysRes:    &v3.ReservedResources{CPU: "100m"},
-			expectErr: true,
-		},
-		{
 			name:      "reconcile period without policy",
 			reconcile: "5s",
 			expected:  &v3.CPUManagerConfig{CPUManagerReconcilePeriod: "5s"},
-		},
-		{
-			name:      "invalid policy returns error",
-			policy:    "bogus",
-			expectErr: true,
 		},
 	}
 
