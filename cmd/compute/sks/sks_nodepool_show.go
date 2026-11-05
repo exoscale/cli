@@ -15,31 +15,40 @@ import (
 )
 
 type sksNodepoolShowOutput struct {
-	ID                   v3.UUID                          `json:"id"`
-	Name                 string                           `json:"name"`
-	Description          string                           `json:"description"`
-	CreationDate         string                           `json:"creation_date"`
-	InstancePoolID       v3.UUID                          `json:"instance_pool_id"`
-	InstancePrefix       string                           `json:"instance_prefix"`
-	InstanceType         string                           `json:"instance_type"`
-	Template             string                           `json:"template"`
-	DiskSize             int64                            `json:"disk_size"`
-	PublicIPAssignment   v3.SKSNodepoolPublicIPAssignment `json:"public_ip"`
-	IPv6                 bool                             `json:"ipv6_enabled" outputLabel:"IPv6"`
-	AntiAffinityGroups   []string                         `json:"anti_affinity_groups"`
-	SecurityGroups       []string                         `json:"security_groups"`
-	PrivateNetworks      []string                         `json:"private_networks"`
-	Version              string                           `json:"version"`
-	Size                 int64                            `json:"size"`
-	State                string                           `json:"state"`
-	Taints               []string                         `json:"taints"`
-	Labels               map[string]string                `json:"labels"`
-	NvidiaMigProfile     string                           `json:"nvidia_mig_profile"`
-	AddOns               []string                         `json:"addons"`
-	ImageGCMin           string                           `json:"image_gc_min_age"`
-	ImageGcLowThreshold  int64                            `json:"image_gc_low_threshold"`
-	ImageGcHighThreshold int64                            `json:"image_gc_high_threshold"`
-	KubeletMaxPods       int64                            `json:"kubelet_max_pods"`
+	ID                             v3.UUID                          `json:"id"`
+	Name                           string                           `json:"name"`
+	Description                    string                           `json:"description"`
+	CreationDate                   string                           `json:"creation_date"`
+	InstancePoolID                 v3.UUID                          `json:"instance_pool_id"`
+	InstancePrefix                 string                           `json:"instance_prefix"`
+	InstanceType                   string                           `json:"instance_type"`
+	Template                       string                           `json:"template"`
+	DiskSize                       int64                            `json:"disk_size"`
+	PublicIPAssignment             v3.SKSNodepoolPublicIPAssignment `json:"public_ip"`
+	IPv6                           bool                             `json:"ipv6_enabled" outputLabel:"IPv6"`
+	AntiAffinityGroups             []string                         `json:"anti_affinity_groups"`
+	SecurityGroups                 []string                         `json:"security_groups"`
+	PrivateNetworks                []string                         `json:"private_networks"`
+	Version                        string                           `json:"version"`
+	Size                           int64                            `json:"size"`
+	State                          string                           `json:"state"`
+	Taints                         []string                         `json:"taints"`
+	Labels                         map[string]string                `json:"labels"`
+	NvidiaMigProfile               string                           `json:"nvidia_mig_profile"`
+	AddOns                         []string                         `json:"addons"`
+	ImageGCMin                     string                           `json:"image_gc_min_age"`
+	ImageGcLowThreshold            int64                            `json:"image_gc_low_threshold"`
+	ImageGcHighThreshold           int64                            `json:"image_gc_high_threshold"`
+	KubeletMaxPods                 int64                            `json:"kubelet_max_pods"`
+	CPUManagerPolicy               string                           `json:"cpu_manager_policy"`
+	CPUManagerPolicyOptions        []string                         `json:"cpu_manager_policy_options"`
+	CPUManagerReconcilePeriod      string                           `json:"cpu_manager_reconcile_period"`
+	KubeReservedCPU                string                           `json:"kube_reserved_cpu"`
+	KubeReservedMemory             string                           `json:"kube_reserved_memory"`
+	KubeReservedEphemeralStorage   string                           `json:"kube_reserved_ephemeral_storage"`
+	SystemReservedCPU              string                           `json:"system_reserved_cpu"`
+	SystemReservedMemory           string                           `json:"system_reserved_memory"`
+	SystemReservedEphemeralStorage string                           `json:"system_reserved_ephemeral_storage"`
 }
 
 func (o *sksNodepoolShowOutput) Type() string { return "SKS Nodepool" }
@@ -102,6 +111,8 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if nodepool == nil {
 		return errors.New("nodepool not found")
 	}
+
+	cpuManagerConfig := nodepool.CPUManagerConfig
 
 	out := sksNodepoolShowOutput{
 		AddOns: func() (v []string) {
@@ -175,6 +186,60 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				return *nodepool.KubeletMaxPods
 			}
 			return kubeletMaxPods
+		}(),
+		CPUManagerPolicy: func() (s string) {
+			if cpuManagerConfig != nil {
+				s = string(cpuManagerConfig.CPUManagerPolicy)
+			}
+			return
+		}(),
+		CPUManagerPolicyOptions: func() (v []string) {
+			if cpuManagerConfig != nil {
+				v = cpuManagerConfig.CPUManagerPolicyOptions
+			}
+			return
+		}(),
+		CPUManagerReconcilePeriod: func() (s string) {
+			if cpuManagerConfig != nil {
+				s = cpuManagerConfig.CPUManagerReconcilePeriod
+			}
+			return
+		}(),
+		KubeReservedCPU: func() (s string) {
+			if cpuManagerConfig != nil && cpuManagerConfig.KubeReserved != nil {
+				s = cpuManagerConfig.KubeReserved.CPU
+			}
+			return
+		}(),
+		KubeReservedMemory: func() (s string) {
+			if cpuManagerConfig != nil && cpuManagerConfig.KubeReserved != nil {
+				s = cpuManagerConfig.KubeReserved.Memory
+			}
+			return
+		}(),
+		KubeReservedEphemeralStorage: func() (s string) {
+			if cpuManagerConfig != nil && cpuManagerConfig.KubeReserved != nil {
+				s = cpuManagerConfig.KubeReserved.EphemeralStorage
+			}
+			return
+		}(),
+		SystemReservedCPU: func() (s string) {
+			if cpuManagerConfig != nil && cpuManagerConfig.SystemReserved != nil {
+				s = cpuManagerConfig.SystemReserved.CPU
+			}
+			return
+		}(),
+		SystemReservedMemory: func() (s string) {
+			if cpuManagerConfig != nil && cpuManagerConfig.SystemReserved != nil {
+				s = cpuManagerConfig.SystemReserved.Memory
+			}
+			return
+		}(),
+		SystemReservedEphemeralStorage: func() (s string) {
+			if cpuManagerConfig != nil && cpuManagerConfig.SystemReserved != nil {
+				s = cpuManagerConfig.SystemReserved.EphemeralStorage
+			}
+			return
 		}(),
 		Version: nodepool.Version,
 	}
