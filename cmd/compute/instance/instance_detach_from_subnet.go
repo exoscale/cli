@@ -8,6 +8,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/networking/vpc"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -75,7 +76,7 @@ func (c *instanceDetachFromSubnetCmd) CmdRun(_ *cobra.Command, _ []string) error
 		ctx,
 		client,
 		fmt.Sprintf("Detaching instance %q from Subnet %q...", c.Instance, c.Subnet),
-		func(ctx context.Context, client *v3.Client) (*v3.Operation, error) {
+		func(ctx context.Context, client exoapi.Client) (*v3.Operation, error) {
 			return client.DetachInstanceFromSubnet(ctx, vpcEntry.ID, subnetEntry.ID, req)
 		},
 	); err != nil {

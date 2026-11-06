@@ -22,6 +22,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 )
 
@@ -40,7 +41,7 @@ var (
 )
 
 // AllZonesV3 returns every zone, or only zoneName when it is set.
-func AllZonesV3(ctx context.Context, client *v3.Client, zoneName v3.ZoneName) ([]v3.Zone, error) {
+func AllZonesV3(ctx context.Context, client exoapi.Client, zoneName v3.ZoneName) ([]v3.Zone, error) {
 	if zoneName != "" {
 		// Unlike the public zone list, this also finds zones only enabled for some organizations.
 		endpoint, err := GetZoneAPIEndpointV3(ctx, client, zoneName)
@@ -59,8 +60,8 @@ func AllZonesV3(ctx context.Context, client *v3.Client, zoneName v3.ZoneName) ([
 }
 
 // ListZonesV3 lists the zones, falling back to another zone like GetZoneAPIEndpointV3.
-func ListZonesV3(ctx context.Context, client *v3.Client) (*v3.ListZonesResponse, error) {
-	return lookupZone(client, func(c *v3.Client) (*v3.ListZonesResponse, error) {
+func ListZonesV3(ctx context.Context, client exoapi.Client) (*v3.ListZonesResponse, error) {
+	return lookupZone(client, func(c exoapi.Client) (*v3.ListZonesResponse, error) {
 		return c.ListZones(ctx)
 	})
 }
@@ -68,8 +69,8 @@ func ListZonesV3(ctx context.Context, client *v3.Client) (*v3.ListZonesResponse,
 // GetZoneAPIEndpointV3 returns the API endpoint of zone. When the lookup fails on
 // the default endpoint (ch-gva-2), it is retried once on another zone, unless an
 // API endpoint is configured: that one is then used as is.
-func GetZoneAPIEndpointV3(ctx context.Context, client *v3.Client, zone v3.ZoneName) (v3.Endpoint, error) {
-	return lookupZone(client, func(c *v3.Client) (v3.Endpoint, error) {
+func GetZoneAPIEndpointV3(ctx context.Context, client exoapi.Client, zone v3.ZoneName) (v3.Endpoint, error) {
+	return lookupZone(client, func(c exoapi.Client) (v3.Endpoint, error) {
 		return c.GetZoneAPIEndpoint(ctx, zone)
 	})
 }
@@ -80,7 +81,7 @@ var lookupEndpoint atomic.Pointer[v3.Endpoint]
 
 // lookupZone runs lookup on client, or on another zone if it fails and no API
 // endpoint is configured. A missing zone is missing everywhere: no retry then.
-func lookupZone[T any](client *v3.Client, lookup func(*v3.Client) (T, error)) (T, error) {
+func lookupZone[T any](client exoapi.Client, lookup func(exoapi.Client) (T, error)) (T, error) {
 	if account.CurrentAccount.Endpoint != "" {
 		return lookup(client)
 	}
@@ -130,7 +131,7 @@ func RandStringBytes(n int) (string, error) {
 	return base64.StdEncoding.EncodeToString(b), nil
 }
 
-func GetInstancesAttachedToEIP(ctx context.Context, client *v3.Client, elasticIPID string) ([]v3.ListInstancesResponseInstances, error) {
+func GetInstancesAttachedToEIP(ctx context.Context, client exoapi.Client, elasticIPID string) ([]v3.ListInstancesResponseInstances, error) {
 	instanceListResponse, err := client.ListInstances(ctx, v3.ListInstancesWithIPAddress(elasticIPID))
 	if err != nil {
 		return nil, err

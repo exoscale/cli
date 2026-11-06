@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -74,7 +75,7 @@ func (c *dbaasAclCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
-func (c *dbaasAclCreateCmd) createKafka(ctx context.Context, client *v3.Client) error {
+func (c *dbaasAclCreateCmd) createKafka(ctx context.Context, client exoapi.Client) error {
 	var (
 		op  *v3.Operation
 		err error

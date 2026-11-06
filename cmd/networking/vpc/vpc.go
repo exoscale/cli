@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/cmd/networking"
+	"github.com/exoscale/cli/pkg/exoapi"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -23,7 +24,7 @@ func init() {
 }
 
 // FindVPC resolves a VPC by name or ID in the client's current zone.
-func FindVPC(ctx context.Context, client *v3.Client, nameOrID string) (v3.ListVpcEntry, error) {
+func FindVPC(ctx context.Context, client exoapi.Client, nameOrID string) (v3.ListVpcEntry, error) {
 	resp, err := client.ListVpcs(ctx)
 	if err != nil {
 		return v3.ListVpcEntry{}, err
@@ -43,7 +44,7 @@ func FindVPC(ctx context.Context, client *v3.Client, nameOrID string) (v3.ListVp
 }
 
 // FindSubnet resolves a Subnet by name or ID within the given VPC.
-func FindSubnet(ctx context.Context, client *v3.Client, vpcID v3.UUID, nameOrID string) (v3.ListSubnetEntry, error) {
+func FindSubnet(ctx context.Context, client exoapi.Client, vpcID v3.UUID, nameOrID string) (v3.ListSubnetEntry, error) {
 	resp, err := client.ListSubnets(ctx, vpcID)
 	if err != nil {
 		return v3.ListSubnetEntry{}, err

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -48,7 +49,7 @@ func (c *ModelCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		HuggingfaceToken: c.HuggingfaceToken,
 	}
 
-	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Creating model %q...", c.Name), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
+	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Creating model %q...", c.Name), func(ctx context.Context, c exoapi.Client) (*v3.Operation, error) {
 		return c.CreateModel(ctx, req)
 	}); err != nil {
 		return err

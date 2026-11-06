@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -72,7 +73,7 @@ func (c *dbaasAclListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 // listAcl returns the ACL entries of a Database Service of type dbType.
-func listAcl(ctx context.Context, client *v3.Client, dbType, name string) (output.Outputter, error) {
+func listAcl(ctx context.Context, client exoapi.Client, dbType, name string) (output.Outputter, error) {
 	switch dbType {
 	case "kafka":
 		acls, err := client.GetDBAASKafkaAclConfig(ctx, name)
