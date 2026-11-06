@@ -2403,7 +2403,7 @@ type CreateDBAASServiceClickhouseRequest struct {
 	ClickhouseSettings *JSONSchemaClickhouse `json:"clickhouse-settings,omitempty"`
 	ForkFromService    DBAASServiceName      `json:"fork-from-service,omitempty" validate:"omitempty,gte=0,lte=63"`
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *CreateDBAASServiceClickhouseRequestMaintenance `json:"maintenance,omitempty"`
 	// Subscription plan
@@ -2491,7 +2491,7 @@ type UpdateDBAASServiceClickhouseRequest struct {
 	// ClickHouse settings
 	ClickhouseSettings *JSONSchemaClickhouse `json:"clickhouse-settings,omitempty"`
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *UpdateDBAASServiceClickhouseRequestMaintenance `json:"maintenance,omitempty"`
 	// Subscription plan
@@ -4455,7 +4455,7 @@ type CreateDBAASServiceGrafanaRequest struct {
 	// Grafana settings
 	GrafanaSettings *JSONSchemaGrafana `json:"grafana-settings,omitempty"`
 	// Allowed CIDR address blocks for incoming connections
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *CreateDBAASServiceGrafanaRequestMaintenance `json:"maintenance,omitempty"`
 	// Subscription plan
@@ -4540,7 +4540,7 @@ type UpdateDBAASServiceGrafanaRequest struct {
 	// Grafana settings
 	GrafanaSettings *JSONSchemaGrafana `json:"grafana-settings,omitempty"`
 	// Allowed CIDR address blocks for incoming connections
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *UpdateDBAASServiceGrafanaRequestMaintenance `json:"maintenance,omitempty"`
 	// Subscription plan
@@ -5167,7 +5167,7 @@ type CreateDBAASServiceKafkaRequest struct {
 	// Kafka authentication methods
 	AuthenticationMethods *CreateDBAASServiceKafkaRequestAuthenticationMethods `json:"authentication-methods,omitempty"`
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Allow clients to connect to kafka_connect from the public internet for service nodes that are in a project VPC or another type of private network
 	KafkaConnectEnabled *bool `json:"kafka-connect-enabled,omitempty"`
 	// Kafka Connect configuration values
@@ -5276,7 +5276,7 @@ type UpdateDBAASServiceKafkaRequest struct {
 	// Kafka authentication methods
 	AuthenticationMethods *UpdateDBAASServiceKafkaRequestAuthenticationMethods `json:"authentication-methods,omitempty"`
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Allow clients to connect to kafka_connect from the public internet for service nodes that are in a project VPC or another type of private network
 	KafkaConnectEnabled *bool `json:"kafka-connect-enabled,omitempty"`
 	// Kafka Connect configuration values
@@ -6066,7 +6066,7 @@ type CreateDBAASServiceMysqlRequest struct {
 	// Service integrations to be enabled when creating the service.
 	Integrations []CreateDBAASServiceMysqlRequestIntegrations `json:"integrations,omitempty"`
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *CreateDBAASServiceMysqlRequestMaintenance `json:"maintenance,omitempty"`
 	// Migrate data from existing server
@@ -6186,7 +6186,7 @@ type UpdateDBAASServiceMysqlRequest struct {
 	// The minimum amount of time in seconds to keep binlog entries before deletion. This may be extended for services that require binlog entries for longer than the default for example if using the MySQL Debezium Kafka connector.
 	BinlogRetentionPeriod int64 `json:"binlog-retention-period,omitempty" validate:"omitempty,gte=600,lte=86400"`
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *UpdateDBAASServiceMysqlRequestMaintenance `json:"maintenance,omitempty"`
 	// Migrate data from existing server
@@ -6473,6 +6473,62 @@ func (c Client) DeleteDBAASMysqlDatabase(ctx context.Context, serviceName string
 	bodyresp := new(Operation)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("DeleteDBAASMysqlDatabase: prepare JSON response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type CreateDBAASMysqlUpgradeCheckRequest struct {
+	// Target version for upgrade
+	TargetVersion string `json:"target-version" validate:"required,gte=1,lte=32"`
+}
+
+// Check whether you can upgrade MySQL service to a newer version
+func (c Client) CreateDBAASMysqlUpgradeCheck(ctx context.Context, serviceName string, req CreateDBAASMysqlUpgradeCheckRequest) (*DBAASTask, error) {
+	path := fmt.Sprintf("/dbaas-mysql/%v/upgrade-check", serviceName)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASMysqlUpgradeCheck: prepare JSON body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASMysqlUpgradeCheck: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("CreateDBAASMysqlUpgradeCheck: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("CreateDBAASMysqlUpgradeCheck: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "create-dbaas-mysql-upgrade-check")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASMysqlUpgradeCheck: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("CreateDBAASMysqlUpgradeCheck: http response: %w", err)
+	}
+
+	bodyresp := new(DBAASTask)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("CreateDBAASMysqlUpgradeCheck: prepare JSON response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -6826,7 +6882,7 @@ type CreateDBAASServiceOpensearchRequest struct {
 	// Template settings for all new indexes
 	IndexTemplate *CreateDBAASServiceOpensearchRequestIndexTemplate `json:"index-template,omitempty"`
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Aiven automation resets index.refresh_interval to default value for every index to be sure that indices are always visible to search. If it doesn't fit your case, you can disable this by setting up this flag to true.
 	KeepIndexRefreshInterval *bool `json:"keep-index-refresh-interval,omitempty"`
 	// Automatic maintenance settings
@@ -6961,7 +7017,7 @@ type UpdateDBAASServiceOpensearchRequest struct {
 	// Template settings for all new indexes
 	IndexTemplate *UpdateDBAASServiceOpensearchRequestIndexTemplate `json:"index-template,omitempty"`
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Aiven automation resets index.refresh_interval to default value for every index to be sure that indices are always visible to search. If it doesn't fit your case, you can disable this by setting up this flag to true.
 	KeepIndexRefreshInterval *bool `json:"keep-index-refresh-interval,omitempty"`
 	// Automatic maintenance settings
@@ -7521,7 +7577,7 @@ type CreateDBAASServicePGRequest struct {
 	// Service integrations to be enabled when creating the service.
 	Integrations []CreateDBAASServicePGRequestIntegrations `json:"integrations,omitempty"`
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *CreateDBAASServicePGRequestMaintenance `json:"maintenance,omitempty"`
 	// Migrate data from existing server
@@ -7651,7 +7707,7 @@ type UpdateDBAASServicePGRequestMigration struct {
 type UpdateDBAASServicePGRequest struct {
 	BackupSchedule *UpdateDBAASServicePGRequestBackupSchedule `json:"backup-schedule,omitempty"`
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *UpdateDBAASServicePGRequestMaintenance `json:"maintenance,omitempty"`
 	// Migrate data from existing server
@@ -9495,7 +9551,7 @@ type CreateDBAASServiceThanosRequestMaintenance struct {
 
 type CreateDBAASServiceThanosRequest struct {
 	// Allowed CIDR address blocks for incoming connections
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *CreateDBAASServiceThanosRequestMaintenance `json:"maintenance,omitempty"`
 	// Subscription plan
@@ -9580,7 +9636,7 @@ type UpdateDBAASServiceThanosRequestMaintenance struct {
 
 type UpdateDBAASServiceThanosRequest struct {
 	// Allowed CIDR address blocks for incoming connections
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *UpdateDBAASServiceThanosRequestMaintenance `json:"maintenance,omitempty"`
 	// Subscription plan
@@ -9858,7 +9914,7 @@ type CreateDBAASServiceValkeyRequestMigration struct {
 type CreateDBAASServiceValkeyRequest struct {
 	ForkFromService DBAASServiceName `json:"fork-from-service,omitempty" validate:"omitempty,gte=0,lte=63"`
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *CreateDBAASServiceValkeyRequestMaintenance `json:"maintenance,omitempty"`
 	// Migrate data from existing server
@@ -9968,7 +10024,7 @@ type UpdateDBAASServiceValkeyRequestMigration struct {
 
 type UpdateDBAASServiceValkeyRequest struct {
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
-	IPFilter []string `json:"ip-filter,omitempty"`
+	IPFilter []string `json:"ip-filter"`
 	// Automatic maintenance settings
 	Maintenance *UpdateDBAASServiceValkeyRequestMaintenance `json:"maintenance,omitempty"`
 	// Migrate data from existing server
@@ -12615,7 +12671,7 @@ type CreateInstanceRequest struct {
 	InstanceType *InstanceType `json:"instance-type" validate:"required"`
 	// Whether the instance can act as a router in a VPC network
 	IPForwarding *bool `json:"ip-forwarding,omitempty"`
-	// Enable IPv6. DEPRECATED: use `public-ip-assignments`.
+	// Enable IPv6. DEPRECATED: use `public-ip-assignment`.
 	Ipv6Enabled *bool  `json:"ipv6-enabled,omitempty"`
 	Labels      Labels `json:"labels,omitempty"`
 	// Instance name
@@ -15838,7 +15894,9 @@ type AddServiceToLoadBalancerRequest struct {
 	// Load Balancer Service healthcheck
 	Healthcheck *LoadBalancerServiceHealthcheck `json:"healthcheck" validate:"required"`
 	// Instance Pool
-	InstancePool *InstancePool `json:"instance-pool" validate:"required"`
+	InstancePool *InstancePool `json:"instance-pool,omitempty"`
+	// Label selector: the instances carrying all of its labels are backends
+	LabelSelector *LoadBalancerServiceLabelSelector `json:"label-selector,omitempty"`
 	// Load Balancer Service name
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
 	// Port exposed on the Load Balancer's public IP
@@ -16010,6 +16068,8 @@ type UpdateLoadBalancerServiceRequest struct {
 	Description *string `json:"description,omitempty" validate:"omitempty,lte=255"`
 	// Load Balancer Service healthcheck
 	Healthcheck *LoadBalancerServiceHealthcheck `json:"healthcheck,omitempty"`
+	// Label selector: the instances carrying all of its labels are backends
+	LabelSelector *LoadBalancerServiceLabelSelector `json:"label-selector"`
 	// Load Balancer Service name
 	Name *string `json:"name,omitempty" validate:"omitempty,lte=255"`
 	// Port exposed on the Load Balancer's public IP
@@ -16076,7 +16136,8 @@ func (c Client) UpdateLoadBalancerService(ctx context.Context, id UUID, serviceI
 type ResetLoadBalancerServiceFieldField string
 
 const (
-	ResetLoadBalancerServiceFieldFieldDescription ResetLoadBalancerServiceFieldField = "description"
+	ResetLoadBalancerServiceFieldFieldDescription   ResetLoadBalancerServiceFieldField = "description"
+	ResetLoadBalancerServiceFieldFieldLabelSelector ResetLoadBalancerServiceFieldField = "label-selector"
 )
 
 // Reset a Load Balancer Service field to its default value
@@ -18484,6 +18545,8 @@ type CreateSKSNodepoolRequest struct {
 	Labels         SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name, lowercase only
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
+	// Expose the GPUs with the NVIDIA DRA driver instead of the NVIDIA device plugin. Requires a GPU instance type and Kubernetes 1.34 or greater.
+	NvidiaDraDriver *bool `json:"nvidia-dra-driver,omitempty"`
 	// Nvidia MIG Profiles enabled
 	NvidiaMigProfiles *NvidiaMigProfiles `json:"nvidia-mig-profiles,omitempty"`
 	// Nodepool Private Networks
@@ -18667,6 +18730,8 @@ type UpdateSKSNodepoolRequest struct {
 	Labels         SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name, lowercase only
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
+	// Expose the GPUs with the NVIDIA DRA driver instead of the NVIDIA device plugin. Requires a GPU instance type and Kubernetes 1.34 or greater.
+	NvidiaDraDriver *bool `json:"nvidia-dra-driver,omitempty"`
 	// Nvidia MIG Profiles enabled
 	NvidiaMigProfiles *NvidiaMigProfiles `json:"nvidia-mig-profiles"`
 	// Nodepool Private Networks
@@ -18678,6 +18743,8 @@ type UpdateSKSNodepoolRequest struct {
 	// Nodepool Security Groups
 	SecurityGroups []SecurityGroup   `json:"security-groups,omitempty"`
 	Taints         SKSNodepoolTaints `json:"taints,omitempty"`
+	// Template reference
+	Template *TemplateRef `json:"template,omitempty"`
 }
 
 // Update an SKS Nodepool
@@ -19113,6 +19180,96 @@ func (c Client) UpgradeSKSClusterServiceLevel(ctx context.Context, id UUID) (*Op
 	bodyresp := new(Operation)
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpgradeSKSClusterServiceLevel: prepare JSON response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type ListSKSNodepoolTemplatesResponse struct {
+	SKSNodepoolTemplates []SKSNodepoolTemplate `json:"sks-nodepool-templates,omitempty"`
+}
+
+// FindSKSNodepoolTemplate attempts to find an SKSNodepoolTemplate by nameOrID.
+func (l ListSKSNodepoolTemplatesResponse) FindSKSNodepoolTemplate(nameOrID string) (SKSNodepoolTemplate, error) {
+	var result []SKSNodepoolTemplate
+	for i, elem := range l.SKSNodepoolTemplates {
+		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
+			result = append(result, l.SKSNodepoolTemplates[i])
+		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return SKSNodepoolTemplate{}, fmt.Errorf("%q too many found in ListSKSNodepoolTemplatesResponse: %w", nameOrID, ErrConflict)
+	}
+
+	return SKSNodepoolTemplate{}, fmt.Errorf("%q not found in ListSKSNodepoolTemplatesResponse: %w", nameOrID, ErrNotFound)
+}
+
+type ListSKSNodepoolTemplatesVariant string
+
+const (
+	ListSKSNodepoolTemplatesVariantStandard ListSKSNodepoolTemplatesVariant = "standard"
+	ListSKSNodepoolTemplatesVariantNvidia   ListSKSNodepoolTemplatesVariant = "nvidia"
+)
+
+type ListSKSNodepoolTemplatesOpt func(url.Values)
+
+func ListSKSNodepoolTemplatesWithVariant(variant ListSKSNodepoolTemplatesVariant) ListSKSNodepoolTemplatesOpt {
+	return func(q url.Values) {
+		q.Add("variant", fmt.Sprint(variant))
+	}
+}
+
+// List the available templates for a given kube version (major.minor or major.minor.patch), of the given variant (standard | nvidia) when provided, latest first
+func (c Client) ListSKSNodepoolTemplates(ctx context.Context, kubeVersion string, opts ...ListSKSNodepoolTemplatesOpt) (*ListSKSNodepoolTemplatesResponse, error) {
+	path := fmt.Sprintf("/sks-template/%v", kubeVersion)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if len(opts) > 0 {
+		q := request.URL.Query()
+		for _, opt := range opts {
+			opt(q)
+		}
+		request.URL.RawQuery = q.Encode()
+	}
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "list-sks-nodepool-templates")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: http response: %w", err)
+	}
+
+	bodyresp := new(ListSKSNodepoolTemplatesResponse)
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ListSKSNodepoolTemplates: prepare JSON response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -20491,7 +20648,7 @@ func (l ListVpcsResponse) FindListVpcEntry(nameOrID string) (ListVpcEntry, error
 	return ListVpcEntry{}, fmt.Errorf("%q not found in ListVpcsResponse: %w", nameOrID, ErrNotFound)
 }
 
-// [BETA] List VPCs
+// List VPCs
 func (c Client) ListVpcs(ctx context.Context) (*ListVpcsResponse, error) {
 	path := "/vpc"
 
@@ -20536,16 +20693,15 @@ func (c Client) ListVpcs(ctx context.Context) (*ListVpcsResponse, error) {
 }
 
 type CreateVpcRequest struct {
-	// VPC description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
 	// VPC DHCP options
 	DHCPOptions *VpcDHCPOptions `json:"dhcp-options,omitempty"`
 	Labels      Labels          `json:"labels,omitempty"`
-	// VPC name
+	// VPC name, up to 255 characters. Must be unique within its zone
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
 }
 
-// [BETA] Create a VPC
+// Create a VPC
 func (c Client) CreateVpc(ctx context.Context, req CreateVpcRequest) (*Operation, error) {
 	path := "/vpc"
 
@@ -20596,7 +20752,7 @@ func (c Client) CreateVpc(ctx context.Context, req CreateVpcRequest) (*Operation
 	return bodyresp, nil
 }
 
-// [BETA] Delete a VPC
+// Delete a VPC
 func (c Client) DeleteVpc(ctx context.Context, id UUID) error {
 	path := fmt.Sprintf("/vpc/%v", id)
 
@@ -20636,7 +20792,7 @@ func (c Client) DeleteVpc(ctx context.Context, id UUID) error {
 	return nil
 }
 
-// [BETA] Retrieve VPC details
+// Retrieve VPC details
 func (c Client) GetVpc(ctx context.Context, id UUID) (*Vpc, error) {
 	path := fmt.Sprintf("/vpc/%v", id)
 
@@ -20681,16 +20837,14 @@ func (c Client) GetVpc(ctx context.Context, id UUID) (*Vpc, error) {
 }
 
 type UpdateVpcRequest struct {
-	// VPC description
 	Description *string `json:"description,omitempty" validate:"omitempty,lte=4096"`
 	// VPC DHCP options
 	DHCPOptions *VpcDHCPOptions `json:"dhcp-options,omitempty"`
 	Labels      Labels          `json:"labels"`
-	// VPC name
-	Name *string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
+	Name        *string         `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 }
 
-// [BETA] Update a VPC
+// Update a VPC
 func (c Client) UpdateVpc(ctx context.Context, id UUID, req UpdateVpcRequest) (*Vpc, error) {
 	path := fmt.Sprintf("/vpc/%v", id)
 
@@ -20764,7 +20918,7 @@ func (l ListVpcRoutesResponse) FindListRouteEntry(id string) (ListRouteEntry, er
 	return ListRouteEntry{}, fmt.Errorf("%q not found in ListVpcRoutesResponse: %w", id, ErrNotFound)
 }
 
-// [BETA] List VPC routes
+// List VPC routes
 func (c Client) ListVpcRoutes(ctx context.Context, vpcID UUID) (*ListVpcRoutesResponse, error) {
 	path := fmt.Sprintf("/vpc/%v/route", vpcID)
 
@@ -20831,7 +20985,7 @@ func (l ListSubnetsResponse) FindListSubnetEntry(nameOrID string) (ListSubnetEnt
 	return ListSubnetEntry{}, fmt.Errorf("%q not found in ListSubnetsResponse: %w", nameOrID, ErrNotFound)
 }
 
-// [BETA] List Subnets
+// List Subnets
 func (c Client) ListSubnets(ctx context.Context, vpcID UUID) (*ListSubnetsResponse, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet", vpcID)
 
@@ -20888,20 +21042,19 @@ const (
 )
 
 type CreateSubnetRequest struct {
-	// Subnet address space
+	// Whether the subnet is private or public
 	AddressSpace CreateSubnetRequestAddressSpace `json:"address-space" validate:"required"`
-	// Subnet address family
+	// Whether the subnet supports IPv4 and/or IPv6
 	Addressfamily CreateSubnetRequestAddressfamily `json:"addressfamily" validate:"required"`
-	// Subnet description
-	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
-	// Subnet ipv4 CIDR
+	Description   string                           `json:"description,omitempty" validate:"omitempty,lte=4096"`
+	// Subnet ipv4 CIDR. Must not overlap with other CIDRs of this VPC
 	Ipv4Block string `json:"ipv4-block,omitempty"`
 	Labels    Labels `json:"labels,omitempty"`
-	// Subnet name
+	// Subnet name, up to 255 characters. Must be unique between the subnet of the parent VPC
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
 }
 
-// [BETA] Create a Subnet
+// Create a Subnet
 func (c Client) CreateSubnet(ctx context.Context, vpcID UUID, req CreateSubnetRequest) (*Operation, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet", vpcID)
 
@@ -20952,7 +21105,7 @@ func (c Client) CreateSubnet(ctx context.Context, vpcID UUID, req CreateSubnetRe
 	return bodyresp, nil
 }
 
-// [BETA] Delete a Subnet
+// Delete a Subnet
 func (c Client) DeleteSubnet(ctx context.Context, vpcID UUID, id UUID) error {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v", vpcID, id)
 
@@ -20992,7 +21145,7 @@ func (c Client) DeleteSubnet(ctx context.Context, vpcID UUID, id UUID) error {
 	return nil
 }
 
-// [BETA] Retrieve Subnet details
+// Retrieve Subnet details
 func (c Client) GetSubnet(ctx context.Context, vpcID UUID, id UUID) (*Subnet, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v", vpcID, id)
 
@@ -21037,14 +21190,12 @@ func (c Client) GetSubnet(ctx context.Context, vpcID UUID, id UUID) (*Subnet, er
 }
 
 type UpdateSubnetRequest struct {
-	// Subnet description
 	Description *string `json:"description,omitempty" validate:"omitempty,lte=4096"`
 	Labels      Labels  `json:"labels"`
-	// Subnet name
-	Name *string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
+	Name        *string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 }
 
-// [BETA] Update a Subnet
+// Update a Subnet
 func (c Client) UpdateSubnet(ctx context.Context, vpcID UUID, id UUID, req UpdateSubnetRequest) (*Subnet, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v", vpcID, id)
 
@@ -21098,11 +21249,11 @@ func (c Client) UpdateSubnet(ctx context.Context, vpcID UUID, id UUID, req Updat
 type AttachInstanceToSubnetRequest struct {
 	// Target Instance
 	Instance *InstanceRef `json:"instance" validate:"required"`
-	// Instance IPv4
+	// An optional IPv4 address assign to the instance
 	Ipv4 net.IP `json:"ipv4,omitempty"`
 }
 
-// [BETA] Attach a Compute instance to a Subnet
+// Attach a Compute instance to a Subnet
 func (c Client) AttachInstanceToSubnet(ctx context.Context, vpcID UUID, subnetID UUID, req AttachInstanceToSubnetRequest) (*Operation, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v/attach", vpcID, subnetID)
 
@@ -21158,7 +21309,7 @@ type DetachInstanceFromSubnetRequest struct {
 	Instance *InstanceRef `json:"instance" validate:"required"`
 }
 
-// [BETA] Detach a Compute instance from a Subnet
+// Detach a Compute instance from a Subnet
 func (c Client) DetachInstanceFromSubnet(ctx context.Context, vpcID UUID, subnetID UUID, req DetachInstanceFromSubnetRequest) (*Operation, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v/detach", vpcID, subnetID)
 
@@ -21232,7 +21383,7 @@ func (l ListRoutesResponse) FindListRouteEntry(id string) (ListRouteEntry, error
 	return ListRouteEntry{}, fmt.Errorf("%q not found in ListRoutesResponse: %w", id, ErrNotFound)
 }
 
-// [BETA] List Subnet routes
+// List Subnet routes
 func (c Client) ListRoutes(ctx context.Context, vpcID UUID, subnetID UUID) (*ListRoutesResponse, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v/route", vpcID, subnetID)
 
@@ -21277,15 +21428,14 @@ func (c Client) ListRoutes(ctx context.Context, vpcID UUID, subnetID UUID) (*Lis
 }
 
 type CreateRouteRequest struct {
-	// Route description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=4096"`
-	// Route destination CIDR
+	// The CIDR used to match on which packets the routing rule should be applied
 	Destination string `json:"destination" validate:"required"`
-	// Route target
+	// Where the packets should be sent to. More details on the format can be found here https://community.exoscale.com/product/networking/vpc/how-to/using-routing-rules/
 	Target string `json:"target" validate:"required"`
 }
 
-// [BETA] Create a route
+// Create a route
 func (c Client) CreateRoute(ctx context.Context, vpcID UUID, subnetID UUID, req CreateRouteRequest) (*Route, error) {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v/route", vpcID, subnetID)
 
@@ -21336,7 +21486,7 @@ func (c Client) CreateRoute(ctx context.Context, vpcID UUID, subnetID UUID, req 
 	return bodyresp, nil
 }
 
-// [BETA] Delete a route
+// Delete a route
 func (c Client) DeleteRoute(ctx context.Context, vpcID UUID, subnetID UUID, id UUID) error {
 	path := fmt.Sprintf("/vpc/%v/subnet/%v/route/%v", vpcID, subnetID, id)
 
