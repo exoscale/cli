@@ -11,6 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/exoscale/cli/pkg/exoapi"
 	egoscale "github.com/exoscale/egoscale/v3"
 	"github.com/exoscale/egoscale/v3/credentials"
 )
@@ -95,7 +96,7 @@ func TestResolveSKSClusterVersions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := resolveSKSClusterVersion(ctx, client, tt.inputVersion)
+			result, err := resolveSKSClusterVersion(ctx, exoapi.New(client), tt.inputVersion)
 			assert.Equal(t, tt.expectedVersion, result)
 			if tt.errorMsg != "" {
 				assert.ErrorContains(t, err, tt.errorMsg)

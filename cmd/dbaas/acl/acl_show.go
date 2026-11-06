@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -97,7 +98,7 @@ func (c *dbaasAclShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 }
 
-func showClickhouseAcl(ctx context.Context, client *v3.Client, name string) (output.Outputter, error) {
+func showClickhouseAcl(ctx context.Context, client exoapi.Client, name string) (output.Outputter, error) {
 	acl, err := client.GetDBAASClickhouseAclConfig(ctx, name)
 	if err != nil {
 		return nil, err
@@ -200,7 +201,7 @@ func (o *dbaasAclOpensearchShowOutput) ToTable() {
 	t.Append([]string{"ACL", buf.String()})
 }
 
-func showOpensearchAcl(ctx context.Context, client *v3.Client, name string) (output.Outputter, error) {
+func showOpensearchAcl(ctx context.Context, client exoapi.Client, name string) (output.Outputter, error) {
 	config, err := client.GetDBAASOpensearchAclConfig(ctx, name)
 	if err != nil {
 		return nil, err

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -76,7 +77,7 @@ func (c *DeploymentUpdateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		req.InferenceEngineParameters = strings.Fields(c.InferenceEngineParameters)
 	}
 
-	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Updating deployment %q...", c.Deployment), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
+	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Updating deployment %q...", c.Deployment), func(ctx context.Context, c exoapi.Client) (*v3.Operation, error) {
 		return c.UpdateDeployment(ctx, id, req)
 	}); err != nil {
 		return err

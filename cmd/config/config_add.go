@@ -17,6 +17,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -279,7 +280,7 @@ func promptAccountInformation() (*account.Account, error) {
 	if err != nil {
 		return nil, err
 	}
-	account.DefaultZone, err = chooseZone(client, nil)
+	account.DefaultZone, err = chooseZone(exoapi.New(client), nil)
 	if err != nil {
 		// Handle prompt cancellation
 		if err == promptui.ErrInterrupt {

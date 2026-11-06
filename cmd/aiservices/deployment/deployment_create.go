@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -42,7 +43,7 @@ func (c *DeploymentCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 	exocmd.CmdSetZoneFlagFromDefault(cmd)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
-func (c *DeploymentCreateCmd) showInferenceEngineParameterHelp(ctx context.Context, client *v3.Client, version string) error {
+func (c *DeploymentCreateCmd) showInferenceEngineParameterHelp(ctx context.Context, client exoapi.Client, version string) error {
 	var opts []v3.GetInferenceEngineHelpOpt
 	if version != "" {
 		opts = append(opts, v3.GetInferenceEngineHelpWithVersion(version))
@@ -168,7 +169,7 @@ func (c *DeploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Creating deployment %q...", c.Name), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
+	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Creating deployment %q...", c.Name), func(ctx context.Context, c exoapi.Client) (*v3.Operation, error) {
 		return c.CreateDeployment(ctx, req)
 	}); err != nil {
 		return err

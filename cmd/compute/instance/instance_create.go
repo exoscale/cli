@@ -22,6 +22,7 @@ import (
 	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/cmd/networking/vpc"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exossh "github.com/exoscale/cli/pkg/ssh"
@@ -386,7 +387,7 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 // request from a VPC NAME|ID and a list of subnet specs.
 func resolveCreateInstanceVPC(
 	ctx context.Context,
-	client *v3.Client,
+	client exoapi.Client,
 	vpcNameOrID string,
 	subnetSpecs []vpcSubnetSpec,
 ) (*v3.CreateInstanceRequestVpc, error) {

@@ -13,9 +13,9 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
-	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var configCmd = &cobra.Command{
@@ -224,7 +224,7 @@ func getAccountByName(name string) *account.Account {
 	return nil
 }
 
-func chooseZone(client *v3.Client, zones []string) (string, error) {
+func chooseZone(client exoapi.Client, zones []string) (string, error) {
 	if zones == nil {
 
 		ctx := exocmd.GContext

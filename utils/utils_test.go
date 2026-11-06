@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 )
 
@@ -182,14 +183,14 @@ func TestZoneLookupFallback(t *testing.T) {
 	globalstate.Quiet = true
 
 	// No egoscale retries, so that the default endpoint fails right away.
-	newClient := func(endpoint string) *v3.Client {
+	newClient := func(endpoint string) exoapi.Client {
 		client, err := v3.NewClient(
 			credentials.NewStaticCredentials("key", "secret"),
 			v3.ClientOptWithHTTPClient(&http.Client{}),
 			v3.ClientOptWithEndpoint(v3.Endpoint(endpoint+"/v2")),
 		)
 		require.NoError(t, err)
-		return client
+		return exoapi.New(client)
 	}
 	client := newClient(defaultSrv.URL)
 

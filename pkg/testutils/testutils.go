@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/exoscale/egoscale/v3/credentials"
@@ -24,14 +25,14 @@ func WriteJSON(t *testing.T, w http.ResponseWriter, code int, v any) {
 }
 
 // NewV3Client returns a v3.Client with test credentials and the given endpoint.
-func NewV3Client(t *testing.T, endpoint string) *v3.Client {
+func NewV3Client(t *testing.T, endpoint string) exoapi.Client {
 	t.Helper()
 	creds := credentials.NewStaticCredentials("key", "secret")
 	client, err := v3.NewClient(creds)
 	if err != nil {
 		t.Fatalf("new client: %v", err)
 	}
-	return client.WithEndpoint(v3.Endpoint(endpoint))
+	return exoapi.New(client).WithEndpoint(v3.Endpoint(endpoint))
 }
 
 // SetupV3Client creates a v3.Client and sets it in the global state.
