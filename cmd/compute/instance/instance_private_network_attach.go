@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -29,13 +30,16 @@ type instancePrivnetAttachCmd struct {
 func (c *instancePrivnetAttachCmd) CmdAliases() []string { return nil }
 
 func (c *instancePrivnetAttachCmd) CmdShort() string {
-	return "Attach a Compute instance to a Private Network"
+	return "Attach a Compute instance to a Private Network" + compute.PrivateNetworkDeprecatedShort
 }
 
 func (c *instancePrivnetAttachCmd) CmdLong() string {
-	return fmt.Sprintf(`This command attaches a Compute instance to a Private Network.
+	return fmt.Sprintf(`%s
+
+This command attaches a Compute instance to a Private Network.
 
 Supported output template annotations: %s`,
+		compute.PrivateNetworkDeprecationNotice,
 		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "),
 	)
 }

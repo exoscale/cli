@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -32,12 +33,17 @@ type privateNetworkListCmd struct {
 
 func (c *privateNetworkListCmd) CmdAliases() []string { return exocmd.GListAlias }
 
-func (c *privateNetworkListCmd) CmdShort() string { return "List Private Networks" }
+func (c *privateNetworkListCmd) CmdShort() string {
+	return "List Private Networks" + compute.PrivateNetworkDeprecatedShort
+}
 
 func (c *privateNetworkListCmd) CmdLong() string {
-	return fmt.Sprintf(`This command lists Compute instance Private Networks.
+	return fmt.Sprintf(`%s
+
+This command lists Compute instance Private Networks.
 
 Supported output template annotations: %s`,
+		compute.PrivateNetworkDeprecationNotice,
 		strings.Join(output.TemplateAnnotations(&privateNetworkListItemOutput{}), ", "))
 }
 
