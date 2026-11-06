@@ -5,6 +5,7 @@
 ### Breaking changes
 
 - ai: remove `exo ai deployment reveal-api-key`, use `exo ai api-key` commands to manage AI API keys instead
+- api: remove `exo api reveal-deployment-api-key` — the endpoint was removed from the API
 
 ### Features
 
@@ -13,6 +14,8 @@
 - kms: show the key spec in `exo kms key show` and `exo kms key list`
 - dbaas: add `exo dbaas acl list` for Kafka and OpenSearch, `exo dbaas acl create` and `delete` for Kafka, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
 - compute: add `--vpc` and `--vpc-subnet` to `exo compute instance create` to attach an instance to VPC Subnets at creation (#927)
+- api: add `exo api create-dbaas-mysql-upgrade-check` to run a MySQL service upgrade compatibility check
+- deps: bump egoscale v3 to v3.1.63 to use the new `CreateDBAASMysqlUpgradeCheck` client
 
 ### Bug fixes
 
