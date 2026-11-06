@@ -1,0 +1,14 @@
+all: false
+template: testify
+# Pass variadic arguments one by one, the way EXPECT() records them.
+template-data:
+  unroll-variadic: true
+packages:
+  github.com/exoscale/cli/pkg/exoapi:
+    config:
+      dir: pkg/exoapi/mocks
+      filename: mock_client.go
+      pkgname: mocks
+      structname: MockClient
+    interfaces:
+      Client: {}
