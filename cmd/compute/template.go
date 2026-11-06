@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/exoapi"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 // ResolveTemplate resolves names and retrieves UUID metadata when available.
 func ResolveTemplate(
 	ctx context.Context,
-	client *v3.Client,
+	client exoapi.Client,
 	nameOrID string,
 	visibility string,
 	zone v3.ZoneName,
@@ -44,7 +45,7 @@ func ResolveTemplate(
 // ResolveTemplateID passes UUIDs through and resolves template names from the list endpoint.
 func ResolveTemplateID(
 	ctx context.Context,
-	client *v3.Client,
+	client exoapi.Client,
 	nameOrID string,
 	visibility string,
 	zone v3.ZoneName,

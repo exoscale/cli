@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/spf13/cobra"
-
-	v3 "github.com/exoscale/egoscale/v3"
 )
 
 // Cmd is the root command for DBaaS ACL subcommands.
@@ -16,7 +15,7 @@ var Cmd = &cobra.Command{
 }
 
 // dbaasServiceType returns the type of the Database Service named name.
-func dbaasServiceType(ctx context.Context, client *v3.Client, name, zone string) (string, error) {
+func dbaasServiceType(ctx context.Context, client exoapi.Client, name, zone string) (string, error) {
 	dbs, err := client.ListDBAASServices(ctx)
 	if err != nil {
 		return "", err

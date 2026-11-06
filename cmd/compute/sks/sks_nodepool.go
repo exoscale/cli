@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/exoapi"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -195,7 +196,7 @@ func reservedResourcesFromFlags(cpu, memory, ephemeralStorage string) *v3.Reserv
 
 func createNodepoolRequest(
 	ctx context.Context,
-	client *v3.Client,
+	client exoapi.Client,
 	opts CreateNodepoolOpts,
 ) (v3.CreateSKSNodepoolRequest, error) {
 
@@ -266,7 +267,7 @@ func createNodepoolRequest(
 	return nodepoolReq, nil
 }
 
-func lookupAntiAffinityGroups(ctx context.Context, client *v3.Client, names []string) ([]v3.AntiAffinityGroup, error) {
+func lookupAntiAffinityGroups(ctx context.Context, client exoapi.Client, names []string) ([]v3.AntiAffinityGroup, error) {
 	if len(names) == 0 {
 		return nil, nil
 	}
@@ -286,7 +287,7 @@ func lookupAntiAffinityGroups(ctx context.Context, client *v3.Client, names []st
 	return groups, nil
 }
 
-func lookupDeployTarget(ctx context.Context, client *v3.Client, name string) (*v3.DeployTarget, error) {
+func lookupDeployTarget(ctx context.Context, client exoapi.Client, name string) (*v3.DeployTarget, error) {
 	if name == "" {
 		return nil, nil
 	}
@@ -302,7 +303,7 @@ func lookupDeployTarget(ctx context.Context, client *v3.Client, name string) (*v
 	return &deployTarget, nil
 }
 
-func lookupInstanceType(ctx context.Context, client *v3.Client, name string) (*v3.InstanceType, error) {
+func lookupInstanceType(ctx context.Context, client exoapi.Client, name string) (*v3.InstanceType, error) {
 	instanceTypeList, err := client.ListInstanceTypes(ctx)
 	if err != nil {
 		return nil, err
@@ -314,7 +315,7 @@ func lookupInstanceType(ctx context.Context, client *v3.Client, name string) (*v
 	return &instanceType, nil
 }
 
-func lookupPrivateNetworks(ctx context.Context, client *v3.Client, names []string) ([]v3.PrivateNetwork, error) {
+func lookupPrivateNetworks(ctx context.Context, client exoapi.Client, names []string) ([]v3.PrivateNetwork, error) {
 	if len(names) == 0 {
 		return nil, nil
 	}
@@ -334,7 +335,7 @@ func lookupPrivateNetworks(ctx context.Context, client *v3.Client, names []strin
 	return networks, nil
 }
 
-func lookupSecurityGroups(ctx context.Context, client *v3.Client, names []string) ([]v3.SecurityGroup, error) {
+func lookupSecurityGroups(ctx context.Context, client exoapi.Client, names []string) ([]v3.SecurityGroup, error) {
 	if len(names) == 0 {
 		return nil, nil
 	}

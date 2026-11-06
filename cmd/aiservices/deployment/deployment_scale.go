@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -49,7 +50,7 @@ func (c *DeploymentScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	id := entry.ID
 
 	req := v3.ScaleDeploymentRequest{Replicas: c.Size}
-	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Scaling deployment %s to %d...", c.Deployment, c.Size), func(ctx context.Context, c *v3.Client) (*v3.Operation, error) {
+	if err := utils.RunAsync(ctx, client, fmt.Sprintf("Scaling deployment %s to %d...", c.Deployment, c.Size), func(ctx context.Context, c exoapi.Client) (*v3.Operation, error) {
 		return c.ScaleDeployment(ctx, id, req)
 	}); err != nil {
 		return err

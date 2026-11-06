@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -49,10 +50,10 @@ func buildClient() {
 	if v := os.Getenv("EXOSCALE_TRACE"); v != "" {
 		clientV3 = clientV3.WithTrace()
 	}
-	globalstate.EgoscaleV3Client = clientV3
+	globalstate.EgoscaleV3Client = exoapi.New(clientV3)
 }
 
-func SwitchClientZoneV3(ctx context.Context, client *v3.Client, zone v3.ZoneName) (*v3.Client, error) {
+func SwitchClientZoneV3(ctx context.Context, client exoapi.Client, zone v3.ZoneName) (exoapi.Client, error) {
 	if zone == "" {
 		return client, nil
 	}
