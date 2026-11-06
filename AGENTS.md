@@ -108,8 +108,69 @@ Then add a blank import to `cmd/subcommands/init.go` - nothing else needs wiring
 ## Tests
 
 Tests live in the same package (white-box). Construct the struct directly and
-call `CmdRun(nil, nil)`. Use `pkg/testutils` for HTTP test servers and client
-setup. See `cmd/aiservices/deployment/deployment_create_test.go`.
+call `CmdRun(nil, nil)`.
+
+Tests assert CLI logic, not egoscale's behaviour: mock the API client instead of
+faking the API with `httptest`. Some existing tests still use `httptest`; don't
+copy them.
+
+Prefer table-driven tests where possible, with this format:
+
+```go
+func TestMyResourceList(t *testing.T) {
+    errUnavailable := errors.New("unavailable")
+
+    tests := []struct {
+        name   string
+        client func(*mocks.MockClient)
+        err    error
+    }{
+        {
+            name: "lists the zones",
+            client: func(c *mocks.MockClient) {
+                c.EXPECT().ListZones(mock.Anything).Return(&v3.ListZonesResponse{}, nil).Once()
+            },
+        },
+        {
+            name: "returns the API error",
+            client: func(c *mocks.MockClient) {
+                c.EXPECT().ListZones(mock.Anything).Return(nil, errUnavailable).Once()
+            },
+            err: errUnavailable,
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            client := mocks.NewMockClient(t)
+            if tt.client != nil {
+                tt.client(client)
+            }
+            testutils.UseClient(t, client)
+
+            cmd := &myResourceListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+            assert.ErrorIs(t, cmd.CmdRun(nil, nil), tt.err)
+        })
+    }
+}
+```
+
+- `client` only declares the expected calls. Leave it nil when a case expects none.
+- Use `assert`, not `require`.
+- Name the expected error `err` and always check it with
+  `assert.ErrorIs(t, err, tt.err)`, which also passes when both are nil. Only guard
+  the assertions that can't hold in error cases, such as those on a returned value.
+
+A mock only accepts the calls it expects, so a case that switches to a zone must
+also expect `GetZoneAPIEndpoint` and `WithEndpoint`, and `WithEndpoint` can return
+`c`. If the test doesn't depend on the zone, `testutils.NewMockClient(t)` can
+replace the first lines of `t.Run`: it already allows both calls and calls
+`UseClient`, but it can't catch a command using the wrong zone.
+
+The client is `exoapi.Client` (`pkg/exoapi/client.go`), which lists only the
+egoscale methods the CLI calls. When a command needs another one, add it there
+and run `make mocks`. Never edit `pkg/exoapi/mocks/` by hand: CI checks that it
+is up to date.
 
 ### E2E tests for new features
 
@@ -193,6 +254,7 @@ Keep every heading, fill each section in.
 ```
 make build
 make test-verbose
+make check-mocks
 golangci-lint run --timeout 4m
 ```
 
