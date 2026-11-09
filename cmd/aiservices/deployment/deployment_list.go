@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -33,14 +34,14 @@ func (o *DeploymentListOutput) ToText()  { output.Text(o) }
 func (o *DeploymentListOutput) ToTable() { output.Table(o) }
 
 type DeploymentListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *DeploymentListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *DeploymentListCmd) CmdAliases() []string { return clicmd.GListAlias }
 func (c *DeploymentListCmd) CmdShort() string     { return "List AI deployments" }
 func (c *DeploymentListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists AI deployments.
@@ -49,7 +50,7 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&DeploymentListItemOutput{}), ", "))
 }
 func (c *DeploymentListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *DeploymentListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -110,5 +111,5 @@ func runDeploymentList(c *DeploymentListCmd, stdout, stderr io.Writer) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &DeploymentListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &DeploymentListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

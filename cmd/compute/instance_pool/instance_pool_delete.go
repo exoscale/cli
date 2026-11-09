@@ -6,13 +6,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instancePoolDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,15 +23,15 @@ type instancePoolDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
-func (c *instancePoolDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *instancePoolDeleteCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *instancePoolDeleteCmd) CmdShort() string { return "Delete an Instance Pool" }
 
 func (c *instancePoolDeleteCmd) CmdLong() string { return "" }
 
 func (c *instancePoolDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -68,7 +69,7 @@ func (c *instancePoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instancePoolCmd, &instancePoolDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instancePoolCmd, &instancePoolDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

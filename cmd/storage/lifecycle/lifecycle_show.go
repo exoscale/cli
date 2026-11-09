@@ -7,11 +7,12 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
 type showCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -20,13 +21,13 @@ type showCmd struct {
 	Zone string `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *showCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *showCmd) CmdAliases() []string { return clicmd.GShowAlias }
 func (c *showCmd) CmdShort() string     { return "Retrieve lifecycle configuration" }
 func (c *showCmd) CmdLong() string      { return "Retrieve lifecycle configuration" }
 
 func (c *showCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *showCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -49,7 +50,7 @@ func (c *showCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &showCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &showCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

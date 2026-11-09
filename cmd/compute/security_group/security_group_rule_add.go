@@ -11,6 +11,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -30,7 +31,7 @@ var securityGroupRuleProtocols = []string{
 }
 
 type securityGroupAddRuleCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"add"`
 
@@ -64,7 +65,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *securityGroupAddRuleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *securityGroupAddRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -198,8 +199,8 @@ func (c *securityGroupAddRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(securityGroupRuleCmd, &securityGroupAddRuleCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(securityGroupRuleCmd, &securityGroupAddRuleCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		FlowDirection: "ingress",
 		Protocol:      "tcp",

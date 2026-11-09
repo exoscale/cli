@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
 
 type dbaasExternalEndpointCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -60,27 +60,27 @@ type dbaasExternalEndpointCreateCmd struct {
 func (c *dbaasExternalEndpointCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-datadog"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "datadog-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "datadog-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-elasticsearch"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "elasticsearch-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "elasticsearch-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-opensearch"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "opensearch-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "opensearch-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-prometheus"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "prometheus-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "prometheus-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-rsyslog"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "rsyslog-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "rsyslog-")
 		os.Exit(0)
 	}
 
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasExternalEndpointCreateCmd) CmdAliases() []string {
-	return exocmd.GCreateAlias
+	return clicmd.GCreateAlias
 }
 
 func (c *dbaasExternalEndpointCreateCmd) CmdLong() string {
@@ -110,7 +110,7 @@ func (c *dbaasExternalEndpointCreateCmd) CmdRun(cmd *cobra.Command, args []strin
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

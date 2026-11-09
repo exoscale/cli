@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -44,23 +45,23 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGIPFilter)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PGIPFilter)) {
 		databaseService.IPFilter = c.PGIPFilter
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Plan)) {
 		databaseService.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		databaseService.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceTime)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &v3.UpdateDBAASServicePGRequestMaintenance{
 			Dow:  v3.UpdateDBAASServicePGRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
@@ -68,7 +69,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGBouncerSettings)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PGBouncerSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.PGBouncerSettings,
 			settingsSchema.Settings.Pgbouncer,
@@ -85,7 +86,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGLookoutSettings)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PGLookoutSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.PGLookoutSettings,
 			settingsSchema.Settings.Pglookout,
@@ -101,7 +102,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGSettings)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PGSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.PGSettings,
 			settingsSchema.Settings.PG,
@@ -117,17 +118,17 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGSharedBuffersPercentage)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PGSharedBuffersPercentage)) {
 		databaseService.SharedBuffersPercentage = c.PGSharedBuffersPercentage
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGSynchronousReplication)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PGSynchronousReplication)) {
 		databaseService.SynchronousReplication = v3.EnumPGSynchronousReplication(c.PGSynchronousReplication)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGTimescaledbSettings)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PGTimescaledbSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.PGTimescaledbSettings,
 			settingsSchema.Settings.Timescaledb,
@@ -143,17 +144,17 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGVariant)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PGVariant)) {
 		databaseService.Variant = v3.EnumPGVariant(c.PGVariant)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGWorkMem)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PGWorkMem)) {
 		databaseService.WorkMem = c.PGWorkMem
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PGMigrationHost)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PGMigrationHost)) {
 		databaseService.Migration = &v3.UpdateDBAASServicePGRequestMigration{
 			Host: c.PGMigrationHost,
 			Port: c.PGMigrationPort,

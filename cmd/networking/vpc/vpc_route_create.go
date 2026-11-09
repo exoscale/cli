@@ -4,12 +4,13 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type vpcRouteCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -22,7 +23,7 @@ type vpcRouteCreateCmd struct {
 	Zone        v3.ZoneName `cli-short:"z" cli-usage:"VPC zone"`
 }
 
-func (c *vpcRouteCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *vpcRouteCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *vpcRouteCreateCmd) CmdShort() string { return "Create a VPC route" }
 
@@ -34,12 +35,12 @@ Route target explanation can be found here https://community.exoscale.com/produc
 }
 
 func (c *vpcRouteCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	if err := exocmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
 		return err
 	}
 
-	return exocmd.CmdCheckRequiredFlags(cmd, []string{"subnet", "destination", "target"})
+	return clicmd.CmdCheckRequiredFlags(cmd, []string{"subnet", "destination", "target"})
 }
 
 func (c *vpcRouteCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -82,7 +83,7 @@ func (c *vpcRouteCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(vpcRouteCmd, &vpcRouteCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(vpcRouteCmd, &vpcRouteCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

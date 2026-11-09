@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -116,7 +116,7 @@ func runAPIKeyList(t *testing.T, zoneFilter v3.ZoneName) (stdout, stderr string,
 	t.Helper()
 	var outBuf, errBuf bytes.Buffer
 	cmd := &AIAPIKeyListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Zone:               zoneFilter,
 	}
 	err = runAIAPIKeyList(cmd, &outBuf, &errBuf)

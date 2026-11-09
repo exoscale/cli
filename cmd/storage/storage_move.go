@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
@@ -58,7 +59,7 @@ func init() {
 
 func validateStorageTransferCommand(cmd *cobra.Command, args []string) error {
 	if len(args) != 2 {
-		exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
+		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 	}
 
 	recursive, err := cmd.Flags().GetBool("recursive")

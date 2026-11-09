@@ -5,6 +5,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -12,7 +13,7 @@ import (
 )
 
 type dbaasExternalIntegrationDetachCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"detach"`
 
@@ -34,7 +35,7 @@ func (c *dbaasExternalIntegrationDetachCmd) CmdShort() string {
 }
 
 func (c *dbaasExternalIntegrationDetachCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasExternalIntegrationDetachCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -69,7 +70,7 @@ func (c *dbaasExternalIntegrationDetachCmd) CmdRun(cmd *cobra.Command, args []st
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationDetachCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationDetachCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
 
 type dbaasUserDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -28,8 +29,8 @@ func (c *dbaasUserDeleteCmd) CmdLong() string {
 }
 
 func (c *dbaasUserDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasUserDeleteCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -60,7 +61,7 @@ func (c *dbaasUserDeleteCmd) CmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasUserCmd, &dbaasUserDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasUserCmd, &dbaasUserDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

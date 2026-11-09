@@ -5,13 +5,14 @@ import (
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	storageBucketReplicationShowCmd.Flags().StringP(exocmd.ZoneFlagLong, exocmd.ZoneFlagShort, "", exocmd.ZoneFlagMsg)
+	storageBucketReplicationShowCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
 	storageBucketReplicationCmd.AddCommand(storageBucketReplicationShowCmd)
 }
 
@@ -23,14 +24,14 @@ var storageBucketReplicationShowCmd = &cobra.Command{
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		exocmd.CmdSetZoneFlagFromDefault(cmd)
-		return exocmd.CmdCheckRequiredFlags(cmd, []string{exocmd.ZoneFlagLong})
+		clicmd.CmdSetZoneFlagFromDefault(cmd)
+		return clicmd.CmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		bucket := args[0]
 
-		zone, err := cmd.Flags().GetString(exocmd.ZoneFlagLong)
+		zone, err := cmd.Flags().GetString(zoneFlagLong)
 		if err != nil {
 			return err
 		}

@@ -7,13 +7,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type vpcSubnetUpdateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -38,8 +39,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *vpcSubnetUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *vpcSubnetUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -63,18 +64,18 @@ func (c *vpcSubnetUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	req := v3.UpdateSubnetRequest{}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Name)) {
 		req.Name = &c.Name
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Description)) {
 		req.Description = &c.Description
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
-		req.Labels = exocmd.ConvertIfSpecialEmptyMap(c.Labels)
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Labels)) {
+		req.Labels = clicmd.ConvertIfSpecialEmptyMap(c.Labels)
 		updated = true
 	}
 
@@ -97,7 +98,7 @@ func (c *vpcSubnetUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(vpcSubnetCmd, &vpcSubnetUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(vpcSubnetCmd, &vpcSubnetUpdateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

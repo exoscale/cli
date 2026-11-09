@@ -9,6 +9,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/compute"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
@@ -17,7 +18,7 @@ import (
 )
 
 type instancePoolUpdateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -57,8 +58,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *instancePoolUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
@@ -114,7 +115,7 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 		updateReq.SSHKey = &v3.SSHKey{Name: instancePool.SSHKey.Name}
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
 		updateReq.AntiAffinityGroups = make([]v3.AntiAffinityGroup, len(c.AntiAffinityGroups))
 		af, err := client.ListAntiAffinityGroups(ctx)
 		if err != nil {
@@ -130,7 +131,7 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DeployTarget)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DeployTarget)) {
 		targets, err := client.ListDeployTargets(ctx)
 		if err != nil {
 			return fmt.Errorf("error listing Deploy Target: %w", err)
@@ -143,17 +144,17 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Description)) {
 		updateReq.Description = c.Description
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DiskSize)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DiskSize)) {
 		updateReq.DiskSize = c.DiskSize
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ElasticIPs)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.ElasticIPs)) {
 		result := []v3.ElasticIP{}
 		eipList, err := client.ListElasticIPS(ctx)
 		if err != nil {
@@ -175,32 +176,32 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 		}
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.InstancePrefix)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.InstancePrefix)) {
 		updateReq.InstancePrefix = &c.InstancePrefix
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.IPv6)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.IPv6)) {
 		updateReq.Ipv6Enabled = &c.IPv6
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
-		updateReq.Labels = exocmd.ConvertIfSpecialEmptyMap(c.Labels)
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Labels)) {
+		updateReq.Labels = clicmd.ConvertIfSpecialEmptyMap(c.Labels)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MinAvailable)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MinAvailable)) {
 		updateReq.MinAvailable = &c.MinAvailable
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Name)) {
 		updateReq.Name = c.Name
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PrivateNetworks)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PrivateNetworks)) {
 		updateReq.PrivateNetworks = make([]v3.PrivateNetwork, len(c.PrivateNetworks))
 		pn, err := client.ListPrivateNetworks(ctx)
 		if err != nil {
@@ -216,7 +217,7 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.SecurityGroups)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.SecurityGroups)) {
 		sgs, err := client.ListSecurityGroups(ctx)
 
 		if err != nil {
@@ -234,7 +235,7 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.InstanceType)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.InstanceType)) {
 		instanceTypes, err := client.ListInstanceTypes(ctx)
 		if err != nil {
 			return fmt.Errorf("error listing instance type: %w", err)
@@ -254,12 +255,12 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.SSHKey)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.SSHKey)) {
 		updateReq.SSHKey = &v3.SSHKey{Name: c.SSHKey}
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Template)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Template)) {
 		templateID, err := compute.ResolveTemplateID(ctx, client, c.Template, c.TemplateVisibility, c.Zone)
 		if err != nil {
 			return err
@@ -268,7 +269,7 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.CloudInitFile)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.CloudInitFile)) {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
@@ -299,9 +300,9 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instancePoolCmd, &instancePoolUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instancePoolCmd, &instancePoolUpdateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
-		TemplateVisibility: exocmd.DefaultTemplateVisibility,
+		TemplateVisibility: clicmd.DefaultTemplateVisibility,
 	}))
 }

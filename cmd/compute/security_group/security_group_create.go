@@ -8,6 +8,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -15,7 +16,7 @@ import (
 )
 
 type securityGroupCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -24,7 +25,7 @@ type securityGroupCreateCmd struct {
 	Description string `cli-usage:"Security Group description"`
 }
 
-func (c *securityGroupCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *securityGroupCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *securityGroupCreateCmd) CmdShort() string {
 	return "Create a Security Group"
@@ -38,7 +39,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *securityGroupCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *securityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -75,7 +76,7 @@ func (c *securityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(securityGroupCmd, &securityGroupCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(securityGroupCmd, &securityGroupCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

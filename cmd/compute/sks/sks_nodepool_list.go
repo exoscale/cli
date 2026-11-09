@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -26,14 +27,14 @@ type sksNodepoolListItemOutput struct {
 }
 
 type sksNodepoolListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *sksNodepoolListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *sksNodepoolListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *sksNodepoolListCmd) CmdShort() string { return "List SKS cluster Nodepools" }
 
@@ -45,7 +46,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksNodepoolListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksNodepoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -102,7 +103,7 @@ func runSksNodepoolList(c *sksNodepoolListCmd, stdout, stderr io.Writer) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

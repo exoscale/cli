@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -46,7 +47,7 @@ type dbaasPrivOutput struct {
 }
 
 type dbaasAclShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_    bool   `cli-cmd:"show"`
 	Name string `cli-arg:"#" cli-usage:"NAME"`
@@ -62,8 +63,8 @@ func (c *dbaasAclShowCmd) CmdLong() string {
 }
 
 func (c *dbaasAclShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasAclShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -214,7 +215,7 @@ func showOpensearchAcl(ctx context.Context, client *v3.Client, name string) (out
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &dbaasAclShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasAclShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

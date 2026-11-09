@@ -6,13 +6,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksRotateKarpenterCredentialsCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"rotate-karpenter-credentials"`
 
@@ -33,8 +34,8 @@ plane for the Kubernetes Karpenter addon.
 }
 
 func (c *sksRotateKarpenterCredentialsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksRotateKarpenterCredentialsCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -67,7 +68,7 @@ func (c *sksRotateKarpenterCredentialsCmd) CmdRun(_ *cobra.Command, _ []string) 
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksRotateKarpenterCredentialsCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksCmd, &sksRotateKarpenterCredentialsCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

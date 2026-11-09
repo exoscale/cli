@@ -8,6 +8,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/compute"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -15,7 +16,7 @@ import (
 )
 
 type instanceResetCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reset"`
 
@@ -45,8 +46,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceResetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -115,8 +116,8 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceResetCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
-		TemplateVisibility: exocmd.DefaultTemplateVisibility,
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceCmd, &instanceResetCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
+		TemplateVisibility: clicmd.DefaultTemplateVisibility,
 	}))
 }

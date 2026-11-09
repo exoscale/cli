@@ -17,6 +17,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -40,7 +41,7 @@ func init() {
 				// Handle cancellation gracefully
 				if errors.Is(err, context.Canceled) {
 					fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-					os.Exit(exocmd.ExitCodeInterrupt)
+					os.Exit(clicmd.ExitCodeInterrupt)
 				}
 				if err == io.EOF {
 					fmt.Fprintln(os.Stderr, "")
@@ -54,7 +55,7 @@ func init() {
 			// Get config file path, creating if this is the first account
 			filePath := exocmd.GConfig.ConfigFileUsed()
 			if isFirstAccount && filePath == "" {
-				if filePath, err = createConfigFile(exocmd.DefaultConfigFileName); err != nil {
+				if filePath, err = createConfigFile(clicmd.DefaultConfigFileName); err != nil {
 					return err
 				}
 				exocmd.GConfig.SetConfigFile(filePath)
@@ -71,7 +72,7 @@ func init() {
 				if err != nil {
 					if errors.Is(err, promptui.ErrInterrupt) {
 						fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-						os.Exit(exocmd.ExitCodeInterrupt)
+						os.Exit(clicmd.ExitCodeInterrupt)
 					}
 					if err == promptui.ErrEOF {
 						fmt.Fprintln(os.Stderr, "")
@@ -100,7 +101,7 @@ func addConfigAccount(firstRun bool) error {
 	filePath := exocmd.GConfig.ConfigFileUsed()
 
 	if firstRun {
-		if filePath, err = createConfigFile(exocmd.DefaultConfigFileName); err != nil {
+		if filePath, err = createConfigFile(clicmd.DefaultConfigFileName); err != nil {
 			return err
 		}
 
@@ -112,7 +113,7 @@ func addConfigAccount(firstRun bool) error {
 		// Handle cancellation gracefully
 		if errors.Is(err, context.Canceled) {
 			fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-			os.Exit(exocmd.ExitCodeInterrupt)
+			os.Exit(clicmd.ExitCodeInterrupt)
 		}
 		if err == io.EOF {
 			fmt.Fprintln(os.Stderr, "")
@@ -158,17 +159,17 @@ func readPasswordInterruptible(ctx context.Context) ([]byte, error) {
 		if errors.Is(r.err, syscall.EINTR) {
 			fmt.Println()
 			fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-			os.Exit(exocmd.ExitCodeInterrupt)
+			os.Exit(clicmd.ExitCodeInterrupt)
 		}
 		return r.b, r.err
 	case <-sigCh:
 		fmt.Println()
 		fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-		os.Exit(exocmd.ExitCodeInterrupt)
+		os.Exit(clicmd.ExitCodeInterrupt)
 	case <-ctx.Done():
 		fmt.Println()
 		fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-		os.Exit(exocmd.ExitCodeInterrupt)
+		os.Exit(clicmd.ExitCodeInterrupt)
 	}
 	panic("unreachable")
 }
@@ -284,7 +285,7 @@ func promptAccountInformation() (*account.Account, error) {
 		// Handle prompt cancellation
 		if err == promptui.ErrInterrupt {
 			fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-			os.Exit(exocmd.ExitCodeInterrupt)
+			os.Exit(clicmd.ExitCodeInterrupt)
 		}
 		if err == promptui.ErrEOF {
 			fmt.Fprintln(os.Stderr, "")
@@ -297,7 +298,7 @@ func promptAccountInformation() (*account.Account, error) {
 				// Handle prompt cancellation in fallback
 				if err == promptui.ErrInterrupt {
 					fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-					os.Exit(exocmd.ExitCodeInterrupt)
+					os.Exit(clicmd.ExitCodeInterrupt)
 				}
 				if err == promptui.ErrEOF {
 					fmt.Fprintln(os.Stderr, "")

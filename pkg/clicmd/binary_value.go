@@ -1,4 +1,4 @@
-package cmd
+package clicmd
 
 import (
 	"encoding/base64"

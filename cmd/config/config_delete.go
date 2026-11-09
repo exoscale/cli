@@ -7,13 +7,14 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/utils"
 )
 
 var configDeleteCmd = &cobra.Command{
 	Use:     "delete NAME",
 	Short:   "Delete an account from configuration",
-	Aliases: exocmd.GDeleteAlias,
+	Aliases: clicmd.GDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()
@@ -60,6 +61,6 @@ var configDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	configDeleteCmd.Flags().BoolP("force", "f", false, exocmd.CmdFlagForceHelp)
+	configDeleteCmd.Flags().BoolP("force", "f", false, clicmd.CmdFlagForceHelp)
 	configCmd.AddCommand(configDeleteCmd)
 }

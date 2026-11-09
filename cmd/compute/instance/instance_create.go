@@ -22,6 +22,7 @@ import (
 	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/cmd/networking/vpc"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exossh "github.com/exoscale/cli/pkg/ssh"
@@ -31,7 +32,7 @@ import (
 )
 
 type instanceCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -61,7 +62,7 @@ type instanceCreateCmd struct {
 	Zone                  v3.ZoneName       `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *instanceCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *instanceCreateCmd) CmdShort() string { return "Create a Compute instance" }
 
@@ -79,9 +80,9 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	exocmd.CmdSetTemplateFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	clicmd.CmdSetTemplateFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
@@ -107,7 +108,7 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 	diskSize, err := compute.ResolveTemplateDiskSize(
 		c.DiskSize,
 		template.Size,
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DiskSize)),
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DiskSize)),
 	)
 	if err != nil {
 		return err
@@ -278,11 +279,11 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 		instanceReq.UserData = userData
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AppConsistentSnapshot)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AppConsistentSnapshot)) {
 		instanceReq.ApplicationConsistentSnapshotEnabled = &c.AppConsistentSnapshot
 	}
 
-	updateRDNS := cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ReverseDNS))
+	updateRDNS := cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.ReverseDNS))
 
 	var instanceID v3.UUID
 	utils.DecorateAsyncOperation(fmt.Sprintf("Creating instance %q...", c.Name), func() {
@@ -492,11 +493,11 @@ func parseVPCSubnetSpec(v string) (vpcSubnetSpec, error) {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceCmd, &instanceCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		DiskSize:           50,
-		InstanceType:       fmt.Sprintf("%s.%s", exocmd.DefaultInstanceTypeFamily, exocmd.DefaultInstanceType),
-		TemplateVisibility: exocmd.DefaultTemplateVisibility,
+		InstanceType:       fmt.Sprintf("%s.%s", clicmd.DefaultInstanceTypeFamily, clicmd.DefaultInstanceType),
+		TemplateVisibility: clicmd.DefaultTemplateVisibility,
 	}))
 }

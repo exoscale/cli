@@ -7,6 +7,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -25,16 +26,16 @@ func (o *dbaasExternalEndpointListOutput) ToText()  { output.Text(o) }
 func (o *dbaasExternalEndpointListOutput) ToTable() { output.Table(o) }
 
 type dbaasExternalEndpointListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *dbaasExternalEndpointListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *dbaasExternalEndpointListCmd) CmdAliases() []string { return clicmd.GListAlias }
 func (c *dbaasExternalEndpointListCmd) CmdShort() string     { return "List External Endpoints" }
 func (c *dbaasExternalEndpointListCmd) CmdLong() string      { return "List External Endpoints" }
 func (c *dbaasExternalEndpointListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasExternalEndpointListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -64,7 +65,7 @@ func (c *dbaasExternalEndpointListCmd) CmdRun(_ *cobra.Command, _ []string) erro
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

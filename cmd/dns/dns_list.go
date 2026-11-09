@@ -11,6 +11,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -51,7 +52,7 @@ Optional patterns can be provided to filter results by ID, or name.
 
 Supported output template annotations: %s`,
 			strings.Join(output.TemplateAnnotations(&dnsListOutput{}), ", ")),
-		Aliases: exocmd.GListAlias,
+		Aliases: clicmd.GListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return utils.PrintOutput(listDomains(args))
 		},

@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/collections"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
@@ -21,7 +22,7 @@ const (
 )
 
 func init() {
-	storageBucketObjectVersioningCmd.Flags().StringP(exocmd.ZoneFlagLong, exocmd.ZoneFlagShort, "", exocmd.ZoneFlagMsg)
+	storageBucketObjectVersioningCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
 	storageBucketCmd.AddCommand(storageBucketObjectVersioningCmd)
 }
 
@@ -33,26 +34,26 @@ var storageBucketObjectVersioningCmd = &cobra.Command{
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
-			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
+			clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		permittedOps := collections.NewSet(objVersioningStatus, objVersioningEnable, objVersioningSuspend)
 		if !permittedOps.Contains(args[objOwnershipOpArgIndex]) {
-			exocmd.CmdExitOnUsageError(cmd, "invalid operation")
+			clicmd.CmdExitOnUsageError(cmd, "invalid operation")
 		}
 
 		args[objVersioningBucketArgIndex] = strings.TrimPrefix(args[objVersioningBucketArgIndex], sos.BucketPrefix)
 
-		exocmd.CmdSetZoneFlagFromDefault(cmd)
+		clicmd.CmdSetZoneFlagFromDefault(cmd)
 
-		return exocmd.CmdCheckRequiredFlags(cmd, []string{exocmd.ZoneFlagLong})
+		return clicmd.CmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		versioningCommand := args[objVersioningOpArgIndex]
 		bucket := args[objVersioningBucketArgIndex]
 
-		zone, err := cmd.Flags().GetString(exocmd.ZoneFlagLong)
+		zone, err := cmd.Flags().GetString(zoneFlagLong)
 		if err != nil {
 			return err
 		}

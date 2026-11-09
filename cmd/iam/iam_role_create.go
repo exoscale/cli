@@ -10,6 +10,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -17,7 +18,7 @@ import (
 )
 
 type iamRoleCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -48,7 +49,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *iamRoleCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamRoleCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -119,8 +120,8 @@ func (c *iamRoleCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(iamRoleCmd, &iamRoleCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(iamRoleCmd, &iamRoleCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Editable:           true,
 	}))
 }

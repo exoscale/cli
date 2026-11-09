@@ -4,6 +4,7 @@ import (
 	"time"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -57,7 +58,7 @@ func newKeyStoreShowOutput(ks *v3.GetKeyStoreResponse) *KeyStoreShowOutput {
 }
 
 type KeyStoreShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -66,14 +67,14 @@ type KeyStoreShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *KeyStoreShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *KeyStoreShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 func (c *KeyStoreShowCmd) CmdShort() string     { return "Retrieve key store details" }
 func (c *KeyStoreShowCmd) CmdLong() string {
 	return "This command retrieves an external key store's details, including the latest health check of its XKS proxy."
 }
 func (c *KeyStoreShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *KeyStoreShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -97,5 +98,5 @@ func (c *KeyStoreShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &KeyStoreShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &KeyStoreShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -15,7 +16,7 @@ import (
 )
 
 type privateNetworkUpdateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -46,8 +47,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *privateNetworkUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -70,29 +71,29 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	updateReq := v3.UpdatePrivateNetworkRequest{}
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Description)) {
 		updateReq.Description = c.Description
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.EndIP)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.EndIP)) {
 		ip := net.ParseIP(c.EndIP)
 		updateReq.EndIP = ip
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Name)) {
 		updateReq.Name = c.Name
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Netmask)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Netmask)) {
 		ip := net.ParseIP(c.Netmask)
 		updateReq.Netmask = ip
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.StartIP)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.StartIP)) {
 		ip := net.ParseIP(c.StartIP)
 		updateReq.StartIP = ip
 		updated = true
@@ -105,7 +106,7 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	optionsChanged := false
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DNSServers)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DNSServers)) {
 		opts.DNSServers = nil // Reset before adding new values
 		for _, server := range c.DNSServers {
 			if ip := net.ParseIP(server); ip != nil {
@@ -117,7 +118,7 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		optionsChanged = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.NTPServers)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.NTPServers)) {
 		opts.NtpServers = nil // Reset before adding new values
 		for _, server := range c.NTPServers {
 			if ip := net.ParseIP(server); ip != nil {
@@ -129,7 +130,7 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		optionsChanged = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Routers)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Routers)) {
 		opts.Routers = nil // Reset before adding new values
 		for _, router := range c.Routers {
 			if ip := net.ParseIP(router); ip != nil {
@@ -141,7 +142,7 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		optionsChanged = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DomainSearch)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DomainSearch)) {
 		opts.DomainSearch = c.DomainSearch
 		optionsChanged = true
 	}
@@ -180,7 +181,7 @@ func (c *privateNetworkUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(privateNetworkCmd, &privateNetworkUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(privateNetworkCmd, &privateNetworkUpdateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -5,6 +5,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -68,7 +69,7 @@ func (c *dbaasExternalEndpointUpdateCmd) updateRsyslog(cmd *cobra.Command, _ []s
 	endpointID := op.Reference.ID.String()
 	if !globalstate.Quiet {
 		return (&dbaasExternalEndpointShowCmd{
-			CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+			CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 			EndpointID:         endpointID,
 			Type:               "rsyslog",
 		}).CmdRun(nil, nil)

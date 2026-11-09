@@ -13,6 +13,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -53,7 +54,7 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 			switch err {
 			case promptui.ErrInterrupt:
 				fmt.Fprintln(os.Stderr, "Error: Operation Cancelled")
-				os.Exit(exocmd.ExitCodeInterrupt)
+				os.Exit(clicmd.ExitCodeInterrupt)
 			case promptui.ErrEOF:
 				fmt.Fprintln(os.Stderr, "")
 				os.Exit(0)

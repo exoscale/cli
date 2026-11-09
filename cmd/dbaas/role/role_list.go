@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -46,7 +47,7 @@ type dbaasGrantedRoleOutput struct {
 }
 
 type dbaasRoleListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_    bool   `cli-cmd:"list"`
 	Name string `cli-arg:"#" cli-usage:"NAME"`
@@ -58,8 +59,8 @@ func (c *dbaasRoleListCmd) CmdShort() string     { return "List ClickHouse roles
 func (c *dbaasRoleListCmd) CmdLong() string      { return "List roles for a ClickHouse DBaaS service." }
 
 func (c *dbaasRoleListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasRoleListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -153,7 +154,7 @@ func (o *dbaasRoleListOutput) ToTable() {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &dbaasRoleListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasRoleListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

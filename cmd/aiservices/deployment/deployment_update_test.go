@@ -8,7 +8,7 @@ import (
 	"path"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -59,7 +59,7 @@ func TestDeploymentUpdate(t *testing.T) {
 	testutils.SetupV3Client(t, srv.URL)
 
 	c := &DeploymentUpdateCmd{
-		CliCommandSettings:        exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings:        clicmd.DefaultCLICmdSettings(),
 		Deployment:                "alpha",
 		Name:                      "new-name",
 		InferenceEngineVersion:    "0.15.1",

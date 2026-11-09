@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -48,7 +49,7 @@ func (o *dbServiceLogsOutput) ToTable() {
 }
 
 type dbaasServiceLogsCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"logs"`
 
@@ -60,7 +61,7 @@ type dbaasServiceLogsCmd struct {
 	Zone   string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasServiceLogsCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *dbaasServiceLogsCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *dbaasServiceLogsCmd) CmdShort() string {
 	return "Query a Database Service logs"
@@ -82,8 +83,8 @@ Example usage with custom output containing only the actual log messages:
 }
 
 func (c *dbaasServiceLogsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasServiceLogsCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -138,8 +139,8 @@ func (c *dbaasServiceLogsCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasCmd, &dbaasServiceLogsCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceLogsCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		Limit: 10,
 		Sort:  "desc",

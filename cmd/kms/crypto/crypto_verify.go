@@ -2,6 +2,7 @@ package crypto
 
 import (
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -19,13 +20,13 @@ func (o *cryptoVerifyOutput) ToText()  { output.Text(o) }
 func (o *cryptoVerifyOutput) ToTable() { output.Table(o) }
 
 type cryptoVerifyCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"verify"`
 
 	Key              string                           `cli-arg:"#" cli-usage:"ID"`
-	Message          exocmd.BinaryValue               `cli-arg:"#" cli-usage:"MESSAGE"`
-	Signature        exocmd.BinaryValue               `cli-arg:"#" cli-usage:"SIGNATURE"`
+	Message          clicmd.BinaryValue               `cli-arg:"#" cli-usage:"MESSAGE"`
+	Signature        clicmd.BinaryValue               `cli-arg:"#" cli-usage:"SIGNATURE"`
 	SigningAlgorithm v3.VerifyRequestSigningAlgorithm `cli-arg:"#" cli-usage:"SIGNING_ALGORITHM"`
 
 	MessageType v3.VerifyRequestMessageType `cli-flag:"message-type" cli-usage:"how the message is interpreted [raw|digest] (default: raw)"`
@@ -47,8 +48,8 @@ Supported signing algorithms: RSASSA_PSS_SHA_256, RSASSA_PSS_SHA_384, RSASSA_PSS
 }
 
 func (c *cryptoVerifyCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *cryptoVerifyCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -81,7 +82,7 @@ func (c *cryptoVerifyCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(cryptoCmd, &cryptoVerifyCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(cryptoCmd, &cryptoVerifyCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

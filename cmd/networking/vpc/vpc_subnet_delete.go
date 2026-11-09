@@ -6,13 +6,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type vpcSubnetDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -23,15 +24,15 @@ type vpcSubnetDeleteCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"VPC zone"`
 }
 
-func (c *vpcSubnetDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *vpcSubnetDeleteCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *vpcSubnetDeleteCmd) CmdShort() string { return "Delete a VPC Subnet" }
 
 func (c *vpcSubnetDeleteCmd) CmdLong() string { return "" }
 
 func (c *vpcSubnetDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *vpcSubnetDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -65,7 +66,7 @@ func (c *vpcSubnetDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(vpcSubnetCmd, &vpcSubnetDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(vpcSubnetCmd, &vpcSubnetDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

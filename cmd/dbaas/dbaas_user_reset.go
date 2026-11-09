@@ -5,12 +5,13 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 
 	"github.com/spf13/cobra"
 )
 
 type dbaasUserResetCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reset-credentials"`
 
@@ -35,16 +36,16 @@ func (c *dbaasUserResetCmd) CmdLong() string {
 }
 
 func (c *dbaasUserResetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
 
 	switch {
 
 	case cmd.Flags().Changed("help-mysql"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "mysql-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "mysql-")
 		os.Exit(0)
 	}
 
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasUserResetCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -77,7 +78,7 @@ func (c *dbaasUserResetCmd) CmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasUserCmd, &dbaasUserResetCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasUserCmd, &dbaasUserResetCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

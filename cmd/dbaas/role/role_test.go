@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
@@ -69,8 +69,8 @@ func TestDBAASClickhouseRoleList(t *testing.T) {
 	rootCmd := &cobra.Command{}
 	roleCmd := &cobra.Command{Use: "role"}
 	rootCmd.AddCommand(roleCmd)
-	c := &dbaasRoleListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	err := exocmd.RegisterCLICommand(roleCmd, c)
+	c := &dbaasRoleListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}
+	err := clicmd.RegisterCLICommand(roleCmd, c)
 	require.NoError(t, err)
 
 	rootCmd.SetArgs([]string{"role", "list", "testdb", "--zone", "test-zone"})
@@ -88,8 +88,8 @@ func TestDBAASClickhouseRoleDelete(t *testing.T) {
 	rootCmd := &cobra.Command{}
 	roleCmd := &cobra.Command{Use: "role"}
 	rootCmd.AddCommand(roleCmd)
-	c := &dbaasRoleDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	err := exocmd.RegisterCLICommand(roleCmd, c)
+	c := &dbaasRoleDeleteCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}
+	err := clicmd.RegisterCLICommand(roleCmd, c)
 	require.NoError(t, err)
 
 	rootCmd.SetArgs([]string{

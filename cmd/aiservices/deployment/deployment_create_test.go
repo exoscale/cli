@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -33,22 +33,22 @@ func TestDeploymentCreateValidationAndSuccess(t *testing.T) {
 	testutils.SetupV3Client(t, srv.URL)
 
 	// missing gpu flags
-	c := &DeploymentCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	c := &DeploymentCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}
 	if err := c.CmdRun(nil, nil); err == nil {
 		t.Fatalf("expected error for missing gpu flags")
 	}
 	// missing model flags
-	c = &DeploymentCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), GPUType: "gpua5000", GPUCount: 1}
+	c = &DeploymentCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), GPUType: "gpua5000", GPUCount: 1}
 	if err := c.CmdRun(nil, nil); err == nil {
 		t.Fatalf("expected error for missing model flags")
 	}
 	// invalid model id
-	c = &DeploymentCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), GPUType: "gpua5000", GPUCount: 1, ModelID: "bad"}
+	c = &DeploymentCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), GPUType: "gpua5000", GPUCount: 1, ModelID: "bad"}
 	if err := c.CmdRun(nil, nil); err == nil {
 		t.Fatalf("expected invalid model id error")
 	}
 	// success with model name
-	c = &DeploymentCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Name: "dep", GPUType: "gpua5000", GPUCount: 1, Replicas: 1, ModelName: "m1"}
+	c = &DeploymentCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Name: "dep", GPUType: "gpua5000", GPUCount: 1, Replicas: 1, ModelName: "m1"}
 	if err := c.CmdRun(nil, nil); err != nil {
 		t.Fatalf("deployment create: %v", err)
 	}
@@ -82,7 +82,7 @@ func TestDeploymentCreateWithInferenceEngineParameters(t *testing.T) {
 
 	// Test with space-separated inference engine parameters
 	c := &DeploymentCreateCmd{
-		CliCommandSettings:        exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings:        clicmd.DefaultCLICmdSettings(),
 		Name:                      "dep-with-params",
 		GPUType:                   "gpua5000",
 		GPUCount:                  1,
@@ -133,7 +133,7 @@ func TestDeploymentCreateWithInferenceEngineVersion(t *testing.T) {
 	testutils.SetupV3Client(t, srv.URL)
 
 	c := &DeploymentCreateCmd{
-		CliCommandSettings:     exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings:     clicmd.DefaultCLICmdSettings(),
 		Name:                   "dep-with-version",
 		GPUType:                "gpua5000",
 		GPUCount:               1,
@@ -186,7 +186,7 @@ func TestDeploymentCreateInferenceEngineHelp(t *testing.T) {
 	testutils.SetupV3Client(t, srv.URL)
 
 	c := &DeploymentCreateCmd{
-		CliCommandSettings:  exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings:  clicmd.DefaultCLICmdSettings(),
 		InferenceEngineHelp: true,
 	}
 	if err := c.CmdRun(nil, nil); err != nil {
@@ -194,7 +194,7 @@ func TestDeploymentCreateInferenceEngineHelp(t *testing.T) {
 	}
 
 	c = &DeploymentCreateCmd{
-		CliCommandSettings:  exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings:  clicmd.DefaultCLICmdSettings(),
 		Name:                "test-deploy",
 		InferenceEngineHelp: true,
 	}
@@ -207,7 +207,7 @@ func TestDeploymentCreateInferenceEngineHelp(t *testing.T) {
 	}
 
 	c = &DeploymentCreateCmd{
-		CliCommandSettings:     exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings:     clicmd.DefaultCLICmdSettings(),
 		InferenceEngineHelp:    true,
 		InferenceEngineVersion: "0.15.1",
 	}

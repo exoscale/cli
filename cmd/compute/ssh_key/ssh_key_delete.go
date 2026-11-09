@@ -7,13 +7,14 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type computeSSHKeyDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,7 +23,7 @@ type computeSSHKeyDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *computeSSHKeyDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *computeSSHKeyDeleteCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *computeSSHKeyDeleteCmd) CmdShort() string {
 	return "Delete an SSH key"
@@ -31,7 +32,7 @@ func (c *computeSSHKeyDeleteCmd) CmdShort() string {
 func (c *computeSSHKeyDeleteCmd) CmdLong() string { return "" }
 
 func (c *computeSSHKeyDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *computeSSHKeyDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -68,7 +69,7 @@ func (c *computeSSHKeyDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

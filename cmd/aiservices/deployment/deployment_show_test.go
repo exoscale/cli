@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -71,7 +71,7 @@ func TestDeploymentShowByIDAndName(t *testing.T) {
 	ts.deployments = []v3.ListDeploymentsResponseEntry{{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", State: v3.ListDeploymentsResponseEntryStateReady, GpuType: "gpua5000", GpuCount: 1, Replicas: 1, ServiceLevel: "pro", DeploymentURL: "https://u", Model: &v3.ModelRef{ID: v3.UUID("11111111-1111-1111-1111-111111111111"), Name: "m1"}, CreatedAT: now, UpdatedAT: now}}
 
 	// by ID
-	cmd := &DeploymentShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}
+	cmd := &DeploymentShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Deployment: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}
 	var got DeploymentShowOutput
 	cmd.OutputFunc = func(o output.Outputter, err error) error {
 		if err != nil {
@@ -90,7 +90,7 @@ func TestDeploymentShowByIDAndName(t *testing.T) {
 		t.Errorf("expected inference engine version 0.15.1, got %q", got.InferenceEngineVersion)
 	}
 	// by name
-	cmd = &DeploymentShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha"}
+	cmd = &DeploymentShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Deployment: "alpha"}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("deployment show by name: %v", err)
 	}

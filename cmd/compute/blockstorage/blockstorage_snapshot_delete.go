@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -14,7 +15,7 @@ import (
 )
 
 type blockStorageSnapshotDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -23,7 +24,7 @@ type blockStorageSnapshotDeleteCmd struct {
 	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *blockStorageSnapshotDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
+func (c *blockStorageSnapshotDeleteCmd) CmdAliases() []string { return clicmd.GDeleteAlias }
 
 func (c *blockStorageSnapshotDeleteCmd) CmdShort() string {
 	return "Delete a Block Storage Volume Snapshot"
@@ -37,8 +38,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *blockStorageSnapshotDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockStorageSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -76,7 +77,7 @@ func (c *blockStorageSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) err
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

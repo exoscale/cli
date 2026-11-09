@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
@@ -90,10 +90,10 @@ func TestDBAASOpensearchUpdate(t *testing.T) {
 			testutils.SetupV3Client(t, ts.URL)
 
 			c := &dbaasServiceUpdateCmd{
-				CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+				CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 			}
 			rootCmd := &cobra.Command{}
-			err := exocmd.RegisterCLICommand(rootCmd, c)
+			err := clicmd.RegisterCLICommand(rootCmd, c)
 			require.NoError(t, err)
 			rootCmd.SetArgs(append([]string{
 				"update", "testdb",
@@ -139,10 +139,10 @@ func TestDBAASOpensearchCreate(t *testing.T) {
 			testutils.SetupV3Client(t, ts.URL)
 
 			c := &dbaasServiceCreateCmd{
-				CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+				CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 			}
 			rootCmd := &cobra.Command{}
-			err := exocmd.RegisterCLICommand(rootCmd, c)
+			err := clicmd.RegisterCLICommand(rootCmd, c)
 			require.NoError(t, err)
 			rootCmd.SetArgs(append([]string{
 				"create", "opensearch", "startup-4", "testdb",

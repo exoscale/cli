@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -63,7 +64,7 @@ func (o *instanceTemplateShowOutput) ToTable() {
 }
 
 type instanceTemplateShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -73,7 +74,7 @@ type instanceTemplateShowCmd struct {
 	Zone       string `cli-short:"z" cli-usage:"zone to filter results to (default: current account's default zone)"`
 }
 
-func (c *instanceTemplateShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *instanceTemplateShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *instanceTemplateShowCmd) CmdShort() string {
 	return "Show a Compute instance template details"
@@ -87,8 +88,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceTemplateShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceTemplateShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -130,9 +131,9 @@ func (c *instanceTemplateShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceTemplateCmd, &instanceTemplateShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceTemplateCmd, &instanceTemplateShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
-		Visibility: exocmd.DefaultTemplateVisibility,
+		Visibility: clicmd.DefaultTemplateVisibility,
 	}))
 }

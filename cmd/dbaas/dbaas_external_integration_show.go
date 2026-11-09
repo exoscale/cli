@@ -7,6 +7,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -28,7 +29,7 @@ func (o *dbaasExternalIntegrationShowOutput) ToText()  { output.Text(o) }
 func (o *dbaasExternalIntegrationShowOutput) ToTable() { output.Table(o) }
 
 type dbaasExternalIntegrationShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -66,11 +67,11 @@ func (c *dbaasExternalIntegrationShowCmd) showExternalIntegration() (output.Outp
 	return out, nil
 }
 
-func (c *dbaasExternalIntegrationShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *dbaasExternalIntegrationShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 func (c *dbaasExternalIntegrationShowCmd) CmdShort() string     { return "Show External Integration" }
 func (c *dbaasExternalIntegrationShowCmd) CmdLong() string      { return "Show External Integration" }
 func (c *dbaasExternalIntegrationShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasExternalIntegrationShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -78,7 +79,7 @@ func (c *dbaasExternalIntegrationShowCmd) CmdRun(_ *cobra.Command, _ []string) e
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

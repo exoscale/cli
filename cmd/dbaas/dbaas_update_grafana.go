@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -31,23 +32,23 @@ func (c *dbaasServiceUpdateCmd) updateGrafana(cmd *cobra.Command, _ []string) er
 		return fmt.Errorf("unable to retrieve database Service settings: %w", err)
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.GrafanaIPFilter)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.GrafanaIPFilter)) {
 		databaseService.IPFilter = c.GrafanaIPFilter
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Plan)) {
 		databaseService.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		databaseService.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceTime)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &v3.UpdateDBAASServiceGrafanaRequestMaintenance{
 			Time: c.MaintenanceTime,
 			Dow:  v3.UpdateDBAASServiceGrafanaRequestMaintenanceDow(c.MaintenanceDOW),
@@ -55,7 +56,7 @@ func (c *dbaasServiceUpdateCmd) updateGrafana(cmd *cobra.Command, _ []string) er
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.GrafanaSettings)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.GrafanaSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.GrafanaSettings,
 			settingsSchema.Settings.Grafana,

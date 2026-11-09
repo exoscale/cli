@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/utils"
 
 	"github.com/exoscale/cli/pkg/account"
@@ -18,7 +19,7 @@ func init() {
 	dnsDeleteCmd := &cobra.Command{
 		Use:     "delete DOMAIN-NAME|ID",
 		Short:   "Delete a domain",
-		Aliases: exocmd.GDeleteAlias,
+		Aliases: clicmd.GDeleteAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return cmd.Usage()
@@ -33,7 +34,7 @@ func init() {
 		},
 	}
 	dnsCmd.AddCommand(dnsDeleteCmd)
-	dnsDeleteCmd.Flags().BoolP("force", "f", false, exocmd.CmdFlagForceHelp)
+	dnsDeleteCmd.Flags().BoolP("force", "f", false, clicmd.CmdFlagForceHelp)
 }
 
 func deleteDomain(ident string, force bool) error {

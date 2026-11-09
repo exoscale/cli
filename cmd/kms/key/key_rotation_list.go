@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -38,7 +39,7 @@ func (o *keyRotationListOutput) ToTable() {
 }
 
 type keyRotationListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list-rotation"`
 
@@ -47,7 +48,7 @@ type keyRotationListCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
 }
 
-func (c *keyRotationListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *keyRotationListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *keyRotationListCmd) CmdShort() string {
 	return "List all the key material versions of a KMS Key."
@@ -58,8 +59,8 @@ func (c *keyRotationListCmd) CmdLong() string {
 }
 
 func (c *keyRotationListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *keyRotationListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -80,7 +81,7 @@ func (c *keyRotationListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(keyCmd, &keyRotationListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(keyCmd, &keyRotationListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

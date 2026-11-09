@@ -9,6 +9,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -66,12 +67,12 @@ func (o *iamAPIKeyListOutput) ToTable() {
 }
 
 type iamAPIKeyListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *iamAPIKeyListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *iamAPIKeyListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *iamAPIKeyListCmd) CmdShort() string { return "List API Keys" }
 
@@ -83,7 +84,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *iamAPIKeyListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamAPIKeyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -112,7 +113,7 @@ func (c *iamAPIKeyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(iamAPIKeyCmd, &iamAPIKeyListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(iamAPIKeyCmd, &iamAPIKeyListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

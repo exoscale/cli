@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -14,7 +14,7 @@ func TestKeyStoreShowByID(t *testing.T) {
 	api := newFakeKeyStoreAPI(t)
 	api.addKeyStore("my-xks", v3.GetKeyStoreResponseStatusConnected)
 
-	c := &KeyStoreShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: string(testKeyStoreID)}
+	c := &KeyStoreShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), KeyStore: string(testKeyStoreID)}
 	if err := c.CmdRun(nil, nil); err != nil {
 		t.Fatalf("keystore show: %v", err)
 	}
@@ -22,7 +22,7 @@ func TestKeyStoreShowByID(t *testing.T) {
 		t.Errorf("expected API calls %v, got %v", want, api.calls)
 	}
 
-	c = &KeyStoreShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), KeyStore: unknownKeyStoreID}
+	c = &KeyStoreShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), KeyStore: unknownKeyStoreID}
 	if err := c.CmdRun(nil, nil); !errors.Is(err, v3.ErrNotFound) {
 		t.Errorf("expected not found for an unknown key store, got %v", err)
 	}
@@ -30,7 +30,7 @@ func TestKeyStoreShowByID(t *testing.T) {
 
 func TestKeyStoreCommandsRejectInvalidID(t *testing.T) {
 	api := newFakeKeyStoreAPI(t)
-	settings := exocmd.DefaultCLICmdSettings()
+	settings := clicmd.DefaultCLICmdSettings()
 
 	for name, err := range map[string]error{
 		"get":        (&KeyStoreShowCmd{CliCommandSettings: settings, KeyStore: "my-xks"}).CmdRun(nil, nil),

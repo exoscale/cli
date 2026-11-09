@@ -9,12 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/spf13/cobra"
-
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
+	"github.com/spf13/cobra"
 )
 
 type aiAPIKeyUpdateServer struct {
@@ -75,7 +74,7 @@ func newAIAPIKeyUpdateCmd(t *testing.T, c *AIAPIKeyUpdateCmd, changed ...string)
 	t.Helper()
 
 	parent := &cobra.Command{Use: "test"}
-	if err := exocmd.RegisterCLICommand(parent, c); err != nil {
+	if err := clicmd.RegisterCLICommand(parent, c); err != nil {
 		t.Fatalf("register command: %v", err)
 	}
 
@@ -111,7 +110,7 @@ func TestAIAPIKeyUpdate(t *testing.T) {
 
 	var got *AIAPIKeyUpdateOutput
 	c := &AIAPIKeyUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Key:                "alpha",
 		AllModels:          true,
 		AllDeployments:     true,
@@ -172,7 +171,7 @@ func TestAIAPIKeyUpdateAllowlists(t *testing.T) {
 	ts.captured = &capturedRequest
 
 	c := &AIAPIKeyUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Key:                "alpha",
 		Models:             []string{"llama-3-8b"},
 		Deployments:        []string{"cccccccc-cccc-cccc-cccc-cccccccccccc"},
@@ -215,7 +214,7 @@ func TestAIAPIKeyUpdateAllModelsFalse(t *testing.T) {
 	ts.captured = &capturedRequest
 
 	c := &AIAPIKeyUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Key:                "alpha",
 	}
 	cmd := newAIAPIKeyUpdateCmd(t, c, "all-models")
@@ -259,7 +258,7 @@ func TestAIAPIKeyUpdateAllDeploymentsFalse(t *testing.T) {
 	ts.captured = &capturedRequest
 
 	c := &AIAPIKeyUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Key:                "alpha",
 	}
 	cmd := newAIAPIKeyUpdateCmd(t, c, "all-deployments")
@@ -288,11 +287,11 @@ func TestAIAPIKeyUpdateConflictingFlags(t *testing.T) {
 		changed []string
 	}{
 		{
-			c:       &AIAPIKeyUpdateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Key: "alpha", AllModels: true, Models: []string{"llama-3-8b"}},
+			c:       &AIAPIKeyUpdateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Key: "alpha", AllModels: true, Models: []string{"llama-3-8b"}},
 			changed: []string{"all-models"},
 		},
 		{
-			c:       &AIAPIKeyUpdateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Key: "alpha", AllDeployments: true, Deployments: []string{"cccccccc-cccc-cccc-cccc-cccccccccccc"}},
+			c:       &AIAPIKeyUpdateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Key: "alpha", AllDeployments: true, Deployments: []string{"cccccccc-cccc-cccc-cccc-cccccccccccc"}},
 			changed: []string{"all-deployments"},
 		},
 	} {
@@ -324,7 +323,7 @@ func TestAIAPIKeyUpdateOmitsUnsetAccessLists(t *testing.T) {
 	ts.captured = &capturedRequest
 
 	c := &AIAPIKeyUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Key:                "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
 		Models:             []string{"llama-3-8b"},
 	}
@@ -347,7 +346,7 @@ func TestAIAPIKeyUpdateOmitsUnsetAccessLists(t *testing.T) {
 
 func TestAIAPIKeyUpdateWithoutProperties(t *testing.T) {
 	c := &AIAPIKeyUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Key:                "alpha",
 	}
 	cmd := newAIAPIKeyUpdateCmd(t, c)
@@ -370,7 +369,7 @@ func TestAIAPIKeyUpdateUnknownKey(t *testing.T) {
 	}}
 
 	c := &AIAPIKeyUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Key:                "missing",
 		Models:             []string{"llama-3-8b"},
 	}

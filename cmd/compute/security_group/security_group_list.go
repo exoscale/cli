@@ -8,6 +8,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -26,14 +27,14 @@ func (o *securityGroupListOutput) ToText()  { output.Text(o) }
 func (o *securityGroupListOutput) ToTable() { output.Table(o) }
 
 type securityGroupListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Visibility v3.ListSecurityGroupsVisibility `cli-usage:"Security Group visibility: private (default) or public"`
 }
 
-func (c *securityGroupListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *securityGroupListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *securityGroupListCmd) CmdShort() string { return "List Security Groups" }
 
@@ -45,7 +46,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *securityGroupListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *securityGroupListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -84,7 +85,7 @@ func (c *securityGroupListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(securityGroupCmd, &securityGroupListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(securityGroupCmd, &securityGroupListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

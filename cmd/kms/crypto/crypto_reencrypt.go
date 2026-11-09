@@ -4,22 +4,23 @@ import (
 	"encoding/base64"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
 
 type cryptoReencryptCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reencrypt"`
 
 	Key            string             `cli-arg:"#" cli-usage:"SRC_ID"`
 	DestinationKey string             `cli-arg:"#" cli-usage:"DEST_ID"`
-	Ciphertext     exocmd.BinaryValue `cli-arg:"#" cli-usage:"CIPHERTEXT"`
+	Ciphertext     clicmd.BinaryValue `cli-arg:"#" cli-usage:"CIPHERTEXT"`
 
-	SourceEncryptionContext   exocmd.BinaryValue                                `cli-short:"s" cli-flag:"source-encryption-context" cli-usage:"encryption context to use for source ciphertext decryption"`
-	DestEncryptionContext     exocmd.BinaryValue                                `cli-short:"d" cli-flag:"dest-encryption-context" cli-usage:"encryption context to use for destination ciphertext encryption"`
+	SourceEncryptionContext   clicmd.BinaryValue                                `cli-short:"s" cli-flag:"source-encryption-context" cli-usage:"encryption context to use for source ciphertext decryption"`
+	DestEncryptionContext     clicmd.BinaryValue                                `cli-short:"d" cli-flag:"dest-encryption-context" cli-usage:"encryption context to use for destination ciphertext encryption"`
 	SourceEncryptionAlgorithm v3.ReEncryptRequestSourceEncryptionAlgorithm      `cli-flag:"source-encryption-algorithm" cli-usage:"encryption algorithm of the source ciphertext, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
 	DestEncryptionAlgorithm   v3.ReEncryptRequestDestinationEncryptionAlgorithm `cli-flag:"dest-encryption-algorithm" cli-usage:"encryption algorithm for the destination ciphertext, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
 	Zone                      v3.ZoneName                                       `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
@@ -36,8 +37,8 @@ func (c *cryptoReencryptCmd) CmdLong() string {
 }
 
 func (c *cryptoReencryptCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *cryptoReencryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -89,7 +90,7 @@ func (c *cryptoReencryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(cryptoCmd, &cryptoReencryptCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(cryptoCmd, &cryptoReencryptCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

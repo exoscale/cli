@@ -8,13 +8,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasMigrationStopCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"stop"`
 
@@ -33,8 +34,8 @@ func (c *dbaasMigrationStopCmd) CmdLong() string {
 }
 
 func (c *dbaasMigrationStopCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasMigrationStopCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -89,7 +90,7 @@ func (c *dbaasMigrationStopCmd) CmdRun(cmd *cobra.Command, args []string) error 
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasMigrationCmd, &dbaasMigrationStopCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasMigrationCmd, &dbaasMigrationStopCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }
