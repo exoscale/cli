@@ -55,7 +55,7 @@ func init() {
 			// Get config file path, creating if this is the first account
 			filePath := exocmd.GConfig.ConfigFileUsed()
 			if isFirstAccount && filePath == "" {
-				if filePath, err = createConfigFile(clicmd.DefaultConfigFileName); err != nil {
+				if filePath, err = createConfigFile(); err != nil {
 					return err
 				}
 				exocmd.GConfig.SetConfigFile(filePath)
@@ -101,7 +101,7 @@ func addConfigAccount(firstRun bool) error {
 	filePath := exocmd.GConfig.ConfigFileUsed()
 
 	if firstRun {
-		if filePath, err = createConfigFile(clicmd.DefaultConfigFileName); err != nil {
+		if filePath, err = createConfigFile(); err != nil {
 			return err
 		}
 

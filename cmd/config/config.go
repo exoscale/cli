@@ -173,14 +173,14 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 	return nil
 }
 
-func createConfigFile(fileName string) (string, error) {
+func createConfigFile() (string, error) {
 	if _, err := os.Stat(globalstate.ConfigFolder); os.IsNotExist(err) {
 		if err := os.MkdirAll(globalstate.ConfigFolder, os.ModePerm); err != nil {
 			return "", err
 		}
 	}
 
-	filepath := path.Join(globalstate.ConfigFolder, fileName+".toml")
+	filepath := path.Join(globalstate.ConfigFolder, "exoscale.toml")
 
 	if exocmd.GConfig.ConfigFileUsed() == "" {
 		if _, err := os.Stat(filepath); !os.IsNotExist(err) {
