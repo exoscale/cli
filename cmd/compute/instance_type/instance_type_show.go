@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -74,7 +75,7 @@ func (c *instanceTypeShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 
 func (c *instanceTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
-	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(clicmd.DefaultZone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
