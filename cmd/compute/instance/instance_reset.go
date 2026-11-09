@@ -118,6 +118,6 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 func init() {
 	cobra.CheckErr(clicmd.RegisterCLICommand(instanceCmd, &instanceResetCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
-		TemplateVisibility: clicmd.DefaultTemplateVisibility,
+		TemplateVisibility: defaultTemplateVisibility,
 	}))
 }

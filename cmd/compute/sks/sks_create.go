@@ -296,7 +296,7 @@ func init() {
 		CNI:                          defaultSKSClusterCNI,
 		KubernetesVersion:            "latest",
 		NodepoolDiskSize:             50,
-		NodepoolInstanceType:         fmt.Sprintf("%s.%s", clicmd.DefaultInstanceTypeFamily, clicmd.DefaultInstanceType),
+		NodepoolInstanceType:         defaultInstanceType,
 		NodepoolImageGcLowThreshold:  kubeletImageGcLowThreshold,
 		NodepoolImageGcHighThreshold: kubeletImageGcHighThreshold,
 		NodepoolImageGcMinAge:        kubeletImageGcMinAge,

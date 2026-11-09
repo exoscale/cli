@@ -270,9 +270,9 @@ func init() {
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		DiskSize:           50,
-		InstanceType:       fmt.Sprintf("%s.%s", clicmd.DefaultInstanceTypeFamily, clicmd.DefaultInstanceType),
+		InstanceType:       defaultInstanceType,
 		Size:               1,
 		MinAvailable:       0,
-		TemplateVisibility: clicmd.DefaultTemplateVisibility,
+		TemplateVisibility: defaultTemplateVisibility,
 	}))
 }

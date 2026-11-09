@@ -134,6 +134,6 @@ func init() {
 	cobra.CheckErr(clicmd.RegisterCLICommand(instanceTemplateCmd, &instanceTemplateShowCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
-		Visibility: clicmd.DefaultTemplateVisibility,
+		Visibility: defaultTemplateVisibility,
 	}))
 }

@@ -303,6 +303,6 @@ func init() {
 	cobra.CheckErr(clicmd.RegisterCLICommand(instancePoolCmd, &instancePoolUpdateCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
-		TemplateVisibility: clicmd.DefaultTemplateVisibility,
+		TemplateVisibility: defaultTemplateVisibility,
 	}))
 }

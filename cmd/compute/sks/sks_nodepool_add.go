@@ -169,7 +169,7 @@ func init() {
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		Size:                 2,
-		InstanceType:         fmt.Sprintf("%s.%s", clicmd.DefaultInstanceTypeFamily, clicmd.DefaultInstanceType),
+		InstanceType:         defaultInstanceType,
 		DiskSize:             50,
 		ImageGcLowThreshold:  kubeletImageGcLowThreshold,
 		ImageGcHighThreshold: kubeletImageGcHighThreshold,
