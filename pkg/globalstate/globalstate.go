@@ -3,12 +3,12 @@ package globalstate
 import (
 	"time"
 
-	v3 "github.com/exoscale/egoscale/v3"
+	"github.com/exoscale/cli/pkg/exoapi"
 )
 
 var (
 	OutputFormat          string
-	EgoscaleV3Client      *v3.Client
+	EgoscaleV3Client      exoapi.Client
 	Quiet                 bool
 	ConfigFolder          string
 	GitVersion, GitCommit string

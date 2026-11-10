@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -307,7 +308,7 @@ func init() {
 
 // Computes the major.minor.patch version of an SKS cluster
 // Defaults to the latest version
-func resolveSKSClusterVersion(ctx context.Context, client *v3.Client, inputVersion string) (string, error) {
+func resolveSKSClusterVersion(ctx context.Context, client exoapi.Client, inputVersion string) (string, error) {
 
 	inputVersionLength := len(strings.Split(inputVersion, "."))
 	isMajorMinor := inputVersionLength == 2

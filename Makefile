@@ -52,6 +52,16 @@ x-cmd: $(OAS_FILE) ## Generates code for "exo x" experimental subcommands
 	wget -q https://api-ch-gva-2.exoscale.com/v2/openapi.json
 	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go $(OAS_FILE)
 
+MOCKERY_VERSION := v3.9.0
+
+.PHONY: mocks
+mocks: ## Generates the mocks declared in .mockery.yaml
+	$(GO) run github.com/vektra/mockery/v3@$(MOCKERY_VERSION)
+
+.PHONY: check-mocks
+check-mocks: mocks ## Fails if the committed mocks are out of date
+	@test -z "$$(git status --porcelain -- pkg/exoapi/mocks)" || { git status --porcelain -- pkg/exoapi/mocks; git --no-pager diff --stat -- pkg/exoapi/mocks; echo "Mocks are out of date: run 'make mocks' and commit the result"; exit 1; }
+
 # Only used for development. Release images are built and published by goreleaser.
 .PHONY: oci-image
 oci-image: ## Builds a local OCI image containing the exo CLI (dev/testing only)

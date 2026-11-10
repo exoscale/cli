@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -82,7 +83,7 @@ func (c *dbaasAclDeleteCmd) confirm(ctx context.Context) bool {
 	)
 }
 
-func (c *dbaasAclDeleteCmd) deleteKafka(ctx context.Context, client *v3.Client) error {
+func (c *dbaasAclDeleteCmd) deleteKafka(ctx context.Context, client exoapi.Client) error {
 	if c.ID != "" {
 		if c.KafkaTopic != "" || c.KafkaSchemaRegistryResource != "" || c.Permission != "" {
 			return errors.New("--id can't be used with --kafka-topic, --kafka-schema-registry-resource or --permission")

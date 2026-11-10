@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/exoscale/cli/pkg/exoapi"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/exoscale/egoscale/v3/credentials"
 )
@@ -64,7 +65,7 @@ func TestResolveTemplateGetsOptionalUUIDMetadata(t *testing.T) {
 				t.Fatalf("NewClient() error = %v", err)
 			}
 
-			got, err := ResolveTemplate(context.Background(), client, id, "public", "ch-gva-2")
+			got, err := ResolveTemplate(context.Background(), exoapi.New(client), id, "public", "ch-gva-2")
 			if err != nil {
 				t.Fatalf("ResolveTemplate() error = %v", err)
 			}

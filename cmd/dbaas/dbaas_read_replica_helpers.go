@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/exoapi"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -142,6 +143,6 @@ func dbaasReadReplicaSupportedServiceType(serviceType string) bool {
 	}
 }
 
-func dbaasReadReplicaClientForZone(ctx context.Context, zone string) (*v3.Client, error) {
+func dbaasReadReplicaClientForZone(ctx context.Context, zone string) (exoapi.Client, error) {
 	return exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 }

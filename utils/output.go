@@ -67,8 +67,9 @@ func DecorateAsyncOperation(message string, fn func()) {
 	done := make(chan struct{})
 	defer close(done)
 	go func(doneCh chan struct{}) {
+		// Deferred to also run on runtime.Goexit, e.g. a failed mock call in tests.
+		defer func() { doneCh <- struct{}{} }()
 		fn()
-		doneCh <- struct{}{}
 	}(done)
 
 	<-done
@@ -106,10 +107,13 @@ func DecorateAsyncOperations(message string, fns ...func() error) error {
 		for j := 0; j < batchSize; j++ {
 			fnIndex := i + j
 			go func(doneCh chan struct{}, fn func() error) {
+				// Deferred to also run on runtime.Goexit,
+				// e.g. an unexpected call to a function with mocks in a tests will not return an error
+				// but will be stopped with runtime.Goexit
+				defer func() { doneCh <- struct{}{} }()
 				if err := fn(); err != nil {
 					errs = multierror.Append(errs, err)
 				}
-				doneCh <- struct{}{}
 			}(done, fns[fnIndex])
 		}
 
