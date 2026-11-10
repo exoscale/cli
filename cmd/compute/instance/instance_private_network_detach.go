@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -28,16 +27,13 @@ type instancePrivnetDetachCmd struct {
 func (c *instancePrivnetDetachCmd) CmdAliases() []string { return nil }
 
 func (c *instancePrivnetDetachCmd) CmdShort() string {
-	return "Detach a Compute instance from a Private Network" + compute.PrivateNetworkDeprecatedShort
+	return "Detach a Compute instance from a Private Network"
 }
 
 func (c *instancePrivnetDetachCmd) CmdLong() string {
-	return fmt.Sprintf(`%s
-
-This command detaches a Compute instance from a Private Network.
+	return fmt.Sprintf(`This command detaches a Compute instance from a Private Network.
 
 Supported output template annotations: %s`,
-		compute.PrivateNetworkDeprecationNotice,
 		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "),
 	)
 }

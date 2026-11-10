@@ -41,6 +41,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	cmd.ApplyDeprecations(cmd.RootCmd)
+
 	if *manPage {
 		header := &doc.GenManHeader{
 			Title:   "exo",

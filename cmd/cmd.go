@@ -643,6 +643,10 @@ func RegisterCLICommand(parent *cobra.Command, c cliCommand) error {
 		})
 	}
 
+	if d, ok := c.(cliCommandDeprecated); ok && d.CmdDeprecated() != "" {
+		Deprecate(cmd, d.CmdDeprecated())
+	}
+
 	parent.AddCommand(cmd)
 
 	return nil

@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -36,17 +35,12 @@ type privateNetworkUpdateCmd struct {
 
 func (c *privateNetworkUpdateCmd) CmdAliases() []string { return nil }
 
-func (c *privateNetworkUpdateCmd) CmdShort() string {
-	return "Update a Private Network" + compute.PrivateNetworkDeprecatedShort
-}
+func (c *privateNetworkUpdateCmd) CmdShort() string { return "Update a Private Network" }
 
 func (c *privateNetworkUpdateCmd) CmdLong() string {
-	return fmt.Sprintf(`%s
-
-This command updates a Compute instance Private Network.
+	return fmt.Sprintf(`This command updates a Compute instance Private Network.
 
 Supported output template annotations: %s`,
-		compute.PrivateNetworkDeprecationNotice,
 		strings.Join(output.TemplateAnnotations(&privateNetworkShowOutput{}), ", "),
 	)
 }

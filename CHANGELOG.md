@@ -23,6 +23,7 @@
 - cmd: commands can take binary arguments and flags given as base64, as `file://<path>` (file holding base64) or as `fileb://<path>` (raw binary file)
 - kms: `exo kms crypto` commands accept `file://<path>` and `fileb://<path>` for plaintext, ciphertext, message, signature and encryption context values (#942)
 - compute: mark `exo compute private-network` and `exo compute instance private-network` commands as deprecated in their help, pointing to `exo networking vpc` (#951)
+- cmd: deprecated commands print a warning on stderr when run, `exo compute private-network` and `exo compute instance private-network` commands included
 
 ## 1.103.2
 

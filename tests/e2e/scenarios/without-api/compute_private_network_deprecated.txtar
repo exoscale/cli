@@ -1,0 +1,47 @@
+# Test: Private Network commands are marked as deprecated, stay listed in the
+# help and print a warning on stderr when run
+
+# The groups stay listed, with a deprecation mark
+exec exo compute --help
+stdout 'private-network +Private Networks management \(deprecated\)'
+
+exec exo compute instance --help
+stdout 'private-network +Manage Compute instance Private Networks \(deprecated\)'
+
+# Subcommands inherit the deprecation from their group
+exec exo compute private-network --help
+stdout '^DEPRECATED: Private Networks are deprecated, use VPCs instead'
+stdout 'list +List Private Networks \(deprecated\)'
+
+exec exo compute instance private-network attach --help
+stdout '^DEPRECATED: Private Networks are deprecated, use VPCs instead'
+stdout 'This command attaches a Compute instance to a Private Network'
+
+# Other commands aren't marked
+exec exo compute instance --help
+stdout '^  list +List Compute instances$'
+
+# Running a deprecated command prints the warning on stderr only. The missing
+# argument makes the commands fail before any API call.
+env EXOSCALE_CONFIG=test-config.toml
+! exec exo compute private-network show
+stderr '^warning: Private Networks are deprecated, use VPCs instead \(see "exo networking vpc --help"\)'
+stderr 'missing'
+! stdout 'deprecated'
+
+! exec exo compute instance private-network attach
+stderr '^warning: Private Networks are deprecated, use VPCs instead'
+
+# Other commands don't warn
+! exec exo compute instance show
+stderr 'missing'
+! stderr 'deprecated'
+
+-- test-config.toml --
+defaultaccount = "Exoscale-Test"
+
+[[accounts]]
+name = "Exoscale-Test"
+key = "EXOtest123"
+secret = "testsecret123"
+defaultZone = "ch-gva-2"
