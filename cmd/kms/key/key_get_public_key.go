@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -23,7 +24,7 @@ func (o *keyGetPublicKeyOutput) ToText()      { output.Text(o) }
 func (o *keyGetPublicKeyOutput) ToTable()     { output.Table(o) }
 
 type keyGetPublicKeyCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"get-public-key"`
 
@@ -43,8 +44,8 @@ func (c *keyGetPublicKeyCmd) CmdLong() string {
 }
 
 func (c *keyGetPublicKeyCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *keyGetPublicKeyCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -70,7 +71,7 @@ func (c *keyGetPublicKeyCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(keyCmd, &keyGetPublicKeyCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(keyCmd, &keyGetPublicKeyCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -8,6 +8,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -15,7 +16,7 @@ import (
 )
 
 type securityGroupDeleteRuleCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -25,7 +26,7 @@ type securityGroupDeleteRuleCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *securityGroupDeleteRuleCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *securityGroupDeleteRuleCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *securityGroupDeleteRuleCmd) CmdShort() string {
 	return "Delete a Security Group rule"
@@ -39,7 +40,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *securityGroupDeleteRuleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *securityGroupDeleteRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -93,7 +94,7 @@ func (c *securityGroupDeleteRuleCmd) CmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(securityGroupRuleCmd, &securityGroupDeleteRuleCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(securityGroupRuleCmd, &securityGroupDeleteRuleCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

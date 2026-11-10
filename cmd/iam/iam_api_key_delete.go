@@ -7,13 +7,14 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamAPIKeyDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,7 +23,7 @@ type iamAPIKeyDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *iamAPIKeyDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
+func (c *iamAPIKeyDeleteCmd) CmdAliases() []string { return clicmd.GDeleteAlias }
 
 func (c *iamAPIKeyDeleteCmd) CmdShort() string {
 	return "Delete an API Key"
@@ -33,7 +34,7 @@ func (c *iamAPIKeyDeleteCmd) CmdLong() string {
 }
 
 func (c *iamAPIKeyDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamAPIKeyDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -75,7 +76,7 @@ func (c *iamAPIKeyDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(iamAPIKeyCmd, &iamAPIKeyDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(iamAPIKeyCmd, &iamAPIKeyDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

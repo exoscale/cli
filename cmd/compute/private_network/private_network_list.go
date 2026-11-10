@@ -11,6 +11,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/compute"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -24,14 +25,14 @@ type privateNetworkListItemOutput struct {
 }
 
 type privateNetworkListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *privateNetworkListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *privateNetworkListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *privateNetworkListCmd) CmdShort() string {
 	return "List Private Networks" + compute.PrivateNetworkDeprecatedShort
@@ -48,7 +49,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *privateNetworkListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *privateNetworkListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -100,7 +101,7 @@ func runPrivateNetworkList(c *privateNetworkListCmd, stdout, stderr io.Writer) e
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(privateNetworkCmd, &privateNetworkListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(privateNetworkCmd, &privateNetworkListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

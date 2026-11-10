@@ -5,6 +5,7 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -12,7 +13,7 @@ import (
 )
 
 type keyStoreDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -21,14 +22,14 @@ type keyStoreDeleteCmd struct {
 	Zone     v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *keyStoreDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
+func (c *keyStoreDeleteCmd) CmdAliases() []string { return clicmd.GDeleteAlias }
 func (c *keyStoreDeleteCmd) CmdShort() string     { return "Delete a key store" }
 func (c *keyStoreDeleteCmd) CmdLong() string {
 	return "This command deletes an external key store by ID."
 }
 func (c *keyStoreDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *keyStoreDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -60,5 +61,5 @@ func (c *keyStoreDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &keyStoreDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &keyStoreDeleteCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

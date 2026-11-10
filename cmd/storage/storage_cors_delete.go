@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
@@ -19,7 +20,7 @@ var storageCORSDeleteCmd = &cobra.Command{
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
+			clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
@@ -63,6 +64,6 @@ var storageCORSDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	storageCORSDeleteCmd.Flags().BoolP("force", "f", false, exocmd.CmdFlagForceHelp)
+	storageCORSDeleteCmd.Flags().BoolP("force", "f", false, clicmd.CmdFlagForceHelp)
 	storageCORSCmd.AddCommand(storageCORSDeleteCmd)
 }

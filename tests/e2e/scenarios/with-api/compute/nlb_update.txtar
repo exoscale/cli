@@ -5,10 +5,12 @@
 # Setup: create the primary NLB
 exec exo --output-format json compute load-balancer create ${TEST_RUN_ID}-nlb-a --zone ${TEST_ZONE}
 stdout ${TEST_RUN_ID}-nlb-a
+defer exo compute load-balancer delete --force ${TEST_RUN_ID}-nlb-a --zone ${TEST_ZONE}
 
 # Setup: create a second NLB whose name will be used for the conflict test
 exec exo --output-format json compute load-balancer create ${TEST_RUN_ID}-nlb-b --zone ${TEST_ZONE}
 stdout ${TEST_RUN_ID}-nlb-b
+defer exo compute load-balancer delete --force ${TEST_RUN_ID}-nlb-b --zone ${TEST_ZONE}
 
 # Update description and verify it is reflected in show output
 exec exo --output-format json compute load-balancer update ${TEST_RUN_ID}-nlb-a --description 'hello e2e' --zone ${TEST_ZONE}
@@ -28,7 +30,3 @@ exec exo --output-format json compute load-balancer update ${TEST_RUN_ID}-nlb-a-
 # Conflict: renaming to an already-existing name must surface the API error, not "operation is nil"
 ! exec exo --output-format json compute load-balancer update ${TEST_RUN_ID}-nlb-a --name ${TEST_RUN_ID}-nlb-b --zone ${TEST_ZONE}
 stderr 'already exists'
-
-# Teardown: delete both NLBs
-exec exo compute load-balancer delete --force ${TEST_RUN_ID}-nlb-a --zone ${TEST_ZONE}
-exec exo compute load-balancer delete --force ${TEST_RUN_ID}-nlb-b --zone ${TEST_ZONE}

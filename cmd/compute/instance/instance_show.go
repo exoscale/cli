@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
@@ -54,7 +55,7 @@ func (o *InstanceShowOutput) ToText()      { output.Text(o) }
 func (o *InstanceShowOutput) ToTable()     { output.Table(o) }
 
 type instanceShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -64,7 +65,7 @@ type instanceShowCmd struct {
 	Zone         v3.ZoneName `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *instanceShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *instanceShowCmd) CmdShort() string { return "Show a Compute instance details" }
 
@@ -76,8 +77,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -267,7 +268,7 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceCmd, &instanceShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

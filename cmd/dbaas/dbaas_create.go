@@ -5,15 +5,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
-
-	exocmd "github.com/exoscale/cli/cmd"
 
 	"github.com/exoscale/cli/pkg/output"
 )
 
 type dbaasServiceCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -138,7 +137,7 @@ type dbaasServiceCreateCmd struct {
 	ClickhouseVersion            string   `cli-flag:"clickhouse-version" cli-usage:"ClickHouse major version" cli-hidden:""`
 }
 
-func (c *dbaasServiceCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *dbaasServiceCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *dbaasServiceCreateCmd) CmdShort() string { return "Create a Database Service" }
 
@@ -155,44 +154,44 @@ Supported output template annotations: %s`,
 func (c *dbaasServiceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-grafana"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "grafana-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "grafana-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-kafka"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "kafka-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "kafka-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-opensearch"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "opensearch-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "opensearch-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-mysql"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "mysql-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "mysql-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-pg"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "pg-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "pg-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-valkey"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "valkey-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "valkey-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-thanos"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "thanos-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "thanos-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-clickhouse"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "clickhouse-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "clickhouse-")
 		os.Exit(0)
 	}
 
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasServiceCreateCmd) CmdRun(cmd *cobra.Command, args []string) error {
-	if (cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceTime))) &&
-		(!cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
-			!cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceTime))) {
+	if (cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceTime))) &&
+		(!cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
+			!cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceTime))) {
 		return fmt.Errorf(
 			"both --%s and --%s must be specified",
-			exocmd.MustCLICommandFlagName(c, &c.MaintenanceDOW),
-			exocmd.MustCLICommandFlagName(c, &c.MaintenanceTime))
+			clicmd.MustCLICommandFlagName(c, &c.MaintenanceDOW),
+			clicmd.MustCLICommandFlagName(c, &c.MaintenanceTime))
 	}
 
 	switch c.Type {
@@ -218,8 +217,8 @@ func (c *dbaasServiceCreateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasCmd, &dbaasServiceCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		TerminationProtection: true,
 	}))

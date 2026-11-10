@@ -5,6 +5,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -53,7 +54,7 @@ func (c *dbaasExternalEndpointUpdateCmd) updateOpensearch(_ *cobra.Command, _ []
 	endpointID := op.Reference.ID.String()
 	if !globalstate.Quiet {
 		return (&dbaasExternalEndpointShowCmd{
-			CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+			CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 			EndpointID:         endpointID,
 			Type:               "opensearch",
 		}).CmdRun(nil, nil)

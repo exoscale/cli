@@ -7,13 +7,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksNodepoolDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -24,15 +25,15 @@ type sksNodepoolDeleteCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksNodepoolDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *sksNodepoolDeleteCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *sksNodepoolDeleteCmd) CmdShort() string { return "Delete an SKS cluster Nodepool" }
 
 func (c *sksNodepoolDeleteCmd) CmdLong() string { return "" }
 
 func (c *sksNodepoolDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksNodepoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -82,7 +83,7 @@ func (c *sksNodepoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

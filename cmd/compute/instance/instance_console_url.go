@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -23,7 +24,7 @@ func (o *InstanceConsoleURLOutput) ToText()      { output.Text(o) }
 func (o *InstanceConsoleURLOutput) ToTable()     { output.Table(o) }
 
 type instanceConsoleURLCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"console-url"`
 
@@ -44,8 +45,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceConsoleURLCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceConsoleURLCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -95,7 +96,7 @@ func (c *instanceConsoleURLCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceConsoleURLCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceCmd, &instanceConsoleURLCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -61,54 +62,54 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardMaxOldSpaceSize)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchDashboardMaxOldSpaceSize)) {
 		db.OpensearchDashboards = &v3.UpdateDBAASServiceOpensearchRequestOpensearchDashboards{}
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) {
 			db.OpensearchDashboards.Enabled = &c.OpensearchDashboardEnabled
 		}
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
 			db.OpensearchDashboards.OpensearchRequestTimeout = c.OpensearchDashboardRequestTimeout
 		}
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchDashboardMaxOldSpaceSize)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchDashboardMaxOldSpaceSize)) {
 			db.OpensearchDashboards.MaxOldSpaceSize = c.OpensearchDashboardMaxOldSpaceSize
 		}
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
 		db.IndexTemplate = &v3.UpdateDBAASServiceOpensearchRequestIndexTemplate{}
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
 			db.IndexTemplate.MappingNestedObjectsLimit = &c.OpensearchIndexTemplateMappingNestedObjectsLimit
 		}
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
 			db.IndexTemplate.NumberOfReplicas = &c.OpensearchIndexTemplateNumberOfReplicas
 		}
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
 			db.IndexTemplate.NumberOfShards = c.OpensearchIndexTemplateNumberOfShards
 		}
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Plan)) {
 		db.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		db.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchKeepIndexRefreshInterval)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchKeepIndexRefreshInterval)) {
 		db.KeepIndexRefreshInterval = &c.OpensearchKeepIndexRefreshInterval
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OpensearchIndexPatterns)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OpensearchIndexPatterns)) {
 		db.IndexPatterns = make([]v3.UpdateDBAASServiceOpensearchRequestIndexPatterns, 0)
 		err := json.Unmarshal([]byte(c.OpensearchIndexPatterns), &db.IndexPatterns)
 		if err != nil {

@@ -8,6 +8,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -24,14 +25,14 @@ func (o *computeSSHKeyShowOutput) ToText()      { output.Text(o) }
 func (o *computeSSHKeyShowOutput) ToTable()     { output.Table(o) }
 
 type computeSSHKeyShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
 	Key string `cli-arg:"#"`
 }
 
-func (c *computeSSHKeyShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *computeSSHKeyShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *computeSSHKeyShowCmd) CmdShort() string {
 	return "Show an SSH key details"
@@ -45,7 +46,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *computeSSHKeyShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *computeSSHKeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -67,7 +68,7 @@ func (c *computeSSHKeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

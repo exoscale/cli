@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -25,14 +26,14 @@ type instancePoolListItemOutput struct {
 }
 
 type instancePoolListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *instancePoolListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *instancePoolListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *instancePoolListCmd) CmdShort() string { return "List Instance Pools" }
 
@@ -44,7 +45,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *instancePoolListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -98,7 +99,7 @@ func runInstancePoolList(c *instancePoolListCmd, stdout, stderr io.Writer) error
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instancePoolCmd, &instancePoolListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instancePoolCmd, &instancePoolListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

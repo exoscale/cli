@@ -8,6 +8,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -16,7 +17,7 @@ import (
 )
 
 type antiAffinityGroupCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -25,7 +26,7 @@ type antiAffinityGroupCreateCmd struct {
 	Description string `cli-usage:"Anti-Affinity Group description"`
 }
 
-func (c *antiAffinityGroupCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *antiAffinityGroupCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *antiAffinityGroupCreateCmd) CmdShort() string {
 	return "Create an Anti-Affinity Group"
@@ -39,7 +40,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *antiAffinityGroupCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *antiAffinityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -88,7 +89,7 @@ func (c *antiAffinityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

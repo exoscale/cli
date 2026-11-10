@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -24,23 +25,23 @@ func (c *dbaasServiceUpdateCmd) updateClickhouse(cmd *cobra.Command, _ []string)
 
 	databaseService := v3.UpdateDBAASServiceClickhouseRequest{}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ClickhouseIPFilter)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.ClickhouseIPFilter)) {
 		databaseService.IPFilter = c.ClickhouseIPFilter
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Plan)) {
 		databaseService.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		databaseService.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceTime)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &v3.UpdateDBAASServiceClickhouseRequestMaintenance{
 			Dow:  v3.UpdateDBAASServiceClickhouseRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
@@ -48,7 +49,7 @@ func (c *dbaasServiceUpdateCmd) updateClickhouse(cmd *cobra.Command, _ []string)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ClickhouseSettings)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.ClickhouseSettings)) {
 		if c.ClickhouseSettings != "" {
 			settings := &v3.JSONSchemaClickhouse{}
 			if err := json.Unmarshal([]byte(c.ClickhouseSettings), settings); err != nil {
@@ -59,7 +60,7 @@ func (c *dbaasServiceUpdateCmd) updateClickhouse(cmd *cobra.Command, _ []string)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ClickhouseVersion)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.ClickhouseVersion)) {
 		databaseService.Version = c.ClickhouseVersion
 		updated = true
 	}

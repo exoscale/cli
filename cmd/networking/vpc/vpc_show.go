@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -63,7 +64,7 @@ func (o *vpcShowOutput) ToTable() {
 }
 
 type vpcShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -72,7 +73,7 @@ type vpcShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"VPC zone"`
 }
 
-func (c *vpcShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *vpcShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *vpcShowCmd) CmdShort() string { return "Show a VPC details" }
 
@@ -87,8 +88,8 @@ Supported output template annotations for VPC subnets: %s`,
 }
 
 func (c *vpcShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *vpcShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -136,8 +137,8 @@ func (c *vpcShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &vpcShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &vpcShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }
 

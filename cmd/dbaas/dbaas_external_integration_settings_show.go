@@ -3,12 +3,12 @@ package dbaas
 import (
 	"fmt"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
 
 type dbaasExternalIntegrationSettingsShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -16,7 +16,7 @@ type dbaasExternalIntegrationSettingsShowCmd struct {
 	IntegrationID string `cli-arg:"#"`
 }
 
-func (c *dbaasExternalIntegrationSettingsShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *dbaasExternalIntegrationSettingsShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 func (c *dbaasExternalIntegrationSettingsShowCmd) CmdShort() string {
 	return "Show External Integration Settings"
 }
@@ -24,7 +24,7 @@ func (c *dbaasExternalIntegrationSettingsShowCmd) CmdLong() string {
 	return "Show External Integration Settings"
 }
 func (c *dbaasExternalIntegrationSettingsShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasExternalIntegrationSettingsShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -37,7 +37,7 @@ func (c *dbaasExternalIntegrationSettingsShowCmd) CmdRun(_ *cobra.Command, _ []s
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalIntegrationSettingsCmd, &dbaasExternalIntegrationSettingsShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalIntegrationSettingsCmd, &dbaasExternalIntegrationSettingsShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

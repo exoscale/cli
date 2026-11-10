@@ -7,13 +7,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksUpgradeServiceLevelCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"upgrade-service-level"`
 
@@ -37,8 +38,8 @@ to a lower level.`
 }
 
 func (c *sksUpgradeServiceLevelCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksUpgradeServiceLevelCmd) confirmUpgrade(ctx context.Context, cluster string) bool {
@@ -96,7 +97,7 @@ func (c *sksUpgradeServiceLevelCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksUpgradeServiceLevelCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksCmd, &sksUpgradeServiceLevelCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -9,6 +9,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -28,7 +29,7 @@ func (o *instanceTemplateListOutput) ToText()  { output.Text(o) }
 func (o *instanceTemplateListOutput) ToTable() { output.Table(o) }
 
 type instanceTemplateListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
@@ -49,7 +50,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceTemplateListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceTemplateListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -104,8 +105,8 @@ func (c *instanceTemplateListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceTemplateCmd, &instanceTemplateListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceTemplateCmd, &instanceTemplateListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		Visibility: "public",
 	}))

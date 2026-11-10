@@ -7,6 +7,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -16,7 +17,7 @@ func init() {
 	dnsCmd.AddCommand(&cobra.Command{
 		Use:     "create DOMAIN-NAME",
 		Short:   "Create a domain",
-		Aliases: exocmd.GCreateAlias,
+		Aliases: clicmd.GCreateAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return cmd.Usage()

@@ -3,7 +3,7 @@ package dbaas
 import (
 	"fmt"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +16,7 @@ const (
 )
 
 type dbaasExternalEndpointShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -24,7 +24,7 @@ type dbaasExternalEndpointShowCmd struct {
 	EndpointID string `cli-arg:"#"`
 }
 
-func (c *dbaasExternalEndpointShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *dbaasExternalEndpointShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *dbaasExternalEndpointShowCmd) CmdShort() string {
 	return "Show a Database External endpoint details"
@@ -35,7 +35,7 @@ func (c *dbaasExternalEndpointShowCmd) CmdLong() string {
 }
 
 func (c *dbaasExternalEndpointShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasExternalEndpointShowCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -56,7 +56,7 @@ func (c *dbaasExternalEndpointShowCmd) CmdRun(cmd *cobra.Command, args []string)
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

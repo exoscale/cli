@@ -5,13 +5,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spf13/cobra"
-
-	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
+	"github.com/spf13/cobra"
 )
 
 type configListItemOutput struct {
@@ -49,7 +48,7 @@ func init() {
 
 Supported output template annotations: %s`,
 			strings.Join(output.TemplateAnnotations(&configListOutput{}), ", ")),
-		Aliases: exocmd.GListAlias,
+		Aliases: clicmd.GListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return utils.PrintOutput(listConfigs(), nil)
 		},

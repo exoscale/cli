@@ -11,6 +11,7 @@ import (
 	"time"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -27,14 +28,14 @@ type AIAPIKeyListItemOutput struct {
 }
 
 type AIAPIKeyListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *AIAPIKeyListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *AIAPIKeyListCmd) CmdAliases() []string { return clicmd.GListAlias }
 func (c *AIAPIKeyListCmd) CmdShort() string     { return "List AI API keys" }
 func (c *AIAPIKeyListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists AI API keys across all zones.
@@ -43,7 +44,7 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&AIAPIKeyListItemOutput{}), ", "))
 }
 func (c *AIAPIKeyListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *AIAPIKeyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	return runAIAPIKeyList(c, os.Stdout, os.Stderr)
@@ -123,5 +124,5 @@ func runAIAPIKeyList(c *AIAPIKeyListCmd, stdout, stderr io.Writer) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &AIAPIKeyListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &AIAPIKeyListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

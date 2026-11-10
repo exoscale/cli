@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -30,50 +31,50 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 		return fmt.Errorf("unable to retrieve database Service settings: %w", err)
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaEnableCertAuth)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaEnableSASLAuth)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaEnableCertAuth)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaEnableSASLAuth)) {
 		databaseService.AuthenticationMethods = &v3.UpdateDBAASServiceKafkaRequestAuthenticationMethods{}
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaEnableCertAuth)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaEnableCertAuth)) {
 			databaseService.AuthenticationMethods.Certificate = &c.KafkaEnableCertAuth
 		}
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaEnableSASLAuth)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaEnableSASLAuth)) {
 			databaseService.AuthenticationMethods.Sasl = &c.KafkaEnableSASLAuth
 		}
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaEnableKafkaConnect)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaEnableKafkaConnect)) {
 		databaseService.KafkaConnectEnabled = &c.KafkaEnableKafkaConnect
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaEnableKafkaREST)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaEnableKafkaREST)) {
 		databaseService.KafkaRestEnabled = &c.KafkaEnableKafkaREST
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaEnableSchemaRegistry)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaEnableSchemaRegistry)) {
 		databaseService.SchemaRegistryEnabled = &c.KafkaEnableSchemaRegistry
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaIPFilter)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaIPFilter)) {
 		databaseService.IPFilter = c.KafkaIPFilter
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Plan)) {
 		databaseService.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		databaseService.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceTime)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &v3.UpdateDBAASServiceKafkaRequestMaintenance{
 			Dow:  v3.UpdateDBAASServiceKafkaRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
@@ -81,7 +82,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaConnectSettings)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaConnectSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.KafkaConnectSettings,
 			settingsSchema.Settings.KafkaConnect,
@@ -99,7 +100,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaRESTSettings)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaRESTSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.KafkaRESTSettings,
 			settingsSchema.Settings.KafkaRest,
@@ -115,7 +116,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaSettings)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.KafkaSettings,
 			settingsSchema.Settings.Kafka,
@@ -131,7 +132,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KafkaSchemaRegistrySettings)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KafkaSchemaRegistrySettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.KafkaSchemaRegistrySettings,
 			settingsSchema.Settings.SchemaRegistry,

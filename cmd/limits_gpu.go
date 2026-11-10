@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -35,9 +36,9 @@ var gpuResourceLabels = map[string]string{
 }
 
 type LimitsGpuCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
-	_                  bool        `cli-cmd:"gpu"`
-	Zone               v3.ZoneName `cli-short:"z" cli-usage:"zone"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
+	_                         bool        `cli-cmd:"gpu"`
+	Zone                      v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
 func (c *LimitsGpuCmd) CmdAliases() []string { return nil }
@@ -52,8 +53,8 @@ func (c *LimitsGpuCmd) CmdLong() string {
 }
 
 func (c *LimitsGpuCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *LimitsGpuCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -87,5 +88,5 @@ func (c *LimitsGpuCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(limitsCmd, &LimitsGpuCmd{CliCommandSettings: DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(limitsCmd, &LimitsGpuCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

@@ -9,6 +9,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/compute"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -16,7 +17,7 @@ import (
 )
 
 type privateNetworkCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -33,7 +34,7 @@ type privateNetworkCreateCmd struct {
 	DomainSearch []string    `cli-usage:"DHCP option 119: domain search list (limited to 255 octets, can be specified multiple times)"`
 }
 
-func (c *privateNetworkCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *privateNetworkCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *privateNetworkCreateCmd) CmdShort() string {
 	return "Create a Private Network" + compute.PrivateNetworkDeprecatedShort
@@ -50,8 +51,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *privateNetworkCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *privateNetworkCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -131,7 +132,7 @@ func (c *privateNetworkCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(privateNetworkCmd, &privateNetworkCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(privateNetworkCmd, &privateNetworkCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

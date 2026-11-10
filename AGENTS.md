@@ -11,11 +11,17 @@ Read this file before writing any new command:
 
 For subcommand placement in an existing group, also read `## Folder layout` below.
 
+The command framework (`RegisterCLICommand`, the flag helpers, `BinaryValue`,
+the aliases and the default constants) lives in `pkg/clicmd`, imported as
+`"github.com/exoscale/cli/pkg/clicmd"`. The root `cmd` package (`exocmd`) only
+holds `RootCmd`, the config loading and the global state such as `GContext` and
+`SwitchClientZoneV3`. Don't add generic helpers to it.
+
 Skeleton:
 
 ```go
 type myResourceCreateCmd struct {
-    exocmd.CliCommandSettings `cli-cmd:"-"`
+    clicmd.CliCommandSettings `cli-cmd:"-"`
 
     _ bool `cli-cmd:"create"`
 
@@ -24,13 +30,13 @@ type myResourceCreateCmd struct {
     Zone string `cli-short:"z" cli-usage:"zone"`        // becomes --zone / -z flag
 }
 
-func (c *myResourceCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *myResourceCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 func (c *myResourceCreateCmd) CmdShort() string     { return "Create a resource" }
 func (c *myResourceCreateCmd) CmdLong() string      { return "..." }
 
 func (c *myResourceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-    exocmd.CmdSetZoneFlagFromDefault(cmd)
-    return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+    clicmd.CmdSetZoneFlagFromDefault(cmd)
+    return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *myResourceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -39,8 +45,8 @@ func (c *myResourceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-    cobra.CheckErr(exocmd.RegisterCLICommand(parentCmd, &myResourceCreateCmd{
-        CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+    cobra.CheckErr(clicmd.RegisterCLICommand(parentCmd, &myResourceCreateCmd{
+        CliCommandSettings: clicmd.DefaultCLICmdSettings(),
     }))
 }
 ```
@@ -63,8 +69,8 @@ Supported field types: `string`, `int64`, `bool`, `[]string`, `map[string]string
 and any type whose pointer implements `pflag.Value` (flag or single positional arg,
 not variadic). Any other type panics at startup.
 
-For binary input (keys, ciphertexts, signatures...) use `exocmd.BinaryValue`
-(`cmd/binary_value.go`) instead of a base64 `string`. The field holds the
+For binary input (keys, ciphertexts, signatures...) use `clicmd.BinaryValue`
+(`pkg/clicmd/binary_value.go`) instead of a base64 `string`. The field holds the
 decoded bytes, and users can pass:
 
 - `<base64>` - the value itself, base64-encoded
@@ -72,12 +78,12 @@ decoded bytes, and users can pass:
 - `fileb://<path>` - a file containing the raw bytes
 
 ```go
-Payload exocmd.BinaryValue `cli-arg:"#" cli-usage:"PAYLOAD"`
-Context exocmd.BinaryValue `cli-usage:"encryption context"` // --context flag
+Payload clicmd.BinaryValue `cli-arg:"#" cli-usage:"PAYLOAD"`
+Context clicmd.BinaryValue `cli-usage:"encryption context"` // --context flag
 ```
 
 Global alias vars to use for `CmdAliases()`:
-`exocmd.GListAlias`, `GShowAlias`, `GCreateAlias`, `GDeleteAlias`, `GRemoveAlias`.
+`clicmd.GListAlias`, `GShowAlias`, `GCreateAlias`, `GDeleteAlias`, `GRemoveAlias`.
 
 ## Folder layout
 

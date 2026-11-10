@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -14,7 +15,7 @@ import (
 )
 
 type instanceSGRemoveCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"remove"`
 
@@ -24,7 +25,7 @@ type instanceSGRemoveCmd struct {
 	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceSGRemoveCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *instanceSGRemoveCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *instanceSGRemoveCmd) CmdShort() string {
 	return "Remove a Compute instance from Security Groups"
@@ -39,13 +40,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceSGRemoveCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceSGRemoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if len(c.SecurityGroups) == 0 {
-		exocmd.CmdExitOnUsageError(cmd, "no Security Groups specified")
+		clicmd.CmdExitOnUsageError(cmd, "no Security Groups specified")
 	}
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
@@ -110,7 +111,7 @@ func (c *instanceSGRemoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceSGCmd, &instanceSGRemoveCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceSGCmd, &instanceSGRemoveCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

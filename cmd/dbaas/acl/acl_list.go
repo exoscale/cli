@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -34,14 +35,14 @@ func (o *dbaasAclListOutput) ToText()  { output.Text(o) }
 func (o *dbaasAclListOutput) ToTable() { output.Table(o) }
 
 type dbaasAclListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_    bool   `cli-cmd:"list"`
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 	Zone string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasAclListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *dbaasAclListCmd) CmdAliases() []string { return clicmd.GListAlias }
 func (c *dbaasAclListCmd) CmdShort() string     { return "List ACL entries of a Database Service" }
 func (c *dbaasAclListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists the ACL entries of a Kafka or OpenSearch Database Service.
@@ -51,8 +52,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *dbaasAclListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasAclListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -130,7 +131,7 @@ func opensearchAclListOutput(config *v3.DBAASOpensearchAclConfig) *dbaasAclListO
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &dbaasAclListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasAclListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

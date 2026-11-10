@@ -6,6 +6,7 @@
 
 # Create a ClickHouse service (disable termination protection for cleanup)
 exec exo --zone $TEST_ZONE --output-format json dbaas create clickhouse startup-8 ch-role-$TEST_RUN_ID --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f ch-role-$TEST_RUN_ID
 
 # Wait for the service to be running
 wait-dbaas-state $TEST_ZONE ch-role-$TEST_RUN_ID running 900
@@ -19,6 +20,3 @@ stdout '"roles"'
 
 # ACL show must succeed (users array may be empty on a fresh service)
 exec exo --zone $TEST_ZONE --output-format json dbaas acl show ch-role-$TEST_RUN_ID
-
-# Teardown: delete the service
-exec exo --zone $TEST_ZONE dbaas delete -f ch-role-$TEST_RUN_ID

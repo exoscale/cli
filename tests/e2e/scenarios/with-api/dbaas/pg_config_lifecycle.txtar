@@ -5,6 +5,7 @@
 
 # Create a PG service with the new configuration options (disable termination protection for cleanup)
 exec exo --zone $TEST_ZONE --output-format json dbaas create pg hobbyist-2 pg-$TEST_RUN_ID --pg-shared-buffers-percentage 25 --pg-synchronous-replication off --pg-work-mem 128 --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f pg-$TEST_RUN_ID
 
 # Wait for the service to be running (PG provisioning can take 5-10 minutes)
 wait-dbaas-state $TEST_ZONE pg-$TEST_RUN_ID running 600
@@ -24,6 +25,3 @@ wait-dbaas-state $TEST_ZONE pg-$TEST_RUN_ID running 600
 # Verify updated value
 exec exo --zone $TEST_ZONE --output-format json dbaas show pg-$TEST_RUN_ID
 stdout '"work_mem"'
-
-# Teardown: delete the service
-exec exo --zone $TEST_ZONE dbaas delete -f pg-$TEST_RUN_ID

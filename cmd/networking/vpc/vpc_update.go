@@ -7,13 +7,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type vpcUpdateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -40,8 +41,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *vpcUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *vpcUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -60,18 +61,18 @@ func (c *vpcUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	req := v3.UpdateVpcRequest{}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Name)) {
 		req.Name = &c.Name
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Description)) {
 		req.Description = &c.Description
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
-		req.Labels = exocmd.ConvertIfSpecialEmptyMap(c.Labels)
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Labels)) {
+		req.Labels = clicmd.ConvertIfSpecialEmptyMap(c.Labels)
 		updated = true
 	}
 
@@ -79,7 +80,7 @@ func (c *vpcUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	dhcpOptions := entry.DHCPOptions
 	dhcpOptionsChanged := false
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DNSServers)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DNSServers)) {
 		dnsServersParsed, err := stringsToIPv4s(c.DNSServers)
 		if err != nil {
 			return fmt.Errorf("invalid DNS server: %w", err)
@@ -89,7 +90,7 @@ func (c *vpcUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		dhcpOptionsChanged = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.NTPServers)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.NTPServers)) {
 		ntpServersParsed, err := stringsToIPv4s(c.NTPServers)
 		if err != nil {
 			return fmt.Errorf("invalid NTP server: %w", err)
@@ -99,7 +100,7 @@ func (c *vpcUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		dhcpOptionsChanged = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DomainSearch)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DomainSearch)) {
 		dhcpOptions.DomainSearch = c.DomainSearch
 		dhcpOptionsChanged = true
 	}
@@ -127,7 +128,7 @@ func (c *vpcUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &vpcUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &vpcUpdateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

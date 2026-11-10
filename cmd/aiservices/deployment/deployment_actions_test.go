@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -94,23 +94,23 @@ func TestDeploymentDeleteScaleRevealLogs(t *testing.T) {
 	now := time.Now()
 	ts.deployments = []v3.ListDeploymentsResponseEntry{{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", CreatedAT: now, UpdatedAT: now}}
 	// delete by name
-	del := &DeploymentDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployments: []string{"alpha"}, Force: true}
+	del := &DeploymentDeleteCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Deployments: []string{"alpha"}, Force: true}
 	if err := del.CmdRun(nil, nil); err != nil {
 		t.Fatalf("delete: %v", err)
 	}
 	// delete multiple (add another deployment first)
 	ts.deployments = append(ts.deployments, v3.ListDeploymentsResponseEntry{ID: v3.UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), Name: "beta", CreatedAT: now, UpdatedAT: now})
-	delMultiple := &DeploymentDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployments: []string{"alpha", "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"}, Force: true}
+	delMultiple := &DeploymentDeleteCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Deployments: []string{"alpha", "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"}, Force: true}
 	if err := delMultiple.CmdRun(nil, nil); err != nil {
 		t.Fatalf("delete multiple: %v", err)
 	}
 	// scale by id
-	sc := &DeploymentScaleCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", Size: 3}
+	sc := &DeploymentScaleCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Deployment: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", Size: 3}
 	if err := sc.CmdRun(nil, nil); err != nil {
 		t.Fatalf("scale: %v", err)
 	}
 	// logs
-	logs := &DeploymentLogsCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha"}
+	logs := &DeploymentLogsCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Deployment: "alpha"}
 	if err := logs.CmdRun(nil, nil); err != nil {
 		t.Fatalf("logs: %v", err)
 	}
@@ -123,7 +123,7 @@ func TestDeploymentScaleZeroIncludesReplicas(t *testing.T) {
 
 	now := time.Now()
 	ts.deployments = []v3.ListDeploymentsResponseEntry{{ID: v3.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name: "alpha", CreatedAT: now, UpdatedAT: now}}
-	sc := &DeploymentScaleCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Deployment: "alpha", Size: 0}
+	sc := &DeploymentScaleCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Deployment: "alpha", Size: 0}
 	if err := sc.CmdRun(nil, nil); err != nil {
 		t.Fatalf("scale zero: %v", err)
 	}

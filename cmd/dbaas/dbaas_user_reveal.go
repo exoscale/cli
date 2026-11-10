@@ -5,6 +5,7 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
@@ -38,7 +39,7 @@ func (o *dbaasUserRevealOutput) ToTable() {
 }
 
 type dbaasUserRevealCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reveal-secrets"`
 
@@ -56,9 +57,9 @@ func (c *dbaasUserRevealCmd) CmdLong() string {
 }
 
 func (c *dbaasUserRevealCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
 
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasUserRevealCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -94,7 +95,7 @@ func (c *dbaasUserRevealCmd) CmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasUserCmd, &dbaasUserRevealCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasUserCmd, &dbaasUserRevealCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

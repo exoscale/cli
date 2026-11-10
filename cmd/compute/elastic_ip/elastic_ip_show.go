@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -91,7 +92,7 @@ func (o *elasticIPShowOutput) ToTable() {
 }
 
 type elasticIPShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -100,7 +101,7 @@ type elasticIPShowCmd struct {
 	Zone string `cli-short:"z" cli-usage:"Elastic IP zone"`
 }
 
-func (c *elasticIPShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *elasticIPShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *elasticIPShowCmd) CmdShort() string {
 	return "Show an Elastic IP details"
@@ -114,8 +115,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *elasticIPShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *elasticIPShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -188,7 +189,7 @@ func (c *elasticIPShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(elasticIPCmd, &elasticIPShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(elasticIPCmd, &elasticIPShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

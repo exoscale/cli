@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -16,7 +17,7 @@ import (
 )
 
 type DeploymentCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -33,14 +34,14 @@ type DeploymentCreateCmd struct {
 	Zone                      v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *DeploymentCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *DeploymentCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 func (c *DeploymentCreateCmd) CmdShort() string     { return "Create AI deployment" }
 func (c *DeploymentCreateCmd) CmdLong() string {
 	return "This command creates an AI deployment on dedicated inference servers."
 }
 func (c *DeploymentCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *DeploymentCreateCmd) showInferenceEngineParameterHelp(ctx context.Context, client *v3.Client, version string) error {
 	var opts []v3.GetInferenceEngineHelpOpt
@@ -180,5 +181,5 @@ func (c *DeploymentCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &DeploymentCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &DeploymentCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

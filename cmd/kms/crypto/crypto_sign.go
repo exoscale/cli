@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -21,12 +22,12 @@ func (o *cryptoSignOutput) ToText()  { output.Text(o) }
 func (o *cryptoSignOutput) ToTable() { output.Table(o) }
 
 type cryptoSignCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"sign"`
 
 	Key              string                         `cli-arg:"#" cli-usage:"ID"`
-	Message          exocmd.BinaryValue             `cli-arg:"#" cli-usage:"MESSAGE"`
+	Message          clicmd.BinaryValue             `cli-arg:"#" cli-usage:"MESSAGE"`
 	SigningAlgorithm v3.SignRequestSigningAlgorithm `cli-arg:"#" cli-usage:"SIGNING_ALGORITHM"`
 
 	MessageType v3.SignRequestMessageType `cli-flag:"message-type" cli-usage:"how the message is interpreted [raw|digest] (default: raw)"`
@@ -48,8 +49,8 @@ Supported signing algorithms: RSASSA_PSS_SHA_256, RSASSA_PSS_SHA_384, RSASSA_PSS
 }
 
 func (c *cryptoSignCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *cryptoSignCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -81,7 +82,7 @@ func (c *cryptoSignCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(cryptoCmd, &cryptoSignCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(cryptoCmd, &cryptoSignCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

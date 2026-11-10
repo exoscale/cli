@@ -8,13 +8,14 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/networking/vpc"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceDetachFromSubnetCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"detach-from-subnet"`
 
@@ -36,8 +37,8 @@ func (c *instanceDetachFromSubnetCmd) CmdLong() string {
 }
 
 func (c *instanceDetachFromSubnetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceDetachFromSubnetCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -94,7 +95,7 @@ func (c *instanceDetachFromSubnetCmd) CmdRun(_ *cobra.Command, _ []string) error
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceDetachFromSubnetCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceCmd, &instanceDetachFromSubnetCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

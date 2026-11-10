@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -47,7 +48,7 @@ func (o *keyListOutput) ToTable() {
 }
 
 type keyListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
@@ -56,7 +57,7 @@ type keyListCmd struct {
 	Zone          v3.ZoneName `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
 }
 
-func (c *keyListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *keyListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *keyListCmd) CmdShort() string {
 	return "List KMS Keys details for an organization in a given zone."
@@ -67,8 +68,8 @@ func (c *keyListCmd) CmdLong() string {
 }
 
 func (c *keyListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *keyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -100,7 +101,7 @@ func (c *keyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(keyCmd, &keyListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(keyCmd, &keyListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -7,13 +7,14 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamRoleDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,7 +23,7 @@ type iamRoleDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *iamRoleDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
+func (c *iamRoleDeleteCmd) CmdAliases() []string { return clicmd.GDeleteAlias }
 
 func (c *iamRoleDeleteCmd) CmdShort() string {
 	return "Delete IAM Role"
@@ -34,7 +35,7 @@ It will fail if the Role is attached to an IAM Key.`
 }
 
 func (c *iamRoleDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamRoleDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -71,7 +72,7 @@ func (c *iamRoleDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(iamRoleCmd, &iamRoleDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(iamRoleCmd, &iamRoleDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

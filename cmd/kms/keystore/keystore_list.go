@@ -4,6 +4,7 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -45,21 +46,21 @@ func (o *keyStoreListOutput) ToTable() {
 }
 
 type keyStoreListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *keyStoreListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *keyStoreListCmd) CmdAliases() []string { return clicmd.GListAlias }
 func (c *keyStoreListCmd) CmdShort() string     { return "List key stores" }
 func (c *keyStoreListCmd) CmdLong() string {
 	return "This command lists the external key stores configured for the organization."
 }
 func (c *keyStoreListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *keyStoreListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -78,5 +79,5 @@ func (c *keyStoreListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &keyStoreListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &keyStoreListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

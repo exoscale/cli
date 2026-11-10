@@ -6,13 +6,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type vpcDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,15 +23,15 @@ type vpcDeleteCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"VPC zone"`
 }
 
-func (c *vpcDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *vpcDeleteCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *vpcDeleteCmd) CmdShort() string { return "Delete a VPC" }
 
 func (c *vpcDeleteCmd) CmdLong() string { return "" }
 
 func (c *vpcDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *vpcDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -59,7 +60,7 @@ func (c *vpcDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &vpcDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &vpcDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

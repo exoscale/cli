@@ -7,13 +7,14 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type securityGroupDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -23,7 +24,7 @@ type securityGroupDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *securityGroupDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *securityGroupDeleteCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *securityGroupDeleteCmd) CmdShort() string {
 	return "Delete a Security Group"
@@ -32,7 +33,7 @@ func (c *securityGroupDeleteCmd) CmdShort() string {
 func (c *securityGroupDeleteCmd) CmdLong() string { return "" }
 
 func (c *securityGroupDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *securityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -94,7 +95,7 @@ func (c *securityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(securityGroupCmd, &securityGroupDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(securityGroupCmd, &securityGroupDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -5,6 +5,7 @@
 
 # Create a Kafka service (disable termination protection for cleanup)
 exec exo --zone $TEST_ZONE --output-format json dbaas create kafka startup-4 kafka-acl-$TEST_RUN_ID --kafka-enable-schema-registry --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f kafka-acl-$TEST_RUN_ID
 
 # Wait for the service to be running
 wait-dbaas-state $TEST_ZONE kafka-acl-$TEST_RUN_ID running 1200
@@ -41,6 +42,3 @@ exec exo --zone $TEST_ZONE dbaas acl delete kafka-acl-$TEST_RUN_ID acluser --kaf
 
 exec exo --zone $TEST_ZONE --output-format json dbaas acl list kafka-acl-$TEST_RUN_ID
 ! stdout 'acluser'
-
-# Teardown: delete the service
-exec exo --zone $TEST_ZONE dbaas delete -f kafka-acl-$TEST_RUN_ID

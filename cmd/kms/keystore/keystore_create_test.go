@@ -3,7 +3,7 @@ package keystore
 import (
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -14,7 +14,7 @@ func TestKeyStoreCreateRequiresProxyFlags(t *testing.T) {
 		"missing access key": {Name: "ks", Endpoint: "https://xks.example.com", SecretKey: "sk"},
 		"missing secret key": {Name: "ks", Endpoint: "https://xks.example.com", AccessKey: "ak"},
 	} {
-		c.CliCommandSettings = exocmd.DefaultCLICmdSettings()
+		c.CliCommandSettings = clicmd.DefaultCLICmdSettings()
 		if err := c.CmdRun(nil, nil); err == nil {
 			t.Errorf("%s: expected an error", name)
 		}
@@ -29,7 +29,7 @@ func TestKeyStoreCreate(t *testing.T) {
 	api := newFakeKeyStoreAPI(t)
 
 	c := &keyStoreCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Name:               "my-xks",
 		Description:        "test store",
 		Endpoint:           "https://xks.example.com",
@@ -65,7 +65,7 @@ func TestKeyStoreCreateConnectOnCreate(t *testing.T) {
 	api := newFakeKeyStoreAPI(t)
 
 	c := &keyStoreCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Name:               "my-xks",
 		Endpoint:           "https://xks.example.com",
 		AccessKey:          "AKIDEXAMPLE",

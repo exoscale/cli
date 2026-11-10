@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -14,7 +15,7 @@ import (
 )
 
 type instanceTemplateRegisterCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"register"`
 
@@ -36,7 +37,7 @@ type instanceTemplateRegisterCmd struct {
 	Zone                         string `cli-short:"z" cli-usage:"zone to register the template into (default: current account's default zone)"`
 }
 
-func (c *instanceTemplateRegisterCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *instanceTemplateRegisterCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *instanceTemplateRegisterCmd) CmdShort() string {
 	return "Register a new Compute instance template"
@@ -50,15 +51,15 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceTemplateRegisterCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
 
 	// In case the user specified a snapshot ID using the `--from-snapshot` flag,
 	// we add empty positional argument placeholders in order to trick the
-	// exocmd.CliCommandDefaultPreRun() wrapper into believing URL/Checksum args were provided,
+	// clicmd.CliCommandDefaultPreRun() wrapper into believing URL/Checksum args were provided,
 	// but the actual command function won't use them since it will dynamically retrieve
 	// this information from the specified snapshot export information.
 
-	snapshotID, err := cmd.Flags().GetString(exocmd.MustCLICommandFlagName(c, &c.FromSnapshot))
+	snapshotID, err := cmd.Flags().GetString(clicmd.MustCLICommandFlagName(c, &c.FromSnapshot))
 	if err != nil {
 		return err
 	}
@@ -66,7 +67,7 @@ func (c *instanceTemplateRegisterCmd) CmdPreRun(cmd *cobra.Command, args []strin
 		args = append(args, "", "")
 	}
 
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -140,19 +141,19 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 
 		// Above properties are inherited from snapshot source template, unless otherwise specified
 		// by the user from the command line
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DisablePassword)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DisablePassword)) {
 			templateRequest.PasswordEnabled = &passwordEnabled
 		} else {
 			templateRequest.PasswordEnabled = srcTemplate.PasswordEnabled
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DisableSSHKey)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DisableSSHKey)) {
 			templateRequest.SSHKeyEnabled = &sshKeyEnabled
 		} else {
 			templateRequest.SSHKeyEnabled = srcTemplate.SSHKeyEnabled
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Username)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Username)) {
 			templateRequest.DefaultUser = c.Username
 		} else {
 			templateRequest.DefaultUser = srcTemplate.DefaultUser
@@ -160,7 +161,7 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.BootMode)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.BootMode)) {
 		templateRequest.BootMode = v3.RegisterTemplateRequestBootMode(c.BootMode)
 	}
 
@@ -207,8 +208,8 @@ func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) err
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceTemplateCmd, &instanceTemplateRegisterCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceTemplateCmd, &instanceTemplateRegisterCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		BootMode: "legacy",
 

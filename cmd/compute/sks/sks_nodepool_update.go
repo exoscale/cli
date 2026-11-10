@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -15,7 +16,7 @@ import (
 )
 
 type sksNodepoolUpdateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -52,8 +53,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksNodepoolUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
@@ -87,33 +88,33 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 
 	updateReq := v3.UpdateSKSNodepoolRequest{}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Description)) {
 		updateReq.Description = c.Description
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DiskSize)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DiskSize)) {
 		updateReq.DiskSize = c.DiskSize
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.InstancePrefix)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.InstancePrefix)) {
 		updateReq.InstancePrefix = c.InstancePrefix
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Name)) {
 		updateReq.Name = c.Name
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AntiAffinityGroups)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DeployTarget)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.InstanceType)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PrivateNetworks)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.SecurityGroups)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AntiAffinityGroups)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DeployTarget)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.InstanceType)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PrivateNetworks)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.SecurityGroups)) {
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
 			aags, err := lookupAntiAffinityGroups(ctx, client, c.AntiAffinityGroups)
 			if err != nil {
 				return err
@@ -122,7 +123,7 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 			updated = true
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DeployTarget)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DeployTarget)) {
 			dt, err := lookupDeployTarget(ctx, client, c.DeployTarget)
 			if err != nil {
 				return err
@@ -133,7 +134,7 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 			}
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.InstanceType)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.InstanceType)) {
 			it, err := lookupInstanceType(ctx, client, c.InstanceType)
 			if err != nil {
 				return err
@@ -144,7 +145,7 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 			}
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.PrivateNetworks)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.PrivateNetworks)) {
 			pns, err := lookupPrivateNetworks(ctx, client, c.PrivateNetworks)
 			if err != nil {
 				return err
@@ -153,7 +154,7 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 			updated = true
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.SecurityGroups)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.SecurityGroups)) {
 			sgs, err := lookupSecurityGroups(ctx, client, c.SecurityGroups)
 			if err != nil {
 				return err
@@ -163,7 +164,7 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 		}
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Labels)) {
 		if updateReq.Labels == nil {
 			updateReq.Labels = v3.SKSNodepoolLabels{}
 		}
@@ -179,7 +180,7 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Taints)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Taints)) {
 		if updateReq.Taints == nil {
 			updateReq.Taints = v3.SKSNodepoolTaints{}
 		}
@@ -194,14 +195,14 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.NvidiaMigProfile)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.NvidiaMigProfile)) {
 		var family v3.InstanceTypeFamily
 		if c.NvidiaMigProfile != "" {
 			// The GPU family is inferred from the Nodepool instance type; when
 			// the instance type is being changed in the same command, use the
 			// new one.
 			var it *v3.InstanceType
-			if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.InstanceType)) {
+			if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.InstanceType)) {
 				it, err = lookupInstanceType(ctx, client, c.InstanceType)
 			} else {
 				it, err = client.GetInstanceType(ctx, nodepool.InstanceType.ID)
@@ -223,7 +224,7 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.IPv6)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.IPv6)) {
 		if c.IPv6 {
 			updateReq.PublicIPAssignment = v3.UpdateSKSNodepoolRequestPublicIPAssignmentDual
 		} else {
@@ -232,7 +233,7 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KubeletMaxPods)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KubeletMaxPods)) {
 		if c.KubeletMaxPods != 0 {
 			updateReq.KubeletMaxPods = &c.KubeletMaxPods
 		} else {
@@ -268,7 +269,7 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolUpdateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

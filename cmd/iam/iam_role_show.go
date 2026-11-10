@@ -9,6 +9,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -66,7 +67,7 @@ func iamPolicyToOutput(policy *v3.IAMPolicy) *iamPolicyOutput {
 }
 
 type iamRoleShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -75,7 +76,7 @@ type iamRoleShowCmd struct {
 	Role string `cli-arg:"#" cli-usage:"ID|NAME"`
 }
 
-func (c *iamRoleShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *iamRoleShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *iamRoleShowCmd) CmdShort() string {
 	return "Show Role details"
@@ -89,7 +90,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *iamRoleShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamRoleShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -135,7 +136,7 @@ func (c *iamRoleShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(iamRoleCmd, &iamRoleShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(iamRoleCmd, &iamRoleShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

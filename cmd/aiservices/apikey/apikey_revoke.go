@@ -5,6 +5,7 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -12,7 +13,7 @@ import (
 )
 
 type AIAPIKeyRevokeCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"revoke"`
 
@@ -21,14 +22,14 @@ type AIAPIKeyRevokeCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *AIAPIKeyRevokeCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
+func (c *AIAPIKeyRevokeCmd) CmdAliases() []string { return clicmd.GDeleteAlias }
 func (c *AIAPIKeyRevokeCmd) CmdShort() string     { return "Revoke AI API key" }
 func (c *AIAPIKeyRevokeCmd) CmdLong() string {
 	return "This command revokes AI API keys by ID or name. Revoked keys can no longer be used."
 }
 func (c *AIAPIKeyRevokeCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *AIAPIKeyRevokeCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -96,5 +97,5 @@ func (c *AIAPIKeyRevokeCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &AIAPIKeyRevokeCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &AIAPIKeyRevokeCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

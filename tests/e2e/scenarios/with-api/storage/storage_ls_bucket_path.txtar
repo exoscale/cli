@@ -10,6 +10,9 @@
 # Setup: create a bucket for this test run
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-$TEST_RUN_ID
 stdout '"name"'
+# Teardown: delete object then bucket (both use ClientOptZoneFromBucket, no --zone)
+defer exo storage rb -f sos://sto-$TEST_RUN_ID
+defer exo storage delete --force sos://sto-$TEST_RUN_ID/hello.txt
 
 # Upload a test object (storage upload has no --zone; uses ClientOptZoneFromBucket)
 exec exo storage upload hello.txt sos://sto-$TEST_RUN_ID/
@@ -36,10 +39,6 @@ exec exo storage download sos://sto-$TEST_RUN_ID/hello.txt downloaded.txt
 # Verify the downloaded content matches what we uploaded
 exec cat downloaded.txt
 stdout 'hello from e2e test'
-
-# Teardown: delete object then bucket (both use ClientOptZoneFromBucket, no --zone)
-exec exo storage delete --force sos://sto-$TEST_RUN_ID/hello.txt
-exec exo storage rb -f sos://sto-$TEST_RUN_ID
 
 -- hello.txt --
 hello from e2e test

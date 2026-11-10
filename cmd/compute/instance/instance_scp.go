@@ -10,13 +10,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/ssh"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceSCPCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	scpInfo struct {
 		ipAddress string
@@ -90,8 +91,8 @@ Example:
 }
 
 func (c *instanceSCPCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceSCPCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -151,8 +152,8 @@ func (c *instanceSCPCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceSCPCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceCmd, &instanceSCPCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		ReplStr: "{}",
 	}))

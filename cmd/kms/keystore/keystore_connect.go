@@ -2,13 +2,14 @@ package keystore
 
 import (
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
 
 type keyStoreConnectCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"connect"`
 
@@ -23,8 +24,8 @@ func (c *keyStoreConnectCmd) CmdLong() string {
 	return "This command connects an external key store to its XKS proxy, making it usable by KMS keys."
 }
 func (c *keyStoreConnectCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *keyStoreConnectCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -55,5 +56,5 @@ func (c *keyStoreConnectCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &keyStoreConnectCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &keyStoreConnectCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

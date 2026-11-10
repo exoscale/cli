@@ -6,13 +6,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceSnapshotDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,7 +23,7 @@ type instanceSnapshotDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"snapshot zone"`
 }
 
-func (c *instanceSnapshotDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *instanceSnapshotDeleteCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *instanceSnapshotDeleteCmd) CmdShort() string {
 	return "Delete a Compute instance snapshot"
@@ -31,8 +32,8 @@ func (c *instanceSnapshotDeleteCmd) CmdShort() string {
 func (c *instanceSnapshotDeleteCmd) CmdLong() string { return "" }
 
 func (c *instanceSnapshotDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -72,7 +73,7 @@ func (c *instanceSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

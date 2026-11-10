@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -30,14 +31,14 @@ func (o *dbaasReadReplicaListOutput) ToText()  { output.Text(o) }
 func (o *dbaasReadReplicaListOutput) ToTable() { output.Table(o) }
 
 type dbaasReadReplicaListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	ServiceName string `cli-arg:"#" cli-usage:"SERVICE-NAME"`
 }
 
-func (c *dbaasReadReplicaListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *dbaasReadReplicaListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *dbaasReadReplicaListCmd) CmdShort() string {
 	return "List Database Service read replicas"
@@ -48,7 +49,7 @@ func (c *dbaasReadReplicaListCmd) CmdLong() string {
 }
 
 func (c *dbaasReadReplicaListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasReadReplicaListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -120,7 +121,7 @@ func dbaasReadReplicaListFromServices(primaryService v3.DBAASServiceCommon, serv
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasReadReplicaCmd, &dbaasReadReplicaListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasReadReplicaCmd, &dbaasReadReplicaListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

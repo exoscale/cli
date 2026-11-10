@@ -8,13 +8,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasServiceDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -24,15 +25,15 @@ type dbaasServiceDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasServiceDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *dbaasServiceDeleteCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *dbaasServiceDeleteCmd) CmdShort() string { return "Delete a Database Service" }
 
 func (c *dbaasServiceDeleteCmd) CmdLong() string { return "" }
 
 func (c *dbaasServiceDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasServiceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -86,7 +87,7 @@ func (c *dbaasServiceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasCmd, &dbaasServiceDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

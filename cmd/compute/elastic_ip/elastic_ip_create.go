@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -14,7 +15,7 @@ import (
 )
 
 type elasticIPCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -34,7 +35,7 @@ type elasticIPCreateCmd struct {
 	ReverseDNS                string            `cli-flag:"reverse-dns" cli-usage:"Domain name for reverse DNS record."`
 }
 
-func (c *elasticIPCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *elasticIPCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *elasticIPCreateCmd) CmdShort() string {
 	return "Create an Elastic IP"
@@ -48,8 +49,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *elasticIPCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -129,8 +130,8 @@ func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(elasticIPCmd, &elasticIPCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(elasticIPCmd, &elasticIPCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		HealthcheckInterval:    10,
 		HealthcheckStrikesFail: 2,

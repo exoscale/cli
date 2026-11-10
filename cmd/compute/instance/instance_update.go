@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
@@ -15,7 +16,7 @@ import (
 )
 
 type instanceUpdateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -44,8 +45,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -69,7 +70,7 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	updateRequest := v3.UpdateInstanceRequest{}
 	updateRDNSRequest := v3.UpdateReverseDNSInstanceRequest{}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Labels)) {
 
 		// To be fixed in the API spec: allow clearing all labels by setting
 		// an empty map[string]string (rightnow being omited)
@@ -77,12 +78,12 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		updatedInstance = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Name)) {
 		updateRequest.Name = c.Name
 		updatedInstance = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.CloudInitFile)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.CloudInitFile)) {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
@@ -91,17 +92,17 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		updatedInstance = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ReverseDNS)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.ReverseDNS)) {
 		updateRDNSRequest.DomainName = c.ReverseDNS
 		updatedRDNS = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AppConsistentSnapshot)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AppConsistentSnapshot)) {
 		updateRequest.ApplicationConsistentSnapshotEnabled = &c.AppConsistentSnapshot
 		updatedInstance = true
 	}
 
-	if updatedInstance || updatedRDNS || cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Protection)) {
+	if updatedInstance || updatedRDNS || cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Protection)) {
 
 		if updatedInstance {
 			op, err := client.UpdateInstance(ctx, instance.ID, updateRequest)
@@ -128,7 +129,7 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 			}
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Protection)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Protection)) {
 			var op *v3.Operation
 			var err error
 			if c.Protection {
@@ -162,7 +163,7 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceCmd, &instanceUpdateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

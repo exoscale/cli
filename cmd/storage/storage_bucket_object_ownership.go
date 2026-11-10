@@ -7,22 +7,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/collections"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
 )
 
-const (
-	objOwnershipOpArgIndex           = 0
-	objOwnershipBucketArgIndex       = 1
-	objOwnershipStatus               = "status"
-	objOwnershipObjectWriter         = "object-writer"
-	objOwnershipBucketOwnerEnforced  = "bucket-owner-enforced"
-	objOwnershipBucketOwnerPreferred = "bucket-owner-preferred"
-)
-
 func init() {
-	storageBucketObjectOwnershipCmd.Flags().StringP(exocmd.ZoneFlagLong, exocmd.ZoneFlagShort, "", exocmd.ZoneFlagMsg)
+	storageBucketObjectOwnershipCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
 	storageBucketCmd.AddCommand(storageBucketObjectOwnershipCmd)
 }
 
@@ -34,26 +26,26 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 
 	PreRunE: func(c *cobra.Command, args []string) error {
 		if len(args) != 2 {
-			exocmd.CmdExitOnUsageError(c, "invalid arguments")
+			clicmd.CmdExitOnUsageError(c, "invalid arguments")
 		}
 
 		permittedOps := collections.NewSet(objOwnershipStatus, objOwnershipObjectWriter, objOwnershipBucketOwnerEnforced, objOwnershipBucketOwnerPreferred)
 		if !permittedOps.Contains(args[objOwnershipOpArgIndex]) {
-			exocmd.CmdExitOnUsageError(c, "invalid operation")
+			clicmd.CmdExitOnUsageError(c, "invalid operation")
 		}
 
 		args[objOwnershipBucketArgIndex] = strings.TrimPrefix(args[objOwnershipBucketArgIndex], sos.BucketPrefix)
 
-		exocmd.CmdSetZoneFlagFromDefault(c)
+		clicmd.CmdSetZoneFlagFromDefault(c)
 
-		return exocmd.CmdCheckRequiredFlags(c, []string{exocmd.ZoneFlagLong})
+		return clicmd.CmdCheckRequiredFlags(c, []string{zoneFlagLong})
 	},
 
 	RunE: func(c *cobra.Command, args []string) error {
 		ownershipCommand := args[objOwnershipOpArgIndex]
 		bucket := args[objOwnershipBucketArgIndex]
 
-		zone, err := c.Flags().GetString(exocmd.ZoneFlagLong)
+		zone, err := c.Flags().GetString(zoneFlagLong)
 		if err != nil {
 			return err
 		}

@@ -9,12 +9,13 @@ import (
 	"gopkg.in/yaml.v2"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksKubeconfigCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"kubeconfig"`
 
@@ -106,8 +107,8 @@ Notes:
 }
 
 func (c *sksKubeconfigCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksKubeconfigCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -191,7 +192,7 @@ func (c *sksKubeconfigCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksKubeconfigCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksCmd, &sksKubeconfigCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }
