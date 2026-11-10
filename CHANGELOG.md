@@ -5,6 +5,7 @@
 ### Improvements
 
 - split cmd package into two packages #956
+- compute: mark `exo compute private-network` and `exo compute instance private-network` commands as deprecated in their help, pointing to `exo networking vpc` (#951)
 
 
 ## 1.104.1

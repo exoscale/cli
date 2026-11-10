@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -36,13 +37,16 @@ type privateNetworkCreateCmd struct {
 func (c *privateNetworkCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *privateNetworkCreateCmd) CmdShort() string {
-	return "Create a Private Network"
+	return "Create a Private Network" + compute.PrivateNetworkDeprecatedShort
 }
 
 func (c *privateNetworkCreateCmd) CmdLong() string {
-	return fmt.Sprintf(`This command creates a Compute instance Private Network.
+	return fmt.Sprintf(`%s
+
+This command creates a Compute instance Private Network.
 
 Supported output template annotations: %s`,
+		compute.PrivateNetworkDeprecationNotice,
 		strings.Join(output.TemplateAnnotations(&privateNetworkShowOutput{}), ", "))
 }
 
