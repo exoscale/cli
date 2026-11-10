@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -49,7 +49,7 @@ func TestAIAPIKeyCreate(t *testing.T) {
 
 	var got *AIAPIKeyCreateOutput
 	c := &AIAPIKeyCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Name:               "my-key",
 		AllModels:          true,
 		AllDeployments:     true,
@@ -105,7 +105,7 @@ func TestAIAPIKeyCreateAllowlists(t *testing.T) {
 	testutils.SetupV3Client(t, srv.URL)
 
 	c := &AIAPIKeyCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Name:               "my-key",
 		Models:             []string{"llama-3-8b"},
 		Deployments:        []string{"cccccccc-cccc-cccc-cccc-cccccccccccc"},
@@ -128,8 +128,8 @@ func TestAIAPIKeyCreateAllowlists(t *testing.T) {
 
 func TestAIAPIKeyCreateConflictingFlags(t *testing.T) {
 	for _, c := range []*AIAPIKeyCreateCmd{
-		{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Name: "k", AllModels: true, Models: []string{"llama-3-8b"}},
-		{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Name: "k", AllDeployments: true, Deployments: []string{"cccccccc-cccc-cccc-cccc-cccccccccccc"}},
+		{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Name: "k", AllModels: true, Models: []string{"llama-3-8b"}},
+		{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Name: "k", AllDeployments: true, Deployments: []string{"cccccccc-cccc-cccc-cccc-cccccccccccc"}},
 	} {
 		if err := c.CmdRun(nil, nil); err == nil {
 			t.Errorf("expected conflict error for %+v", c)
@@ -139,7 +139,7 @@ func TestAIAPIKeyCreateConflictingFlags(t *testing.T) {
 
 func TestAIAPIKeyCreateInvalidDeploymentID(t *testing.T) {
 	c := &AIAPIKeyCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Name:               "my-key",
 		Deployments:        []string{"not-a-uuid"},
 	}
@@ -155,7 +155,7 @@ func TestAIAPIKeyCreateOmitsEmptyAccessLists(t *testing.T) {
 	testutils.SetupV3Client(t, srv.URL)
 
 	c := &AIAPIKeyCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Name:               "my-key",
 	}
 	c.OutputFunc = func(output.Outputter, error) error { return nil }
@@ -175,7 +175,7 @@ func TestAIAPIKeyCreateOmitsEmptyAccessLists(t *testing.T) {
 }
 
 func TestAIAPIKeyCreateWithoutName(t *testing.T) {
-	c := &AIAPIKeyCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	c := &AIAPIKeyCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}
 	if err := c.CmdRun(nil, nil); err == nil {
 		t.Fatal("expected error for missing name")
 	}
@@ -198,7 +198,7 @@ func TestAIAPIKeyCreateWithZone(t *testing.T) {
 
 	var got *AIAPIKeyCreateOutput
 	c := &AIAPIKeyCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Name:               "my-key",
 		Zone:               "z1",
 	}

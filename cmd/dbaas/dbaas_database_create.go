@@ -5,11 +5,12 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
 
 type dbaasDatabaseCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -36,15 +37,15 @@ func (c *dbaasDatabaseCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) er
 	switch {
 
 	case cmd.Flags().Changed("help-mysql"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "mysql-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "mysql-")
 		os.Exit(0)
 	case cmd.Flags().Changed("help-pg"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "pg-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "pg-")
 		os.Exit(0)
 	}
 
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasDatabaseCreateCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -67,7 +68,7 @@ func (c *dbaasDatabaseCreateCmd) CmdRun(cmd *cobra.Command, args []string) error
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasDatabaseCmd, &dbaasDatabaseCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasDatabaseCmd, &dbaasDatabaseCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

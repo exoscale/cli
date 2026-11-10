@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -24,14 +25,14 @@ type dbaasServiceListItemOutput struct {
 }
 
 type dbaasServiceListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *dbaasServiceListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *dbaasServiceListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *dbaasServiceListCmd) CmdShort() string { return "List Database Services" }
 
@@ -43,7 +44,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *dbaasServiceListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasServiceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -96,7 +97,7 @@ func runDbaasList(c *dbaasServiceListCmd, stdout, stderr io.Writer) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasCmd, &dbaasServiceListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

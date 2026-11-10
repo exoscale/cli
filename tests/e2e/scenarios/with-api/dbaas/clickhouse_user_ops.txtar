@@ -6,6 +6,7 @@
 
 # Create a ClickHouse service (disable termination protection for cleanup)
 exec exo --zone $TEST_ZONE --output-format json dbaas create clickhouse startup-8 ch-user-$TEST_RUN_ID --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f ch-user-$TEST_RUN_ID
 
 # Wait for the service to be running
 wait-dbaas-state $TEST_ZONE ch-user-$TEST_RUN_ID running 900
@@ -40,6 +41,3 @@ stderr 'only supported for the avnadmin user'
 
 # User delete (prompts; use --force)
 exec exo --zone $TEST_ZONE dbaas user delete ch-user-$TEST_RUN_ID testuser -f
-
-# Teardown: delete the service
-exec exo --zone $TEST_ZONE dbaas delete -f ch-user-$TEST_RUN_ID

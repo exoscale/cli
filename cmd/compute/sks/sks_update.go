@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -16,7 +17,7 @@ import (
 )
 
 type sksUpdateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -57,8 +58,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -84,38 +85,38 @@ func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		Oidc: cluster.Oidc,
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AutoUpgrade)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AutoUpgrade)) {
 		updateReq.AutoUpgrade = &c.AutoUpgrade
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.FeatureGates)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.FeatureGates)) {
 		updateReq.FeatureGates = c.FeatureGates
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.KarpenterFeatureGates)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.KarpenterFeatureGates)) {
 		updateReq.KarpenterFeatureGates = c.KarpenterFeatureGates
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Labels)) {
 		updateReq.Labels = c.Labels
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Name)) {
 		updateReq.Name = c.Name
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Description)) {
 		updateReq.Description = &c.Description
 		updated = true
 	}
 
 	// Always ensure we have CSI addon enabled when updating them
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.EnableCSIAddon)) && (cluster.Addons == nil || !slices.Contains(cluster.Addons, sksClusterAddonExoscaleCSI)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.EnableCSIAddon)) && (cluster.Addons == nil || !slices.Contains(cluster.Addons, sksClusterAddonExoscaleCSI)) {
 		if updateReq.Addons == nil {
 			updateReq.Addons = make([]string, 0)
 			updateReq.Addons = append(updateReq.Addons, cluster.Addons...)
@@ -126,7 +127,7 @@ func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Always ensure we have Karpenter addon enabled when updating them
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.EnableKarpenterAddon)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.EnableKarpenterAddon)) {
 		if c.EnableKarpenterAddon && (cluster.Addons == nil || !slices.Contains(cluster.Addons, sksClusterAddonKarpenter)) {
 			if !slices.Contains(cluster.Addons, sksClusterAddonExoscaleCCM) {
 				return errors.New("the Exoscale CCM addon must be enabled to use the Karpenter addon")
@@ -152,29 +153,29 @@ func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Configure Kubernetes Audit update if any audit flag is changed
-	auditChanged := cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AuditEnabled)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AuditEndpoint)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AuditBearerToken)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AuditInitialBackoff))
+	auditChanged := cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AuditEnabled)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AuditEndpoint)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AuditBearerToken)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AuditInitialBackoff))
 
 	if auditChanged {
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AuditEnabled)) &&
-			cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AuditEndpoint)) && c.AuditEnabled && c.AuditEndpoint == "" {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AuditEnabled)) &&
+			cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AuditEndpoint)) && c.AuditEnabled && c.AuditEndpoint == "" {
 			return errors.New("audit endpoint is required when enabling audit")
 		}
 
 		updateReq.Audit = &v3.SKSAuditUpdate{}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AuditEnabled)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AuditEnabled)) {
 			updateReq.Audit.Enabled = &c.AuditEnabled
 		}
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AuditEndpoint)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AuditEndpoint)) {
 			updateReq.Audit.Endpoint = v3.SKSAuditEndpoint(c.AuditEndpoint)
 		}
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AuditBearerToken)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AuditBearerToken)) {
 			updateReq.Audit.BearerToken = v3.SKSAuditBearerToken(c.AuditBearerToken)
 		}
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AuditInitialBackoff)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AuditInitialBackoff)) {
 			updateReq.Audit.InitialBackoff = v3.SKSAuditInitialBackoff(c.AuditInitialBackoff)
 		}
 
@@ -182,42 +183,42 @@ func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Configure OIDC update if any audit flag is changed
-	OIDCChanged := cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCClientID)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCGroupsClaim)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCGroupsPrefix)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCIssuerURL)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCRequiredClaim)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCUsernameClaim)) ||
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCUsernamePrefix))
+	OIDCChanged := cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCClientID)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCGroupsClaim)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCGroupsPrefix)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCIssuerURL)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCRequiredClaim)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCUsernameClaim)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCUsernamePrefix))
 
 	if OIDCChanged {
 		updateReq.Oidc = &v3.SKSOidc{}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCClientID)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCClientID)) {
 			updateReq.Oidc.ClientID = c.OIDCClientID
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCGroupsClaim)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCGroupsClaim)) {
 			updateReq.Oidc.GroupsClaim = c.OIDCGroupsClaim
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCGroupsPrefix)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCGroupsPrefix)) {
 			updateReq.Oidc.GroupsPrefix = c.OIDCGroupsPrefix
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCIssuerURL)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCIssuerURL)) {
 			updateReq.Oidc.IssuerURL = c.OIDCIssuerURL
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCRequiredClaim)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCRequiredClaim)) {
 			updateReq.Oidc.RequiredClaim = c.OIDCRequiredClaim
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCUsernameClaim)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCUsernameClaim)) {
 			updateReq.Oidc.UsernameClaim = c.OIDCUsernameClaim
 		}
 
-		if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.OIDCUsernamePrefix)) {
+		if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.OIDCUsernamePrefix)) {
 			updateReq.Oidc.UsernamePrefix = c.OIDCUsernamePrefix
 		}
 
@@ -269,8 +270,8 @@ func removeAddonFromList(updateReq *v3.UpdateSKSClusterRequest, cluster v3.SKSCl
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksUpdateCmd{
-		CliCommandSettings:  exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksCmd, &sksUpdateCmd{
+		CliCommandSettings:  clicmd.DefaultCLICmdSettings(),
 		AuditInitialBackoff: "10s",
 	}))
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -27,7 +28,7 @@ var (
 )
 
 type sksCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -77,7 +78,7 @@ type sksCreateCmd struct {
 	Zone                         string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *sksCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *sksCreateCmd) CmdShort() string { return "Create an SKS cluster" }
 
@@ -101,8 +102,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
@@ -289,13 +290,13 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksCmd, &sksCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		CNI:                          defaultSKSClusterCNI,
 		KubernetesVersion:            "latest",
 		NodepoolDiskSize:             50,
-		NodepoolInstanceType:         fmt.Sprintf("%s.%s", exocmd.DefaultInstanceTypeFamily, exocmd.DefaultInstanceType),
+		NodepoolInstanceType:         defaultInstanceType,
 		NodepoolImageGcLowThreshold:  kubeletImageGcLowThreshold,
 		NodepoolImageGcHighThreshold: kubeletImageGcHighThreshold,
 		NodepoolImageGcMinAge:        kubeletImageGcMinAge,

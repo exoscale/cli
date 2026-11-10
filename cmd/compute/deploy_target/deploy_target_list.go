@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -24,7 +25,7 @@ type deployTargetListItemOutput struct {
 }
 
 type deployTargetListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
@@ -43,7 +44,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *deployTargetListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *deployTargetListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -96,7 +97,7 @@ func runDeployTargetList(c *deployTargetListCmd, stdout, stderr io.Writer) error
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(deployTargetCmd, &deployTargetListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(deployTargetCmd, &deployTargetListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

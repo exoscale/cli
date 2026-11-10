@@ -8,13 +8,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasAclCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_        bool   `cli-cmd:"create"`
 	Name     string `cli-arg:"#" cli-usage:"NAME"`
@@ -28,7 +29,7 @@ type dbaasAclCreateCmd struct {
 	KafkaSchemaRegistryResource string `cli-flag:"kafka-schema-registry-resource" cli-usage:"Kafka Schema Registry resource name or pattern the entry applies to"`
 }
 
-func (c *dbaasAclCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *dbaasAclCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 func (c *dbaasAclCreateCmd) CmdShort() string     { return "Create an ACL entry for a Database Service" }
 func (c *dbaasAclCreateCmd) CmdLong() string {
 	return `This command creates an ACL entry for a user of a Kafka Database Service.
@@ -38,8 +39,8 @@ resource (--kafka-schema-registry-resource).`
 }
 
 func (c *dbaasAclCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasAclCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -110,7 +111,7 @@ func (c *dbaasAclCreateCmd) createKafka(ctx context.Context, client *v3.Client) 
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &dbaasAclCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasAclCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

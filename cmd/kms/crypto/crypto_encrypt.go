@@ -5,6 +5,7 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -32,14 +33,14 @@ func (o *cryptoEncryptOutput) ToTable() {
 }
 
 type cryptoEncryptCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"encrypt"`
 
 	Key       string             `cli-arg:"#" cli-usage:"ID"`
-	Plaintext exocmd.BinaryValue `cli-arg:"#" cli-usage:"PLAINTEXT"`
+	Plaintext clicmd.BinaryValue `cli-arg:"#" cli-usage:"PLAINTEXT"`
 
-	EncryptionContext   exocmd.BinaryValue                   `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for encryption"`
+	EncryptionContext   clicmd.BinaryValue                   `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for encryption"`
 	EncryptionAlgorithm v3.EncryptRequestEncryptionAlgorithm `cli-flag:"encryption-algorithm" cli-usage:"encryption algorithm, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
 	Zone                v3.ZoneName                          `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
 }
@@ -55,8 +56,8 @@ func (c *cryptoEncryptCmd) CmdLong() string {
 }
 
 func (c *cryptoEncryptCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *cryptoEncryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -92,7 +93,7 @@ func (c *cryptoEncryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(cryptoCmd, &cryptoEncryptCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(cryptoCmd, &cryptoEncryptCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

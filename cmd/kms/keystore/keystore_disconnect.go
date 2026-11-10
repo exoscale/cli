@@ -2,13 +2,14 @@ package keystore
 
 import (
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
 
 type keyStoreDisconnectCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"disconnect"`
 
@@ -23,8 +24,8 @@ func (c *keyStoreDisconnectCmd) CmdLong() string {
 	return "This command disconnects an external key store from its XKS proxy. KMS keys backed by it are unusable until it is connected again."
 }
 func (c *keyStoreDisconnectCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *keyStoreDisconnectCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -55,5 +56,5 @@ func (c *keyStoreDisconnectCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &keyStoreDisconnectCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &keyStoreDisconnectCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -26,7 +27,7 @@ func (o *AIAPIKeyCreateOutput) ToText()  { output.Text(o) }
 func (o *AIAPIKeyCreateOutput) ToTable() { output.Table(o) }
 
 type AIAPIKeyCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -38,7 +39,7 @@ type AIAPIKeyCreateCmd struct {
 	Zone           v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *AIAPIKeyCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *AIAPIKeyCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 func (c *AIAPIKeyCreateCmd) CmdShort() string     { return "Create AI API key" }
 func (c *AIAPIKeyCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates an AI API key.
@@ -49,8 +50,8 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&AIAPIKeyCreateOutput{}), ", "))
 }
 func (c *AIAPIKeyCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *AIAPIKeyCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -107,5 +108,5 @@ func (c *AIAPIKeyCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &AIAPIKeyCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &AIAPIKeyCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

@@ -8,6 +8,8 @@
 exec exo --output-format json kms key create -z $TEST_ZONE $TEST_RUN_ID-crypto
 cp stdout key.json
 json-setenv KEY_ID id key.json
+# Keys cannot be deleted right away, schedule the shortest delay
+defer exo kms key schedule-deletion -z $TEST_ZONE $KEY_ID -d 7
 
 # fileb:// sends the raw file bytes, file:// decodes base64 wrapped over lines
 exec exo --output-format json kms crypto encrypt -z $TEST_ZONE $KEY_ID fileb://plain.txt -e file://ctx.b64
@@ -24,9 +26,6 @@ stdout '"plaintext":"aGVsbG8K"'
 # Invalid base64 is rejected before any API call and names the argument
 ! exec exo kms crypto encrypt -z $TEST_ZONE $KEY_ID 'not base64!'
 stderr 'invalid value for PLAINTEXT'
-
-# Keys cannot be deleted right away, schedule the shortest delay
-exec exo kms key schedule-deletion -z $TEST_ZONE $KEY_ID -d 7
 
 -- plain.txt --
 hello

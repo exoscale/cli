@@ -45,5 +45,6 @@ Placeholders that intentionally don't exist (for not-found error tests) are fine
 - `json-setenv-match VAR FIELD KEY=VALUE... FILE` does the same on the first element of a JSON array whose `KEY` fields equal the given `VALUE`s.
 - `wait-instance-state ZONE ID TARGET [SECS]` polls instance show until state matches, default 300s.
 - `wait-dbaas-state ZONE NAME TARGET [SECS]` same for dbaas, default 600s.
+- `defer COMMAND [ARGS...]` registers COMMAND to run when the scenario ends, even if it failed midway, in reverse registration order like Go's `defer`. Use it for teardown right after each create. A failing deferred command fails the scenario even if the script itself passed.
 - `execpty --stdin=<file> <bin> [args...]` runs `<bin>` inside a PTY and feeds tokens from `<file>`. Tokens can be literals, arrow key names (`@down`, `@up`, ...), or `@wait:<pattern>` to delay the next input until `<pattern>` appears in PTY output.
 - Each scenario creates and deletes its own resources. The runner does not clean up after you.

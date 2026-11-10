@@ -2,13 +2,14 @@ package key
 
 import (
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
 
 type keyCancelDeletionCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"cancel-deletion"`
 
@@ -28,8 +29,8 @@ func (c *keyCancelDeletionCmd) CmdLong() string {
 }
 
 func (c *keyCancelDeletionCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *keyCancelDeletionCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -56,7 +57,7 @@ func (c *keyCancelDeletionCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(keyCmd, &keyCancelDeletionCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(keyCmd, &keyCancelDeletionCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

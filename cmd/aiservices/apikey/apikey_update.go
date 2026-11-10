@@ -5,6 +5,7 @@ import (
 	"time"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -26,7 +27,7 @@ func (o *AIAPIKeyUpdateOutput) ToText()  { output.Text(o) }
 func (o *AIAPIKeyUpdateOutput) ToTable() { output.Table(o) }
 
 type AIAPIKeyUpdateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -38,14 +39,14 @@ type AIAPIKeyUpdateCmd struct {
 	Zone           v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *AIAPIKeyUpdateCmd) CmdAliases() []string { return exocmd.GUpdateAlias }
+func (c *AIAPIKeyUpdateCmd) CmdAliases() []string { return clicmd.GUpdateAlias }
 func (c *AIAPIKeyUpdateCmd) CmdShort() string     { return "Update AI API key" }
 func (c *AIAPIKeyUpdateCmd) CmdLong() string {
 	return "This command updates the models and/or deployments accessible by an AI API key. Omitted properties are left unchanged."
 }
 func (c *AIAPIKeyUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *AIAPIKeyUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -59,8 +60,8 @@ func (c *AIAPIKeyUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("ID or NAME is required")
 	}
 
-	allModelsChanged := cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AllModels))
-	allDeploymentsChanged := cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.AllDeployments))
+	allModelsChanged := cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AllModels))
+	allDeploymentsChanged := cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AllDeployments))
 
 	if !allModelsChanged && !allDeploymentsChanged && len(c.Models) == 0 && len(c.Deployments) == 0 {
 		return fmt.Errorf("at least one of --deployment, --model, --all-models or --all-deployments is required")
@@ -117,5 +118,5 @@ func (c *AIAPIKeyUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &AIAPIKeyUpdateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &AIAPIKeyUpdateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

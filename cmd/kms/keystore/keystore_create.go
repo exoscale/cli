@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
 
 type keyStoreCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -24,7 +25,7 @@ type keyStoreCreateCmd struct {
 	Zone            v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *keyStoreCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *keyStoreCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 func (c *keyStoreCreateCmd) CmdShort() string     { return "Create a key store" }
 func (c *keyStoreCreateCmd) CmdLong() string {
 	return `This command creates an external key store (XKS) backed by a customer-managed XKS proxy.
@@ -35,8 +36,8 @@ The XKS proxy configuration is validated on creation. A new key store stays
 disconnected until "exo kms keystore connect" is run, or --connect-on-create is set.`
 }
 func (c *keyStoreCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *keyStoreCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -84,5 +85,5 @@ func (c *keyStoreCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &keyStoreCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &keyStoreCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

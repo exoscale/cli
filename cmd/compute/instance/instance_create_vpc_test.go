@@ -9,12 +9,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/spf13/cobra"
-
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -75,8 +74,8 @@ func TestParseVPCSubnetSpec(t *testing.T) {
 // kept whole (a []string flag would split "front,ipv4=..." in two).
 func TestVPCSubnetFlagKeepsCommas(t *testing.T) {
 	parent := &cobra.Command{Use: "test"}
-	c := &instanceCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	if err := exocmd.RegisterCLICommand(parent, c); err != nil {
+	c := &instanceCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}
+	if err := clicmd.RegisterCLICommand(parent, c); err != nil {
 		t.Fatalf("register command: %v", err)
 	}
 	cmd := parent.Commands()[0]
@@ -88,7 +87,7 @@ func TestVPCSubnetFlagKeepsCommas(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("parse flags: %v", err)
 	}
-	if err := exocmd.CliCommandDefaultPreRun(c, cmd, []string{"web1"}); err != nil {
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, []string{"web1"}); err != nil {
 		t.Fatalf("pre-run: %v", err)
 	}
 

@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -29,7 +30,7 @@ func (o *instanceSnapshotShowOutput) ToText()      { output.Text(o) }
 func (o *instanceSnapshotShowOutput) ToTable()     { output.Table(o) }
 
 type instanceSnapshotShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -38,7 +39,7 @@ type instanceSnapshotShowCmd struct {
 	Zone string `cli-short:"z" cli-usage:"snapshot zone"`
 }
 
-func (c *instanceSnapshotShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *instanceSnapshotShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *instanceSnapshotShowCmd) CmdShort() string {
 	return "Show a Compute instance snapshot details"
@@ -52,8 +53,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceSnapshotShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceSnapshotShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -89,7 +90,7 @@ func (c *instanceSnapshotShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

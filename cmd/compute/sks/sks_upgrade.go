@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -16,7 +17,7 @@ import (
 // https://app.shortcut.com/exoscale/story/122943/bug-in-egoscale-v3-listsksclusterdeprecatedresources
 
 type sksUpgradeCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"upgrade"`
 
@@ -34,8 +35,8 @@ func (c *sksUpgradeCmd) CmdShort() string { return "Upgrade an SKS cluster Kuber
 func (c *sksUpgradeCmd) CmdLong() string { return "" }
 
 func (c *sksUpgradeCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksUpgradeCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -137,7 +138,7 @@ func formatDeprecatedResource(deprecatedResource v3.SKSClusterDeprecatedResource
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksUpgradeCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksCmd, &sksUpgradeCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

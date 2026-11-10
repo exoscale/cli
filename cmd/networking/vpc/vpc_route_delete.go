@@ -6,13 +6,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type vpcRouteDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -24,7 +25,7 @@ type vpcRouteDeleteCmd struct {
 	Zone   v3.ZoneName `cli-short:"z" cli-usage:"VPC zone"`
 }
 
-func (c *vpcRouteDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *vpcRouteDeleteCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *vpcRouteDeleteCmd) CmdShort() string { return "Delete a VPC route" }
 
@@ -35,12 +36,12 @@ Routes associated to a VPC directly can't be deleted, so --subnet is required.`
 }
 
 func (c *vpcRouteDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	if err := exocmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
 		return err
 	}
 
-	return exocmd.CmdCheckRequiredFlags(cmd, []string{"subnet"})
+	return clicmd.CmdCheckRequiredFlags(cmd, []string{"subnet"})
 }
 
 func (c *vpcRouteDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -74,7 +75,7 @@ func (c *vpcRouteDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(vpcRouteCmd, &vpcRouteDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(vpcRouteCmd, &vpcRouteDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

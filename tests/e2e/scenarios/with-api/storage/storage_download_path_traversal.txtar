@@ -5,6 +5,8 @@
 # Setup: create a bucket for this test run
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://dl-$TEST_RUN_ID
 stdout '"name"'
+defer exo storage rb -f sos://dl-$TEST_RUN_ID
+defer exo storage delete --force --recursive sos://dl-$TEST_RUN_ID/
 
 exec exo storage upload payload.txt sos://dl-$TEST_RUN_ID/public/../pwned.txt
 exec exo storage upload hello.txt sos://dl-$TEST_RUN_ID/public/hello.txt
@@ -29,10 +31,6 @@ exec exo storage download --recursive sos://dl-$TEST_RUN_ID/ root
 exists root/pwned.txt
 exists root/public/hello.txt
 ! exists pwned.txt
-
-# Teardown
-exec exo storage delete --force --recursive sos://dl-$TEST_RUN_ID/
-exec exo storage rb -f sos://dl-$TEST_RUN_ID
 
 -- payload.txt --
 escaped

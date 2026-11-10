@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -24,14 +25,14 @@ Supported output template annotations: %s`,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
+			clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		exocmd.CmdSetZoneFlagFromDefault(cmd)
+		clicmd.CmdSetZoneFlagFromDefault(cmd)
 
-		return exocmd.CmdCheckRequiredFlags(cmd, []string{"zone"})
+		return clicmd.CmdCheckRequiredFlags(cmd, []string{"zone"})
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -70,6 +71,6 @@ Supported output template annotations: %s`,
 func init() {
 	storageMbCmd.Flags().String("acl", "",
 		fmt.Sprintf("canned ACL to set on bucket (%s)", strings.Join(sos.BucketCannedACLToStrings(), "|")))
-	storageMbCmd.Flags().StringP(exocmd.ZoneFlagLong, exocmd.ZoneFlagShort, "", exocmd.ZoneFlagMsg)
+	storageMbCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
 	storageCmd.AddCommand(storageMbCmd)
 }

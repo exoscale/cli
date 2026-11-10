@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/pflag"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -33,17 +34,17 @@ Supported output template annotations: %s`,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
+			clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
-			exocmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
+			clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
 		}
 
 		if headers := storageHeadersFromCmdFlags(cmd.Flags()); headers == nil {
-			exocmd.CmdExitOnUsageError(cmd, "no header flag specified")
+			clicmd.CmdExitOnUsageError(cmd, "no header flag specified")
 		}
 
 		return nil

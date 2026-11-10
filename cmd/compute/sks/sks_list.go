@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -24,14 +25,14 @@ type sksClusterListItemOutput struct {
 }
 
 type sksListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *sksListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *sksListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *sksListCmd) CmdShort() string { return "List SKS clusters" }
 
@@ -43,7 +44,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -98,7 +99,7 @@ func runSksList(c *sksListCmd, stdout, stderr io.Writer) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksCmd, &sksListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/pflag"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
@@ -76,12 +77,12 @@ Example:
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
+			clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		return exocmd.CmdCheckRequiredFlags(cmd, []string{
+		return clicmd.CmdCheckRequiredFlags(cmd, []string{
 			storageCORSAddCmdFlagAllowedOrigin,
 			storageCORSAddCmdFlagAllowedMethod,
 		})

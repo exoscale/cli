@@ -1,12 +1,12 @@
 package private_network
 
 import (
-	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/compute"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
 
-var privateNetworkCmd = exocmd.Deprecate(&cobra.Command{
+var privateNetworkCmd = clicmd.Deprecate(&cobra.Command{
 	Use:     "private-network",
 	Short:   "Private Networks management",
 	Aliases: []string{"privnet"},

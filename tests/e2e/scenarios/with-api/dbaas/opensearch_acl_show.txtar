@@ -5,6 +5,7 @@
 
 # Create an OpenSearch service (disable termination protection for cleanup)
 exec exo --zone $TEST_ZONE --output-format json dbaas create opensearch startup-4 os-acl-$TEST_RUN_ID --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f os-acl-$TEST_RUN_ID
 
 # Wait for the service to be running
 wait-dbaas-state $TEST_ZONE os-acl-$TEST_RUN_ID running 1200
@@ -21,6 +22,3 @@ stdout 'ACL Enabled'
 stderr 'unsupported for service of type "opensearch"'
 ! exec exo --zone $TEST_ZONE dbaas acl delete os-acl-$TEST_RUN_ID acluser --kafka-topic orders -f
 stderr 'unsupported for service of type "opensearch"'
-
-# Teardown: delete the service
-exec exo --zone $TEST_ZONE dbaas delete -f os-acl-$TEST_RUN_ID

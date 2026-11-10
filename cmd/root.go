@@ -1,4 +1,3 @@
-// AI-modified by claude-opus-5-5 - not reviewed yet
 package cmd
 
 import (
@@ -22,6 +21,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -34,14 +34,6 @@ var GConfigFilePath string
 
 // current Account information
 var gAccountName string
-
-// Aliases
-var GListAlias = []string{"ls"}
-var GRemoveAlias = []string{"rm"}
-var GDeleteAlias = []string{"del"}
-var GShowAlias = []string{"get"}
-var GCreateAlias = []string{"add"}
-var GUpdateAlias = []string{"set"}
 
 var RootCmd = &cobra.Command{
 	Use:           "exo",
@@ -87,7 +79,7 @@ func Execute(version, commit string) {
 
 	GContext = ctx
 
-	ApplyDeprecations(RootCmd)
+	clicmd.ApplyDeprecations(RootCmd)
 
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", formatError(err))
@@ -166,9 +158,9 @@ func formatDetail(detail string) string {
 
 func init() {
 	account.CurrentAccount = &account.Account{
-		DefaultZone: DefaultZone,
-		Environment: DefaultEnvironment,
-		SosEndpoint: DefaultSosEndpoint,
+		DefaultZone: clicmd.DefaultZone,
+		Environment: clicmd.DefaultEnvironment,
+		SosEndpoint: clicmd.DefaultSosEndpoint,
 	}
 
 	GConfig = viper.New()
@@ -198,7 +190,7 @@ func applyOutputFormat() {
 		if account.CurrentAccount.DefaultOutputFormat != "" {
 			globalstate.OutputFormat = account.CurrentAccount.DefaultOutputFormat
 		} else {
-			globalstate.OutputFormat = DefaultOutputFormat
+			globalstate.OutputFormat = clicmd.DefaultOutputFormat
 		}
 	}
 }

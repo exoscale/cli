@@ -3,11 +3,11 @@ package instance
 import (
 	"github.com/spf13/cobra"
 
-	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/compute"
+	"github.com/exoscale/cli/pkg/clicmd"
 )
 
-var instancePrivnetCmd = exocmd.Deprecate(&cobra.Command{
+var instancePrivnetCmd = clicmd.Deprecate(&cobra.Command{
 	Use:     "private-network",
 	Short:   "Manage Compute instance Private Networks",
 	Aliases: []string{"privnet"},

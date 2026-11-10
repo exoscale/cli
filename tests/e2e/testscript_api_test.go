@@ -100,6 +100,7 @@ func runAPITestSuite(t *testing.T, dir string) {
 		Files: files,
 		Cmds: map[string]func(ts *testscript.TestScript, neg bool, args []string){
 			"execpty":             cmdExecPTY,
+			"defer":               cmdDefer,
 			"json-setenv":         cmdJSONSetenv,
 			"json-setenv-match":   cmdJSONSetenvMatch,
 			"wait-instance-state": cmdWaitInstanceState,
@@ -149,6 +150,13 @@ func setupAPITestEnv(e *testscript.Env, suite *APITestSuite) error {
 		}
 	}
 
+	// Expose the scenario's testing.TB to custom commands.
+	tb, ok := e.T().(testing.TB)
+	if !ok {
+		return fmt.Errorf("unexpected type %T from Env.T", e.T())
+	}
+	e.Values[tbKey{}] = tb
+
 	// Zone and run metadata
 	e.Setenv("EXO_ZONE", suite.Zone)
 	e.Setenv("EXO_OUTPUT", "json")
@@ -156,6 +164,33 @@ func setupAPITestEnv(e *testscript.Env, suite *APITestSuite) error {
 	e.Setenv("TEST_ZONE", suite.Zone)
 
 	return nil
+}
+
+// tbKey is the Params.Values key under which Setup stores the testing.TB
+// for the current scenario. testscript.TestScript has no error-level logging,
+// so deferred cleanup commands report failures through it instead.
+type tbKey struct{}
+
+// cmdDefer implements a testscript custom command that follows the behavior
+// of Go's own defer statement:
+//
+//	defer COMMAND [ARGS...]
+//
+// COMMAND runs when the scenario ends, whether it passed or failed. Deferred
+// commands run in reverse registration order, so placing each delete right
+// after its create tears resources down in a safe order. A failing deferred
+// command is reported as a test error on the scenario, failing the scenario
+// even if every script command succeeded.
+func cmdDefer(ts *testscript.TestScript, neg bool, args []string) {
+	if neg || len(args) == 0 {
+		ts.Fatalf("usage: defer COMMAND [ARGS...]")
+	}
+	tb := ts.Value(tbKey{}).(testing.TB)
+	ts.Defer(func() {
+		if err := ts.Exec(args[0], args[1:]...); err != nil {
+			tb.Errorf("deferred command %v failed: %v", args, err)
+		}
+	})
 }
 
 // cmdJSONSetenv is a testscript custom command:

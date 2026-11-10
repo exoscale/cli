@@ -5,6 +5,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -25,7 +26,7 @@ func (o *ModelShowOutput) ToText()  { output.Text(o) }
 func (o *ModelShowOutput) ToTable() { output.Table(o) }
 
 type ModelShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -34,14 +35,14 @@ type ModelShowCmd struct {
 	Visibility v3.ListModelsResponseEntryVisibility `cli-usage:"Model visibility: public or private"`
 }
 
-func (c *ModelShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *ModelShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 func (c *ModelShowCmd) CmdShort() string     { return "Show AI model" }
 func (c *ModelShowCmd) CmdLong() string {
 	return "This command shows details of an AI model by ID or name."
 }
 func (c *ModelShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *ModelShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -88,5 +89,5 @@ func (c *ModelShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &ModelShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &ModelShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

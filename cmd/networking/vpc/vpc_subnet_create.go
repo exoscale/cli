@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -14,7 +15,7 @@ import (
 )
 
 type vpcSubnetCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -29,7 +30,7 @@ type vpcSubnetCreateCmd struct {
 	Zone          v3.ZoneName       `cli-short:"z" cli-usage:"VPC zone"`
 }
 
-func (c *vpcSubnetCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *vpcSubnetCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *vpcSubnetCreateCmd) CmdShort() string { return "Create a VPC Subnet" }
 
@@ -43,12 +44,12 @@ Supported output template annotations: %s`,
 }
 
 func (c *vpcSubnetCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	if err := exocmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
 		return err
 	}
 
-	return exocmd.CmdCheckRequiredFlags(cmd, []string{"address-family", "address-space"})
+	return clicmd.CmdCheckRequiredFlags(cmd, []string{"address-family", "address-space"})
 }
 
 func (c *vpcSubnetCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -100,7 +101,7 @@ func (c *vpcSubnetCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(vpcSubnetCmd, &vpcSubnetCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(vpcSubnetCmd, &vpcSubnetCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

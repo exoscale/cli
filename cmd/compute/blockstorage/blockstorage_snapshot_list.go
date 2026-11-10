@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -27,14 +28,14 @@ func (o *blockStorageSnapshotListOutput) ToText()  { output.Text(o) }
 func (o *blockStorageSnapshotListOutput) ToTable() { output.Table(o) }
 
 type blockStorageSnapshotListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *blockStorageSnapshotListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *blockStorageSnapshotListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *blockStorageSnapshotListCmd) CmdShort() string { return "List Block Storage Volume Snapshots" }
 
@@ -46,7 +47,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *blockStorageSnapshotListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockStorageSnapshotListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -86,7 +87,7 @@ func (c *blockStorageSnapshotListCmd) CmdRun(_ *cobra.Command, _ []string) error
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

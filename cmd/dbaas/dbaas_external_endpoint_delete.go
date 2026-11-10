@@ -7,13 +7,14 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
 
 type dbaasExternalEndpointDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,7 +23,7 @@ type dbaasExternalEndpointDeleteCmd struct {
 }
 
 func (c *dbaasExternalEndpointDeleteCmd) CmdAliases() []string {
-	return exocmd.GDeleteAlias
+	return clicmd.GDeleteAlias
 }
 
 func (c *dbaasExternalEndpointDeleteCmd) CmdLong() string {
@@ -34,7 +35,7 @@ func (c *dbaasExternalEndpointDeleteCmd) CmdShort() string {
 }
 
 func (c *dbaasExternalEndpointDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasExternalEndpointDeleteCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -80,7 +81,7 @@ func (c *dbaasExternalEndpointDeleteCmd) CmdRun(cmd *cobra.Command, args []strin
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

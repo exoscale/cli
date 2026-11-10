@@ -8,6 +8,7 @@ import (
 	"github.com/exoscale/cli/table"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
 
@@ -42,7 +43,7 @@ func (o *dbaasUserShowOutput) ToTable() {
 }
 
 type dbaasUserShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -60,9 +61,9 @@ func (c *dbaasUserShowCmd) CmdLong() string {
 }
 
 func (c *dbaasUserShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
 
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasUserShowCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -98,7 +99,7 @@ func (c *dbaasUserShowCmd) CmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasUserCmd, &dbaasUserShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasUserCmd, &dbaasUserShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

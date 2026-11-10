@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
@@ -27,7 +28,7 @@ Supported output template annotations:
 
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
-				exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
+				clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 			}
 
 			args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)

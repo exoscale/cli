@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -28,7 +29,7 @@ func (o *vpcRouteListOutput) ToText()  { output.Text(o) }
 func (o *vpcRouteListOutput) ToTable() { output.Table(o) }
 
 type vpcRouteListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
@@ -38,7 +39,7 @@ type vpcRouteListCmd struct {
 	Zone   v3.ZoneName `cli-short:"z" cli-usage:"VPC zone"`
 }
 
-func (c *vpcRouteListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *vpcRouteListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *vpcRouteListCmd) CmdShort() string { return "List VPC routes" }
 
@@ -53,8 +54,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *vpcRouteListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *vpcRouteListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -136,7 +137,7 @@ func sortRoutesByKind(routes []v3.ListRouteEntry) {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(vpcRouteCmd, &vpcRouteListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(vpcRouteCmd, &vpcRouteListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

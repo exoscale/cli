@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -36,7 +36,7 @@ func TestIAMRoleShowIncludesPolicy(t *testing.T) {
 	testutils.SetupV3Client(t, server.URL)
 	account.CurrentAccount = &account.Account{}
 	cmd := &iamRoleShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Role:               "vpc-canary-iam-role",
 	}
 	var got *iamRoleShowOutput

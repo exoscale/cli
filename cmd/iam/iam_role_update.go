@@ -10,6 +10,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -17,7 +18,7 @@ import (
 )
 
 type iamRoleUpdateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	Role string `cli-arg:"#" cli-usage:"ID|NAME"`
 
@@ -44,7 +45,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *iamRoleUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -69,13 +70,13 @@ func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	updateRole := v3.UpdateIAMRoleRequest{}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Description)) {
 		updateRole.Description = c.Description
 	}
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Labels)) {
 		updateRole.Labels = c.Labels
 	}
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Permissions)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Permissions)) {
 		updateRole.Permissions = c.Permissions
 	}
 
@@ -139,7 +140,7 @@ func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(iamRoleCmd, &iamRoleUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(iamRoleCmd, &iamRoleUpdateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

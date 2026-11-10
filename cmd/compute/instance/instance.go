@@ -9,6 +9,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	defaultInstanceType       = "standard.medium"
+	defaultTemplateVisibility = "public"
+)
+
 var instanceTypeFamilies = []string{
 	"cpu",
 	"gpu",

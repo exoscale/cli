@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -14,7 +15,7 @@ import (
 )
 
 type vpcCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -28,7 +29,7 @@ type vpcCreateCmd struct {
 	DomainSearch []string          `cli-flag:"domain-search" cli-usage:"DHCP option 119: domain search list (can be specified multiple times)"`
 }
 
-func (c *vpcCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *vpcCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *vpcCreateCmd) CmdShort() string { return "Create a VPC" }
 
@@ -40,8 +41,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *vpcCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *vpcCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -98,7 +99,7 @@ func (c *vpcCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &vpcCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &vpcCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

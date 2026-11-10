@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
@@ -136,12 +136,12 @@ func runAclCmd(t *testing.T, args ...string) error {
 		CmdPreRun(*cobra.Command, []string) error
 		CmdRun(*cobra.Command, []string) error
 	}{
-		&dbaasAclShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()},
-		&dbaasAclListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()},
-		&dbaasAclCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()},
-		&dbaasAclDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()},
+		&dbaasAclShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()},
+		&dbaasAclListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()},
+		&dbaasAclCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()},
+		&dbaasAclDeleteCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()},
 	} {
-		require.NoError(t, exocmd.RegisterCLICommand(aclCmd, c))
+		require.NoError(t, clicmd.RegisterCLICommand(aclCmd, c))
 	}
 
 	rootCmd.SetArgs(append(append([]string{"acl"}, args...), "--zone", "test-zone"))
@@ -193,8 +193,8 @@ func TestDBAASClickhouseAclShow(t *testing.T) {
 	rootCmd := &cobra.Command{}
 	aclCmd := &cobra.Command{Use: "acl"}
 	rootCmd.AddCommand(aclCmd)
-	c := &dbaasAclShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	err := exocmd.RegisterCLICommand(aclCmd, c)
+	c := &dbaasAclShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}
+	err := clicmd.RegisterCLICommand(aclCmd, c)
 	require.NoError(t, err)
 
 	rootCmd.SetArgs([]string{"acl", "show", "testdb", "--zone", "test-zone"})

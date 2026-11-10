@@ -11,6 +11,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -18,7 +19,7 @@ import (
 )
 
 type computeSSHKeyRegisterCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"register"`
 
@@ -26,7 +27,7 @@ type computeSSHKeyRegisterCmd struct {
 	PublicKeyFile string `cli-arg:"#"`
 }
 
-func (c *computeSSHKeyRegisterCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *computeSSHKeyRegisterCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *computeSSHKeyRegisterCmd) CmdShort() string {
 	return "Register an SSH key"
@@ -40,7 +41,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *computeSSHKeyRegisterCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *computeSSHKeyRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -91,7 +92,7 @@ func (c *computeSSHKeyRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyRegisterCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyRegisterCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

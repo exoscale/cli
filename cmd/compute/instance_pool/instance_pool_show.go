@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
@@ -43,7 +44,7 @@ func (o *instancePoolShowOutput) ToText()      { output.Text(o) }
 func (o *instancePoolShowOutput) ToTable()     { output.Table(o) }
 
 type instancePoolShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -53,7 +54,7 @@ type instancePoolShowCmd struct {
 	Zone         string `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
-func (c *instancePoolShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *instancePoolShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *instancePoolShowCmd) CmdShort() string { return "Show an Instance Pool details" }
 
@@ -65,8 +66,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *instancePoolShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -195,7 +196,7 @@ func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instancePoolCmd, &instancePoolShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instancePoolCmd, &instancePoolShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -6,13 +6,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instancePoolEvictCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"evict"`
 
@@ -34,14 +35,14 @@ command.`
 }
 
 func (c *instancePoolEvictCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	if len(c.Instances) == 0 {
-		exocmd.CmdExitOnUsageError(cmd, "no instances specified")
+		clicmd.CmdExitOnUsageError(cmd, "no instances specified")
 	}
 
 	ctx := exocmd.GContext
@@ -113,7 +114,7 @@ func (c *instancePoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instancePoolCmd, &instancePoolEvictCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instancePoolCmd, &instancePoolEvictCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

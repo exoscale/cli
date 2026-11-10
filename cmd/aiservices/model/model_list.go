@@ -9,6 +9,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -25,7 +26,7 @@ type ModelListItemOutput struct {
 }
 
 type ModelListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
@@ -33,7 +34,7 @@ type ModelListCmd struct {
 	Visibility v3.ListModelsResponseEntryVisibility `cli-usage:"Model visibility: public or private"`
 }
 
-func (c *ModelListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *ModelListCmd) CmdAliases() []string { return clicmd.GListAlias }
 func (c *ModelListCmd) CmdShort() string     { return "List AI models" }
 func (c *ModelListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists AI models.
@@ -42,7 +43,7 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&ModelListItemOutput{}), ", "))
 }
 func (c *ModelListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *ModelListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -109,5 +110,5 @@ func runModelList(c *ModelListCmd, stdout, stderr io.Writer) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &ModelListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -26,7 +27,7 @@ func (o *AIAPIKeyShowOutput) ToText()  { output.Text(o) }
 func (o *AIAPIKeyShowOutput) ToTable() { output.Table(o) }
 
 type AIAPIKeyShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -34,14 +35,14 @@ type AIAPIKeyShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *AIAPIKeyShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *AIAPIKeyShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 func (c *AIAPIKeyShowCmd) CmdShort() string     { return "Show AI API key details" }
 func (c *AIAPIKeyShowCmd) CmdLong() string {
 	return "This command shows details of an AI API key by ID or name."
 }
 func (c *AIAPIKeyShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *AIAPIKeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -79,5 +80,5 @@ func (c *AIAPIKeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &AIAPIKeyShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &AIAPIKeyShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

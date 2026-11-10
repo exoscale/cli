@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -70,7 +71,7 @@ func (o *privateNetworkShowOutput) ToTable() {
 }
 
 type privateNetworkShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -79,7 +80,7 @@ type privateNetworkShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
 }
 
-func (c *privateNetworkShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *privateNetworkShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *privateNetworkShowCmd) CmdShort() string {
 	return "Show a Private Network details"
@@ -96,8 +97,8 @@ Supported output template annotations for Private Network leases: %s`,
 }
 
 func (c *privateNetworkShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *privateNetworkShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -174,8 +175,8 @@ func (c *privateNetworkShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(privateNetworkCmd, &privateNetworkShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(privateNetworkCmd, &privateNetworkShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }
 

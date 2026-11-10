@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/pflag"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -62,14 +63,14 @@ Supported output template annotations:
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 || len(args) > 2 {
-			exocmd.CmdExitOnUsageError(cmd, "invalid arguments")
+			clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if (len(args) == 2 && storageACLFromCmdFlags(cmd.Flags()) != nil) ||
 			(len(args) == 1 && storageACLFromCmdFlags(cmd.Flags()) == nil) {
-			exocmd.CmdExitOnUsageError(cmd, "either a canned ACL or ACL grantee options must be specified")
+			clicmd.CmdExitOnUsageError(cmd, "either a canned ACL or ACL grantee options must be specified")
 		}
 
 		return nil

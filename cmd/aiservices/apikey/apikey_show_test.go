@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -76,7 +76,7 @@ func TestAIAPIKeyShowByIDAndName(t *testing.T) {
 
 	show := func(key string) *AIAPIKeyShowOutput {
 		var got *AIAPIKeyShowOutput
-		cmd := &AIAPIKeyShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Key: key}
+		cmd := &AIAPIKeyShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Key: key}
 		cmd.OutputFunc = func(o output.Outputter, err error) error {
 			if err != nil {
 				return err
@@ -111,7 +111,7 @@ func TestAIAPIKeyShowByIDAndName(t *testing.T) {
 	}
 
 	// not found
-	cmd := &AIAPIKeyShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Key: "missing"}
+	cmd := &AIAPIKeyShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Key: "missing"}
 	if err := cmd.CmdRun(nil, nil); err == nil {
 		t.Fatal("expected not found error")
 	}

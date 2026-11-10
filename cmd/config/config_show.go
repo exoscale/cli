@@ -8,6 +8,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 )
@@ -37,7 +38,7 @@ func init() {
 
 Supported output template annotations: %s`,
 			strings.Join(output.TemplateAnnotations(&configShowOutput{}), ", ")),
-		Aliases: exocmd.GShowAlias,
+		Aliases: clicmd.GShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if account.GAllAccount == nil || len(account.GAllAccount.Accounts) == 0 {
 				return fmt.Errorf("no accounts configured. Run: exo config (or exo config add)")

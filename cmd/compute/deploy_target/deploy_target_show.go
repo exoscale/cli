@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -25,7 +26,7 @@ func (o *deployTargetShowOutput) ToText()  { output.Text(o) }
 func (o *deployTargetShowOutput) ToTable() { output.Table(o) }
 
 type deployTargetShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -34,7 +35,7 @@ type deployTargetShowCmd struct {
 	Zone string `cli-short:"z" cli-usage:"Deploy Target zone"`
 }
 
-func (c *deployTargetShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *deployTargetShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *deployTargetShowCmd) CmdShort() string { return "Show a Deploy Target details" }
 
@@ -46,8 +47,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *deployTargetShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *deployTargetShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -78,7 +79,7 @@ func (c *deployTargetShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(deployTargetCmd, &deployTargetShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(deployTargetCmd, &deployTargetShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

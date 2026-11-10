@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,9 +31,9 @@ func TestResolve(t *testing.T) {
 		{
 			name: "defaults when no sources set",
 			want: want{
-				zone:        DefaultZone,
-				environment: DefaultEnvironment,
-				sosEndpoint: DefaultSosEndpoint,
+				zone:        clicmd.DefaultZone,
+				environment: clicmd.DefaultEnvironment,
+				sosEndpoint: clicmd.DefaultSosEndpoint,
 			},
 		},
 		{
@@ -88,7 +89,7 @@ func TestResolve(t *testing.T) {
 		{
 			name: "env only no file",
 			env:  envSources{apiKey: "env-key", apiSecret: "env-secret", zone: "at-vie-1"},
-			want: want{key: "env-key", secret: "env-secret", zone: "at-vie-1", environment: DefaultEnvironment},
+			want: want{key: "env-key", secret: "env-secret", zone: "at-vie-1", environment: clicmd.DefaultEnvironment},
 		},
 	}
 
