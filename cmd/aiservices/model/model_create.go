@@ -6,6 +6,7 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -13,7 +14,7 @@ import (
 )
 
 type ModelCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -22,15 +23,15 @@ type ModelCreateCmd struct {
 	Zone             v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *ModelCreateCmd) CmdAliases() []string { return append(exocmd.GCreateAlias, "download") }
+func (c *ModelCreateCmd) CmdAliases() []string { return append(clicmd.GCreateAlias, "download") }
 func (c *ModelCreateCmd) CmdShort() string     { return "Create AI model (download from Huggingface)" }
 func (c *ModelCreateCmd) CmdLong() string {
 	return "This command creates an AI model by downloading it from Huggingface.\n\n" +
 		"The name parameter must be a valid Huggingface model name (e.g. mistralai/Mixtral-8x7B-Instruct-v0.1)."
 }
 func (c *ModelCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *ModelCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -60,5 +61,5 @@ func (c *ModelCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &ModelCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &ModelCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

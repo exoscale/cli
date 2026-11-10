@@ -7,13 +7,14 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type antiAffinityGroupDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,7 +23,7 @@ type antiAffinityGroupDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *antiAffinityGroupDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *antiAffinityGroupDeleteCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *antiAffinityGroupDeleteCmd) CmdShort() string {
 	return "Delete an Anti-Affinity Group"
@@ -31,7 +32,7 @@ func (c *antiAffinityGroupDeleteCmd) CmdShort() string {
 func (c *antiAffinityGroupDeleteCmd) CmdLong() string { return "" }
 
 func (c *antiAffinityGroupDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *antiAffinityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -76,7 +77,7 @@ func (c *antiAffinityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

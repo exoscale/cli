@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -52,7 +52,7 @@ func TestInstanceTypeList(t *testing.T) {
 	globalstate.OutputFormat = "json"
 	defer func() { globalstate.OutputFormat = "" }()
 
-	cmd := &InstanceTypeListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	cmd := &InstanceTypeListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}
 	var outBuf, errBuf bytes.Buffer
 	if err := runInstanceTypeList(cmd, &outBuf, &errBuf); err != nil {
 		t.Errorf("%s", errBuf.String())
@@ -78,7 +78,7 @@ func TestInstanceTypeListUsesZone(t *testing.T) {
 	defer ts.server.Close()
 	testutils.SetupV3Client(t, ts.server.URL)
 
-	cmd := &InstanceTypeListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Zone: v3.ZoneName("test-zone")}
+	cmd := &InstanceTypeListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Zone: v3.ZoneName("test-zone")}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("instance type list: %v", err)
 	}

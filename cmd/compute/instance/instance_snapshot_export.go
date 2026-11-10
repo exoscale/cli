@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -23,7 +24,7 @@ func (o *instanceSnapshotExportOutput) ToText()  { output.Text(o) }
 func (o *instanceSnapshotExportOutput) ToTable() { output.Table(o) }
 
 type instanceSnapshotExportCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"export"`
 
@@ -46,8 +47,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceSnapshotExportCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceSnapshotExportCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -92,7 +93,7 @@ func (c *instanceSnapshotExportCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotExportCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotExportCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

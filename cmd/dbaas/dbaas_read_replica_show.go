@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 )
@@ -33,7 +34,7 @@ func (o *dbaasReadReplicaShowOutput) ToText()  { output.Text(o) }
 func (o *dbaasReadReplicaShowOutput) ToTable() { output.Table(o) }
 
 type dbaasReadReplicaShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -41,7 +42,7 @@ type dbaasReadReplicaShowCmd struct {
 	Zone string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasReadReplicaShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *dbaasReadReplicaShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *dbaasReadReplicaShowCmd) CmdShort() string {
 	return "Show Database Service read replica details"
@@ -52,8 +53,8 @@ func (c *dbaasReadReplicaShowCmd) CmdLong() string {
 }
 
 func (c *dbaasReadReplicaShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasReadReplicaShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -102,7 +103,7 @@ func (c *dbaasReadReplicaShowCmd) showReadReplica(ctx context.Context) (output.O
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasReadReplicaCmd, &dbaasReadReplicaShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasReadReplicaCmd, &dbaasReadReplicaShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

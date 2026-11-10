@@ -7,13 +7,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type elasticIPDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -23,7 +24,7 @@ type elasticIPDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"Elastic IP zone"`
 }
 
-func (c *elasticIPDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *elasticIPDeleteCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *elasticIPDeleteCmd) CmdShort() string {
 	return "Delete an Elastic IP"
@@ -32,8 +33,8 @@ func (c *elasticIPDeleteCmd) CmdShort() string {
 func (c *elasticIPDeleteCmd) CmdLong() string { return "" }
 
 func (c *elasticIPDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *elasticIPDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -78,7 +79,7 @@ func (c *elasticIPDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(elasticIPCmd, &elasticIPDeleteCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(elasticIPCmd, &elasticIPDeleteCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

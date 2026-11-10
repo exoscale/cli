@@ -6,13 +6,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceEnableTPMCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"enable-tpm"`
 
@@ -29,8 +30,8 @@ func (c *instanceEnableTPMCmd) CmdShort() string { return "Enable Trusted Platfo
 func (c *instanceEnableTPMCmd) CmdLong() string { return "" }
 
 func (c *instanceEnableTPMCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceEnableTPMCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -69,7 +70,7 @@ func (c *instanceEnableTPMCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceEnableTPMCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceCmd, &instanceEnableTPMCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

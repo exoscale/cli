@@ -7,6 +7,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -52,7 +53,7 @@ func (c *dbaasExternalIntegrationSettingsUpdateCmd) updateDatadog(cmd *cobra.Com
 
 	if !globalstate.Quiet {
 		return (&dbaasExternalIntegrationSettingsShowCmd{
-			CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+			CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 			IntegrationID:      string(integrationID),
 			Type:               "datadog",
 		}).CmdRun(nil, nil)

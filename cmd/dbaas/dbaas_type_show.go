@@ -10,6 +10,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -112,7 +113,7 @@ var (
 )
 
 type dbaasTypeShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -123,7 +124,7 @@ type dbaasTypeShowCmd struct {
 	ShowBackupConfig string `cli-flag:"backup-config" cli-usage:"show backup configuration for the Database Service type and Plan"`
 }
 
-func (c *dbaasTypeShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *dbaasTypeShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *dbaasTypeShowCmd) CmdShort() string { return "Show a Database Service type details" }
 
@@ -157,7 +158,7 @@ Supported output template annotations:
 }
 
 func (c *dbaasTypeShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
@@ -406,7 +407,7 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasTypeCmd, &dbaasTypeShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasTypeCmd, &dbaasTypeShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

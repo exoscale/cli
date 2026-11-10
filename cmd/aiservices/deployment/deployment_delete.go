@@ -5,6 +5,7 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -12,7 +13,7 @@ import (
 )
 
 type DeploymentDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -21,14 +22,14 @@ type DeploymentDeleteCmd struct {
 	Zone        v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *DeploymentDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
+func (c *DeploymentDeleteCmd) CmdAliases() []string { return clicmd.GDeleteAlias }
 func (c *DeploymentDeleteCmd) CmdShort() string     { return "Delete AI deployment" }
 func (c *DeploymentDeleteCmd) CmdLong() string {
 	return "This command deletes an AI deployment by ID or name."
 }
 func (c *DeploymentDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *DeploymentDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -87,5 +88,5 @@ func (c *DeploymentDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &DeploymentDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &DeploymentDeleteCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

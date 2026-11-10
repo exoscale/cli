@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -15,7 +16,7 @@ import (
 )
 
 type sksNodepoolEvictCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"evict"`
 
@@ -44,15 +45,15 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksNodepoolEvictCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksNodepoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 
 	if len(c.Nodes) == 0 {
-		exocmd.CmdExitOnUsageError(cmd, "no nodes specified")
+		clicmd.CmdExitOnUsageError(cmd, "no nodes specified")
 	}
 
 	if !c.Force {
@@ -136,7 +137,7 @@ func (c *sksNodepoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolEvictCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolEvictCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

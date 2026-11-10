@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -87,7 +87,7 @@ func TestAIAPIKeyRevoke(t *testing.T) {
 
 	// resolve a name and an ID, force skips the confirmation prompt
 	c := &AIAPIKeyRevokeCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Keys:               []string{"alpha", "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"},
 		Force:              true,
 	}
@@ -112,7 +112,7 @@ func TestAIAPIKeyRevokeUnknownKey(t *testing.T) {
 
 	// without force an unknown key aborts the command
 	c := &AIAPIKeyRevokeCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Keys:               []string{"missing"},
 	}
 	if err := c.CmdRun(nil, nil); err == nil {
@@ -124,7 +124,7 @@ func TestAIAPIKeyRevokeUnknownKey(t *testing.T) {
 
 	// with force the unknown key is skipped with a warning
 	c = &AIAPIKeyRevokeCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Keys:               []string{"missing", "alpha"},
 		Force:              true,
 	}
@@ -157,7 +157,7 @@ func TestAIAPIKeyRevokeWithZone(t *testing.T) {
 	}
 
 	c := &AIAPIKeyRevokeCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Keys:               []string{"alpha"},
 		Force:              true,
 		Zone:               "z1",
@@ -185,7 +185,7 @@ func TestAIAPIKeyRevokeFailure(t *testing.T) {
 		return errors.New("cannot revoke")
 	}
 	c := &AIAPIKeyRevokeCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Keys:               []string{"alpha"},
 		Force:              true,
 	}

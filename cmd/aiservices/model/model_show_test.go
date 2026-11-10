@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -112,7 +112,7 @@ func TestModelShow(t *testing.T) {
 		UpdatedAT: now,
 	}}
 
-	cmd := &ModelShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Model: "11111111-1111-1111-1111-111111111111"}
+	cmd := &ModelShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Model: "11111111-1111-1111-1111-111111111111"}
 	var got ModelShowOutput
 	cmd.OutputFunc = func(o output.Outputter, err error) error {
 		if err != nil {
@@ -132,7 +132,7 @@ func TestModelShow(t *testing.T) {
 	}
 
 	// Test show by name
-	cmd = &ModelShowCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Model: "m1"}
+	cmd = &ModelShowCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Model: "m1"}
 	cmd.OutputFunc = func(o output.Outputter, err error) error {
 		if err != nil {
 			return err
@@ -163,7 +163,7 @@ func TestModelShowVisibility(t *testing.T) {
 	}}
 
 	cmd := &ModelShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Model:              "m1",
 		Visibility:         v3.ListModelsResponseEntryVisibilityPublic,
 	}
@@ -205,7 +205,7 @@ func TestModelShowVisibilityPrivate(t *testing.T) {
 	}}
 
 	cmd := &ModelShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Model:              "m1",
 		Visibility:         v3.ListModelsResponseEntryVisibilityPrivate,
 	}
@@ -227,7 +227,7 @@ func TestModelShowInvalidVisibility(t *testing.T) {
 	testutils.SetupV3Client(t, ts.server.URL)
 
 	cmd := &ModelShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Model:              "m1",
 		Visibility:         v3.ListModelsResponseEntryVisibility("bogus"),
 	}

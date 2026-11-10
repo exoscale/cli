@@ -5,13 +5,14 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamOrgPolicyResetCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 
@@ -30,7 +31,7 @@ This will remove any constraints that were set in the Org Policy.`
 }
 
 func (c *iamOrgPolicyResetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamOrgPolicyResetCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -64,7 +65,7 @@ func (c *iamOrgPolicyResetCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(iamOrgPolicyCmd, &iamOrgPolicyResetCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(iamOrgPolicyCmd, &iamOrgPolicyResetCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

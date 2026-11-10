@@ -7,11 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/spf13/cobra"
-
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
+	"github.com/spf13/cobra"
 )
 
 const testVPCID = "8f3a0000-0000-4000-8000-000000000001"
@@ -22,7 +21,7 @@ func newUpdateFlagSet(t *testing.T, c *vpcUpdateCmd, changed ...string) *cobra.C
 	t.Helper()
 
 	parent := &cobra.Command{Use: "test"}
-	if err := exocmd.RegisterCLICommand(parent, c); err != nil {
+	if err := clicmd.RegisterCLICommand(parent, c); err != nil {
 		t.Fatalf("register command: %v", err)
 	}
 
@@ -68,7 +67,7 @@ func TestVPCUpdateOmitsUnsetFields(t *testing.T) {
 	defer srv.Close()
 	testutils.SetupV3Client(t, srv.URL)
 
-	c := &vpcUpdateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), VPC: "prod"}
+	c := &vpcUpdateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), VPC: "prod"}
 	cmd := newUpdateFlagSet(t, c, "name")
 	c.VPC = "prod"
 	c.Name = "renamed"

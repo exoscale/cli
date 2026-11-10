@@ -8,18 +8,19 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamOrgPolicyShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 }
 
-func (c *iamOrgPolicyShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *iamOrgPolicyShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *iamOrgPolicyShowCmd) CmdShort() string {
 	return "Show Org policy details"
@@ -33,7 +34,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *iamOrgPolicyShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *iamOrgPolicyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -72,7 +73,7 @@ func (c *iamOrgPolicyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(iamOrgPolicyCmd, &iamOrgPolicyShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(iamOrgPolicyCmd, &iamOrgPolicyShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

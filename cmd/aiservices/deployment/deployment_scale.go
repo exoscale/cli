@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -12,7 +13,7 @@ import (
 )
 
 type DeploymentScaleCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"scale"`
 
@@ -27,8 +28,8 @@ func (c *DeploymentScaleCmd) CmdLong() string {
 	return "This command scales an AI deployment to the specified number of replicas."
 }
 func (c *DeploymentScaleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *DeploymentScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -58,5 +59,5 @@ func (c *DeploymentScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &DeploymentScaleCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &DeploymentScaleCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

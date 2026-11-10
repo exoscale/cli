@@ -3,7 +3,7 @@ package keystore
 import (
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -17,7 +17,7 @@ func TestKeyStoreUpdateValidation(t *testing.T) {
 		"secret key alone":  {KeyStore: string(testKeyStoreID), SecretKey: "sk"},
 		"unknown key store": {KeyStore: unknownKeyStoreID, Description: "d"},
 	} {
-		c.CliCommandSettings = exocmd.DefaultCLICmdSettings()
+		c.CliCommandSettings = clicmd.DefaultCLICmdSettings()
 		if err := c.CmdRun(nil, nil); err == nil {
 			t.Errorf("%s: expected an error", name)
 		}
@@ -33,7 +33,7 @@ func TestKeyStoreUpdate(t *testing.T) {
 	api.addKeyStore("my-xks", v3.GetKeyStoreResponseStatusConnected)
 
 	c := &keyStoreUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		KeyStore:           string(testKeyStoreID),
 		Description:        "new description",
 	}
@@ -45,7 +45,7 @@ func TestKeyStoreUpdate(t *testing.T) {
 	}
 
 	c = &keyStoreUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		KeyStore:           string(testKeyStoreID),
 		Endpoint:           "https://xks2.example.com",
 		AccessKey:          "AKIDNEW",
@@ -61,7 +61,7 @@ func TestKeyStoreUpdate(t *testing.T) {
 	}
 
 	c = &keyStoreUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		KeyStore:           string(testKeyStoreID),
 		Endpoint:           "https://xks3.example.com",
 	}

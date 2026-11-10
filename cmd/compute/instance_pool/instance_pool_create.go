@@ -11,6 +11,7 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
@@ -19,7 +20,7 @@ import (
 )
 
 type instancePoolCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -46,7 +47,7 @@ type instancePoolCreateCmd struct {
 	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
-func (c *instancePoolCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *instancePoolCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *instancePoolCreateCmd) CmdShort() string { return "Create an Instance Pool" }
 
@@ -59,9 +60,9 @@ Supported output template annotations: %s`,
 
 func (c *instancePoolCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	exocmd.CmdSetTemplateFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	clicmd.CmdSetTemplateFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -91,7 +92,7 @@ func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	diskSize, err := compute.ResolveTemplateDiskSize(
 		c.DiskSize,
 		template.Size,
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.DiskSize)),
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.DiskSize)),
 	)
 	if err != nil {
 		return err
@@ -265,13 +266,13 @@ func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instancePoolCmd, &instancePoolCreateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instancePoolCmd, &instancePoolCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		DiskSize:           50,
-		InstanceType:       fmt.Sprintf("%s.%s", exocmd.DefaultInstanceTypeFamily, exocmd.DefaultInstanceType),
+		InstanceType:       defaultInstanceType,
 		Size:               1,
 		MinAvailable:       0,
-		TemplateVisibility: exocmd.DefaultTemplateVisibility,
+		TemplateVisibility: defaultTemplateVisibility,
 	}))
 }

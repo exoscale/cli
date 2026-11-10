@@ -8,6 +8,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -15,7 +16,7 @@ import (
 )
 
 type securityGroupAddSourceCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"add"`
 
@@ -37,7 +38,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *securityGroupAddSourceCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *securityGroupAddSourceCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -80,7 +81,7 @@ func (c *securityGroupAddSourceCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(securityGroupSourceCmd, &securityGroupAddSourceCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(securityGroupSourceCmd, &securityGroupAddSourceCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

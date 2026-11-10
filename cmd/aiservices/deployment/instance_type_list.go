@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -22,7 +23,7 @@ type InstanceTypeListItemOutput struct {
 }
 
 type InstanceTypeListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"instance-type"`
 
@@ -38,7 +39,7 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&InstanceTypeListItemOutput{}), ", "))
 }
 func (c *InstanceTypeListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *InstanceTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -94,5 +95,5 @@ func runInstanceTypeList(c *InstanceTypeListCmd, stdout, stderr io.Writer) error
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &InstanceTypeListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &InstanceTypeListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

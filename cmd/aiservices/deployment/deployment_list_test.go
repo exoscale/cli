@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -121,7 +121,7 @@ func runList(t *testing.T, zoneFilter v3.ZoneName) (stdout, stderr string, err e
 	t.Helper()
 	var outBuf, errBuf bytes.Buffer
 	cmd := &DeploymentListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Zone:               zoneFilter,
 	}
 	err = runDeploymentList(cmd, &outBuf, &errBuf)

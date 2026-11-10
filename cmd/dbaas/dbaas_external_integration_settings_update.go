@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
 
 type dbaasExternalIntegrationSettingsUpdateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -32,11 +32,11 @@ func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdLong() string {
 func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-datadog"):
-		exocmd.CmdShowHelpFlags(cmd.Flags(), "datadog-")
+		clicmd.CmdShowHelpFlags(cmd.Flags(), "datadog-")
 		os.Exit(0)
 	}
 
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error {
@@ -49,7 +49,7 @@ func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdRun(cmd *cobra.Command, a
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasExternalIntegrationSettingsCmd, &dbaasExternalIntegrationSettingsUpdateCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalIntegrationSettingsCmd, &dbaasExternalIntegrationSettingsUpdateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

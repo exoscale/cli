@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -14,7 +15,7 @@ import (
 )
 
 type instanceSnapshotRevertCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"revert"`
 
@@ -45,8 +46,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceSnapshotRevertCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceSnapshotRevertCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -120,7 +121,7 @@ func (c *instanceSnapshotRevertCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotRevertCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotRevertCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

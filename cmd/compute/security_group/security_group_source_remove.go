@@ -9,6 +9,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -16,7 +17,7 @@ import (
 )
 
 type securityGroupRemoveSourceCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"remove"`
 
@@ -26,7 +27,7 @@ type securityGroupRemoveSourceCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *securityGroupRemoveSourceCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
+func (c *securityGroupRemoveSourceCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
 
 func (c *securityGroupRemoveSourceCmd) CmdShort() string {
 	return "Remove an external source from a Security Group"
@@ -40,7 +41,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *securityGroupRemoveSourceCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *securityGroupRemoveSourceCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -89,7 +90,7 @@ func (c *securityGroupRemoveSourceCmd) CmdRun(_ *cobra.Command, _ []string) erro
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(securityGroupSourceCmd, &securityGroupRemoveSourceCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(securityGroupSourceCmd, &securityGroupRemoveSourceCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

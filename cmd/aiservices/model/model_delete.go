@@ -5,6 +5,7 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -12,7 +13,7 @@ import (
 )
 
 type ModelDeleteCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -21,12 +22,12 @@ type ModelDeleteCmd struct {
 	Zone   v3.ZoneName `cli-short:"z" cli-usage:"zone"`
 }
 
-func (c *ModelDeleteCmd) CmdAliases() []string { return exocmd.GDeleteAlias }
+func (c *ModelDeleteCmd) CmdAliases() []string { return clicmd.GDeleteAlias }
 func (c *ModelDeleteCmd) CmdShort() string     { return "Delete AI model" }
 func (c *ModelDeleteCmd) CmdLong() string      { return "This command deletes an AI model by ID or name." }
 func (c *ModelDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 func (c *ModelDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
@@ -85,5 +86,5 @@ func (c *ModelDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(Cmd, &ModelDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}))
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &ModelDeleteCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}))
 }

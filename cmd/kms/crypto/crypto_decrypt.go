@@ -5,6 +5,7 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -32,14 +33,14 @@ func (o *cryptoDecryptOutput) ToTable() {
 }
 
 type cryptoDecryptCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"decrypt"`
 
 	Key        string             `cli-arg:"#" cli-usage:"ID"`
-	Ciphertext exocmd.BinaryValue `cli-arg:"#" cli-usage:"CIPHERTEXT"`
+	Ciphertext clicmd.BinaryValue `cli-arg:"#" cli-usage:"CIPHERTEXT"`
 
-	EncryptionContext   exocmd.BinaryValue                   `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for decryption"`
+	EncryptionContext   clicmd.BinaryValue                   `cli-short:"e" cli-flag:"encryption-context" cli-usage:"encryption context to use for decryption"`
 	EncryptionAlgorithm v3.DecryptRequestEncryptionAlgorithm `cli-flag:"encryption-algorithm" cli-usage:"encryption algorithm, required for asymmetric keys [AES_256|RSAES_OAEP_SHA_256] (default: AES_256)"`
 	Zone                v3.ZoneName                          `cli-short:"z" cli-flag:"zone" cli-usage:"crypto zone"`
 }
@@ -55,8 +56,8 @@ func (c *cryptoDecryptCmd) CmdLong() string {
 }
 
 func (c *cryptoDecryptCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *cryptoDecryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -92,7 +93,7 @@ func (c *cryptoDecryptCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(cryptoCmd, &cryptoDecryptCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(cryptoCmd, &cryptoDecryptCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

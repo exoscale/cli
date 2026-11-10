@@ -8,6 +8,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -32,7 +33,7 @@ Supported output template annotations:
   * When listing objects: %s`,
 		strings.Join(output.TemplateAnnotations(&sos.ListBucketsItemOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&object.ListObjectsItemOutput{}), ", ")),
-	Aliases: exocmd.GListAlias,
+	Aliases: clicmd.GListAlias,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 1 {

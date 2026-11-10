@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -27,7 +28,7 @@ func (o *vpcSubnetListOutput) ToText()  { output.Text(o) }
 func (o *vpcSubnetListOutput) ToTable() { output.Table(o) }
 
 type vpcSubnetListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
@@ -36,7 +37,7 @@ type vpcSubnetListCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"VPC zone"`
 }
 
-func (c *vpcSubnetListCmd) CmdAliases() []string { return exocmd.GListAlias }
+func (c *vpcSubnetListCmd) CmdAliases() []string { return clicmd.GListAlias }
 
 func (c *vpcSubnetListCmd) CmdShort() string { return "List VPC Subnets" }
 
@@ -48,8 +49,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *vpcSubnetListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *vpcSubnetListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -94,7 +95,7 @@ func (c *vpcSubnetListCmd) list() (*vpcSubnetListOutput, error) {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(vpcSubnetCmd, &vpcSubnetListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(vpcSubnetCmd, &vpcSubnetListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

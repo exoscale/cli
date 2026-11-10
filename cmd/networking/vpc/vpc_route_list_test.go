@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -69,7 +69,7 @@ func TestVPCRouteListEndpointSelection(t *testing.T) {
 			testutils.SetupV3Client(t, srv.URL)
 
 			c := &vpcRouteListCmd{
-				CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+				CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 				VPC:                "prod",
 				Subnet:             tc.subnet,
 			}
@@ -93,7 +93,7 @@ func TestVPCRouteListOrdersVpcKindFirst(t *testing.T) {
 	defer srv.Close()
 	testutils.SetupV3Client(t, srv.URL)
 
-	c := &vpcRouteListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), VPC: "prod"}
+	c := &vpcRouteListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), VPC: "prod"}
 
 	out, err := c.list()
 	if err != nil {

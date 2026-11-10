@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 )
 
 // envSources holds account-level values read from environment variables.
@@ -105,9 +106,9 @@ func resolve(env envSources, file fileSources) account.Account {
 		acc = *file.profile
 	}
 
-	acc.Environment = cmp.Or(env.apiEnvironment, acc.Environment, DefaultEnvironment)
-	acc.DefaultZone = cmp.Or(env.zone, acc.DefaultZone, DefaultZone)
-	acc.SosEndpoint = strings.TrimRight(cmp.Or(env.sosEndpoint, acc.SosEndpoint, DefaultSosEndpoint), "/")
+	acc.Environment = cmp.Or(env.apiEnvironment, acc.Environment, clicmd.DefaultEnvironment)
+	acc.DefaultZone = cmp.Or(env.zone, acc.DefaultZone, clicmd.DefaultZone)
+	acc.SosEndpoint = strings.TrimRight(cmp.Or(env.sosEndpoint, acc.SosEndpoint, clicmd.DefaultSosEndpoint), "/")
 	acc.Endpoint = cmp.Or(env.apiEndpoint, acc.Endpoint)
 	if env.clientTimeout != nil {
 		acc.ClientTimeout = *env.clientTimeout

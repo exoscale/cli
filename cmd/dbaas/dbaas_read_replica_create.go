@@ -6,13 +6,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasReadReplicaCreateCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -24,7 +25,7 @@ type dbaasReadReplicaCreateCmd struct {
 	TerminationProtection bool   `cli-usage:"enable Database Service termination protection; set --termination-protection=false to disable"`
 }
 
-func (c *dbaasReadReplicaCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
+func (c *dbaasReadReplicaCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
 
 func (c *dbaasReadReplicaCreateCmd) CmdShort() string {
 	return "Create a Database Service read replica"
@@ -45,7 +46,7 @@ func (c *dbaasReadReplicaCreateCmd) CmdPreRun(cmd *cobra.Command, args []string)
 		return fmt.Errorf("--plan is required")
 	}
 
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasReadReplicaCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -123,8 +124,8 @@ func (c *dbaasReadReplicaCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasReadReplicaCmd, &dbaasReadReplicaCreateCmd{
-		CliCommandSettings:    exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasReadReplicaCmd, &dbaasReadReplicaCreateCmd{
+		CliCommandSettings:    clicmd.DefaultCLICmdSettings(),
 		TerminationProtection: true,
 	}))
 }

@@ -4,13 +4,14 @@ import (
 	"strconv"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
 
 type keyScheduleDeletionCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"schedule-deletion"`
 
@@ -31,8 +32,8 @@ func (c *keyScheduleDeletionCmd) CmdLong() string {
 }
 
 func (c *keyScheduleDeletionCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *keyScheduleDeletionCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -68,7 +69,7 @@ func (c *keyScheduleDeletionCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(keyCmd, &keyScheduleDeletionCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(keyCmd, &keyScheduleDeletionCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

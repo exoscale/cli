@@ -4,6 +4,7 @@ import (
 	"time"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -33,7 +34,7 @@ func (o *KeyShowOutput) ToText()      { output.Text(o) }
 func (o *KeyShowOutput) ToTable()     { output.Table(o) }
 
 type KeyShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -42,7 +43,7 @@ type KeyShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-flag:"zone" cli-usage:"key zone"`
 }
 
-func (c *KeyShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *KeyShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *KeyShowCmd) CmdShort() string {
 	return "Retrieve KMS Key details."
@@ -53,8 +54,8 @@ func (c *KeyShowCmd) CmdLong() string {
 }
 
 func (c *KeyShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *KeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -90,7 +91,7 @@ func (c *KeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(keyCmd, &KeyShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(keyCmd, &KeyShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

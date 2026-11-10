@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 )
@@ -127,7 +128,7 @@ func (o *dbServiceShowOutput) ToTable() {
 }
 
 type dbaasServiceShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -140,7 +141,7 @@ type dbaasServiceShowCmd struct {
 	Zone              string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasServiceShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *dbaasServiceShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *dbaasServiceShowCmd) CmdShort() string { return "Show a Database Service details" }
 
@@ -188,8 +189,8 @@ Supported output template annotations:
 }
 
 func (c *dbaasServiceShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -224,7 +225,7 @@ func (c *dbaasServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasCmd, &dbaasServiceShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

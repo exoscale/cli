@@ -8,6 +8,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -25,7 +26,7 @@ func (o *computeSSHKeyListOutput) ToText()  { output.Text(o) }
 func (o *computeSSHKeyListOutput) ToTable() { output.Table(o) }
 
 type computeSSHKeyListCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
@@ -42,7 +43,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *computeSSHKeyListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *computeSSHKeyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -71,7 +72,7 @@ func (c *computeSSHKeyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

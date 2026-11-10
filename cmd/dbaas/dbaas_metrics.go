@@ -8,12 +8,13 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasServiceMetricsCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"metrics"`
 
@@ -23,7 +24,7 @@ type dbaasServiceMetricsCmd struct {
 	Zone   string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasServiceMetricsCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *dbaasServiceMetricsCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *dbaasServiceMetricsCmd) CmdShort() string {
 	return "Query a Database Service metrics over time"
@@ -35,8 +36,8 @@ period in JSON format.`
 }
 
 func (c *dbaasServiceMetricsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasServiceMetricsCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -69,8 +70,8 @@ func (c *dbaasServiceMetricsCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(dbaasCmd, &dbaasServiceMetricsCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceMetricsCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		Period: "hour",
 	}))

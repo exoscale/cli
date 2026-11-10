@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -83,7 +83,7 @@ func runModelListTest(t *testing.T, zoneFilter v3.ZoneName, visibility v3.ListMo
 	t.Helper()
 	var outBuf, errBuf bytes.Buffer
 	cmd := &ModelListCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Zone:               zoneFilter,
 		Visibility:         visibility,
 	}
@@ -133,7 +133,7 @@ func TestModelListUsesZone(t *testing.T) {
 	defer ts.server.Close()
 	testutils.SetupV3Client(t, ts.server.URL)
 
-	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Zone: v3.ZoneName("test-zone")}
+	cmd := &ModelListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Zone: v3.ZoneName("test-zone")}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("model list: %v", err)
 	}
@@ -143,7 +143,7 @@ func TestModelListUsesZone(t *testing.T) {
 }
 
 func TestModelListCmd_CmdShort(t *testing.T) {
-	cmd := &ModelListCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	cmd := &ModelListCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}
 	short := cmd.CmdShort()
 	if short == "" {
 		t.Fatal("CmdShort() returned empty string")

@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
@@ -111,8 +111,8 @@ func TestDBAASClickhouseUserCreate(t *testing.T) {
 	rootCmd := &cobra.Command{}
 	userCmd := &cobra.Command{Use: "user"}
 	rootCmd.AddCommand(userCmd)
-	c := &dbaasUserCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	err := exocmd.RegisterCLICommand(userCmd, c)
+	c := &dbaasUserCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}
+	err := clicmd.RegisterCLICommand(userCmd, c)
 	require.NoError(t, err)
 
 	rootCmd.SetArgs([]string{"user", "create", "testdb", "testuser", "--zone", "test-zone"})
@@ -131,8 +131,8 @@ func TestDBAASClickhouseUserDelete(t *testing.T) {
 	rootCmd := &cobra.Command{}
 	userCmd := &cobra.Command{Use: "user"}
 	rootCmd.AddCommand(userCmd)
-	c := &dbaasUserDeleteCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
-	err := exocmd.RegisterCLICommand(userCmd, c)
+	c := &dbaasUserDeleteCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}
+	err := clicmd.RegisterCLICommand(userCmd, c)
 	require.NoError(t, err)
 
 	rootCmd.SetArgs([]string{"user", "delete", "testdb", "testuser", "--zone", "test-zone", "--force"})

@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -27,7 +28,7 @@ func (o *sksActiveNodepoolTemplatesOutput) ToText()  { output.Text(o) }
 func (o *sksActiveNodepoolTemplatesOutput) ToTable() { output.Table(o) }
 
 type sksActiveNodepoolTemplatesCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"active-nodepool-templates"`
 
@@ -54,8 +55,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksActiveNodepoolTemplatesCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksActiveNodepoolTemplatesCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -108,7 +109,7 @@ func (c *sksActiveNodepoolTemplatesCmd) CmdRun(_ *cobra.Command, _ []string) err
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksActiveNodepoolTemplatesCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksCmd, &sksActiveNodepoolTemplatesCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

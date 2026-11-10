@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -91,7 +92,7 @@ func (o *nlbServiceShowOutput) ToTable() {
 }
 
 type nlbServiceShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -101,7 +102,7 @@ type nlbServiceShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
-func (c *nlbServiceShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *nlbServiceShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *nlbServiceShowCmd) CmdShort() string { return "Show a Network Load Balancer service details" }
 
@@ -113,8 +114,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *nlbServiceShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *nlbServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -182,7 +183,7 @@ func (c *nlbServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(nlbServiceCmd, &nlbServiceShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(nlbServiceCmd, &nlbServiceShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

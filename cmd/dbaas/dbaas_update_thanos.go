@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -24,23 +25,23 @@ func (c *dbaasServiceUpdateCmd) updateThanos(cmd *cobra.Command, _ []string) err
 
 	databaseService := v3.UpdateDBAASServiceThanosRequest{}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ThanosIPFilter)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.ThanosIPFilter)) {
 		databaseService.IPFilter = c.ThanosIPFilter
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Plan)) {
 		databaseService.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		databaseService.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
-		cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.MaintenanceTime)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &v3.UpdateDBAASServiceThanosRequestMaintenance{
 			Dow:  v3.UpdateDBAASServiceThanosRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
@@ -48,7 +49,7 @@ func (c *dbaasServiceUpdateCmd) updateThanos(cmd *cobra.Command, _ []string) err
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ThanosSettings)) {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.ThanosSettings)) {
 		if c.ThanosSettings != "" {
 			settingsSchema, err := client.GetDBAASSettingsThanos(ctx)
 			if err != nil {

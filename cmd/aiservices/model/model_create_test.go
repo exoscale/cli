@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -35,12 +35,12 @@ func TestModelCreateSuccessAndMissingName(t *testing.T) {
 	testutils.SetupV3Client(t, srv.URL)
 
 	// missing name
-	cmd := &ModelCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings()}
+	cmd := &ModelCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings()}
 	if err := cmd.CmdRun(nil, nil); err == nil || err.Error() != "NAME is required" {
 		t.Fatalf("expected name required error, got %v", err)
 	}
 	// success
-	cmd = &ModelCreateCmd{CliCommandSettings: exocmd.DefaultCLICmdSettings(), Name: "foo", HuggingfaceToken: "tok"}
+	cmd = &ModelCreateCmd{CliCommandSettings: clicmd.DefaultCLICmdSettings(), Name: "foo", HuggingfaceToken: "tok"}
 	if err := cmd.CmdRun(nil, nil); err != nil {
 		t.Fatalf("model create: %v", err)
 	}

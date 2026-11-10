@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -107,7 +108,7 @@ func (o *sksShowOutput) ToTable() {
 }
 
 type sksShowCmd struct {
-	exocmd.CliCommandSettings `cli-cmd:"-"`
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -116,7 +117,7 @@ type sksShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
+func (c *sksShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *sksShowCmd) CmdShort() string { return "Show an SKS cluster details" }
 
@@ -128,8 +129,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	exocmd.CmdSetZoneFlagFromDefault(cmd)
-	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -217,7 +218,7 @@ func (c *sksShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksShowCmd{
-		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
+	cobra.CheckErr(clicmd.RegisterCLICommand(sksCmd, &sksShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -5,6 +5,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const defaultTemplateVisibility = "public"
+
 var instanceTemplateCmd = &cobra.Command{
 	Use:     "instance-template",
 	Short:   "Compute instance templates management",

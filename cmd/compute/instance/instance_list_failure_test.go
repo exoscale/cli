@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -52,7 +52,7 @@ func TestInstanceListPartialFailure(t *testing.T) {
 	testutils.SetupV3Client(t, control.URL)
 
 	var got instanceListOutput
-	cmd := &instanceListCmd{CliCommandSettings: exocmd.CliCommandSettings{
+	cmd := &instanceListCmd{CliCommandSettings: clicmd.CliCommandSettings{
 		OutputFunc: func(o output.Outputter, err error) error {
 			if err != nil {
 				t.Fatalf("output called with error: %v", err)
