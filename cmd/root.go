@@ -79,6 +79,8 @@ func Execute(version, commit string) {
 
 	GContext = ctx
 
+	clicmd.ApplyDeprecations(RootCmd)
+
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", formatError(err))
 

@@ -19,6 +19,7 @@ import (
 
 	"github.com/exoscale/cli/cmd"
 	_ "github.com/exoscale/cli/cmd/subcommands"
+	"github.com/exoscale/cli/pkg/clicmd"
 )
 
 func main() {
@@ -40,6 +41,8 @@ func main() {
 		}
 		os.Exit(1)
 	}
+
+	clicmd.ApplyDeprecations(cmd.RootCmd)
 
 	if *manPage {
 		header := &doc.GenManHeader{

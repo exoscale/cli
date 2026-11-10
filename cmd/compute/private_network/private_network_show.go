@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -84,18 +83,15 @@ type privateNetworkShowCmd struct {
 func (c *privateNetworkShowCmd) CmdAliases() []string { return clicmd.GShowAlias }
 
 func (c *privateNetworkShowCmd) CmdShort() string {
-	return "Show a Private Network details" + compute.PrivateNetworkDeprecatedShort
+	return "Show a Private Network details"
 }
 
 func (c *privateNetworkShowCmd) CmdLong() string {
-	return fmt.Sprintf(`%s
-
-This command shows a Compute instance Private Network details.
+	return fmt.Sprintf(`This command shows a Compute instance Private Network details.
 
 Supported output template annotations for Private Network: %s
 
 Supported output template annotations for Private Network leases: %s`,
-		compute.PrivateNetworkDeprecationNotice,
 		strings.Join(output.TemplateAnnotations(&privateNetworkShowOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&privateNetworkLeaseOutput{}), ", "))
 }

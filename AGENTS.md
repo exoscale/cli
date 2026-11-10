@@ -85,6 +85,19 @@ Context clicmd.BinaryValue `cli-usage:"encryption context"` // --context flag
 Global alias vars to use for `CmdAliases()`:
 `clicmd.GListAlias`, `GShowAlias`, `GCreateAlias`, `GDeleteAlias`, `GRemoveAlias`.
 
+### Deprecating a command
+
+Don't edit `Short`/`Long` by hand and don't use cobra's `Deprecated` field (it
+hides the command from its parent's help). Use `clicmd.Deprecate` (`pkg/clicmd/deprecation.go`):
+
+- a group: wrap its declaration, its subcommands inherit the deprecation:
+  `var fooCmd = clicmd.Deprecate(&cobra.Command{...}, "Foo is deprecated, use bar instead")`
+- a single struct command: implement `CmdDeprecated() string` and return the message.
+
+The command stays listed in the help with `(deprecated)` after its short
+description, the message is put on top of its long description, and it is
+printed as a warning on stderr when the command runs.
+
 ## Folder layout
 
 **Anti-pattern: don't extend flat layouts.** `cmd/storage/`, `cmd/dns/`,

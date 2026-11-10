@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -31,17 +30,14 @@ type instancePrivnetUpdateIPCmd struct {
 func (c *instancePrivnetUpdateIPCmd) CmdAliases() []string { return nil }
 
 func (c *instancePrivnetUpdateIPCmd) CmdShort() string {
-	return "Update a Compute instance Private Network IP address" + compute.PrivateNetworkDeprecatedShort
+	return "Update a Compute instance Private Network IP address"
 }
 
 func (c *instancePrivnetUpdateIPCmd) CmdLong() string {
-	return fmt.Sprintf(`%s
-
-This command updates the IP address assigned to a Compute instance in a
+	return fmt.Sprintf(`This command updates the IP address assigned to a Compute instance in a
 managed Private Network.
 
 Supported output template annotations: %s`,
-		compute.PrivateNetworkDeprecationNotice,
 		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "),
 	)
 }
