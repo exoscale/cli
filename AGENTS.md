@@ -126,9 +126,34 @@ Then add a blank import to `cmd/subcommands/init.go` - nothing else needs wiring
 
 ## Tests
 
-Tests live in the same package (white-box). Construct the struct directly and
-call `CmdRun(nil, nil)`. Use `pkg/testutils` for HTTP test servers and client
-setup. See `cmd/aiservices/deployment/deployment_create_test.go`.
+The `.txtar` scenarios under `tests/e2e/` are the source of truth for the CLI:
+they run the real binary, and the `with-api/` ones run it against the real API.
+
+**Don't mock the Exoscale API.** In new tests, don't add mocks, fake clients or
+`httptest` servers that imitate API responses, and don't extend the existing
+ones (e.g. those built on `pkg/testutils`). The API is not versioned: a mock
+freezes a copy of a contract that changes under us, goes out of sync silently,
+and has to be updated by hand every time the API moves. Test API interactions
+with a `with-api/` scenario instead (see below).
+
+Go unit tests are still welcome for code that doesn't talk to the API: utils,
+parsing, flag and argument validation, output formatting, pure logic. Tests live
+in the same package (white-box). When the logic you want to test sits behind an
+API call (merging results from several zones, building a request, deciding
+what to print), move it into a plain function that takes egoscale types as
+input, and unit test that function. Leave the API call itself to the txtar
+scenario.
+
+Behaviour that needs no API access (argument errors, `--help`, deprecation
+warnings, errors raised before any call) goes in a scenario under
+`tests/e2e/scenarios/without-api/`. Those run by default, with no credentials.
+
+`httptest` is only acceptable for generic HTTP helpers (timeouts, retries,
+endpoint selection) whose server returns nothing Exoscale-specific, as in
+`utils/utils_test.go`.
+
+When you touch an existing test that mocks the API, replacing it with a txtar
+scenario is welcome. It is not required.
 
 ### E2E tests for new features
 
