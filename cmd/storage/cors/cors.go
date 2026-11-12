@@ -1,10 +1,8 @@
-package storage
+package cors
 
-import (
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
-var storageCORSCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "cors",
 	Short: "Manage buckets CORS configuration",
 	Long: `These commands allow you to manage the CORS configuration of a bucket.
@@ -17,10 +15,6 @@ Notes:
 
   * It is not possible to edit a CORS configuration rule once it's been
     created, nor to delete rules individually -- the whole configuration must
-    be reset using the "exo storage cors reset" command.
+    be reset using the "exo storage cors delete" command.
 `,
-}
-
-func init() {
-	storageCmd.AddCommand(storageCORSCmd)
 }

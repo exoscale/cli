@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/storage/cors"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -63,6 +64,7 @@ func init() {
 	}
 	exocmd.RootCmd.AddCommand(storageCmd)
 	storageCmd.AddCommand(bucket.Cmd)
+	storageCmd.AddCommand(cors.Cmd)
 }
 
 var storageCmdLongHelp = func() string {
