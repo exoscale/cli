@@ -1,0 +1,40 @@
+# Usage errors are unchanged, no API call needed
+! exec exo storage presign
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+! exec exo storage presign --expires 900 sos://sto-pre-$TEST_RUN_ID/hello.txt
+stderr 'missing unit in duration "900"'
+
+# Setup: bucket with one object
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-pre-$TEST_RUN_ID
+defer exo storage rb -f sos://sto-pre-$TEST_RUN_ID
+defer exo storage delete --force sos://sto-pre-$TEST_RUN_ID/hello.txt
+exec exo storage upload hello.txt sos://sto-pre-$TEST_RUN_ID/
+
+# Default: GET URL valid for 15 minutes
+exec exo storage presign sos://sto-pre-$TEST_RUN_ID/hello.txt
+stdout '^https://.*sto-pre-'$TEST_RUN_ID'/hello.txt\?'
+stdout 'X-Amz-Expires=900'
+
+# --expires with a compound duration, bare bucket name
+exec exo storage presign --expires 1h30m sto-pre-$TEST_RUN_ID/hello.txt
+stdout 'X-Amz-Expires=5400'
+
+# Shorthands: PUT URL valid for 30 seconds, no object needed
+exec exo storage presign -m put -e 30s sos://sto-pre-$TEST_RUN_ID/new.txt
+stdout 'X-Amz-Expires=30'
+! stderr 'does not exist'
+
+# GET on a missing object warns but still prints the URL
+exec exo storage presign sos://sto-pre-$TEST_RUN_ID/missing.txt
+stdout '^https://'
+stderr 'does not exist'
+
+# Errors from the command itself
+! exec exo storage presign sos://sto-pre-$TEST_RUN_ID
+stderr 'invalid object URL'
+! exec exo storage presign -m post sos://sto-pre-$TEST_RUN_ID/hello.txt
+stderr 'unsupported method "post"'
+
+-- hello.txt --
+hello from e2e test

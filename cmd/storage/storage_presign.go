@@ -12,64 +12,60 @@ import (
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
-var storagePresignCmd = &cobra.Command{
-	Use:   "presign sos://BUCKET/OBJECT",
-	Short: "Generate a pre-signed URL to an object",
+type storagePresignCmd struct {
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
-		}
+	_ bool `cli-cmd:"presign"`
 
-		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
+	Object string `cli-arg:"#" cli-usage:"sos://BUCKET/OBJECT"`
 
-		return nil
-	},
+	Expires time.Duration `cli-short:"e" cli-usage:"expiration duration for the generated pre-signed URL (e.g. \"1h45m\", \"30s\"); supported units: \"s\", \"m\", \"h\""`
+	Method  string        `cli-short:"m" cli-usage:"pre-signed URL method (get|put)"`
+}
 
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			bucket string
-			key    string
-		)
+func (c *storagePresignCmd) CmdAliases() []string { return nil }
+func (c *storagePresignCmd) CmdShort() string     { return "Generate a pre-signed URL to an object" }
+func (c *storagePresignCmd) CmdLong() string      { return "" }
 
-		expires, err := cmd.Flags().GetDuration("expires")
-		if err != nil {
-			return err
-		}
+func (c *storagePresignCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	// Same usage error (message, usage and exit code) as the legacy command.
+	if len(args) != 1 {
+		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
+	}
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+}
 
-		method, err := cmd.Flags().GetString("method")
-		if err != nil {
-			return err
-		}
+func (c *storagePresignCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	object := strings.TrimPrefix(c.Object, sos.BucketPrefix)
 
-		parts := strings.SplitN(args[0], "/", 2)
-		if len(parts) < 2 {
-			return fmt.Errorf("invalid object URL: %q", args[0])
-		}
-		bucket, key = parts[0], parts[1]
+	parts := strings.SplitN(object, "/", 2)
+	if len(parts) < 2 {
+		return fmt.Errorf("invalid object URL: %q", object)
+	}
+	bucket, key := parts[0], parts[1]
 
-		storage, err := sos.NewStorageClient(
-			exocmd.GContext,
-			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
-		)
-		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %w", err)
-		}
+	storage, err := sos.NewStorageClient(
+		exocmd.GContext,
+		sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
+	)
+	if err != nil {
+		return fmt.Errorf("unable to initialize storage client: %w", err)
+	}
 
-		url, err := storage.GenPresignedURL(exocmd.GContext, method, bucket, key, expires)
-		if err != nil {
-			return fmt.Errorf("unable to pre-sign %s%s/%s: %w", sos.BucketPrefix, bucket, key, err)
-		}
+	url, err := storage.GenPresignedURL(exocmd.GContext, c.Method, bucket, key, c.Expires)
+	if err != nil {
+		return fmt.Errorf("unable to pre-sign %s%s/%s: %w", sos.BucketPrefix, bucket, key, err)
+	}
 
-		fmt.Println(url)
+	fmt.Println(url)
 
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	storagePresignCmd.Flags().StringP("method", "m", "get", "pre-signed URL method (get|put)")
-	storagePresignCmd.Flags().DurationP("expires", "e", 900*time.Second,
-		`expiration duration for the generated pre-signed URL (e.g. "1h45m", "30s"); supported units: "s", "m", "h"`)
-	storageCmd.AddCommand(storagePresignCmd)
+	cobra.CheckErr(clicmd.RegisterCLICommand(storageCmd, &storagePresignCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
+		Expires:            900 * time.Second,
+		Method:             "get",
+	}))
 }
