@@ -47,10 +47,15 @@ func CmdCheckRequiredFlags(cmd *cobra.Command, flags []string) error {
 				var hasValue bool
 
 				switch flag.Value.Type() {
-				case "string", "stringSlice":
+				case "string":
 					if flag.Value.String() != "" {
 						hasValue = true
 					}
+
+				// Slice flags print as "[]" when empty, so check their
+				// length rather than their string value.
+				case "stringSlice", "stringArray":
+					hasValue = len(flag.Value.(pflag.SliceValue).GetSlice()) > 0
 
 				case "int", "uint", "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64",
 					"float32", "float64":
