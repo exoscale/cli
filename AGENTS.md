@@ -65,9 +65,10 @@ Supported struct tags:
 | `cli-hidden:""` | Mark flag hidden |
 | `cli-deprecated:"msg"` | Mark flag deprecated |
 
-Supported field types: `string`, `int64`, `bool`, `[]string`, `map[string]string`,
-and any type whose pointer implements `pflag.Value` (flag or single positional arg,
-not variadic). Any other type panics at startup.
+Supported field types: `string`, `int64`, `bool`, `time.Duration` (e.g. `15m`),
+`[]string`, `map[string]string`, and any type whose pointer implements
+`pflag.Value` (flag or single positional arg, not variadic). Any other type
+panics at startup.
 
 For binary input (keys, ciphertexts, signatures...) use `clicmd.BinaryValue`
 (`pkg/clicmd/binary_value.go`) instead of a base64 `string`. The field holds the
