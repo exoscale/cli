@@ -1,8 +1,8 @@
 package bucket
 
 import (
+	"github.com/exoscale/cli/cmd/storage/bucket/lifecycle"
 	"github.com/exoscale/cli/cmd/storage/bucket/replication"
-	"github.com/exoscale/cli/cmd/storage/lifecycle"
 	"github.com/spf13/cobra"
 )
 
