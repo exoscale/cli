@@ -15,6 +15,8 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	v3 "github.com/exoscale/egoscale/v3"
+
+	"github.com/exoscale/cli/cmd/storage/bucket"
 )
 
 var (
@@ -60,6 +62,7 @@ func init() {
 		return nil
 	}
 	exocmd.RootCmd.AddCommand(storageCmd)
+	storageCmd.AddCommand(bucket.Cmd)
 }
 
 var storageCmdLongHelp = func() string {

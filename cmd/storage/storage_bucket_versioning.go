@@ -11,6 +11,8 @@ import (
 	"github.com/exoscale/cli/pkg/collections"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
+
+	"github.com/exoscale/cli/cmd/storage/bucket"
 )
 
 const (
@@ -23,7 +25,7 @@ const (
 
 func init() {
 	storageBucketObjectVersioningCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
-	storageBucketCmd.AddCommand(storageBucketObjectVersioningCmd)
+	bucket.Cmd.AddCommand(storageBucketObjectVersioningCmd)
 }
 
 var storageBucketObjectVersioningCmd = &cobra.Command{

@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/storage/bucket"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/collections"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -15,7 +16,7 @@ import (
 
 func init() {
 	storageBucketObjectOwnershipCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
-	storageBucketCmd.AddCommand(storageBucketObjectOwnershipCmd)
+	bucket.Cmd.AddCommand(storageBucketObjectOwnershipCmd)
 }
 
 var storageBucketObjectOwnershipCmd = &cobra.Command{
