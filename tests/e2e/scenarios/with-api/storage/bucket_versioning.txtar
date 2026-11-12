@@ -1,0 +1,25 @@
+# Usage errors are unchanged, no API call needed
+! exec exo storage bucket versioning status
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+! exec exo storage bucket versioning destroy sos://sto-ver-$TEST_RUN_ID
+stderr 'error: invalid operation'
+
+# Setup: bucket
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-ver-$TEST_RUN_ID
+defer exo storage rb -f sos://sto-ver-$TEST_RUN_ID
+
+# A new bucket has versioning disabled, sos:// syntax and --zone, JSON output
+exec exo --output-format json storage bucket versioning status --zone $TEST_ZONE sos://sto-ver-$TEST_RUN_ID
+stdout '"bucket":"sto-ver-'$TEST_RUN_ID'"'
+stdout '"objectVersioning":"Disabled"'
+
+# Enable it, bare bucket name and -z, table output
+exec exo storage bucket versioning enable -z $TEST_ZONE sto-ver-$TEST_RUN_ID
+exec exo storage bucket versioning status -z $TEST_ZONE sto-ver-$TEST_RUN_ID
+stdout 'Enabled'
+
+# Suspend it with the v alias
+exec exo storage bucket v suspend --zone $TEST_ZONE sos://sto-ver-$TEST_RUN_ID
+exec exo --output-format json storage bucket v status --zone $TEST_ZONE sos://sto-ver-$TEST_RUN_ID
+stdout '"objectVersioning":"Suspended"'
