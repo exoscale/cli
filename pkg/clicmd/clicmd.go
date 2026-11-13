@@ -365,11 +365,15 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 //     type definition, or "?" to declare an optional single argument. If the
 //     struct field is a []string, the result is a variadic (i.e. 0 or more)
 //     list of remaining arguments; if "cli-arg:"?"` is specified, the list
-//     will be marked as optional in the "use" command help.
+//     will be marked as optional in the "use" command help. A []string
+//     argument can be followed by required ("#") single arguments, which take
+//     the last command line arguments (e.g. "FILE... DESTINATION"); an
+//     optional argument or another list can't follow it.
 func cliCommandUse(c cliCommand) (string, error) {
 	var (
 		commandName string
 		use         = make([]string, 0)
+		afterList   bool
 	)
 
 	cv := reflect.ValueOf(c)
@@ -388,6 +392,16 @@ func cliCommandUse(c cliCommand) (string, error) {
 
 		if v, ok := cTypeField.Tag.Lookup("cli-arg"); ok {
 			argLabel := cliCommandArgLabel(cTypeField)
+
+			// After a list, the arguments are split from the end: only required
+			// single arguments are unambiguous there.
+			if afterList && (v == "?" || cTypeField.Type.Kind() == reflect.Slice) {
+				return "", cliCommandImplemError{fmt.Sprintf(
+					"field %s.%s: only required single arguments can follow a list argument",
+					cv.Type(),
+					cTypeField.Name,
+				)}
+			}
 
 			switch t := cTypeField.Type.Kind(); {
 			case isPflagValue(cTypeField.Type), t == reflect.Int64, t == reflect.String:
@@ -412,6 +426,7 @@ func cliCommandUse(c cliCommand) (string, error) {
 				} else {
 					use = append(use, argLabel+"...")
 				}
+				afterList = true
 
 			default:
 				return "", cliCommandImplemError{fmt.Sprintf(
@@ -540,9 +555,24 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 					)}
 				}
 
-				if argp < len(args) {
-					cField.Set(reflect.ValueOf(args[argp:]))
+				// Leave one argument to each argument declared after the list
+				// (only required single ones are allowed there, cf.
+				// cliCommandUse): "FILE... DESTINATION" gives the last
+				// argument to DESTINATION.
+				end := len(args)
+				for j := i + 1; j < cv.NumField(); j++ {
+					if _, ok := cv.Type().Field(j).Tag.Lookup("cli-arg"); ok {
+						end--
+					}
 				}
+
+				if argp < end {
+					cField.Set(reflect.ValueOf(args[argp:end]))
+				}
+
+				// The arguments declared after the list start where it stops.
+				argp = max(argp, end)
+				continue
 
 			default:
 				return cliCommandImplemError{fmt.Sprintf(
