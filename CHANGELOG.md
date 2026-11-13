@@ -30,6 +30,7 @@
 - kms: add `exo kms crypto sign`, `exo kms crypto verify` and `exo kms key get-public-key`, and a `--key-spec` flag on `exo kms key create` to create asymmetric keys
 - kms: add `--encryption-algorithm` to `exo kms crypto encrypt` and `decrypt`, and `--source-encryption-algorithm` and `--dest-encryption-algorithm` to `reencrypt`, to use RSA keys
 - kms: show the key spec in `exo kms key show` and `exo kms key list`
+- compute: add a `--label-selector` flag to `exo compute load-balancer service add` and `update`, to select backend instances by labels, and show the selector in `service show` (#946)
 - dbaas: add `exo dbaas acl list` for Kafka and OpenSearch, `exo dbaas acl create` and `delete` for Kafka, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
 - compute: add `--vpc` and `--vpc-subnet` to `exo compute instance create` to attach an instance to VPC Subnets at creation (#927)
 - api: add `exo api create-dbaas-mysql-upgrade-check` to run a MySQL service upgrade compatibility check
