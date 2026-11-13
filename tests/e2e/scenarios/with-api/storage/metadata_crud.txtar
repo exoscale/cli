@@ -1,0 +1,58 @@
+# exo storage metadata add/delete, single object and recursive on a prefix
+
+# Usage errors are unchanged, no API call needed
+! exec exo storage metadata add
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+! exec exo storage metadata add sos://sto-md-$TEST_RUN_ID/obj.txt
+stderr 'error: invalid arguments'
+! exec exo storage metadata add sos://sto-md-$TEST_RUN_ID k1=v1
+stderr 'error: invalid argument: "sto-md-'$TEST_RUN_ID'"'
+! exec exo storage metadata add sos://sto-md-$TEST_RUN_ID/obj.txt k1
+stderr 'error: invalid argument: "k1"'
+! exec exo storage metadata delete sos://sto-md-$TEST_RUN_ID/obj.txt
+stderr 'error: invalid arguments'
+
+# Setup: bucket with one object at the root and two under a prefix
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-md-$TEST_RUN_ID
+defer exo storage rb -r -f sos://sto-md-$TEST_RUN_ID
+exec exo storage upload hello.txt sos://sto-md-$TEST_RUN_ID/obj.txt
+exec exo storage upload hello.txt sos://sto-md-$TEST_RUN_ID/dir/a.txt
+exec exo storage upload hello.txt sos://sto-md-$TEST_RUN_ID/dir/b.txt
+
+# Add several keys, sos:// syntax: the object is printed with its metadata
+exec exo --output-format json storage metadata add sos://sto-md-$TEST_RUN_ID/obj.txt k1=v1 k2=v2
+stdout '"metadata":\{"k1":"v1","k2":"v2"\}'
+
+# Overwrite a key, bare bucket name and meta alias, quiet mode prints nothing
+exec exo -Q storage meta add sto-md-$TEST_RUN_ID/obj.txt k1=new
+! stdout .
+exec exo --output-format json storage show sos://sto-md-$TEST_RUN_ID/obj.txt
+stdout '"metadata":\{"k1":"new","k2":"v2"\}'
+
+# Delete a key with the del alias
+exec exo --output-format json storage metadata del sos://sto-md-$TEST_RUN_ID/obj.txt k1
+stdout '"metadata":\{"k2":"v2"\}'
+
+# Recursive add on a prefix only prints a confirmation
+exec exo storage metadata add -r sos://sto-md-$TEST_RUN_ID/dir/ owner=e2e
+stdout 'Metadata added successfully'
+exec exo --output-format json storage show sos://sto-md-$TEST_RUN_ID/dir/a.txt
+stdout '"owner":"e2e"'
+exec exo --output-format json storage show sos://sto-md-$TEST_RUN_ID/dir/b.txt
+stdout '"owner":"e2e"'
+
+# The object outside the prefix is untouched
+exec exo --output-format json storage show sos://sto-md-$TEST_RUN_ID/obj.txt
+! stdout 'owner'
+
+# Recursive delete, long flag
+exec exo storage metadata delete --recursive sos://sto-md-$TEST_RUN_ID/dir/ owner
+stdout 'Metadata deleted successfully'
+exec exo --output-format json storage show sos://sto-md-$TEST_RUN_ID/dir/a.txt
+! stdout 'owner'
+exec exo --output-format json storage show sos://sto-md-$TEST_RUN_ID/dir/b.txt
+! stdout 'owner'
+
+-- hello.txt --
+hello from e2e test
