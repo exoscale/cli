@@ -1,0 +1,66 @@
+# exo storage download: single file, rename, overwrite, prefix, dry run
+# (path traversal is covered by storage_download_path_traversal.txtar)
+
+# Usage errors, no API call needed
+! exec exo storage download
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+stderr 'exo storage download sos://BUCKET/\[OBJECT\|PREFIX/\] \[DESTINATION\]'
+! exec exo storage download sos://sto-dl-$TEST_RUN_ID/a.txt x y
+stderr 'error: invalid arguments'
+! exec exo storage download sos://
+stderr 'error: invalid argument: "sos://"'
+! exec exo storage download sos:///a.txt
+stderr 'error: invalid argument: "sos:///a.txt"'
+
+# Setup: one object at the root, one under dir/ and one under dir/sub/
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-dl-$TEST_RUN_ID
+defer exo storage rb -r -f sos://sto-dl-$TEST_RUN_ID
+exec exo storage upload hello.txt sos://sto-dl-$TEST_RUN_ID/a.txt
+exec exo storage upload hello.txt sos://sto-dl-$TEST_RUN_ID/dir/b.txt
+exec exo storage upload hello.txt sos://sto-dl-$TEST_RUN_ID/dir/sub/c.txt
+mkdir got
+
+# Single file into a directory, sos:// syntax
+exec exo storage download sos://sto-dl-$TEST_RUN_ID/a.txt got
+cmp got/a.txt hello.txt
+
+# Single file under another name
+exec exo storage download sos://sto-dl-$TEST_RUN_ID/a.txt got/renamed.txt
+cmp got/renamed.txt hello.txt
+
+# An existing file is only overwritten with -f
+cp other.txt got/renamed.txt
+! exec exo storage download sos://sto-dl-$TEST_RUN_ID/a.txt got/renamed.txt
+stderr 'already exists, use flag `-f` to overwrite'
+cmp got/renamed.txt other.txt
+exec exo storage download -f sos://sto-dl-$TEST_RUN_ID/a.txt got/renamed.txt
+cmp got/renamed.txt hello.txt
+
+# get alias, bare bucket name, object under a prefix
+exec exo storage get sto-dl-$TEST_RUN_ID/dir/b.txt got/
+cmp got/b.txt hello.txt
+
+# Dry run lists the files without writing them
+mkdir dry
+exec exo storage download -n -r sos://sto-dl-$TEST_RUN_ID/dir/ dry
+stdout '\[DRY-RUN\]'
+stdout 'sto-dl-'$TEST_RUN_ID'/dir/sub/c.txt -> dry/sub/c.txt'
+! exists dry/b.txt
+! exists dry/sub/c.txt
+
+# Recursive download of a prefix recreates the tree, quiet mode
+mkdir tree
+exec exo -Q storage download --recursive sos://sto-dl-$TEST_RUN_ID/dir/ tree
+cmp tree/b.txt hello.txt
+cmp tree/sub/c.txt hello.txt
+! exists tree/a.txt
+
+# Nothing matches
+exec exo storage download sos://sto-dl-$TEST_RUN_ID/nothing.txt got
+stdout 'no objects exist at "nothing.txt"'
+
+-- hello.txt --
+hello from e2e test
+-- other.txt --
+local file, must not be overwritten
