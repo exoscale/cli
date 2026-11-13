@@ -1,0 +1,80 @@
+# Bucket replication lifecycle: set -> show -> delete, after the migration of
+# `exo storage bucket replication` to the clicmd framework.
+# argument-count errors.
+# Replication needs an IAM role allowed to read the source and write the
+# destination, and versioning enabled on both buckets (same zone is allowed).
+
+# Argument-count errors are unchanged, no API call needed
+! exec exo storage bucket replication show
+stderr 'accepts 1 arg\(s\), received 0'
+! exec exo storage bucket replication set sos://src-$TEST_RUN_ID
+stderr 'accepts 2 arg\(s\), received 1'
+
+# Setup: IAM role used by the replication
+exec sh -c 'sed "s/@RUN_ID@/$TEST_RUN_ID/g" policy.json.tmpl > policy.json'
+stdin policy.json
+exec exo --output-format json iam role create --description 'cli e2e bucket replication' --policy - repl-$TEST_RUN_ID
+json-setenv ROLE_ID id stdout
+defer exo iam role delete -f $ROLE_ID
+
+# Setup: source and destination buckets, versioning enabled on both
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://src-$TEST_RUN_ID
+defer exo storage rb -f sos://src-$TEST_RUN_ID
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://dst-$TEST_RUN_ID
+defer exo storage rb -f sos://dst-$TEST_RUN_ID
+exec exo storage bucket versioning enable --zone $TEST_ZONE sos://src-$TEST_RUN_ID
+exec exo storage bucket versioning enable --zone $TEST_ZONE sos://dst-$TEST_RUN_ID
+
+# Set the replication configuration, sos:// syntax and --zone
+exec sh -c 'sed -e "s/@RUN_ID@/$TEST_RUN_ID/g" -e "s/@ROLE_ID@/$ROLE_ID/g" replication.json.tmpl > replication.json'
+exec exo storage bucket replication set --zone $TEST_ZONE sos://src-$TEST_RUN_ID replication.json
+
+# Show it, sos:// syntax
+exec exo --output-format json storage bucket replication show --zone $TEST_ZONE sos://src-$TEST_RUN_ID
+stdout '"Bucket":"src-'$TEST_RUN_ID'"'
+stdout '"Role":"'$ROLE_ID'"'
+stdout '"ID":"e2e-rule"'
+stdout 'dst-'$TEST_RUN_ID
+
+# Show it, bare bucket name and -z shorthand, table output
+exec exo storage bucket replication show -z $TEST_ZONE src-$TEST_RUN_ID
+stdout $ROLE_ID
+
+# Delete it, then show fails since there is no configuration anymore
+exec exo storage bucket replication delete --zone $TEST_ZONE sos://src-$TEST_RUN_ID
+! exec exo storage bucket replication show --zone $TEST_ZONE sos://src-$TEST_RUN_ID
+stderr 'Replication'
+
+-- policy.json.tmpl --
+{
+  "default-service-strategy": "deny",
+  "services": {
+    "sos": {
+      "type": "rules",
+      "rules": [
+        {
+          "action": "allow",
+          "expression": "parameters.bucket == 'src-@RUN_ID@' && operation == 'get-object'"
+        },
+        {
+          "action": "allow",
+          "expression": "parameters.bucket == 'dst-@RUN_ID@' && (operation.startsWith('put-object') || operation.startsWith('delete-object') || operation.startsWith('abort-multipart-upload'))"
+        }
+      ]
+    }
+  }
+}
+-- replication.json.tmpl --
+{
+    "Role": "@ROLE_ID@",
+    "Rules": [
+        {
+            "ID": "e2e-rule",
+            "Priority": 1,
+            "Filter": { "Prefix": "" },
+            "Status": "Enabled",
+            "DeleteMarkerReplication": { "Status": "Disabled" },
+            "Destination": { "Bucket": "dst-@RUN_ID@" }
+        }
+    ]
+}

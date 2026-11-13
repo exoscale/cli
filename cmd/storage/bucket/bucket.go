@@ -1,16 +1,17 @@
-package storage
+package bucket
 
 import (
-	"github.com/exoscale/cli/cmd/storage/lifecycle"
+	"github.com/exoscale/cli/cmd/storage/bucket/lifecycle"
+	"github.com/exoscale/cli/cmd/storage/bucket/replication"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	storageCmd.AddCommand(storageBucketCmd)
-	storageBucketCmd.AddCommand(lifecycle.Cmd)
+	Cmd.AddCommand(lifecycle.Cmd)
+	Cmd.AddCommand(replication.Cmd)
 }
 
-var storageBucketCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:              "bucket",
 	Aliases:          []string{"b"},
 	Short:            "Object Storage Bucket management",
