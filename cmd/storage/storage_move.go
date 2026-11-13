@@ -1,4 +1,3 @@
-// AI-modified by claude-opus-5-5 - not reviewed yet
 package storage
 
 import (
@@ -16,11 +15,25 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-var storageMoveCmd = &cobra.Command{
-	Use:     "move sos://BUCKET/[OBJECT|PREFIX/] sos://BUCKET/[OBJECT|PREFIX/]",
-	Aliases: []string{"mv"},
-	Short:   "Move objects within a bucket or across buckets",
-	Long: `Move objects within a bucket or across buckets.
+type storageMoveCmd struct {
+	clicmd.CliCommandSettings `cli-cmd:"-"`
+
+	_ bool `cli-cmd:"move"`
+
+	Source      string `cli-arg:"#" cli-usage:"sos://BUCKET/[OBJECT|PREFIX/]"`
+	Destination string `cli-arg:"#" cli-usage:"sos://BUCKET/[OBJECT|PREFIX/]"`
+
+	DryRun               bool  `cli-short:"n" cli-usage:"simulate the move operation"`
+	Force                bool  `cli-short:"f" cli-usage:"skip confirmation prompt"`
+	Recursive            bool  `cli-short:"r" cli-usage:"move objects recursively"`
+	Verbose              bool  `cli-short:"v" cli-usage:"output moved objects"`
+	MultipartConcurrency int64 `cli-usage:"number of concurrent parts for multipart moves"`
+}
+
+func (c *storageMoveCmd) CmdAliases() []string { return []string{"mv"} }
+func (c *storageMoveCmd) CmdShort() string     { return "Move objects within a bucket or across buckets" }
+func (c *storageMoveCmd) CmdLong() string {
+	return `Move objects within a bucket or across buckets.
 
 This command moves objects by performing a server-side copy followed by
 a delete of the source object. Object metadata, headers, and ACLs are
@@ -42,54 +55,36 @@ Examples:
     exo storage move -r sos://my-bucket/prefix/ sos://other-bucket/prefix/
 
     exo storage move -n sos://my-bucket/file-a sos://other-bucket/file-a
-`,
-	PreRunE: validateStorageTransferCommand,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			opts storageTransferOptions
-			err  error
-		)
-
-		if opts.Recursive, err = cmd.Flags().GetBool("recursive"); err != nil {
-			return err
-		}
-		if opts.Force, err = cmd.Flags().GetBool("force"); err != nil {
-			return err
-		}
-		if opts.MultipartConcurrency, err = cmd.Flags().GetInt("multipart-concurrency"); err != nil {
-			return err
-		}
-		if opts.Verbose, err = cmd.Flags().GetBool("verbose"); err != nil {
-			return err
-		}
-		if opts.DryRun, err = cmd.Flags().GetBool("dry-run"); err != nil {
-			return err
-		}
-
-		return runStorageTransfer(cmd.Name(), args[0], args[1], opts, true)
-	},
+`
 }
 
-func init() {
-	storageMoveCmd.Flags().BoolP("dry-run", "n", false, "simulate the move operation")
-	storageMoveCmd.Flags().BoolP("force", "f", false, "skip confirmation prompt")
-	storageMoveCmd.Flags().BoolP("recursive", "r", false, "move objects recursively")
-	storageMoveCmd.Flags().BoolP("verbose", "v", false, "output moved objects")
-	storageMoveCmd.Flags().Int("multipart-concurrency", 4, "number of concurrent parts for multipart moves")
-	storageCmd.AddCommand(storageMoveCmd)
-}
-
-func validateStorageTransferCommand(cmd *cobra.Command, args []string) error {
+func (c *storageMoveCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 2 {
 		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 	}
 
-	recursive, err := cmd.Flags().GetBool("recursive")
-	if err != nil {
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
 		return err
 	}
 
-	return validateStorageTransferArgs(args[0], args[1], recursive)
+	return validateStorageTransferArgs(c.Source, c.Destination, c.Recursive)
+}
+
+func (c *storageMoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	return runStorageTransfer(cmd.Name(), c.Source, c.Destination, storageTransferOptions{
+		Recursive:            c.Recursive,
+		Force:                c.Force,
+		Verbose:              c.Verbose,
+		DryRun:               c.DryRun,
+		MultipartConcurrency: int(c.MultipartConcurrency),
+	}, true)
+}
+
+func init() {
+	cobra.CheckErr(clicmd.RegisterCLICommand(storageCmd, &storageMoveCmd{
+		CliCommandSettings:   clicmd.DefaultCLICmdSettings(),
+		MultipartConcurrency: 4,
+	}))
 }
 
 func validateStorageTransferArgs(src, dst string, recursive bool) error {

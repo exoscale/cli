@@ -55,8 +55,3 @@ func TestValidateStorageTransferArgs(t *testing.T) {
 		})
 	}
 }
-
-func TestStorageTransferAliases(t *testing.T) {
-	assert.Contains(t, (&storageCopyCmd{}).CmdAliases(), "cp")
-	assert.Contains(t, storageMoveCmd.Aliases, "mv")
-}

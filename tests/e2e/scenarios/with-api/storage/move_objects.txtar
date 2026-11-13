@@ -1,0 +1,69 @@
+# exo storage move: single object, across buckets, prefixes, prompt, dry run
+
+# Usage and validation errors, no API call needed
+! exec exo storage move sos://sto-mv-$TEST_RUN_ID/a.txt
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+stderr 'exo storage move sos://BUCKET/\[OBJECT\|PREFIX/\] sos://BUCKET/\[OBJECT\|PREFIX/\]'
+! exec exo storage move sos://sto-mv-$TEST_RUN_ID/a.txt sos://sto-mv-$TEST_RUN_ID/a.txt
+stderr 'error: source and destination must differ'
+! exec exo storage move -r sos://sto-mv-$TEST_RUN_ID/dir sos://sto-mv-$TEST_RUN_ID/dir-backup
+stderr 'error: source and destination prefixes must not overlap'
+
+# Setup: two buckets, one object with metadata, and a small tree under dir/
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-mv-$TEST_RUN_ID
+defer exo storage rb -r -f sos://sto-mv-$TEST_RUN_ID
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-mv2-$TEST_RUN_ID
+defer exo storage rb -r -f sos://sto-mv2-$TEST_RUN_ID
+exec exo storage upload hello.txt sos://sto-mv-$TEST_RUN_ID/a.txt
+exec exo storage upload hello.txt sos://sto-mv-$TEST_RUN_ID/dir/b.txt
+exec exo storage upload hello.txt sos://sto-mv-$TEST_RUN_ID/dir/sub/c.txt
+exec exo -Q storage metadata add sos://sto-mv-$TEST_RUN_ID/a.txt owner=e2e
+
+# Dry run prints the plan, moves nothing
+exec exo storage move -n sos://sto-mv-$TEST_RUN_ID/a.txt sos://sto-mv-$TEST_RUN_ID/z.txt
+stdout '\[DRY-RUN\]'
+stdout 'move sos://sto-mv-'$TEST_RUN_ID'/a.txt -> sos://sto-mv-'$TEST_RUN_ID'/z.txt'
+exec exo storage show sos://sto-mv-$TEST_RUN_ID/a.txt
+! exec exo storage show sos://sto-mv-$TEST_RUN_ID/z.txt
+
+# Single object in the same bucket: the metadata follows, the source is gone
+exec exo storage move sos://sto-mv-$TEST_RUN_ID/a.txt sos://sto-mv-$TEST_RUN_ID/z.txt
+exec exo --output-format json storage show sos://sto-mv-$TEST_RUN_ID/z.txt
+stdout '"owner":"e2e"'
+! exec exo storage show sos://sto-mv-$TEST_RUN_ID/a.txt
+
+# Across buckets, mv alias, bare bucket names, verbose
+exec exo storage mv -v sto-mv-$TEST_RUN_ID/z.txt sto-mv2-$TEST_RUN_ID/z.txt
+stdout 'deleting: sos://sto-mv-'$TEST_RUN_ID'/z.txt'
+stdout 'moved: z.txt -> '
+exec exo storage show sos://sto-mv2-$TEST_RUN_ID/z.txt
+! exec exo storage show sos://sto-mv-$TEST_RUN_ID/z.txt
+
+# A prefix asks for confirmation, answering no moves nothing
+stdin no.txt
+exec exo storage move sos://sto-mv-$TEST_RUN_ID/dir/ sos://sto-mv2-$TEST_RUN_ID/p/
+stdout 'Are you sure you want to move all objects from sos://sto-mv-'$TEST_RUN_ID'/dir/ to sos://sto-mv2-'$TEST_RUN_ID'/p/\?'
+exec exo storage show sos://sto-mv-$TEST_RUN_ID/dir/b.txt
+
+# Prefix without -r: only the objects directly under it
+exec exo storage move -f sos://sto-mv-$TEST_RUN_ID/dir/ sos://sto-mv2-$TEST_RUN_ID/p/
+exec exo storage ls -r sos://sto-mv2-$TEST_RUN_ID/p/
+stdout 'p/b.txt'
+! stdout 'sub'
+exec exo storage ls -r sos://sto-mv-$TEST_RUN_ID/dir/
+! stdout 'dir/b.txt'
+stdout 'dir/sub/c.txt'
+
+# Prefix with -r, long flags, verbose: the source prefix ends up empty
+exec exo storage move --force --recursive --verbose sos://sto-mv-$TEST_RUN_ID/dir/ sos://sto-mv2-$TEST_RUN_ID/r/
+stdout 'moved 1 objects'
+exec exo storage ls -r sos://sto-mv2-$TEST_RUN_ID/r/
+stdout 'r/sub/c.txt'
+exec exo storage ls -r sos://sto-mv-$TEST_RUN_ID/dir/
+! stdout .
+
+-- hello.txt --
+hello from e2e test
+-- no.txt --
+n
