@@ -436,6 +436,13 @@ func AskQuestion(ctx context.Context, text string) bool {
 
 	resp, err := ReadInput(ctx, reader, text, "yN")
 	if err != nil {
+		// TODO: don't exit from here. When stdin is closed or empty (e.g. a
+		// script without --force), this prints a bare "EOF" right after the
+		// prompt and exits 1, which tells the user nothing. Return the error
+		// instead (AskQuestion(...) (bool, error)) so the ~66 callers can
+		// print something clear, such as "no answer to the confirmation
+		// prompt, use --force to skip it". On ctx cancellation ReadInput
+		// returns an empty error, so that case needs a message too.
 		log.Fatal(err)
 	}
 

@@ -1,0 +1,59 @@
+# exo storage rb: confirmation prompt, force, recursive, non-empty bucket
+
+# Usage errors, no API call needed
+! exec exo storage rb
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+stderr 'exo storage rb sos://BUCKET'
+! exec exo storage rb -f sos://sto-rb-$TEST_RUN_ID sos://sto-rb2-$TEST_RUN_ID
+stderr 'error: invalid arguments'
+! exec exo storage rb -f sos://
+stderr 'error: invalid argument: "sos://"'
+! exec exo storage rb -f sos:///
+stderr 'error: invalid argument: "sos:///"'
+
+# Setup: three buckets. The scenario deletes them itself, so the deferred
+# cleanup must not fail when the bucket is already gone.
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-rb-$TEST_RUN_ID
+defer sh -c 'exo storage rb -r -f sos://sto-rb-'$TEST_RUN_ID' >/dev/null 2>&1 || true'
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-rb2-$TEST_RUN_ID
+defer sh -c 'exo storage rb -r -f sos://sto-rb2-'$TEST_RUN_ID' >/dev/null 2>&1 || true'
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-rb3-$TEST_RUN_ID
+defer sh -c 'exo storage rb -r -f sos://sto-rb3-'$TEST_RUN_ID' >/dev/null 2>&1 || true'
+exec exo storage upload hello.txt sos://sto-rb-$TEST_RUN_ID/obj.txt
+exec exo storage upload hello.txt sos://sto-rb-$TEST_RUN_ID/dir/a.txt
+
+# Answering no to the confirmation prompt keeps the bucket
+stdin no.txt
+exec exo storage rb sos://sto-rb-$TEST_RUN_ID
+stdout 'Are you sure you want to delete sos://sto-rb-'$TEST_RUN_ID'\?'
+! stdout 'deleted successfully'
+exec exo --output-format json storage show sos://sto-rb-$TEST_RUN_ID
+stdout '"name":"sto-rb-'$TEST_RUN_ID'"'
+
+# A non-empty bucket is not deleted without -r
+! exec exo storage rb -f sos://sto-rb-$TEST_RUN_ID
+stderr 'error: unable to delete bucket: bucket is not empty, either delete files before or use flag `-r`'
+
+# Recursive delete with short flags, sos:// syntax
+exec exo storage rb -r -f sos://sto-rb-$TEST_RUN_ID
+stdout '^Bucket sos://sto-rb-'$TEST_RUN_ID' deleted successfully$'
+! exec exo storage show sos://sto-rb-$TEST_RUN_ID
+
+# Answering yes to the prompt, bare bucket name
+stdin yes.txt
+exec exo storage rb sto-rb2-$TEST_RUN_ID
+stdout '^\[\+\] Are you sure you want to delete sos://sto-rb2-'$TEST_RUN_ID'\? \[yN\]: Bucket sos://sto-rb2-'$TEST_RUN_ID' deleted successfully$'
+! exec exo storage show sos://sto-rb2-$TEST_RUN_ID
+
+# Long flags, trailing slash on the bucket, quiet mode prints nothing
+exec exo -Q storage rb --force --recursive sos://sto-rb3-$TEST_RUN_ID/
+! stdout .
+! exec exo storage show sos://sto-rb3-$TEST_RUN_ID
+
+-- hello.txt --
+hello from e2e test
+-- no.txt --
+n
+-- yes.txt --
+y
