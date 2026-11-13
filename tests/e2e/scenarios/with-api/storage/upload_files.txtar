@@ -1,0 +1,84 @@
+# exo storage upload: single file, rename, several files, directories, ACL, dry run
+
+# Usage errors, no API call needed
+! exec exo storage upload
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+stderr 'exo storage upload FILE... sos://BUCKET/\[PREFIX/\]'
+! exec exo storage upload hello.txt
+stderr 'error: invalid arguments'
+! exec exo storage upload hello.txt sos://
+stderr 'error: invalid argument: "sos://"'
+! exec exo storage upload hello.txt sos:///hello.txt
+stderr 'error: invalid argument: "sos:///hello.txt"'
+! exec exo storage upload --acl bogus hello.txt sos://sto-up-$TEST_RUN_ID/
+stderr 'error: invalid canned ACL "bogus"'
+stderr 'Usage:'
+
+# Setup
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-up-$TEST_RUN_ID
+defer exo storage rb -r -f sos://sto-up-$TEST_RUN_ID
+
+# Single file at the root of the bucket, sos:// syntax without trailing slash
+exec exo storage upload hello.txt sos://sto-up-$TEST_RUN_ID
+exec exo --output-format json storage show sos://sto-up-$TEST_RUN_ID/hello.txt
+stdout '"name":"hello.txt"'
+
+# Single file under another name
+exec exo storage upload hello.txt sos://sto-up-$TEST_RUN_ID/renamed.txt
+exec exo --output-format json storage show sos://sto-up-$TEST_RUN_ID/renamed.txt
+stdout '"name":"renamed.txt"'
+
+# Several files into a prefix, put alias, bare bucket name
+exec exo storage put hello.txt other.txt sto-up-$TEST_RUN_ID/multi/
+exec exo storage ls -r sos://sto-up-$TEST_RUN_ID/multi/
+stdout 'multi/hello.txt'
+stdout 'multi/other.txt'
+
+# Several files need a destination ending with "/"
+! exec exo storage upload hello.txt other.txt sos://sto-up-$TEST_RUN_ID/one.txt
+stderr 'error: multiple files to upload, destination must end with "/"'
+
+# A directory needs -r
+! exec exo storage upload tree sos://sto-up-$TEST_RUN_ID/
+stderr 'error: "tree" is a directory, use flag `-r` to upload recursively'
+
+# Recursive upload: without a trailing slash the directory name is kept
+exec exo storage upload -r tree sos://sto-up-$TEST_RUN_ID/r1/
+exec exo storage ls -r sos://sto-up-$TEST_RUN_ID/r1/
+stdout 'r1/tree/a.txt'
+stdout 'r1/tree/sub/b.txt'
+
+# Recursive upload: with a trailing slash only the content is uploaded
+exec exo storage upload --recursive tree/ sos://sto-up-$TEST_RUN_ID/r2/
+exec exo storage ls -r sos://sto-up-$TEST_RUN_ID/r2/
+stdout 'r2/a.txt'
+stdout 'r2/sub/b.txt'
+! stdout 'tree'
+
+# Canned ACL
+exec exo storage upload --acl public-read hello.txt sos://sto-up-$TEST_RUN_ID/pub.txt
+exec exo --output-format json storage show sos://sto-up-$TEST_RUN_ID/pub.txt
+stdout '"read":"ALL_USERS"'
+
+# Dry run prints the plan and uploads nothing
+exec exo storage upload -n hello.txt other.txt sos://sto-up-$TEST_RUN_ID/dry/
+stdout '\[DRY-RUN\]'
+stdout 'hello.txt -> sto-up-'$TEST_RUN_ID'/dry/hello.txt'
+stdout 'other.txt -> sto-up-'$TEST_RUN_ID'/dry/other.txt'
+! exec exo storage show sos://sto-up-$TEST_RUN_ID/dry/hello.txt
+
+# Quiet mode prints nothing
+exec exo -Q storage upload hello.txt sos://sto-up-$TEST_RUN_ID/quiet/
+! stdout .
+exec exo --output-format json storage show sos://sto-up-$TEST_RUN_ID/quiet/hello.txt
+stdout '"name":"quiet/hello.txt"'
+
+-- hello.txt --
+hello from e2e test
+-- other.txt --
+another file
+-- tree/a.txt --
+a
+-- tree/sub/b.txt --
+b
