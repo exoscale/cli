@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,63 +15,79 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-var storageMbCmd = &cobra.Command{
-	Use:     "mb sos://BUCKET",
-	Aliases: []string{"create"},
-	Short:   "Create a new bucket",
-	Long: fmt.Sprintf(`This command creates a new bucket.
+type storageMbCmd struct {
+	clicmd.CliCommandSettings `cli-cmd:"-"`
+
+	_ bool `cli-cmd:"mb"`
+
+	Bucket string `cli-arg:"#" cli-usage:"sos://BUCKET"`
+
+	ACL  string `cli-usage:"canned ACL to set on bucket (private|public-read|public-read-write|authenticated-read), see https://community.exoscale.com/product/storage/object-storage/how-to/acl/"`
+	Zone string `cli-short:"z" cli-usage:"bucket zone"`
+}
+
+func (c *storageMbCmd) CmdAliases() []string { return []string{"create"} }
+func (c *storageMbCmd) CmdShort() string     { return "Create a new bucket" }
+func (c *storageMbCmd) CmdLong() string {
+	return fmt.Sprintf(`This command creates a new bucket.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&sos.ShowBucketOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&sos.ShowBucketOutput{}), ", "))
+}
 
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
-		}
+func (c *storageMbCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
+	}
 
-		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
+	target := args[0]
+	args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
+	args[0] = strings.TrimRight(args[0], "/")
 
-		clicmd.CmdSetZoneFlagFromDefault(cmd)
+	if args[0] == "" {
+		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", target))
+	}
 
-		return clicmd.CmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
 
-	RunE: func(cmd *cobra.Command, args []string) error {
-		bucket := args[0]
+	if err := clicmd.CmdCheckRequiredFlags(cmd, []string{"zone"}); err != nil {
+		return err
+	}
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
 
-		acl, err := cmd.Flags().GetString("acl")
-		if err != nil {
-			return err
-		}
+	if c.ACL != "" && !slices.Contains(sos.BucketCannedACLToStrings(), c.ACL) {
+		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid canned ACL %q, supported values are: %s",
+			c.ACL, strings.Join(sos.BucketCannedACLToStrings(), ", ")))
+	}
 
-		storage, err := sos.NewStorageClient(
-			exocmd.GContext,
-			sos.ClientOptWithZone(zone),
-		)
-		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %w", err)
-		}
+	return nil
+}
 
-		if err := storage.CreateNewBucket(exocmd.GContext, bucket, acl); err != nil {
-			return fmt.Errorf("unable to create bucket: %w", err)
-		}
+func (c *storageMbCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	storage, err := sos.NewStorageClient(
+		exocmd.GContext,
+		sos.ClientOptWithZone(c.Zone),
+	)
+	if err != nil {
+		return fmt.Errorf("unable to initialize storage client: %w", err)
+	}
 
-		if !globalstate.Quiet {
-			return utils.PrintOutput(storage.ShowBucket(exocmd.GContext, bucket))
-		}
+	if err := storage.CreateNewBucket(exocmd.GContext, c.Bucket, c.ACL); err != nil {
+		return fmt.Errorf("unable to create bucket: %w", err)
+	}
 
-		return nil
-	},
+	if !globalstate.Quiet {
+		return utils.PrintOutput(storage.ShowBucket(exocmd.GContext, c.Bucket))
+	}
+
+	return nil
 }
 
 func init() {
-	storageMbCmd.Flags().String("acl", "",
-		fmt.Sprintf("canned ACL to set on bucket (%s)", strings.Join(sos.BucketCannedACLToStrings(), "|")))
-	storageMbCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
-	storageCmd.AddCommand(storageMbCmd)
+	cobra.CheckErr(clicmd.RegisterCLICommand(storageCmd, &storageMbCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
+	}))
 }
