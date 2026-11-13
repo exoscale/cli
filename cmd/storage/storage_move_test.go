@@ -46,7 +46,7 @@ func TestValidateStorageTransferArgs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := validateStorageTransferArgs(tt.args, tt.recursive)
+			err := validateStorageTransferArgs(tt.args[0], tt.args[1], tt.recursive)
 			if tt.err == "" {
 				assert.NoError(t, err)
 				return
@@ -57,6 +57,6 @@ func TestValidateStorageTransferArgs(t *testing.T) {
 }
 
 func TestStorageTransferAliases(t *testing.T) {
-	assert.Contains(t, storageCopyCmd.Aliases, "cp")
+	assert.Contains(t, (&storageCopyCmd{}).CmdAliases(), "cp")
 	assert.Contains(t, storageMoveCmd.Aliases, "mv")
 }

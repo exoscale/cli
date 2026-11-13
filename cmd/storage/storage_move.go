@@ -1,3 +1,4 @@
+// AI-modified by claude-opus-5-5 - not reviewed yet
 package storage
 
 import (
@@ -44,7 +45,28 @@ Examples:
 `,
 	PreRunE: validateStorageTransferCommand,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return runStorageTransfer(cmd, args, true)
+		var (
+			opts storageTransferOptions
+			err  error
+		)
+
+		if opts.Recursive, err = cmd.Flags().GetBool("recursive"); err != nil {
+			return err
+		}
+		if opts.Force, err = cmd.Flags().GetBool("force"); err != nil {
+			return err
+		}
+		if opts.MultipartConcurrency, err = cmd.Flags().GetInt("multipart-concurrency"); err != nil {
+			return err
+		}
+		if opts.Verbose, err = cmd.Flags().GetBool("verbose"); err != nil {
+			return err
+		}
+		if opts.DryRun, err = cmd.Flags().GetBool("dry-run"); err != nil {
+			return err
+		}
+
+		return runStorageTransfer(cmd.Name(), args[0], args[1], opts, true)
 	},
 }
 
@@ -67,25 +89,25 @@ func validateStorageTransferCommand(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return validateStorageTransferArgs(args, recursive)
+	return validateStorageTransferArgs(args[0], args[1], recursive)
 }
 
-func validateStorageTransferArgs(args []string, recursive bool) error {
-	srcBucket, srcKey := parseBucketKey(args[0])
-	dstBucket, dstKey := parseBucketKey(args[1])
+func validateStorageTransferArgs(src, dst string, recursive bool) error {
+	srcBucket, srcKey := parseBucketKey(src)
+	dstBucket, dstKey := parseBucketKey(dst)
 	isPrefix := strings.HasSuffix(srcKey, "/") || recursive
 
 	if srcBucket == "" {
-		return fmt.Errorf("source must include a bucket name: %s", args[0])
+		return fmt.Errorf("source must include a bucket name: %s", src)
 	}
 	if dstBucket == "" {
-		return fmt.Errorf("destination must include a bucket name: %s", args[1])
+		return fmt.Errorf("destination must include a bucket name: %s", dst)
 	}
 	if srcKey == "" && dstKey == "" {
 		return fmt.Errorf("at least one of source/destination must include an object key or prefix")
 	}
 	if !isPrefix && srcKey != "" && dstKey == "" {
-		return fmt.Errorf("destination must include an object key when source is a single object: %s", args[1])
+		return fmt.Errorf("destination must include an object key when source is a single object: %s", dst)
 	}
 	if srcBucket == dstBucket && srcKey == dstKey {
 		return fmt.Errorf("source and destination must differ")
@@ -107,30 +129,29 @@ func parseBucketKey(url string) (bucket, key string) {
 	return
 }
 
-func runStorageTransfer(cmd *cobra.Command, args []string, move bool) error {
-	recursive, err := cmd.Flags().GetBool("recursive")
-	if err != nil {
-		return err
-	}
-	force, err := cmd.Flags().GetBool("force")
-	if err != nil {
-		return err
-	}
-	multipartConcurrency, err := cmd.Flags().GetInt("multipart-concurrency")
-	if err != nil {
-		return err
-	}
-	verbose, err := cmd.Flags().GetBool("verbose")
-	if err != nil {
-		return err
-	}
-	dryRun, err := cmd.Flags().GetBool("dry-run")
-	if err != nil {
-		return err
-	}
+// storageTransferOptions holds the flags shared by "exo storage copy" and
+// "exo storage move".
+type storageTransferOptions struct {
+	Recursive            bool
+	Force                bool
+	Verbose              bool
+	DryRun               bool
+	MultipartConcurrency int
+}
 
-	srcBucket, srcKey := parseBucketKey(args[0])
-	dstBucket, dstKey := parseBucketKey(args[1])
+// runStorageTransfer copies (move=false) or moves (move=true) src to dst.
+// action is the command name ("copy" or "move"), used in messages.
+func runStorageTransfer(action, src, dst string, opts storageTransferOptions, move bool) error {
+	var (
+		recursive            = opts.Recursive
+		force                = opts.Force
+		multipartConcurrency = opts.MultipartConcurrency
+		verbose              = opts.Verbose
+		dryRun               = opts.DryRun
+	)
+
+	srcBucket, srcKey := parseBucketKey(src)
+	dstBucket, dstKey := parseBucketKey(dst)
 
 	storage, err := sos.NewStorageClient(
 		exocmd.GContext,
@@ -140,7 +161,6 @@ func runStorageTransfer(cmd *cobra.Command, args []string, move bool) error {
 		return fmt.Errorf("unable to initialize storage client: %w", err)
 	}
 
-	action := cmd.Name()
 	pastTense := "copied"
 	if move {
 		pastTense = "moved"
