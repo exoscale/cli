@@ -112,3 +112,74 @@ func iamPolicyFromJSON(data []byte) (*v3.IAMPolicy, error) {
 
 	return &policy, nil
 }
+
+type iamAssumeRolePolicyOutput struct {
+	Rules []iamPolicyServiceRuleOutput `json:"rules"`
+}
+
+func (o *iamAssumeRolePolicyOutput) ToJSON() { output.JSON(o) }
+func (o *iamAssumeRolePolicyOutput) ToText() { output.Text(o) }
+func (o *iamAssumeRolePolicyOutput) ToTable() {
+	t := table.NewTable(os.Stdout)
+
+	t.SetHeader([]string{
+		"Rule Action",
+		"Rule Expression",
+	})
+
+	// use underlying tablewriter.Render to display table even with empty rows.
+	defer t.Table.Render()
+
+	for _, rule := range o.Rules {
+		t.Append([]string{
+			rule.Action,
+			rule.Expression,
+		})
+	}
+}
+
+func iamAssumeRolePolicyToOutput(policy *v3.IAMAssumeRolePolicy) *iamAssumeRolePolicyOutput {
+	if policy == nil {
+		return nil
+	}
+
+	out := &iamAssumeRolePolicyOutput{
+		Rules: []iamPolicyServiceRuleOutput{},
+	}
+
+	for _, rule := range policy.Rules {
+		out.Rules = append(out.Rules, iamPolicyServiceRuleOutput{
+			Action:     string(rule.Action),
+			Expression: rule.Expression,
+		})
+	}
+
+	return out
+}
+
+func iamAssumeRolePolicyFromJSON(data []byte) (*v3.IAMAssumeRolePolicy, error) {
+	var obj iamAssumeRolePolicyOutput
+	err := json.Unmarshal(data, &obj)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse assume role policy: %w", err)
+	}
+
+	policy := v3.IAMAssumeRolePolicy{}
+
+	if len(obj.Rules) > 0 {
+		policy.Rules = []v3.IAMServicePolicyRule{}
+		for _, rl := range obj.Rules {
+			rule := v3.IAMServicePolicyRule{
+				Action: v3.IAMServicePolicyRuleAction(rl.Action),
+			}
+
+			if rl.Expression != "" {
+				rule.Expression = rl.Expression
+			}
+
+			policy.Rules = append(policy.Rules, rule)
+		}
+	}
+
+	return &policy, nil
+}
