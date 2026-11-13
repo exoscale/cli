@@ -205,7 +205,10 @@ func MustCLICommandFlagName(c cliCommand, field interface{}) string {
 	return v
 }
 
-var durationType = reflect.TypeFor[time.Duration]()
+var (
+	durationType = reflect.TypeFor[time.Duration]()
+	timeType     = reflect.TypeFor[time.Time]()
+)
 
 // isPflagValue returns true if a pointer to the specified type implements
 // the pflag.Value interface.
@@ -238,7 +241,8 @@ func cliCommandArgLabel(f reflect.StructField) string {
 //
 // Fields of a type implementing pflag.Value (through a pointer receiver) are
 // registered as generic flags, cf. BinaryValue. time.Duration fields are
-// registered as duration flags (e.g. "--expires 15m").
+// registered as duration flags (e.g. "--expires 15m"), and time.Time fields
+// as RFC 3339 timestamps (e.g. "--since 2023-06-07T10:00:00+02:00").
 func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 	fs := pflag.NewFlagSet("", pflag.ExitOnError)
 	cv := reflect.ValueOf(c)
@@ -290,6 +294,13 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 			// time.Duration is reflect.Int64, so it would otherwise be handled as a
 			// plain int64 and reject values such as "15m".
 			fs.DurationP(flagName, flagShort, flagDefaultValue.(time.Duration), flagUsage)
+
+		case cTypeField.Type == timeType:
+			// time.Time is a struct: it would otherwise be refused as unsupported.
+			// The flag holds its own copy of the value, which is copied back to
+			// the struct field by CliCommandDefaultPreRun().
+			v := timeValue(flagDefaultValue.(time.Time))
+			fs.VarP(&v, flagName, flagShort, flagUsage)
 
 		case isPflagValue(cTypeField.Type):
 			// The flag holds its own copy of the value, which is copied back
@@ -404,7 +415,7 @@ func cliCommandUse(c cliCommand) (string, error) {
 			}
 
 			switch t := cTypeField.Type.Kind(); {
-			case isPflagValue(cTypeField.Type), t == reflect.Int64, t == reflect.String:
+			case cTypeField.Type == timeType, isPflagValue(cTypeField.Type), t == reflect.Int64, t == reflect.String:
 				if v == "?" {
 					use = append(use, "["+argLabel+"]")
 				} else {
@@ -493,6 +504,20 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 					return fmt.Errorf("invalid value for %s: %w", cliCommandArgLabel(cTypeField), err)
 				}
 				cField.Set(reflect.ValueOf(argVal))
+
+			case cTypeField.Type == timeType:
+				if argp >= len(args) {
+					if argMode == "#" {
+						return fmt.Errorf("missing arguments, run with --help for usage")
+					}
+					break
+				}
+
+				var argVal timeValue
+				if err := argVal.Set(args[argp]); err != nil {
+					return fmt.Errorf("invalid value for %s: %w", cliCommandArgLabel(cTypeField), err)
+				}
+				cField.Set(reflect.ValueOf(time.Time(argVal)))
 
 			case isPflagValue(cTypeField.Type):
 				if argp >= len(args) {
@@ -609,6 +634,20 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 				return fmt.Errorf("error retrieving value for flag --%s: %s", flagName, err)
 			}
 			cField.Set(reflect.ValueOf(v))
+
+		case cTypeField.Type == timeType:
+			// The value has already been parsed by pflag, copy it to the struct field.
+			v, ok := cmd.Flags().Lookup(flagName).Value.(*timeValue)
+			if !ok {
+				return cliCommandImplemError{fmt.Sprintf(
+					"flag --%s has type %T, expected *clicmd.timeValue for field %s.%s",
+					flagName,
+					cmd.Flags().Lookup(flagName).Value,
+					cv.Type(),
+					cTypeField.Name,
+				)}
+			}
+			cField.Set(reflect.ValueOf(time.Time(*v)))
 
 		case isPflagValue(cTypeField.Type):
 			// The value has already been parsed by pflag, copy it to the struct field.
