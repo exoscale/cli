@@ -5,20 +5,22 @@ import (
 	"os"
 	"reflect"
 
+	exocmd "github.com/exoscale/cli/cmd"
+
+	"github.com/exoscale/cli/cmd/storage/cors"
+	"github.com/exoscale/cli/cmd/storage/headers"
+	"github.com/exoscale/cli/cmd/storage/metadata"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/storage/sos"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/smithy-go/middleware"
-	"github.com/spf13/cobra"
-
-	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/cmd/storage/cors"
-	"github.com/exoscale/cli/cmd/storage/metadata"
-	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/pkg/storage/sos"
 	v3 "github.com/exoscale/egoscale/v3"
 
 	"github.com/exoscale/cli/cmd/storage/bucket"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -66,6 +68,7 @@ func init() {
 	exocmd.RootCmd.AddCommand(storageCmd)
 	storageCmd.AddCommand(bucket.Cmd)
 	storageCmd.AddCommand(cors.Cmd)
+	storageCmd.AddCommand(headers.Cmd)
 	storageCmd.AddCommand(metadata.Cmd)
 }
 
