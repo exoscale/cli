@@ -13,54 +13,68 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-func init() {
-	storageCmd.AddCommand(&cobra.Command{
-		Use:   "show sos://BUCKET/[OBJECT]",
-		Short: "Show a bucket/object details",
-		Long: fmt.Sprintf(`This command lists Storage buckets and objects.
+type storageShowCmd struct {
+	clicmd.CliCommandSettings `cli-cmd:"-"`
+
+	_ bool `cli-cmd:"show"`
+
+	Target string `cli-arg:"#" cli-usage:"sos://BUCKET/[OBJECT]"`
+}
+
+func (c *storageShowCmd) CmdAliases() []string { return nil }
+func (c *storageShowCmd) CmdShort() string     { return "Show a bucket/object details" }
+func (c *storageShowCmd) CmdLong() string {
+	return fmt.Sprintf(`This command shows the details of a Storage bucket or object.
 
 Supported output template annotations:
 
 	* When showing a bucket: %s
 	* When showing an object: %s`,
-			strings.Join(output.TemplateAnnotations(&sos.ShowBucketOutput{}), ", "),
-			strings.Join(output.TemplateAnnotations(&sos.ShowObjectOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&sos.ShowBucketOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&sos.ShowObjectOutput{}), ", "))
+}
 
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) != 1 {
-				clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
-			}
+func (c *storageShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
+	}
 
-			args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
+	target := args[0]
+	args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-			return nil
-		},
+	if bucket, _, _ := strings.Cut(args[0], "/"); bucket == "" {
+		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", target))
+	}
 
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var (
-				bucket string
-				key    string
-			)
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+}
 
-			parts := strings.SplitN(args[0], "/", 2)
-			bucket = parts[0]
-			if len(parts) > 1 {
-				key = parts[1]
-			}
+func (c *storageShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	var key string
 
-			storage, err := sos.NewStorageClient(
-				exocmd.GContext,
-				sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
-			)
-			if err != nil {
-				return fmt.Errorf("unable to initialize storage client: %w", err)
-			}
+	parts := strings.SplitN(c.Target, "/", 2)
+	bucket := parts[0]
+	if len(parts) > 1 {
+		key = parts[1]
+	}
 
-			if key == "" {
-				return utils.PrintOutput(storage.ShowBucket(exocmd.GContext, bucket))
-			}
+	storage, err := sos.NewStorageClient(
+		exocmd.GContext,
+		sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
+	)
+	if err != nil {
+		return fmt.Errorf("unable to initialize storage client: %w", err)
+	}
 
-			return utils.PrintOutput(storage.ShowObject(exocmd.GContext, bucket, key))
-		},
-	})
+	if key == "" {
+		return utils.PrintOutput(storage.ShowBucket(exocmd.GContext, bucket))
+	}
+
+	return utils.PrintOutput(storage.ShowObject(exocmd.GContext, bucket, key))
+}
+
+func init() {
+	cobra.CheckErr(clicmd.RegisterCLICommand(storageCmd, &storageShowCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
+	}))
 }
