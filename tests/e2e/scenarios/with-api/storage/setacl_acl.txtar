@@ -1,0 +1,64 @@
+# exo storage setacl: canned ACL and grantees, on a bucket, an object and a prefix
+
+# Usage errors, no API call needed
+! exec exo storage setacl
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+stderr 'exo storage setacl sos://BUCKET/\[OBJECT\|PREFIX/\] \[CANNED-ACL\]'
+! exec exo storage setacl sos://sto-acl-$TEST_RUN_ID
+stderr 'error: either a canned ACL or ACL grantee options must be specified'
+! exec exo storage setacl sos://sto-acl-$TEST_RUN_ID public-read --read ALL_USERS
+stderr 'error: either a canned ACL or ACL grantee options must be specified'
+! exec exo storage setacl sos://sto-acl-$TEST_RUN_ID ''
+stderr 'error: either a canned ACL or ACL grantee options must be specified'
+! exec exo storage setacl sos:// public-read
+stderr 'error: invalid argument: "sos://"'
+! exec exo storage setacl sos:///obj.txt public-read
+stderr 'error: invalid argument: "sos:///obj.txt"'
+
+# The help points to the ACL documentation
+exec exo storage setacl --help
+stdout 'https://community.exoscale.com/product/storage/object-storage/how-to/acl/'
+
+# Setup: one object at the root, one under dir/ and one under dir/sub/
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-acl-$TEST_RUN_ID
+defer exo storage rb -r -f sos://sto-acl-$TEST_RUN_ID
+exec exo storage upload hello.txt sos://sto-acl-$TEST_RUN_ID/obj.txt
+exec exo storage upload hello.txt sos://sto-acl-$TEST_RUN_ID/dir/a.txt
+exec exo storage upload hello.txt sos://sto-acl-$TEST_RUN_ID/dir/sub/b.txt
+
+# Bucket, canned ACL, sos:// syntax: the bucket is printed with its ACL
+exec exo --output-format json storage setacl sos://sto-acl-$TEST_RUN_ID public-read
+stdout '"name":"sto-acl-'$TEST_RUN_ID'"'
+stdout '"read":"ALL_USERS"'
+
+# Bucket, bare name, back to private
+exec exo --output-format json storage setacl sto-acl-$TEST_RUN_ID private
+stdout '"read":"-"'
+
+# An unknown canned ACL is rejected
+! exec exo storage setacl sos://sto-acl-$TEST_RUN_ID bogus
+stderr 'error: unable to set ACL: invalid canned ACL "bogus"'
+
+# Object, grantee mode: the owner keeps full control
+exec exo --output-format json storage setacl sos://sto-acl-$TEST_RUN_ID/obj.txt --read AUTHENTICATED_USERS
+stdout '"name":"obj.txt"'
+stdout '"read":"AUTHENTICATED_USERS"'
+! stdout '"full_control":"-"'
+
+# Object, canned ACL, quiet mode prints nothing
+exec exo -Q storage setacl sto-acl-$TEST_RUN_ID/obj.txt public-read
+! stdout .
+exec exo --output-format json storage show sos://sto-acl-$TEST_RUN_ID/obj.txt
+stdout '"read":"ALL_USERS"'
+
+# Recursive on a prefix only prints a confirmation
+exec exo storage setacl -r sos://sto-acl-$TEST_RUN_ID/dir/ public-read
+stdout 'ACL set successfully'
+exec exo --output-format json storage show sos://sto-acl-$TEST_RUN_ID/dir/a.txt
+stdout '"read":"ALL_USERS"'
+exec exo --output-format json storage show sos://sto-acl-$TEST_RUN_ID/dir/sub/b.txt
+stdout '"read":"ALL_USERS"'
+
+-- hello.txt --
+hello from e2e test
