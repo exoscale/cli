@@ -1,0 +1,48 @@
+# Test: dbaas external-integration attach/list/show/detach and settings
+# Uses a Prometheus external endpoint: it only needs basic auth credentials.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# external-integration commands have no --zone flag, they use the default zone
+env EXOSCALE_ZONE=$TEST_ZONE
+
+# Endpoint first: deferred deletes run last-in first-out, so the service
+# (and its integration) is deleted before the endpoint.
+exec exo --output-format json dbaas external-endpoint create prometheus prom-ei-$TEST_RUN_ID --prometheus-basic-auth-username exo --prometheus-basic-auth-password exo-e2e-$TEST_RUN_ID
+json-setenv ENDPOINT_ID id stdout
+defer exo dbaas external-endpoint delete prometheus $ENDPOINT_ID
+
+exec exo --zone $TEST_ZONE --output-format json dbaas create pg hobbyist-2 pg-ei-$TEST_RUN_ID --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f pg-ei-$TEST_RUN_ID
+wait-dbaas-state $TEST_ZONE pg-ei-$TEST_RUN_ID running 1200
+
+# Attach the service to the endpoint
+exec exo dbaas external-integration attach prometheus --source-service-name pg-ei-$TEST_RUN_ID --destination-endpoint-id $ENDPOINT_ID
+
+# List integrations of the service
+exec exo --output-format json dbaas external-integration list pg-ei-$TEST_RUN_ID
+json-setenv-match INTEGRATION_ID id dest-endpoint-id=$ENDPOINT_ID stdout
+stdout '"type": ?"prometheus"'
+exec exo dbaas external-integration list pg-ei-$TEST_RUN_ID
+stdout 'prom-ei-'$TEST_RUN_ID
+
+# Show the integration
+exec exo --output-format json dbaas external-integration show $INTEGRATION_ID
+stdout '"source-service-name": ?"pg-ei-'$TEST_RUN_ID'"'
+stdout '"dest-endpoint-name": ?"prom-ei-'$TEST_RUN_ID'"'
+! exec exo dbaas external-integration show not-a-uuid
+stderr 'invalid integration ID'
+
+# Settings are only supported for Datadog integrations
+! exec exo dbaas external-integration settings show prometheus $INTEGRATION_ID
+stderr 'unsupported external integration settings for type "prometheus"'
+! exec exo dbaas external-integration settings update prometheus $INTEGRATION_ID
+stderr 'unsupported updating external integration settings for type "prometheus"'
+
+# Detach
+exec exo dbaas external-integration detach pg-ei-$TEST_RUN_ID --integration-id $INTEGRATION_ID
+exec exo --output-format json dbaas external-integration list pg-ei-$TEST_RUN_ID
+! stdout $INTEGRATION_ID
+
+# Invalid endpoint ID is rejected before the API call
+! exec exo dbaas external-integration attach prometheus --source-service-name pg-ei-$TEST_RUN_ID --destination-endpoint-id not-a-uuid
+stderr 'invalid endpoint ID'

@@ -1,4 +1,4 @@
-package dbaas
+package externalintegration
 
 import (
 	"fmt"
@@ -72,7 +72,7 @@ func (c *dbaasExternalIntegrationAttachCmd) CmdRun(cmd *cobra.Command, args []st
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationAttachCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasExternalIntegrationAttachCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

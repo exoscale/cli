@@ -1,8 +1,9 @@
-package dbaas
+package settings
 
 import (
 	"fmt"
 
+	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
@@ -29,7 +30,7 @@ func (c *dbaasExternalIntegrationSettingsShowCmd) CmdPreRun(cmd *cobra.Command, 
 
 func (c *dbaasExternalIntegrationSettingsShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	switch c.Type {
-	case ExternalEndpointTypeDatadog:
+	case dbaasutils.ExternalEndpointTypeDatadog:
 		return c.OutputFunc(c.showDatadog())
 	default:
 		return fmt.Errorf("unsupported external integration settings for type %q", c.Type)
@@ -37,7 +38,7 @@ func (c *dbaasExternalIntegrationSettingsShowCmd) CmdRun(_ *cobra.Command, _ []s
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalIntegrationSettingsCmd, &dbaasExternalIntegrationSettingsShowCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasExternalIntegrationSettingsShowCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

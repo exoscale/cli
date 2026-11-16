@@ -34,6 +34,7 @@
 - dbaas: move `exo dbaas migration` commands from package dbaas to their own package `cmd/dbaas/migration`
 - dbaas: move `exo dbaas database` commands from package dbaas to their own package `cmd/dbaas/database` and the Database Service show logic to `cmd/dbaas/internal`
 - dbaas: move `exo dbaas read-replica` commands from package dbaas to their own package `cmd/dbaas/read-replica`
+- dbaas: move `exo dbaas external-integration` commands from package dbaas to their own package `cmd/dbaas/external-integration`, with `settings` in `cmd/dbaas/external-integration/settings`
 
 ### Bug fixes
 

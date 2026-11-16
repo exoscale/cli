@@ -1,4 +1,4 @@
-package dbaas
+package externalintegration
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ type dbaasExternalIntegrationDetachCmd struct {
 }
 
 func (c *dbaasExternalIntegrationDetachCmd) CmdAliases() []string {
-	return []string{"a"}
+	return []string{"d"}
 }
 
 func (c *dbaasExternalIntegrationDetachCmd) CmdLong() string {
@@ -70,7 +70,7 @@ func (c *dbaasExternalIntegrationDetachCmd) CmdRun(cmd *cobra.Command, args []st
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationDetachCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasExternalIntegrationDetachCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

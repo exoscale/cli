@@ -14,6 +14,7 @@ import (
 
 	"github.com/exoscale/cli/cmd/dbaas/acl"
 	"github.com/exoscale/cli/cmd/dbaas/database"
+	externalintegration "github.com/exoscale/cli/cmd/dbaas/external-integration"
 	"github.com/exoscale/cli/cmd/dbaas/migration"
 	readreplica "github.com/exoscale/cli/cmd/dbaas/read-replica"
 	"github.com/exoscale/cli/cmd/dbaas/role"
@@ -42,6 +43,7 @@ func init() {
 	dbaasCmd.AddCommand(role.Cmd)
 	dbaasCmd.AddCommand(acl.Cmd)
 	dbaasCmd.AddCommand(database.Cmd)
+	dbaasCmd.AddCommand(externalintegration.Cmd)
 	dbaasCmd.AddCommand(migration.Cmd)
 	dbaasCmd.AddCommand(readreplica.Cmd)
 	dbaasCmd.AddCommand(servicetype.Cmd)
