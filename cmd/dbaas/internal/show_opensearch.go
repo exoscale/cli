@@ -1,4 +1,4 @@
-package dbaas
+package dbaasutils
 
 import (
 	"bytes"
@@ -60,7 +60,7 @@ type dbServiceOpensearchIndexPatternShowOutput struct {
 	SortingAlgorithm string `json:"sorting-algorithm,omitempty"`
 }
 
-type dbServiceOpensearchShowOutput struct {
+type DBServiceOpensearchShowOutput struct {
 	IPFilter                 []string                                    `json:"ip_filter"`
 	URI                      string                                      `json:"uri"`
 	URIParams                map[string]interface{}                      `json:"uri_params"`
@@ -75,7 +75,7 @@ type dbServiceOpensearchShowOutput struct {
 	Users                    []dbServiceOpensearchUserShowOutput         `json:"users,omitempty"`
 }
 
-func formatDatabaseServiceOpensearchTable(t *table.Table, o *dbServiceOpensearchShowOutput) {
+func formatDatabaseServiceOpensearchTable(t *table.Table, o *DBServiceOpensearchShowOutput) {
 	t.Append([]string{"Version", o.Version})
 	t.Append([]string{"URI", redactDatabaseServiceURI(o.URI)})
 	t.Append([]string{"IP Filter", strings.Join(o.IPFilter, ", ")})
@@ -127,7 +127,7 @@ func formatDatabaseServiceOpensearchTable(t *table.Table, o *dbServiceOpensearch
 	t.Append([]string{"Users", users})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context) (output.Outputter, error) {
+func (c *ServiceShow) ShowDatabaseServiceOpensearch(ctx context.Context) (output.Outputter, error) {
 
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -208,7 +208,7 @@ func opensearchShowNotifications(db *v3.DBAASServiceOpensearch) (output.Outputte
 	out := make(dbServiceNotificationListOutput, 0)
 	if db.Notifications != nil {
 		for _, n := range db.Notifications {
-			out = append(out, dbServiceNotificationListItemOutput{
+			out = append(out, DBServiceNotificationListItemOutput{
 				Level:   string(n.Level),
 				Message: wordwrap.WrapString(n.Message, 50),
 				Type:    string(n.Type),
@@ -225,7 +225,7 @@ func opensearchShowBackups(db *v3.DBAASServiceOpensearch) (output.Outputter, err
 
 	out := make(dbServiceBackupListOutput, 0, len(db.Backups))
 	for _, b := range db.Backups {
-		out = append(out, dbServiceBackupListItemOutput{
+		out = append(out, DBServiceBackupListItemOutput{
 			Date: b.BackupTime,
 			Name: b.BackupName,
 			Size: b.DataSize,
@@ -289,7 +289,7 @@ func opensearchShowDatabase(db *v3.DBAASServiceOpensearch, zone string) (output.
 		}
 	}
 
-	return &dbServiceShowOutput{
+	return &DBServiceShowOutput{
 		Zone: zone,
 		Name: string(db.Name),
 		Type: string(db.Type),
@@ -328,7 +328,7 @@ func opensearchShowDatabase(db *v3.DBAASServiceOpensearch, zone string) (output.
 			return
 		}(),
 
-		Opensearch: &dbServiceOpensearchShowOutput{
+		Opensearch: &DBServiceOpensearchShowOutput{
 			IPFilter: func() (v []string) {
 				if db.IPFilter != nil {
 					v = db.IPFilter

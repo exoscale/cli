@@ -1,4 +1,4 @@
-package dbaas
+package dbaasutils
 
 import (
 	"bytes"
@@ -19,7 +19,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type dbServicePGConnectionPool struct {
+type DBServicePGConnectionPool struct {
 	ConnectionURI string `json:"connection_uri"`
 	Database      string `json:"database"`
 	Mode          string `json:"mode"`
@@ -28,7 +28,7 @@ type dbServicePGConnectionPool struct {
 	Username      string `json:"username"`
 }
 
-type dbServicePGComponentShowOutput struct {
+type DBServicePGComponentShowOutput struct {
 	Component string `json:"component"`
 	Host      string `json:"host"`
 	Port      int64  `json:"port"`
@@ -36,30 +36,30 @@ type dbServicePGComponentShowOutput struct {
 	Usage     string `json:"usage"`
 }
 
-type dbServicePGUserShowOutput struct {
+type DBServicePGUserShowOutput struct {
 	AllowReplication bool   `json:"allow_replication,omitempty"`
 	Password         string `json:"password,omitempty"`
 	Type             string `json:"type,omitempty"`
 	Username         string `json:"username,omitempty"`
 }
 
-type dbServicePGShowOutput struct {
+type DBServicePGShowOutput struct {
 	BackupSchedule          string                           `json:"backup_schedule"`
-	Components              []dbServicePGComponentShowOutput `json:"components"`
+	Components              []DBServicePGComponentShowOutput `json:"components"`
 	Databases               []string                         `json:"databases"`
-	ConnectionPools         []dbServicePGConnectionPool      `json:"connection_pools"`
+	ConnectionPools         []DBServicePGConnectionPool      `json:"connection_pools"`
 	IPFilter                []string                         `json:"ip_filter"`
 	SharedBuffersPercentage int64                            `json:"shared_buffers_percentage"`
 	SynchronousReplication  string                           `json:"synchronous_replication"`
 	TimescaledbSettings     *v3.JSONSchemaTimescaledb        `json:"timescaledb_settings,omitempty"`
 	URI                     string                           `json:"uri"`
 	URIParams               map[string]interface{}           `json:"uri_params"`
-	Users                   []dbServicePGUserShowOutput      `json:"users"`
+	Users                   []DBServicePGUserShowOutput      `json:"users"`
 	Version                 string                           `json:"version"`
 	WorkMem                 int64                            `json:"work_mem"`
 }
 
-func formatDatabaseServicePGTable(t *table.Table, o *dbServicePGShowOutput) {
+func formatDatabaseServicePGTable(t *table.Table, o *DBServicePGShowOutput) {
 	t.Append([]string{"Version", o.Version})
 	t.Append([]string{"Backup Schedule", o.BackupSchedule})
 	t.Append([]string{"URI", redactDatabaseServiceURI(o.URI)})
@@ -141,7 +141,7 @@ func formatDatabaseServicePGTable(t *table.Table, o *dbServicePGShowOutput) {
 
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output.Outputter, error) {
+func (c *ServiceShow) ShowDatabaseServicePG(ctx context.Context) (output.Outputter, error) {
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return nil, err
@@ -160,7 +160,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 		out := make(dbServiceBackupListOutput, 0)
 		if databaseService.Backups != nil {
 			for _, b := range databaseService.Backups {
-				out = append(out, dbServiceBackupListItemOutput{
+				out = append(out, DBServiceBackupListItemOutput{
 					Date: b.BackupTime,
 					Name: b.BackupName,
 					Size: b.DataSize,
@@ -173,7 +173,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 		out := make(dbServiceNotificationListOutput, 0)
 		if databaseService.Notifications != nil {
 			for _, n := range databaseService.Notifications {
-				out = append(out, dbServiceNotificationListItemOutput{
+				out = append(out, DBServiceNotificationListItemOutput{
 					Level:   string(n.Level),
 					Message: wordwrap.WrapString(n.Message, 50),
 					Type:    string(n.Type),
@@ -254,7 +254,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 		return nil, nil
 	}
 
-	out := dbServiceShowOutput{
+	out := DBServiceShowOutput{
 		Zone:                  c.Zone,
 		Name:                  string(databaseService.Name),
 		Type:                  string(databaseService.Type),
@@ -278,7 +278,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 			return
 		}(),
 
-		PG: &dbServicePGShowOutput{
+		PG: &DBServicePGShowOutput{
 			BackupSchedule: func() (v string) {
 				if databaseService.BackupSchedule != nil {
 					v = fmt.Sprintf(
@@ -290,10 +290,10 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 				return
 			}(),
 
-			Components: func() (v []dbServicePGComponentShowOutput) {
+			Components: func() (v []DBServicePGComponentShowOutput) {
 				if databaseService.Components != nil {
 					for _, c := range databaseService.Components {
-						v = append(v, dbServicePGComponentShowOutput{
+						v = append(v, DBServicePGComponentShowOutput{
 							Component: c.Component,
 							Host:      c.Host,
 							Port:      c.Port,
@@ -315,10 +315,10 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 				return
 			}(),
 
-			ConnectionPools: func() (v []dbServicePGConnectionPool) {
+			ConnectionPools: func() (v []DBServicePGConnectionPool) {
 				if databaseService.ConnectionPools != nil {
 					for _, pool := range databaseService.ConnectionPools {
-						v = append(v, dbServicePGConnectionPool{
+						v = append(v, DBServicePGConnectionPool{
 							ConnectionURI: pool.ConnectionURI,
 							Database:      string(pool.Database),
 							Mode:          string(pool.Mode),
@@ -341,10 +341,10 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 			URI:       databaseService.URI,
 			URIParams: databaseService.URIParams,
 
-			Users: func() (v []dbServicePGUserShowOutput) {
+			Users: func() (v []DBServicePGUserShowOutput) {
 				if databaseService.Users != nil {
 					for _, u := range databaseService.Users {
-						v = append(v, dbServicePGUserShowOutput{
+						v = append(v, DBServicePGUserShowOutput{
 							AllowReplication: utils.DefaultBool(u.AllowReplication, false),
 							Password:         u.Password,
 							Type:             u.Type,

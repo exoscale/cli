@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -78,10 +79,10 @@ func (c *dbaasServiceCreateCmd) createThanos(_ *cobra.Command, _ []string) error
 	serviceName := op.Reference.ID.String()
 
 	if !globalstate.Quiet {
-		return c.OutputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasutils.ServiceShow{
 			Name: serviceName,
 			Zone: c.Zone,
-		}).showDatabaseServiceThanos(ctx))
+		}).ShowDatabaseServiceThanos(ctx))
 	}
 
 	return nil

@@ -1,0 +1,32 @@
+# Test: dbaas database help and argument checks (no API call)
+
+exec exo dbaas database --help
+stdout 'create'
+stdout 'delete'
+
+# pg-specific flags are hidden from --help and listed by --help-pg
+exec exo dbaas database create --help
+! stdout '--pg-lc-collate'
+exec exo dbaas database create --help-pg
+stdout '--pg-lc-collate'
+stdout '--pg-lc-ctype'
+
+exec exo dbaas database delete --help
+stdout '--force'
+
+# NAME and DATABASE are required
+! exec exo dbaas database create
+stderr 'missing arguments'
+! exec exo dbaas database create svc
+stderr 'missing arguments'
+! exec exo dbaas database delete svc
+stderr 'missing arguments'
+
+-- .config/exoscale/exoscale.toml --
+defaultaccount = "test"
+
+[[accounts]]
+name = "test"
+key = "EXO000000000000000000"
+secret = "dummy-secret-for-help-test"
+defaultZone = "ch-gva-2"

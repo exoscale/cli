@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -13,6 +12,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/dbaas/acl"
+	"github.com/exoscale/cli/cmd/dbaas/database"
 	"github.com/exoscale/cli/cmd/dbaas/migration"
 	"github.com/exoscale/cli/cmd/dbaas/role"
 	servicetype "github.com/exoscale/cli/cmd/dbaas/type"
@@ -39,6 +39,7 @@ func init() {
 	// Attach subcommand groups that live in their own packages.
 	dbaasCmd.AddCommand(role.Cmd)
 	dbaasCmd.AddCommand(acl.Cmd)
+	dbaasCmd.AddCommand(database.Cmd)
 	dbaasCmd.AddCommand(migration.Cmd)
 	dbaasCmd.AddCommand(servicetype.Cmd)
 }
@@ -101,14 +102,4 @@ func validateDatabaseServiceSettings(in string, schema interface{}) (map[string]
 	}
 
 	return userSettings, nil
-}
-
-// redactDatabaseServiceURI returns a redacted version of the URI provided
-// (i.e. masks potential password information).
-func redactDatabaseServiceURI(u string) string {
-	if uri, err := url.Parse(u); err == nil {
-		return uri.Redacted()
-	}
-
-	return u
 }

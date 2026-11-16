@@ -1,4 +1,4 @@
-package dbaas
+package dbaasutils
 
 import (
 	"bytes"
@@ -80,7 +80,7 @@ func formatDatabaseServiceGrafanaTable(t *table.Table, o *dbServiceGrafanaShowOu
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (output.Outputter, error) {
+func (c *ServiceShow) ShowDatabaseServiceGrafana(ctx context.Context) (output.Outputter, error) {
 
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -101,7 +101,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (o
 		out := make(dbServiceBackupListOutput, 0)
 		if svc.Backups != nil {
 			for _, b := range svc.Backups {
-				out = append(out, dbServiceBackupListItemOutput{
+				out = append(out, DBServiceBackupListItemOutput{
 					Date: b.BackupTime,
 					Name: b.BackupName,
 					Size: b.DataSize,
@@ -114,7 +114,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (o
 		out := make(dbServiceNotificationListOutput, 0)
 		if svc.Notifications != nil {
 			for _, n := range svc.Notifications {
-				out = append(out, dbServiceNotificationListItemOutput{
+				out = append(out, DBServiceNotificationListItemOutput{
 					Level:   string(n.Level),
 					Message: wordwrap.WrapString(n.Message, 50),
 					Type:    string(n.Type),
@@ -147,7 +147,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (o
 		return nil, nil
 	}
 
-	out := dbServiceShowOutput{
+	out := DBServiceShowOutput{
 		Zone:                  c.Zone,
 		Name:                  string(svc.Name),
 		Type:                  string(svc.Type),

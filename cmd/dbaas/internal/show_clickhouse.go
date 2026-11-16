@@ -1,4 +1,4 @@
-package dbaas
+package dbaasutils
 
 import (
 	"bytes"
@@ -101,7 +101,7 @@ func formatDatabaseServiceClickhouseTable(t *table.Table, o *dbServiceClickhouse
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceClickhouse(ctx context.Context) (output.Outputter, error) {
+func (c *ServiceShow) ShowDatabaseServiceClickhouse(ctx context.Context) (output.Outputter, error) {
 
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -118,7 +118,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceClickhouse(ctx context.Context)
 		out := make(dbServiceBackupListOutput, 0)
 		if databaseService.Backups != nil {
 			for _, b := range databaseService.Backups {
-				out = append(out, dbServiceBackupListItemOutput{
+				out = append(out, DBServiceBackupListItemOutput{
 					Date: b.BackupTime,
 					Name: b.BackupName,
 					Size: b.DataSize,
@@ -131,7 +131,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceClickhouse(ctx context.Context)
 		out := make(dbServiceNotificationListOutput, 0)
 		if databaseService.Notifications != nil {
 			for _, n := range databaseService.Notifications {
-				out = append(out, dbServiceNotificationListItemOutput{
+				out = append(out, DBServiceNotificationListItemOutput{
 					Level:   string(n.Level),
 					Message: wordwrap.WrapString(n.Message, 50),
 					Type:    string(n.Type),
@@ -184,7 +184,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceClickhouse(ctx context.Context)
 		return nil, nil
 	}
 
-	out := dbServiceShowOutput{
+	out := DBServiceShowOutput{
 		Zone:                  c.Zone,
 		Name:                  string(databaseService.Name),
 		Type:                  string(databaseService.Type),

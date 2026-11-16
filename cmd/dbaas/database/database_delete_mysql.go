@@ -1,16 +1,17 @@
-package dbaas
+package database
 
 import (
 	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
 
-func (c dbaasDatabaseDeleteCmd) deletePg(cmd *cobra.Command, _ []string) error {
+func (c dbaasDatabaseDeleteCmd) deleteMysql(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
@@ -18,14 +19,14 @@ func (c dbaasDatabaseDeleteCmd) deletePg(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	s, err := client.GetDBAASServicePG(ctx, c.Name)
+	s, err := client.GetDBAASServiceMysql(ctx, c.Name)
 	if err != nil {
 		return err
 	}
 
 	dbFound := false
 	for _, db := range s.Databases {
-		if db == v3.DBAASDatabaseName(c.Database) {
+		if db == v3.DBAASMysqlDatabaseName(c.Database) {
 			dbFound = true
 			break
 		}
@@ -43,7 +44,7 @@ func (c dbaasDatabaseDeleteCmd) deletePg(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	op, err := client.DeleteDBAASPGDatabase(ctx, c.Name, c.Database)
+	op, err := client.DeleteDBAASMysqlDatabase(ctx, c.Name, c.Database)
 	if err != nil {
 		return err
 	}
@@ -56,10 +57,10 @@ func (c dbaasDatabaseDeleteCmd) deletePg(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		return c.OutputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasutils.ServiceShow{
 			Name: c.Name,
 			Zone: c.Zone,
-		}).showDatabaseServicePG(ctx))
+		}).ShowDatabaseServiceMysql(ctx))
 	}
 
 	return err

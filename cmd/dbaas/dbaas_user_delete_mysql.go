@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -57,10 +58,10 @@ func (c *dbaasUserDeleteCmd) deleteMysql(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		return c.OutputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasutils.ServiceShow{
 			Name: c.Name,
 			Zone: c.Zone,
-		}).showDatabaseServiceMysql(ctx))
+		}).ShowDatabaseServiceMysql(ctx))
 	}
 
 	return nil

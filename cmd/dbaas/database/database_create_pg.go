@@ -1,25 +1,23 @@
-package dbaas
+package database
 
 import (
 	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/spf13/cobra"
 )
 
-func (c dbaasDatabaseCreateCmd) createMysql(cmd *cobra.Command, _ []string) error {
-
+func (c dbaasDatabaseCreateCmd) createPg() error {
 	ctx := exocmd.GContext
 
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
-
-	s, err := client.GetDBAASServiceMysql(ctx, c.Name)
+	s, err := client.GetDBAASServicePG(ctx, c.Name)
 	if err != nil {
 		return err
 	}
@@ -28,11 +26,19 @@ func (c dbaasDatabaseCreateCmd) createMysql(cmd *cobra.Command, _ []string) erro
 		return fmt.Errorf("service %q is not ready for database creation", c.Name)
 	}
 
-	req := v3.CreateDBAASMysqlDatabaseRequest{
+	req := v3.CreateDBAASPGDatabaseRequest{
 		DatabaseName: v3.DBAASDatabaseName(c.Database),
 	}
 
-	op, err := client.CreateDBAASMysqlDatabase(ctx, c.Name, req)
+	if c.PgLcCollate != "" {
+		req.LCCollate = c.PgLcCollate
+	}
+
+	if c.PgLcCtype != "" {
+		req.LCCtype = c.PgLcCtype
+	}
+
+	op, err := client.CreateDBAASPGDatabase(ctx, c.Name, req)
 	if err != nil {
 		return err
 	}
@@ -45,10 +51,10 @@ func (c dbaasDatabaseCreateCmd) createMysql(cmd *cobra.Command, _ []string) erro
 	}
 
 	if !globalstate.Quiet {
-		return c.OutputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasutils.ServiceShow{
 			Name: c.Name,
 			Zone: c.Zone,
-		}).showDatabaseServiceMysql(ctx))
+		}).ShowDatabaseServicePG(ctx))
 	}
 
 	return err

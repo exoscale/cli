@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
@@ -167,10 +168,10 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 	}
 
 	if !globalstate.Quiet {
-		return c.OutputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasutils.ServiceShow{
 			Name: c.Name,
 			Zone: c.Zone,
-		}).showDatabaseServiceKafka(ctx))
+		}).ShowDatabaseServiceKafka(ctx))
 	}
 
 	return nil

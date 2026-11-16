@@ -1,4 +1,4 @@
-package dbaas
+package database
 
 import (
 	"fmt"
@@ -59,9 +59,9 @@ func (c *dbaasDatabaseCreateCmd) CmdRun(cmd *cobra.Command, args []string) error
 
 	switch db.Type {
 	case "mysql":
-		return c.createMysql(cmd, args)
+		return c.createMysql()
 	case "pg":
-		return c.createPg(cmd, args)
+		return c.createPg()
 	default:
 		return fmt.Errorf("creating database unsupported for service of type %q", db.Type)
 	}
@@ -69,7 +69,7 @@ func (c *dbaasDatabaseCreateCmd) CmdRun(cmd *cobra.Command, args []string) error
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasDatabaseCmd, &dbaasDatabaseCreateCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasDatabaseCreateCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

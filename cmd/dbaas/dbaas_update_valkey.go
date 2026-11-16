@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	utils "github.com/exoscale/cli/utils"
@@ -118,10 +119,10 @@ func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command, _ []string) err
 	}
 
 	if !globalstate.Quiet {
-		return c.OutputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasutils.ServiceShow{
 			Name: c.Name,
 			Zone: c.Zone,
-		}).showDatabaseServiceValkey(ctx))
+		}).ShowDatabaseServiceValkey(ctx))
 	}
 	return nil
 }

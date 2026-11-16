@@ -1,4 +1,4 @@
-package dbaas
+package database
 
 import (
 	"fmt"
@@ -56,7 +56,7 @@ func (c *dbaasDatabaseDeleteCmd) CmdRun(cmd *cobra.Command, args []string) error
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasDatabaseCmd, &dbaasDatabaseDeleteCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasDatabaseDeleteCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -1,4 +1,4 @@
-package dbaas
+package dbaasutils
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type dbServiceMysqlComponentShowOutput struct {
+type DBServiceMysqlComponentShowOutput struct {
 	Component string `json:"component"`
 	Host      string `json:"host"`
 	Port      int64  `json:"port"`
@@ -26,24 +26,24 @@ type dbServiceMysqlComponentShowOutput struct {
 	Usage     string `json:"usage"`
 }
 
-type dbServiceMysqlUserShowOutput struct {
+type DBServiceMysqlUserShowOutput struct {
 	Password string `json:"password,omitempty"`
 	Type     string `json:"type,omitempty"`
 	Username string `json:"username,omitempty"`
 }
 
-type dbServiceMysqlShowOutput struct {
+type DBServiceMysqlShowOutput struct {
 	BackupSchedule string                              `json:"backup_schedule"`
-	Components     []dbServiceMysqlComponentShowOutput `json:"components"`
+	Components     []DBServiceMysqlComponentShowOutput `json:"components"`
 	Databases      []string                            `json:"databases"`
 	IPFilter       []string                            `json:"ip_filter"`
 	URI            string                              `json:"uri"`
 	URIParams      map[string]interface{}              `json:"uri_params"`
-	Users          []dbServiceMysqlUserShowOutput      `json:"users"`
+	Users          []DBServiceMysqlUserShowOutput      `json:"users"`
 	Version        string                              `json:"version"`
 }
 
-func formatDatabaseServiceMysqlTable(t *table.Table, o *dbServiceMysqlShowOutput) {
+func formatDatabaseServiceMysqlTable(t *table.Table, o *DBServiceMysqlShowOutput) {
 	t.Append([]string{"Version", o.Version})
 	t.Append([]string{"Backup Schedule", o.BackupSchedule})
 	t.Append([]string{"URI", redactDatabaseServiceURI(o.URI)})
@@ -94,7 +94,7 @@ func formatDatabaseServiceMysqlTable(t *table.Table, o *dbServiceMysqlShowOutput
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (output.Outputter, error) {
+func (c *ServiceShow) ShowDatabaseServiceMysql(ctx context.Context) (output.Outputter, error) {
 
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -114,7 +114,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (out
 		out := make(dbServiceBackupListOutput, 0)
 		if databaseService.Backups != nil {
 			for _, b := range databaseService.Backups {
-				out = append(out, dbServiceBackupListItemOutput{
+				out = append(out, DBServiceBackupListItemOutput{
 					Date: b.BackupTime,
 					Name: b.BackupName,
 					Size: b.DataSize,
@@ -127,7 +127,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (out
 		out := make(dbServiceNotificationListOutput, 0)
 		if databaseService.Notifications != nil {
 			for _, n := range databaseService.Notifications {
-				out = append(out, dbServiceNotificationListItemOutput{
+				out = append(out, DBServiceNotificationListItemOutput{
 					Level:   string(n.Level),
 					Message: wordwrap.WrapString(n.Message, 50),
 					Type:    string(n.Type),
@@ -192,7 +192,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (out
 		return nil, nil
 	}
 
-	out := dbServiceShowOutput{
+	out := DBServiceShowOutput{
 		Zone:                  c.Zone,
 		Name:                  string(databaseService.Name),
 		Type:                  string(databaseService.Type),
@@ -216,7 +216,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (out
 			return
 		}(),
 
-		Mysql: &dbServiceMysqlShowOutput{
+		Mysql: &DBServiceMysqlShowOutput{
 			BackupSchedule: func() (v string) {
 				if databaseService.BackupSchedule != nil {
 					v = fmt.Sprintf(
@@ -228,10 +228,10 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (out
 				return
 			}(),
 
-			Components: func() (v []dbServiceMysqlComponentShowOutput) {
+			Components: func() (v []DBServiceMysqlComponentShowOutput) {
 				if databaseService.Components != nil {
 					for _, c := range databaseService.Components {
-						v = append(v, dbServiceMysqlComponentShowOutput{
+						v = append(v, DBServiceMysqlComponentShowOutput{
 							Component: c.Component,
 							Host:      c.Host,
 							Port:      c.Port,
@@ -262,10 +262,10 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (out
 			URI:       databaseService.URI,
 			URIParams: databaseService.URIParams,
 
-			Users: func() (v []dbServiceMysqlUserShowOutput) {
+			Users: func() (v []DBServiceMysqlUserShowOutput) {
 				if databaseService.Users != nil {
 					for _, u := range databaseService.Users {
-						v = append(v, dbServiceMysqlUserShowOutput{
+						v = append(v, DBServiceMysqlUserShowOutput{
 							Password: u.Password,
 							Type:     u.Type,
 							Username: u.Username,

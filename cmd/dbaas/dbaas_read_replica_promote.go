@@ -83,16 +83,16 @@ func (c *dbaasReadReplicaPromoteCmd) CmdRun(_ *cobra.Command, _ []string) error 
 	}
 
 	if !globalstate.Quiet {
-		showCmd := &dbaasServiceShowCmd{
+		showCmd := &dbaasutils.ServiceShow{
 			Name: c.Name,
 			Zone: c.Zone,
 		}
 
 		switch databaseService.Type {
 		case "pg":
-			return c.OutputFunc(showCmd.showDatabaseServicePG(ctx))
+			return c.OutputFunc(showCmd.ShowDatabaseServicePG(ctx))
 		case "mysql":
-			return c.OutputFunc(showCmd.showDatabaseServiceMysql(ctx))
+			return c.OutputFunc(showCmd.ShowDatabaseServiceMysql(ctx))
 		}
 	}
 

@@ -131,7 +131,7 @@ Supported values for --maintenance-dow: %s
 
 Supported output template annotations: %s`,
 		strings.Join(dbServiceMaintenanceDOWs, ", "),
-		strings.Join(output.TemplateAnnotations(&dbServiceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceShowOutput{}), ", "),
 	)
 }
 

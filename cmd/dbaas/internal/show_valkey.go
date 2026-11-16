@@ -1,4 +1,4 @@
-package dbaas
+package dbaasutils
 
 import (
 	"bytes"
@@ -77,7 +77,7 @@ func formatDatabaseServiceValkeyTable(t *table.Table, o *dbServiceValkeyShowOutp
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceValkey(ctx context.Context) (output.Outputter, error) {
+func (c *ServiceShow) ShowDatabaseServiceValkey(ctx context.Context) (output.Outputter, error) {
 
 	client, err := exocmd.SwitchClientZoneV3(
 		ctx,
@@ -99,7 +99,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceValkey(ctx context.Context) (ou
 		out := make(dbServiceBackupListOutput, 0)
 		if databaseService.Backups != nil {
 			for _, b := range databaseService.Backups {
-				out = append(out, dbServiceBackupListItemOutput{
+				out = append(out, DBServiceBackupListItemOutput{
 					Date: b.BackupTime,
 					Name: b.BackupName,
 					Size: b.DataSize,
@@ -112,7 +112,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceValkey(ctx context.Context) (ou
 		out := make(dbServiceNotificationListOutput, 0)
 		if databaseService.Notifications != nil {
 			for _, n := range databaseService.Notifications {
-				out = append(out, dbServiceNotificationListItemOutput{
+				out = append(out, DBServiceNotificationListItemOutput{
 					Level:   string(n.Level),
 					Message: wordwrap.WrapString(n.Message, 50),
 					Type:    string(n.Type),
@@ -165,7 +165,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceValkey(ctx context.Context) (ou
 		return nil, nil
 	}
 
-	out := dbServiceShowOutput{
+	out := DBServiceShowOutput{
 		Zone:                  c.Zone,
 		Name:                  string(databaseService.Name),
 		Type:                  string(databaseService.Type),

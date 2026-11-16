@@ -1,4 +1,4 @@
-package dbaas
+package dbaasutils
 
 import (
 	"bytes"
@@ -20,19 +20,19 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type dbServiceKafkaAuthenticationShowOutput struct {
+type DBServiceKafkaAuthenticationShowOutput struct {
 	Certificate bool `json:"certificate"`
 	SASL        bool `json:"sasl"`
 }
 
-type dbServiceKafkaACLShowOutput struct {
+type DBServiceKafkaACLShowOutput struct {
 	ID         string `json:"id"`
 	Permission string `json:"permission"`
 	Topic      string `json:"topic"`
 	Username   string `json:"username"`
 }
 
-type dbServiceKafkaComponentShowOutput struct {
+type DBServiceKafkaComponentShowOutput struct {
 	AuthenticationMethod string `json:"authentication_method"`
 	Component            string `json:"component"`
 	Host                 string `json:"host"`
@@ -41,7 +41,7 @@ type dbServiceKafkaComponentShowOutput struct {
 	Usage                string `json:"usage"`
 }
 
-type dbServiceKafkaConnectionInfoShowOutput struct {
+type DBServiceKafkaConnectionInfoShowOutput struct {
 	AccessCert  *string   `json:"access_cert,omitempty"`
 	AccessKey   *string   `json:"access_key,omitempty"`
 	Nodes       *[]string `json:"nodes,omitempty"`
@@ -49,7 +49,7 @@ type dbServiceKafkaConnectionInfoShowOutput struct {
 	RestURI     *string   `json:"rest_uri,omitempty"`
 }
 
-type dbServiceKafkaUserShowOutput struct {
+type DBServiceKafkaUserShowOutput struct {
 	AccessCert       *string    `json:"access_cert,omitempty"`
 	AccessCertExpiry *time.Time `json:"access_cert-expiry,omitempty"`
 	AccessKey        *string    `json:"access_key,omitempty"`
@@ -58,22 +58,22 @@ type dbServiceKafkaUserShowOutput struct {
 	Username         string     `json:"username"`
 }
 
-type dbServiceKafkaShowOutput struct {
-	ACL                   []dbServiceKafkaACLShowOutput          `json:"acl"`
-	AuthenticationMethods dbServiceKafkaAuthenticationShowOutput `json:"authentication_methods"`
-	Components            []dbServiceKafkaComponentShowOutput    `json:"components"`
-	ConnectionInfo        dbServiceKafkaConnectionInfoShowOutput `json:"connection_info"`
+type DBServiceKafkaShowOutput struct {
+	ACL                   []DBServiceKafkaACLShowOutput          `json:"acl"`
+	AuthenticationMethods DBServiceKafkaAuthenticationShowOutput `json:"authentication_methods"`
+	Components            []DBServiceKafkaComponentShowOutput    `json:"components"`
+	ConnectionInfo        DBServiceKafkaConnectionInfoShowOutput `json:"connection_info"`
 	IPFilter              []string                               `json:"ip_filter"`
 	KafkaConnectEnabled   bool                                   `json:"kafka_connect_enabled"`
 	KafkaRESTEnabled      bool                                   `json:"kafka_rest_enabled"`
 	SchemaRegistryEnabled bool                                   `json:"schema_registry_enabled"`
 	URI                   string                                 `json:"uri"`
 	URIParams             map[string]interface{}                 `json:"uri_params"`
-	Users                 []dbServiceKafkaUserShowOutput         `json:"users"`
+	Users                 []DBServiceKafkaUserShowOutput         `json:"users"`
 	Version               string                                 `json:"version"`
 }
 
-func formatDatabaseServiceKafkaTable(t *table.Table, o *dbServiceKafkaShowOutput) {
+func formatDatabaseServiceKafkaTable(t *table.Table, o *DBServiceKafkaShowOutput) {
 	t.Append([]string{"Version", o.Version})
 	t.Append([]string{"URI", redactDatabaseServiceURI(o.URI)})
 	t.Append([]string{"IP Filter", strings.Join(o.IPFilter, ", ")})
@@ -144,7 +144,7 @@ func formatDatabaseServiceKafkaTable(t *table.Table, o *dbServiceKafkaShowOutput
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (output.Outputter, error) {
+func (c *ServiceShow) ShowDatabaseServiceKafka(ctx context.Context) (output.Outputter, error) {
 
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -169,7 +169,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 		out := make(dbServiceBackupListOutput, 0)
 		if databaseService.Backups != nil {
 			for _, b := range databaseService.Backups {
-				out = append(out, dbServiceBackupListItemOutput{
+				out = append(out, DBServiceBackupListItemOutput{
 					Date: b.BackupTime,
 					Name: b.BackupName,
 					Size: b.DataSize,
@@ -182,7 +182,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 		out := make(dbServiceNotificationListOutput, 0)
 		if databaseService.Notifications != nil {
 			for _, n := range databaseService.Notifications {
-				out = append(out, dbServiceNotificationListItemOutput{
+				out = append(out, DBServiceNotificationListItemOutput{
 					Level:   string(n.Level),
 					Message: wordwrap.WrapString(n.Message, 50),
 					Type:    string(n.Type),
@@ -233,7 +233,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 		return nil, nil
 	}
 
-	out := dbServiceShowOutput{
+	out := DBServiceShowOutput{
 		Zone:                  c.Zone,
 		Name:                  string(databaseService.Name),
 		Type:                  string(databaseService.Type),
@@ -257,11 +257,11 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 			return
 		}(),
 
-		Kafka: &dbServiceKafkaShowOutput{
-			ACL: func() (v []dbServiceKafkaACLShowOutput) {
+		Kafka: &DBServiceKafkaShowOutput{
+			ACL: func() (v []DBServiceKafkaACLShowOutput) {
 				if aclConfig.TopicAcl != nil {
 					for _, acl := range aclConfig.TopicAcl {
-						v = append(v, dbServiceKafkaACLShowOutput{
+						v = append(v, DBServiceKafkaACLShowOutput{
 							ID:         string(acl.ID),
 							Permission: string(acl.Permission),
 							Topic:      acl.Topic,
@@ -272,7 +272,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 				return
 			}(),
 
-			AuthenticationMethods: func() (v dbServiceKafkaAuthenticationShowOutput) {
+			AuthenticationMethods: func() (v DBServiceKafkaAuthenticationShowOutput) {
 				if databaseService.AuthenticationMethods != nil {
 					v.Certificate = utils.DefaultBool(databaseService.AuthenticationMethods.Certificate, false)
 					v.SASL = utils.DefaultBool(databaseService.AuthenticationMethods.Sasl, false)
@@ -280,10 +280,10 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 				return
 			}(),
 
-			Components: func() (v []dbServiceKafkaComponentShowOutput) {
+			Components: func() (v []DBServiceKafkaComponentShowOutput) {
 				if databaseService.Components != nil {
 					for _, c := range databaseService.Components {
-						v = append(v, dbServiceKafkaComponentShowOutput{
+						v = append(v, DBServiceKafkaComponentShowOutput{
 							Component:            c.Component,
 							Host:                 c.Host,
 							AuthenticationMethod: string(c.KafkaAuthenticationMethod),
@@ -296,7 +296,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 				return
 			}(),
 
-			ConnectionInfo: dbServiceKafkaConnectionInfoShowOutput{
+			ConnectionInfo: DBServiceKafkaConnectionInfoShowOutput{
 				AccessCert:  &databaseService.ConnectionInfo.AccessCert,
 				AccessKey:   &databaseService.ConnectionInfo.AccessKey,
 				Nodes:       &databaseService.ConnectionInfo.Nodes,
@@ -318,10 +318,10 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 			URI:       databaseService.URI,
 			URIParams: databaseService.URIParams,
 
-			Users: func() (v []dbServiceKafkaUserShowOutput) {
+			Users: func() (v []DBServiceKafkaUserShowOutput) {
 				if databaseService.Users != nil {
 					for _, u := range databaseService.Users {
-						v = append(v, dbServiceKafkaUserShowOutput{
+						v = append(v, DBServiceKafkaUserShowOutput{
 							AccessCert:       &u.AccessCert,
 							AccessCertExpiry: &u.AccessCertExpiry,
 							AccessKey:        &u.AccessKey,
