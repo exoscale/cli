@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
@@ -51,7 +52,7 @@ func (c *dbaasServiceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	svc, err := dbaasGetV3(ctx, c.Name, c.Zone)
+	svc, err := dbaasutils.GetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
 	}

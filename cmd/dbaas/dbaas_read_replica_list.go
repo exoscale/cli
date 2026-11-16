@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -65,7 +66,7 @@ func (c *dbaasReadReplicaListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	primaryDetails, err := dbaasGetV3(ctx, c.ServiceName, primaryService.Zone)
+	primaryDetails, err := dbaasutils.GetV3(ctx, c.ServiceName, primaryService.Zone)
 	if err != nil {
 		return err
 	}

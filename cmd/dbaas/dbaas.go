@@ -1,7 +1,6 @@
 package dbaas
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,10 +13,9 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/dbaas/acl"
+	"github.com/exoscale/cli/cmd/dbaas/migration"
 	"github.com/exoscale/cli/cmd/dbaas/role"
 	servicetype "github.com/exoscale/cli/cmd/dbaas/type"
-	"github.com/exoscale/cli/pkg/globalstate"
-	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var dbServiceMaintenanceDOWs = []string{
@@ -41,6 +39,7 @@ func init() {
 	// Attach subcommand groups that live in their own packages.
 	dbaasCmd.AddCommand(role.Cmd)
 	dbaasCmd.AddCommand(acl.Cmd)
+	dbaasCmd.AddCommand(migration.Cmd)
 	dbaasCmd.AddCommand(servicetype.Cmd)
 }
 
@@ -112,25 +111,4 @@ func redactDatabaseServiceURI(u string) string {
 	}
 
 	return u
-}
-
-func dbaasGetV3(ctx context.Context, name, zone string) (v3.DBAASServiceCommon, error) {
-
-	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
-	if err != nil {
-		return v3.DBAASServiceCommon{}, err
-	}
-
-	dbs, err := client.ListDBAASServices(ctx)
-	if err != nil {
-		return v3.DBAASServiceCommon{}, err
-	}
-
-	for _, db := range dbs.DBAASServices {
-		if string(db.Name) == name {
-			return db, nil
-		}
-	}
-
-	return v3.DBAASServiceCommon{}, fmt.Errorf("%q Database Service not found in zone %q", name, zone)
 }

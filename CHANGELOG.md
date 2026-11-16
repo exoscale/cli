@@ -31,6 +31,7 @@
 - storage: migrate `exo storage list` command to the struct-based command framework #963
 - storage: migrate `exo storage cors` command to the struct-based command framework #963
 - dbaas: move `exo dbaas type` commands from package dbaas to their own package `cmd/dbaas/type`
+- dbaas: move `exo dbaas migration` commands from package dbaas to their own package `cmd/dbaas/migration`
 
 ### Bug fixes
 

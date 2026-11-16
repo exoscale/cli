@@ -1,0 +1,25 @@
+# Test: dbaas migration status/stop
+# Starting a real migration needs a reachable source database, so this
+# covers the error paths on a service with no migration running, and on an
+# engine that doesn't support migrations.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# Unknown service
+! exec exo --zone $TEST_ZONE dbaas migration status no-such-svc-$TEST_RUN_ID
+stderr 'resource not found in zone'
+! exec exo --zone $TEST_ZONE dbaas migration stop no-such-svc-$TEST_RUN_ID
+stderr 'Database Service not found in zone'
+
+# Service with no migration running
+exec exo --zone $TEST_ZONE --output-format json dbaas create pg hobbyist-2 pg-mig-$TEST_RUN_ID --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f pg-mig-$TEST_RUN_ID
+wait-dbaas-state $TEST_ZONE pg-mig-$TEST_RUN_ID running 1200
+
+! exec exo --zone $TEST_ZONE dbaas migration stop pg-mig-$TEST_RUN_ID
+stderr 'not running in zone'
+
+# Engine without migration support (checked before any migration call)
+exec exo --zone $TEST_ZONE --output-format json dbaas create grafana hobbyist-2 gf-mig-$TEST_RUN_ID --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f gf-mig-$TEST_RUN_ID
+! exec exo --zone $TEST_ZONE dbaas migration stop gf-mig-$TEST_RUN_ID
+stderr 'migrations not supported for database type "grafana"'

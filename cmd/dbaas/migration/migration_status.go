@@ -1,4 +1,4 @@
-package dbaas
+package migration
 
 import (
 	"errors"
@@ -62,7 +62,7 @@ func (c *dbaasMigrationStatusCmd) CmdRun(cmd *cobra.Command, args []string) erro
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasMigrationCmd, &dbaasMigrationStatusCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasMigrationStatusCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

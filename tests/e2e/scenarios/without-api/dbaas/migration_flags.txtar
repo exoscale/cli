@@ -1,0 +1,29 @@
+# Test: dbaas migration help and argument checks (no API call)
+
+exec exo dbaas migration --help
+stdout 'status'
+stdout 'stop'
+
+# "c" alias of the migration group
+exec exo dbaas c --help
+stdout 'database migration management'
+
+exec exo dbaas migration status --help
+stdout '--zone'
+exec exo dbaas migration stop --help
+stdout '--zone'
+
+# NAME is required
+! exec exo dbaas migration status
+stderr 'missing arguments'
+! exec exo dbaas migration stop
+stderr 'missing arguments'
+
+-- .config/exoscale/exoscale.toml --
+defaultaccount = "test"
+
+[[accounts]]
+name = "test"
+key = "EXO000000000000000000"
+secret = "dummy-secret-for-help-test"
+defaultZone = "ch-gva-2"

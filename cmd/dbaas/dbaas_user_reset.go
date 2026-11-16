@@ -5,6 +5,7 @@ import (
 	"os"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 
 	"github.com/spf13/cobra"
@@ -51,7 +52,7 @@ func (c *dbaasUserResetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *dbaasUserResetCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
 	ctx := exocmd.GContext
-	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
+	db, err := dbaasutils.GetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
 	}
