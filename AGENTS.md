@@ -4,7 +4,7 @@
 
 All new commands must use the struct-based pattern.
 **Do not copy the old flat `var cmd = &cobra.Command{...}` commands** - they
-exist in `cmd/storage/`, `cmd/dns/`, `cmd/dbaas/` and are legacy.
+exist in `cmd/dns/`, `cmd/dbaas/` and are legacy.
 
 Read this file before writing any new command:
 `cmd/aiservices/deployment/deployment_create.go`
@@ -51,6 +51,30 @@ func init() {
 }
 ```
 
+In `CmdPreRun`, the struct fields are only filled by
+`clicmd.CliCommandDefaultPreRun`. Do what works on the raw `args` before it
+(argument count, editing an argument such as trimming `sos://`, setting a flag
+default), and check the values after it, on the struct fields rather than with
+`cmd.Flags().Get...()`:
+
+```go
+func (c *myResourceCopyCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+    if len(args) != 2 {
+        clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
+    }
+
+    if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+        return err
+    }
+
+    if c.Source == c.Destination {
+        clicmd.CmdExitOnUsageError(cmd, "source and destination must differ")
+    }
+
+    return nil
+}
+```
+
 Supported struct tags:
 
 | Tag | Purpose |
@@ -66,9 +90,33 @@ Supported struct tags:
 | `cli-deprecated:"msg"` | Mark flag deprecated |
 
 Supported field types: `string`, `int64`, `bool`, `time.Duration` (e.g. `15m`),
-`[]string`, `map[string]string`, and any type whose pointer implements
-`pflag.Value` (flag or single positional arg, not variadic). Any other type
-panics at startup.
+`time.Time` (see below), `[]string`, `map[string]string`, and any type whose
+pointer implements `pflag.Value` (flag or single positional arg, not variadic).
+Any other type panics at startup.
+
+For a timestamp, declare a plain `time.Time` field, not a `string` parsed by
+hand. Users pass an RFC 3339 timestamp (`2023-06-07T10:00:00Z` or
+`2023-06-07T10:00:00+02:00`), an invalid one is reported naming the flag, and
+an empty value (`--since ""`) leaves the field at the zero time, so check
+"unset" with `IsZero()`. The help shows the flag as `--since string`:
+
+```go
+Since time.Time `cli-usage:"only objects modified after an RFC 3339 timestamp"` // --since flag
+```
+
+A `[]string` positional takes the remaining arguments, except one for each
+positional declared after it, so required (`#`) single positionals can follow
+it and take the last arguments, in order:
+
+```go
+Files       []string `cli-arg:"#" cli-usage:"FILE"`                   // a.txt b.txt
+Destination string   `cli-arg:"#" cli-usage:"sos://BUCKET/[PREFIX/]"` // sos://my-bucket/
+```
+
+`upload a.txt b.txt sos://my-bucket/` sets `Files` to `[a.txt b.txt]` and
+`Destination` to `sos://my-bucket/`, and the help shows
+`upload FILE... sos://BUCKET/[PREFIX/]`. An optional (`?`) positional or a
+second `[]string` after a `[]string` is ambiguous and panics at startup.
 
 For binary input (keys, ciphertexts, signatures...) use `clicmd.BinaryValue`
 (`pkg/clicmd/binary_value.go`) instead of a base64 `string`. The field holds the
@@ -101,14 +149,23 @@ printed as a warning on stderr when the command runs.
 
 ## Folder layout
 
-**Anti-pattern: don't extend flat layouts.** `cmd/storage/`, `cmd/dns/`,
-`cmd/dbaas/` and similar are legacy flat groups. Adding or refactoring a
-subcommand under one of them MUST promote the cluster to its own subpackage
-following the layout already used elsewhere in the repo —
+One package per command group: the group's leaf commands live in it as
+`<group>_<verb>.go`, and each nested group gets its own subpackage.
 `cmd/aiservices/deployment/` is the canonical example (`deployment.go`
 declares `var Cmd`; siblings live as `deployment_<verb>.go` in the same dir).
+
+**Anti-pattern: don't extend flat layouts.** `cmd/dns/`,
+`cmd/dbaas/` and similar are legacy flat groups: they hold nested groups as
+file prefixes (`storage_bucket_replication_set.go`). Adding or refactoring a
+nested group under one of them MUST promote it to its own subpackage.
 Concrete case in flight: `cmd/storage/storage_bucket_lifecycle*.go` ->
 `cmd/storage/bucket/lifecycle/{lifecycle,lifecycle_show,lifecycle_set,lifecycle_delete}.go`.
+
+A leaf command directly under the group stays in the group's package when
+migrated, rewritten in place: `exo storage list` is `cmd/storage/storage_list.go`,
+while the `exo storage cors` group is `cmd/storage/cors/`. Code used only by
+one command goes in its file, or in `<group>_<verb>_helpers.go` next to it
+when it deserves unit tests (e.g. `cmd/storage/storage_list_helpers.go`).
 
 New command group:
 
