@@ -1,4 +1,4 @@
-package dbaas
+package externalendpoint
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasExternalEndpointCreateCmd) createDatadog(cmd *cobra.Command, _ []string) error {
+func (c *dbaasExternalEndpointUpdateCmd) updateDatadog(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
@@ -29,8 +29,8 @@ func (c *dbaasExternalEndpointCreateCmd) createDatadog(cmd *cobra.Command, _ []s
 		}
 	}
 
-	datadogRequestPayload := v3.DBAASEndpointDatadogInputCreate{
-		Settings: &v3.DBAASEndpointDatadogInputCreateSettings{},
+	datadogRequestPayload := v3.DBAASEndpointDatadogInputUpdate{
+		Settings: &v3.DBAASEndpointDatadogInputUpdateSettings{},
 	}
 
 	if c.DatadogAPIKey != "" {
@@ -55,13 +55,13 @@ func (c *dbaasExternalEndpointCreateCmd) createDatadog(cmd *cobra.Command, _ []s
 		datadogRequestPayload.Settings.MaxPartitionContexts = int64(c.DatadogMaxPartitionContexts)
 	}
 
-	op, err := client.CreateDBAASExternalEndpointDatadog(ctx, c.Name, datadogRequestPayload)
+	op, err := client.UpdateDBAASExternalEndpointDatadog(ctx, v3.UUID(c.ID), datadogRequestPayload)
 
 	if err != nil {
 		return err
 	}
 
-	utils.DecorateAsyncOperation(fmt.Sprintf("Creating DBaaS Datadog external Endpoint %q", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Updating DBaaS Datadog external Endpoint %q", c.ID), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 

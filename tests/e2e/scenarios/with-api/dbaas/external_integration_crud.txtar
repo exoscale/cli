@@ -7,7 +7,7 @@ env EXOSCALE_ZONE=$TEST_ZONE
 
 # Endpoint first: deferred deletes run last-in first-out, so the service
 # (and its integration) is deleted before the endpoint.
-exec exo --output-format json dbaas external-endpoint create prometheus prom-ei-$TEST_RUN_ID --prometheus-basic-auth-username exo --prometheus-basic-auth-password exo-e2e-$TEST_RUN_ID
+exec exo --output-format json dbaas external-endpoint create prometheus prom-ei-$TEST_RUN_ID --prometheus-basic-auth-username exo-e2e --prometheus-basic-auth-password exo-e2e-$TEST_RUN_ID
 json-setenv ENDPOINT_ID id stdout
 defer exo dbaas external-endpoint delete prometheus $ENDPOINT_ID
 

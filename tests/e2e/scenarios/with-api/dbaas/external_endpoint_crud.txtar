@@ -1,0 +1,58 @@
+# Test: dbaas external-endpoint create/list/show/update/delete
+# Uses Prometheus and Rsyslog endpoints: neither needs a third-party account,
+# and the API doesn't connect to them until a service is attached.
+# TEST_RUN_ID is injected by the API test runner.
+
+# external-endpoint commands have no --zone flag, they use the default zone
+env EXOSCALE_ZONE=$TEST_ZONE
+
+# Prometheus: create prints the endpoint
+exec exo --output-format json dbaas external-endpoint create prometheus prom-ee-$TEST_RUN_ID --prometheus-basic-auth-username exo-e2e --prometheus-basic-auth-password exo-e2e-$TEST_RUN_ID
+json-setenv PROM_ID id stdout
+defer exo dbaas external-endpoint delete prometheus $PROM_ID
+stdout '"type": ?"prometheus"'
+stdout '"basic-auth-username": ?"exo-e2e"'
+
+# Rsyslog, with typed (int64, bool) flags
+exec exo --output-format json dbaas external-endpoint create rsyslog rsys-ee-$TEST_RUN_ID --rsyslog-server 192.0.2.10 --rsyslog-port 514 --rsyslog-format rfc5424 --rsyslog-tls=false
+json-setenv RSYS_ID id stdout
+defer exo dbaas external-endpoint delete rsyslog $RSYS_ID
+stdout '"server": ?"192.0.2.10"'
+stdout '"port": ?514'
+
+# List shows both endpoints
+exec exo --output-format json dbaas external-endpoint list
+stdout '"name": ?"prom-ee-'$TEST_RUN_ID'"'
+stdout '"name": ?"rsys-ee-'$TEST_RUN_ID'"'
+exec exo dbaas external-endpoint list
+stdout 'prom-ee-'$TEST_RUN_ID
+stdout 'rsys-ee-'$TEST_RUN_ID
+
+# Show, in JSON and table
+exec exo --output-format json dbaas external-endpoint show prometheus $PROM_ID
+stdout '"name": ?"prom-ee-'$TEST_RUN_ID'"'
+exec exo dbaas external-endpoint show rsyslog $RSYS_ID
+stdout 'rsys-ee-'$TEST_RUN_ID
+
+# Update prints the updated endpoint
+exec exo --output-format json dbaas external-endpoint update prometheus $PROM_ID --prometheus-basic-auth-username exo-e2e-2
+stdout '"basic-auth-username": ?"exo-e2e-2"'
+exec exo --output-format json dbaas external-endpoint update rsyslog $RSYS_ID --rsyslog-port 1514
+stdout '"port": ?1514'
+
+# --quiet prints nothing
+exec exo --quiet dbaas external-endpoint update rsyslog $RSYS_ID --rsyslog-port 514
+! stdout .
+
+# Errors
+! exec exo dbaas external-endpoint show unknown $PROM_ID
+stderr 'unsupported external endpoint type "unknown"'
+! exec exo dbaas external-endpoint show prometheus not-a-uuid
+stderr 'invalid endpoint ID'
+! exec exo dbaas external-endpoint delete prometheus not-a-uuid
+stderr 'invalid endpoint ID'
+
+# Delete
+exec exo dbaas external-endpoint delete rsyslog $RSYS_ID
+exec exo --output-format json dbaas external-endpoint list
+! stdout $RSYS_ID

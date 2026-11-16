@@ -1,4 +1,4 @@
-package dbaas
+package externalendpoint
 
 import (
 	"fmt"
@@ -81,7 +81,7 @@ func (c *dbaasExternalEndpointDeleteCmd) CmdRun(cmd *cobra.Command, args []strin
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointDeleteCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasExternalEndpointDeleteCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

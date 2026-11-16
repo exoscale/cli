@@ -1,4 +1,4 @@
-package dbaas
+package externalendpoint
 
 import (
 	"fmt"
@@ -12,15 +12,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (c *dbaasExternalEndpointUpdateCmd) updateElasticsearch(_ *cobra.Command, _ []string) error {
+func (c *dbaasExternalEndpointCreateCmd) createElasticsearch(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
 
-	elasticsearchRequestPayload := v3.DBAASEndpointElasticsearchInputUpdate{
-		Settings: &v3.DBAASEndpointElasticsearchInputUpdateSettings{},
+	elasticsearchRequestPayload := v3.DBAASEndpointElasticsearchInputCreate{
+		Settings: &v3.DBAASEndpointElasticsearchInputCreateSettings{},
 	}
 
 	if c.ElasticsearchURL != "" {
@@ -39,12 +39,12 @@ func (c *dbaasExternalEndpointUpdateCmd) updateElasticsearch(_ *cobra.Command, _
 		elasticsearchRequestPayload.Settings.Timeout = c.ElasticsearchTimeout
 	}
 
-	op, err := client.UpdateDBAASExternalEndpointElasticsearch(ctx, v3.UUID(c.ID), elasticsearchRequestPayload)
+	op, err := client.CreateDBAASExternalEndpointElasticsearch(ctx, c.Name, elasticsearchRequestPayload)
 	if err != nil {
 		return err
 	}
 
-	utils.DecorateAsyncOperation(fmt.Sprintf("Updating DBaaS ElasticSearch external Endpoint %q", c.ID), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating DBaaS ElasticSearch external Endpoint %q", c.Name), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {

@@ -1,4 +1,4 @@
-package dbaas
+package externalendpoint
 
 import (
 	"fmt"
@@ -9,13 +9,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type dbaasExternalEndpointCreateCmd struct {
+type dbaasExternalEndpointUpdateCmd struct {
 	clicmd.CliCommandSettings `cli-cmd:"-"`
 
-	_ bool `cli-cmd:"create"`
+	_ bool `cli-cmd:"update"`
 
 	Type string `cli-arg:"#"`
-	Name string `cli-arg:"#"`
+	ID   string `cli-arg:"#"`
 
 	HelpDatadog       bool `cli-usage:"show usage for flags specific to the datadog external endpoint type"`
 	HelpElasticsearch bool `cli-usage:"show usage for flags specific to the elasticsearch external endpoint type"`
@@ -58,7 +58,7 @@ type dbaasExternalEndpointCreateCmd struct {
 	RsyslogMaxMessageSize int64  `cli-flag:"rsyslog-max-message-size" cli-usage:"Rsyslog max message size" cli-hidden:""`
 }
 
-func (c *dbaasExternalEndpointCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalEndpointUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-datadog"):
 		clicmd.CmdShowHelpFlags(cmd.Flags(), "datadog-")
@@ -80,30 +80,30 @@ func (c *dbaasExternalEndpointCreateCmd) CmdPreRun(cmd *cobra.Command, args []st
 	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasExternalEndpointCreateCmd) CmdAliases() []string {
-	return clicmd.GCreateAlias
+func (c *dbaasExternalEndpointUpdateCmd) CmdAliases() []string {
+	return nil
 }
 
-func (c *dbaasExternalEndpointCreateCmd) CmdLong() string {
-	return "Create a new external endpoint for DBaaS"
+func (c *dbaasExternalEndpointUpdateCmd) CmdLong() string {
+	return "Update an existing external endpoint for DBaaS"
 }
 
-func (c *dbaasExternalEndpointCreateCmd) CmdShort() string {
-	return "Create a new external endpoint for DBaaS"
+func (c *dbaasExternalEndpointUpdateCmd) CmdShort() string {
+	return "Update an existing external endpoint for DBaaS"
 }
 
-func (c *dbaasExternalEndpointCreateCmd) CmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalEndpointUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error {
 	switch c.Type {
 	case dbaasutils.ExternalEndpointTypeDatadog:
-		return c.createDatadog(cmd, args)
+		return c.updateDatadog(cmd, args)
 	case dbaasutils.ExternalEndpointTypeOpensearch:
-		return c.createOpensearch(cmd, args)
+		return c.updateOpensearch(cmd, args)
 	case dbaasutils.ExternalEndpointTypeElasticsearch:
-		return c.createElasticsearch(cmd, args)
+		return c.updateElasticsearch(cmd, args)
 	case dbaasutils.ExternalEndpointTypePrometheus:
-		return c.createPrometheus(cmd, args)
+		return c.updatePrometheus(cmd, args)
 	case dbaasutils.ExternalEndpointTypeRsyslog:
-		return c.createRsyslog(cmd, args)
+		return c.updateRsyslog(cmd, args)
 	default:
 		return fmt.Errorf("unsupported external endpoint type %q", c.Type)
 	}
@@ -111,7 +111,7 @@ func (c *dbaasExternalEndpointCreateCmd) CmdRun(cmd *cobra.Command, args []strin
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointCreateCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasExternalEndpointUpdateCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }
