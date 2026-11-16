@@ -20,6 +20,7 @@ import (
 	readreplica "github.com/exoscale/cli/cmd/dbaas/read-replica"
 	"github.com/exoscale/cli/cmd/dbaas/role"
 	servicetype "github.com/exoscale/cli/cmd/dbaas/type"
+	"github.com/exoscale/cli/cmd/dbaas/user"
 )
 
 var dbServiceMaintenanceDOWs = []string{
@@ -49,6 +50,7 @@ func init() {
 	dbaasCmd.AddCommand(migration.Cmd)
 	dbaasCmd.AddCommand(readreplica.Cmd)
 	dbaasCmd.AddCommand(servicetype.Cmd)
+	dbaasCmd.AddCommand(user.Cmd)
 }
 
 // parseDtabaseBackupSchedule parses a Database Service backup schedule value
