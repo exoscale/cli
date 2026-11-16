@@ -11,6 +11,7 @@ import (
 	"github.com/mitchellh/go-wordwrap"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	servicetype "github.com/exoscale/cli/cmd/dbaas/type"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -135,7 +136,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (o
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
 				c.ShowSettings,
-				strings.Join(grafanaSettings, ", "),
+				strings.Join(servicetype.GrafanaSettings, ", "),
 			)
 		}
 

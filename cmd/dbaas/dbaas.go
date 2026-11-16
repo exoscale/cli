@@ -6,19 +6,17 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 
-	"github.com/mitchellh/go-wordwrap"
 	"github.com/spf13/cobra"
 	"github.com/xeipuuv/gojsonschema"
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/dbaas/acl"
 	"github.com/exoscale/cli/cmd/dbaas/role"
+	servicetype "github.com/exoscale/cli/cmd/dbaas/type"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -43,6 +41,7 @@ func init() {
 	// Attach subcommand groups that live in their own packages.
 	dbaasCmd.AddCommand(role.Cmd)
 	dbaasCmd.AddCommand(acl.Cmd)
+	dbaasCmd.AddCommand(servicetype.Cmd)
 }
 
 // parseDtabaseBackupSchedule parses a Database Service backup schedule value
@@ -113,60 +112,6 @@ func redactDatabaseServiceURI(u string) string {
 	}
 
 	return u
-}
-
-// dbaasShowSettings outputs a table-formatted list of key/value settings.
-func dbaasShowSettings(settings map[string]interface{}) {
-	t := table.NewTable(os.Stdout)
-	defer t.Render()
-
-	t.SetHeader([]string{"key", "type", "description"})
-
-	for k, v := range settings {
-		s, ok := v.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		row := []string{k}
-
-		typ := "-"
-		if v, ok := s["type"]; ok {
-			typ = fmt.Sprint(v)
-		}
-		row = append(row, typ)
-
-		var description string
-		if v, ok := s["description"]; ok {
-			description = wordwrap.WrapString(v.(string), 50)
-
-			if v, ok := s["enum"]; ok {
-				description = fmt.Sprintf("%s\n  * Supported values:\n%s", description, func() string {
-					values := make([]string, len(v.([]interface{})))
-					for i, val := range v.([]interface{}) {
-						values[i] = fmt.Sprintf("    - %v", val)
-					}
-					return strings.Join(values, "\n")
-				}())
-			}
-
-			min, hasMin := s["minimum"]
-			max, hasMax := s["maximum"]
-			if hasMin && hasMax {
-				description = fmt.Sprintf("%s\n  * Minimum: %v / Maximum: %v", description, min, max)
-			}
-
-			if v, ok := s["default"]; ok {
-				description = fmt.Sprintf("%s\n  * Default: %v", description, v)
-			}
-
-			if v, ok := s["example"]; ok {
-				description = fmt.Sprintf("%s\n  * Example: %v", description, v)
-			}
-		}
-		row = append(row, description)
-
-		t.Append(row)
-	}
 }
 
 func dbaasGetV3(ctx context.Context, name, zone string) (v3.DBAASServiceCommon, error) {

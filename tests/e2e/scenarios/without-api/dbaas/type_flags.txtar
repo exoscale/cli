@@ -1,0 +1,25 @@
+# Test: dbaas type help and argument checks (no API call)
+
+exec exo dbaas type --help
+stdout 'list'
+stdout 'show'
+
+exec exo dbaas type show --help
+stdout '--plans'
+stdout '--settings'
+stdout '--backup-config'
+stdout 'pg, pgbouncer, pglookout, timescaledb'
+stdout 'thanos, compactor, query, query-frontend'
+
+# NAME is required
+! exec exo dbaas type show
+stderr 'missing arguments'
+
+-- .config/exoscale/exoscale.toml --
+defaultaccount = "test"
+
+[[accounts]]
+name = "test"
+key = "EXO000000000000000000"
+secret = "dummy-secret-for-help-test"
+defaultZone = "ch-gva-2"

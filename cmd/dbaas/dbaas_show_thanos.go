@@ -10,6 +10,7 @@ import (
 	"github.com/mitchellh/go-wordwrap"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	servicetype "github.com/exoscale/cli/cmd/dbaas/type"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -51,8 +52,6 @@ type dbServiceThanosShowOutput struct {
 	URIParams      map[string]interface{}               `json:"uri_params"`
 	Users          []dbServiceThanosUserShowOutput      `json:"users"`
 }
-
-var thanosSettings = []string{"thanos", "compactor", "query", "query-frontend"}
 
 func formatDatabaseServiceThanosTable(t *table.Table, o *dbServiceThanosShowOutput) {
 	t.Append([]string{"URI", o.URI})
@@ -198,7 +197,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceThanos(ctx context.Context) (ou
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
 				c.ShowSettings,
-				strings.Join(thanosSettings, ", "),
+				strings.Join(servicetype.ThanosSettings, ", "),
 			)
 		}
 

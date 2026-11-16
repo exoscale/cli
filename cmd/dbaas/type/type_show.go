@@ -1,4 +1,4 @@
-package dbaas
+package servicetype
 
 import (
 	"fmt"
@@ -92,26 +92,6 @@ func (o *dbaasTypeShowOutput) ToTable() {
 	t.Append([]string{"Default Version", o.DefaultVersion})
 }
 
-var (
-	grafanaSettings    = []string{"grafana"}
-	opensearchSettings = []string{"opensearch"}
-	kafkaSettings      = []string{
-		"kafka",
-		"kafka-rest",
-		"kafka-connect",
-		"schema-registry",
-	}
-	mysqlSettings = []string{"mysql"}
-	pgSettings    = []string{
-		"pg",
-		"pgbouncer",
-		"pglookout",
-		"timescaledb",
-	}
-	valkeySettings     = []string{"valkey"}
-	clickhouseSettings = []string{"clickhouse"}
-)
-
 type dbaasTypeShowCmd struct {
 	clicmd.CliCommandSettings `cli-cmd:"-"`
 
@@ -146,13 +126,13 @@ Supported output template annotations:
 * When showing a Database Service: %s
 
 * When listing Database Service plans: %s`,
-		strings.Join(grafanaSettings, ", "),
-		strings.Join(opensearchSettings, ", "),
-		strings.Join(kafkaSettings, ", "),
-		strings.Join(mysqlSettings, ", "),
-		strings.Join(pgSettings, ", "),
-		strings.Join(valkeySettings, ", "),
-		strings.Join(thanosSettings, ", "),
+		strings.Join(GrafanaSettings, ", "),
+		strings.Join(OpensearchSettings, ", "),
+		strings.Join(KafkaSettings, ", "),
+		strings.Join(MysqlSettings, ", "),
+		strings.Join(PGSettings, ", "),
+		strings.Join(ValkeySettings, ", "),
+		strings.Join(ThanosSettings, ", "),
 		strings.Join(output.TemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
 }
@@ -195,11 +175,11 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 
 		switch c.Name {
 		case "grafana":
-			if !utils.IsInList(grafanaSettings, c.ShowSettings) {
+			if !utils.IsInList(GrafanaSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(grafanaSettings, ", "),
+					strings.Join(GrafanaSettings, ", "),
 				)
 			}
 
@@ -212,13 +192,13 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 				settings = res.Settings.Grafana.Properties
 			}
 
-			dbaasShowSettings(settings)
+			showSettings(settings)
 		case "kafka":
-			if !utils.IsInList(kafkaSettings, c.ShowSettings) {
+			if !utils.IsInList(KafkaSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(kafkaSettings, ", "),
+					strings.Join(KafkaSettings, ", "),
 				)
 			}
 
@@ -238,14 +218,14 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 				settings = res.Settings.SchemaRegistry.Properties
 			}
 
-			dbaasShowSettings(settings)
+			showSettings(settings)
 
 		case "opensearch":
-			if !utils.IsInList(opensearchSettings, c.ShowSettings) {
+			if !utils.IsInList(OpensearchSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(opensearchSettings, ", "),
+					strings.Join(OpensearchSettings, ", "),
 				)
 			}
 
@@ -258,14 +238,14 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 				settings = res.Settings.Opensearch.Properties
 			}
 
-			dbaasShowSettings(settings)
+			showSettings(settings)
 
 		case "mysql":
-			if !utils.IsInList(mysqlSettings, c.ShowSettings) {
+			if !utils.IsInList(MysqlSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(mysqlSettings, ", "),
+					strings.Join(MysqlSettings, ", "),
 				)
 			}
 
@@ -278,14 +258,14 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 				settings = res.Settings.Mysql.Properties
 			}
 
-			dbaasShowSettings(settings)
+			showSettings(settings)
 
 		case "pg":
-			if !utils.IsInList(pgSettings, c.ShowSettings) {
+			if !utils.IsInList(PGSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(pgSettings, ", "),
+					strings.Join(PGSettings, ", "),
 				)
 			}
 
@@ -303,14 +283,14 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 				settings = res.Settings.Pglookout.Properties
 			}
 
-			dbaasShowSettings(settings)
+			showSettings(settings)
 
 		case "valkey":
-			if !utils.IsInList(valkeySettings, c.ShowSettings) {
+			if !utils.IsInList(ValkeySettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(valkeySettings, ", "),
+					strings.Join(ValkeySettings, ", "),
 				)
 			}
 
@@ -324,14 +304,14 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 				settings = res.Settings.Valkey.Properties
 			}
 
-			dbaasShowSettings(settings)
+			showSettings(settings)
 
 		case "thanos":
-			if !utils.IsInList(thanosSettings, c.ShowSettings) {
+			if !utils.IsInList(ThanosSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(thanosSettings, ", "),
+					strings.Join(ThanosSettings, ", "),
 				)
 			}
 
@@ -345,14 +325,14 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 				settings = res.Settings.Thanos.Properties
 			}
 
-			dbaasShowSettings(settings)
+			showSettings(settings)
 
 		case "clickhouse":
-			if !utils.IsInList(clickhouseSettings, c.ShowSettings) {
+			if !utils.IsInList(ClickhouseSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(clickhouseSettings, ", "),
+					strings.Join(ClickhouseSettings, ", "),
 				)
 			}
 
@@ -365,7 +345,7 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 				settings = res.Settings.Clickhouse.Properties
 			}
 
-			dbaasShowSettings(settings)
+			showSettings(settings)
 		}
 
 		return nil
@@ -407,7 +387,7 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasTypeCmd, &dbaasTypeShowCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasTypeShowCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

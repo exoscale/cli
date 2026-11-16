@@ -1,4 +1,4 @@
-package dbaas
+package servicetype
 
 import (
 	"fmt"
@@ -95,7 +95,7 @@ func (c *dbaasTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasTypeCmd, &dbaasTypeListCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasTypeListCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }
