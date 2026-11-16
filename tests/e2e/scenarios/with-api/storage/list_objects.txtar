@@ -17,7 +17,7 @@ stderr 'invalid argument "2023-06-07" for "--older-than-timestamp" flag: parsing
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-ls-$TEST_RUN_ID
 defer exo storage rb -f sos://sto-ls-$TEST_RUN_ID
 defer exo storage purge -f sos://sto-ls-$TEST_RUN_ID/
-exec exo storage bucket versioning enable sos://sto-ls-$TEST_RUN_ID
+exec exo storage bucket versioning enable -z $TEST_ZONE sos://sto-ls-$TEST_RUN_ID
 exec exo storage upload v1.txt sos://sto-ls-$TEST_RUN_ID/obj.txt
 exec exo storage upload v2.txt sos://sto-ls-$TEST_RUN_ID/obj.txt
 exec exo storage upload v1.txt sos://sto-ls-$TEST_RUN_ID/dir/a.txt

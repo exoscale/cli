@@ -18,7 +18,7 @@ stderr 'error: invalid argument: "sos:///dir/"'
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-pu-$TEST_RUN_ID
 defer exo storage rb -f sos://sto-pu-$TEST_RUN_ID
 defer exo storage purge -f sos://sto-pu-$TEST_RUN_ID/
-exec exo storage bucket versioning enable sos://sto-pu-$TEST_RUN_ID
+exec exo storage bucket versioning enable -z $TEST_ZONE sos://sto-pu-$TEST_RUN_ID
 exec exo storage upload v1.txt sos://sto-pu-$TEST_RUN_ID/obj.txt
 exec exo storage upload v2.txt sos://sto-pu-$TEST_RUN_ID/obj.txt
 exec exo storage upload v1.txt sos://sto-pu-$TEST_RUN_ID/dir/a.txt
