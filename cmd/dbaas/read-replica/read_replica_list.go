@@ -1,4 +1,4 @@
-package dbaas
+package readreplica
 
 import (
 	"fmt"
@@ -122,7 +122,7 @@ func dbaasReadReplicaListFromServices(primaryService v3.DBAASServiceCommon, serv
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasReadReplicaCmd, &dbaasReadReplicaListCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasReadReplicaListCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

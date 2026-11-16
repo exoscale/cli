@@ -1,4 +1,4 @@
-package dbaas
+package readreplica
 
 import (
 	"errors"
@@ -100,7 +100,7 @@ func (c *dbaasReadReplicaPromoteCmd) CmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasReadReplicaCmd, &dbaasReadReplicaPromoteCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasReadReplicaPromoteCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

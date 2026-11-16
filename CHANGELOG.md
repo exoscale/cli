@@ -33,6 +33,11 @@
 - dbaas: move `exo dbaas type` commands from package dbaas to their own package `cmd/dbaas/type`
 - dbaas: move `exo dbaas migration` commands from package dbaas to their own package `cmd/dbaas/migration`
 - dbaas: move `exo dbaas database` commands from package dbaas to their own package `cmd/dbaas/database` and the Database Service show logic to `cmd/dbaas/internal`
+- dbaas: move `exo dbaas read-replica` commands from package dbaas to their own package `cmd/dbaas/read-replica`
+
+### Bug fixes
+
+- dbaas: `exo dbaas read-replica create` always failed with "--source-service is required", the flags were checked before being parsed
 
 ### Bug fixes
 

@@ -9,6 +9,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
+	readreplica "github.com/exoscale/cli/cmd/dbaas/read-replica"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
@@ -57,7 +58,7 @@ func (c *dbaasServiceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	readReplicaNames := dbaasActiveReadReplicaNamesForPrimary(svc)
+	readReplicaNames := readreplica.ActiveReadReplicaNamesForPrimary(svc)
 	if len(readReplicaNames) > 0 {
 		return fmt.Errorf(
 			"cannot delete Database Service %s with active read replica(s): %s. Delete or promote the read replica(s) first",

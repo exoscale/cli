@@ -1,4 +1,4 @@
-package dbaas
+package readreplica
 
 import (
 	"context"
@@ -110,7 +110,7 @@ func dbaasGetReadReplicaIntegrationForReplica(service v3.DBAASServiceCommon) *v3
 	return nil
 }
 
-func dbaasActiveReadReplicaNamesForPrimary(service v3.DBAASServiceCommon) []string {
+func ActiveReadReplicaNamesForPrimary(service v3.DBAASServiceCommon) []string {
 	serviceName := string(service.Name)
 	replicaNames := make([]string, 0)
 

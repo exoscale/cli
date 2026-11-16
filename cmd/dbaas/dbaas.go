@@ -11,9 +11,11 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 
 	exocmd "github.com/exoscale/cli/cmd"
+
 	"github.com/exoscale/cli/cmd/dbaas/acl"
 	"github.com/exoscale/cli/cmd/dbaas/database"
 	"github.com/exoscale/cli/cmd/dbaas/migration"
+	readreplica "github.com/exoscale/cli/cmd/dbaas/read-replica"
 	"github.com/exoscale/cli/cmd/dbaas/role"
 	servicetype "github.com/exoscale/cli/cmd/dbaas/type"
 )
@@ -41,6 +43,7 @@ func init() {
 	dbaasCmd.AddCommand(acl.Cmd)
 	dbaasCmd.AddCommand(database.Cmd)
 	dbaasCmd.AddCommand(migration.Cmd)
+	dbaasCmd.AddCommand(readreplica.Cmd)
 	dbaasCmd.AddCommand(servicetype.Cmd)
 }
 

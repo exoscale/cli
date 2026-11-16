@@ -1,4 +1,4 @@
-package dbaas
+package readreplica
 
 import (
 	"testing"

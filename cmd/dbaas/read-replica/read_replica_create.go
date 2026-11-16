@@ -1,4 +1,4 @@
-package dbaas
+package readreplica
 
 import (
 	"fmt"
@@ -36,6 +36,10 @@ func (c *dbaasReadReplicaCreateCmd) CmdLong() string {
 }
 
 func (c *dbaasReadReplicaCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
+
 	if c.SourceService == "" {
 		return fmt.Errorf("--source-service is required")
 	}
@@ -46,7 +50,7 @@ func (c *dbaasReadReplicaCreateCmd) CmdPreRun(cmd *cobra.Command, args []string)
 		return fmt.Errorf("--plan is required")
 	}
 
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	return nil
 }
 
 func (c *dbaasReadReplicaCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -124,7 +128,7 @@ func (c *dbaasReadReplicaCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasReadReplicaCmd, &dbaasReadReplicaCreateCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasReadReplicaCreateCmd{
 		CliCommandSettings:    clicmd.DefaultCLICmdSettings(),
 		TerminationProtection: true,
 	}))

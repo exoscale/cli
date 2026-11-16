@@ -1,4 +1,4 @@
-package dbaas
+package readreplica
 
 import (
 	"context"
@@ -104,7 +104,7 @@ func (c *dbaasReadReplicaShowCmd) showReadReplica(ctx context.Context) (output.O
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasReadReplicaCmd, &dbaasReadReplicaShowCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasReadReplicaShowCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }
