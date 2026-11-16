@@ -87,7 +87,7 @@ func (c *storageMbCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(storageCmd, &storageMbCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &storageMbCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

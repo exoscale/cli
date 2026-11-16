@@ -81,7 +81,7 @@ func (c *storageMoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(storageCmd, &storageMoveCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &storageMoveCmd{
 		CliCommandSettings:   clicmd.DefaultCLICmdSettings(),
 		MultipartConcurrency: 4,
 	}))

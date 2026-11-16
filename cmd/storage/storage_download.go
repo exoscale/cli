@@ -143,7 +143,7 @@ func (c *storageDownloadCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(storageCmd, &storageDownloadCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &storageDownloadCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

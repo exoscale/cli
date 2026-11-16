@@ -63,7 +63,7 @@ func (c *storagePresignCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(storageCmd, &storagePresignCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &storagePresignCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 		Expires:            900 * time.Second,
 		Method:             "get",

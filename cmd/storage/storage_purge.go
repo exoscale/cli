@@ -109,7 +109,7 @@ func (c *storagePurgeCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(storageCmd, &storagePurgeCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &storagePurgeCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

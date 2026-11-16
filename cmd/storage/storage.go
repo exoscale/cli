@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	storageCmd = &cobra.Command{
+	Cmd = &cobra.Command{
 		Use:              "storage",
 		Short:            "Object Storage management",
 		Long:             storageCmdLongHelp(),
@@ -42,7 +42,7 @@ func getUserAgent(c *v3.Client) string {
 }
 
 func init() {
-	storageCmd.PersistentPreRunE = func(cmd *cobra.Command, _ []string) error {
+	Cmd.PersistentPreRunE = func(cmd *cobra.Command, _ []string) error {
 		// We have to wait until the actual command execution to assign a value to this variable
 		// because some of the global variables used are not initialized before Cobra executes
 		// the command.
@@ -65,11 +65,11 @@ func init() {
 
 		return nil
 	}
-	exocmd.RootCmd.AddCommand(storageCmd)
-	storageCmd.AddCommand(bucket.Cmd)
-	storageCmd.AddCommand(cors.Cmd)
-	storageCmd.AddCommand(headers.Cmd)
-	storageCmd.AddCommand(metadata.Cmd)
+	exocmd.RootCmd.AddCommand(Cmd)
+	Cmd.AddCommand(bucket.Cmd)
+	Cmd.AddCommand(cors.Cmd)
+	Cmd.AddCommand(headers.Cmd)
+	Cmd.AddCommand(metadata.Cmd)
 }
 
 var storageCmdLongHelp = func() string {

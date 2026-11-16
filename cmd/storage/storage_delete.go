@@ -108,7 +108,7 @@ func (c *storageDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(storageCmd, &storageDeleteCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &storageDeleteCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }
