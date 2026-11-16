@@ -36,7 +36,7 @@ type dbServiceValkeyShowOutput struct {
 	Components []dbServiceValkeyComponentShowOutput `json:"components"`
 	IPFilter   []string                             `json:"ip_filter"`
 	URI        string                               `json:"uri"`
-	URIParams  map[string]interface{}               `json:"uri_params"`
+	URIParams  map[string]any                       `json:"uri_params"`
 	Users      []dbServiceValkeyUserShowOutput      `json:"users"`
 }
 

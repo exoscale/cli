@@ -119,7 +119,7 @@ func (c *dbaasServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceShowCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasServiceShowCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

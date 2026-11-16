@@ -16,7 +16,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) error {
+func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command) error {
 	var updated bool
 
 	ctx := exocmd.GContext

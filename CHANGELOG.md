@@ -37,6 +37,7 @@
 - dbaas: move `exo dbaas external-integration` commands from package dbaas to their own package `cmd/dbaas/external-integration`, with `settings` in `cmd/dbaas/external-integration/settings`
 - dbaas: move `exo dbaas external-endpoint` commands from package dbaas to their own package `cmd/dbaas/external-endpoint`
 - dbaas: move `exo dbaas user` commands from package dbaas to their own package `cmd/dbaas/user`
+- dbaas: rework `exo dbaas` root group
 
 ### Bug fixes
 

@@ -49,7 +49,7 @@ type dbServiceThanosShowOutput struct {
 	IPFilter       []string                             `json:"ip_filter"`
 	PrometheusURI  *dbServiceThanosPrometheusURIOutput  `json:"prometheus_uri,omitempty"`
 	URI            string                               `json:"uri"`
-	URIParams      map[string]interface{}               `json:"uri_params"`
+	URIParams      map[string]any                       `json:"uri_params"`
 	Users          []dbServiceThanosUserShowOutput      `json:"users"`
 }
 

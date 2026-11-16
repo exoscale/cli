@@ -38,7 +38,7 @@ type dbServiceClickhouseShowOutput struct {
 	IPFilter       []string                                     `json:"ip_filter"`
 	PrometheusURI  *dbServiceClickhousePrometheusURIShowOutput  `json:"prometheus_uri,omitempty"`
 	URI            string                                       `json:"uri"`
-	URIParams      map[string]interface{}                       `json:"uri_params"`
+	URIParams      map[string]any                               `json:"uri_params"`
 	Users          []dbServiceClickhouseUserShowOutput          `json:"users"`
 	Version        string                                       `json:"version"`
 }

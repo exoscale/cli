@@ -15,7 +15,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command, _ []string) error {
+func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command) error {
 	var updated bool
 
 	ctx := exocmd.GContext
@@ -53,7 +53,7 @@ func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command, _ []string) err
 
 	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.ValkeySettings)) {
 		if c.ValkeySettings != "" {
-			var settings map[string]interface{}
+			var settings map[string]any
 
 			if err := json.Unmarshal([]byte(c.ValkeySettings), &settings); err != nil {
 				return err

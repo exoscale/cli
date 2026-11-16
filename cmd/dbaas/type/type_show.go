@@ -171,7 +171,7 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 	}
 
 	if c.ShowSettings != "" {
-		var settings map[string]interface{}
+		var settings map[string]any
 
 		switch c.Name {
 		case "grafana":

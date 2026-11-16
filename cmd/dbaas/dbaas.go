@@ -34,23 +34,23 @@ var dbServiceMaintenanceDOWs = []string{
 	"sunday",
 }
 
-var dbaasCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "dbaas",
 	Short: "Database as a Service management",
 }
 
 func init() {
-	exocmd.RootCmd.AddCommand(dbaasCmd)
+	exocmd.RootCmd.AddCommand(Cmd)
 	// Attach subcommand groups that live in their own packages.
-	dbaasCmd.AddCommand(role.Cmd)
-	dbaasCmd.AddCommand(acl.Cmd)
-	dbaasCmd.AddCommand(database.Cmd)
-	dbaasCmd.AddCommand(externalendpoint.Cmd)
-	dbaasCmd.AddCommand(externalintegration.Cmd)
-	dbaasCmd.AddCommand(migration.Cmd)
-	dbaasCmd.AddCommand(readreplica.Cmd)
-	dbaasCmd.AddCommand(servicetype.Cmd)
-	dbaasCmd.AddCommand(user.Cmd)
+	Cmd.AddCommand(role.Cmd)
+	Cmd.AddCommand(acl.Cmd)
+	Cmd.AddCommand(database.Cmd)
+	Cmd.AddCommand(externalendpoint.Cmd)
+	Cmd.AddCommand(externalintegration.Cmd)
+	Cmd.AddCommand(migration.Cmd)
+	Cmd.AddCommand(readreplica.Cmd)
+	Cmd.AddCommand(servicetype.Cmd)
+	Cmd.AddCommand(user.Cmd)
 }
 
 // parseDtabaseBackupSchedule parses a Database Service backup schedule value
@@ -77,8 +77,8 @@ func parseDatabaseBackupSchedule(v string) (int64, int64, error) {
 
 // validateDatabaseServiceSettings validates user-provided JSON-formatted
 // Database Service settings against a reference JSON Schema.
-func validateDatabaseServiceSettings(in string, schema interface{}) (map[string]interface{}, error) {
-	var userSettings map[string]interface{}
+func validateDatabaseServiceSettings(in string, schema any) (map[string]any, error) {
+	var userSettings map[string]any
 
 	if err := json.Unmarshal([]byte(in), &userSettings); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal JSON: %w", err)

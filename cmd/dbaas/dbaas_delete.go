@@ -89,7 +89,7 @@ func (c *dbaasServiceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceDeleteCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasServiceDeleteCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

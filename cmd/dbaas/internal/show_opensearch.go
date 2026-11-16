@@ -63,7 +63,7 @@ type dbServiceOpensearchIndexPatternShowOutput struct {
 type DBServiceOpensearchShowOutput struct {
 	IPFilter                 []string                                    `json:"ip_filter"`
 	URI                      string                                      `json:"uri"`
-	URIParams                map[string]interface{}                      `json:"uri_params"`
+	URIParams                map[string]any                              `json:"uri_params"`
 	Version                  string                                      `json:"version"`
 	Components               []dbServiceOpensearchComponentsShowOutput   `json:"components,omitempty"`
 	ConnectionInfo           dbServiceOpensearchConnectionInfoShowOutput `json:"connection-info,omitempty"`
@@ -336,11 +336,11 @@ func opensearchShowDatabase(db *v3.DBAASServiceOpensearch, zone string) (output.
 				return
 			}(),
 			URI: db.URI,
-			URIParams: func() map[string]interface{} {
+			URIParams: func() map[string]any {
 				if db.URIParams != nil {
 					return db.URIParams
 				}
-				return map[string]interface{}{}
+				return map[string]any{}
 			}(),
 			Version:    db.Version,
 			Components: components,

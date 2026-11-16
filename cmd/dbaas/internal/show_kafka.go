@@ -68,7 +68,7 @@ type DBServiceKafkaShowOutput struct {
 	KafkaRESTEnabled      bool                                   `json:"kafka_rest_enabled"`
 	SchemaRegistryEnabled bool                                   `json:"schema_registry_enabled"`
 	URI                   string                                 `json:"uri"`
-	URIParams             map[string]interface{}                 `json:"uri_params"`
+	URIParams             map[string]any                         `json:"uri_params"`
 	Users                 []DBServiceKafkaUserShowOutput         `json:"users"`
 	Version               string                                 `json:"version"`
 }

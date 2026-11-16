@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/spf13/cobra"
-
 	exocmd "github.com/exoscale/cli/cmd"
 	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -13,7 +11,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasServiceCreateCmd) createThanos(_ *cobra.Command, _ []string) error {
+func (c *dbaasServiceCreateCmd) createThanos() error {
 	var err error
 
 	ctx := exocmd.GContext

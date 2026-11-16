@@ -14,7 +14,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string) error {
+func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command) error {
 	var err error
 
 	ctx := exocmd.GContext

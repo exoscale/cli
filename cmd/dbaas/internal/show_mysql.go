@@ -38,7 +38,7 @@ type DBServiceMysqlShowOutput struct {
 	Databases      []string                            `json:"databases"`
 	IPFilter       []string                            `json:"ip_filter"`
 	URI            string                              `json:"uri"`
-	URIParams      map[string]interface{}              `json:"uri_params"`
+	URIParams      map[string]any                      `json:"uri_params"`
 	Users          []DBServiceMysqlUserShowOutput      `json:"users"`
 	Version        string                              `json:"version"`
 }

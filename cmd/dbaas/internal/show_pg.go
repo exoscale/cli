@@ -53,7 +53,7 @@ type DBServicePGShowOutput struct {
 	SynchronousReplication  string                           `json:"synchronous_replication"`
 	TimescaledbSettings     *v3.JSONSchemaTimescaledb        `json:"timescaledb_settings,omitempty"`
 	URI                     string                           `json:"uri"`
-	URIParams               map[string]interface{}           `json:"uri_params"`
+	URIParams               map[string]any                   `json:"uri_params"`
 	Users                   []DBServicePGUserShowOutput      `json:"users"`
 	Version                 string                           `json:"version"`
 	WorkMem                 int64                            `json:"work_mem"`

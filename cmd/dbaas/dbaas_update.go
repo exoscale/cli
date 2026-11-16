@@ -194,28 +194,28 @@ func (c *dbaasServiceUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 
 	switch dbType {
 	case "grafana":
-		return c.updateGrafana(cmd, args)
+		return c.updateGrafana(cmd)
 	case "kafka":
-		return c.updateKafka(cmd, args)
+		return c.updateKafka(cmd)
 	case "opensearch":
-		return c.updateOpensearch(cmd, args)
+		return c.updateOpensearch(cmd)
 	case "mysql":
-		return c.updateMysql(cmd, args)
+		return c.updateMysql(cmd)
 	case "pg":
-		return c.updatePG(cmd, args)
+		return c.updatePG(cmd)
 	case "valkey":
-		return c.updateValkey(cmd, args)
+		return c.updateValkey(cmd)
 	case "thanos":
-		return c.updateThanos(cmd, args)
+		return c.updateThanos(cmd)
 	case "clickhouse":
-		return c.updateClickhouse(cmd, args)
+		return c.updateClickhouse(cmd)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceUpdateCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasServiceUpdateCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

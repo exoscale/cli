@@ -50,7 +50,7 @@ func (c *dbaasCACertificateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasCACertificateCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasCACertificateCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

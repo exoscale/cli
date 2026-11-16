@@ -37,7 +37,7 @@ type dbServiceGrafanaShowOutput struct {
 	Components []dbServiceGrafanaComponentShowOutput `json:"components"`
 	IPFilter   []string                              `json:"ip_filter"`
 	URI        string                                `json:"uri"`
-	URIParams  map[string]interface{}                `json:"uri_params"`
+	URIParams  map[string]any                        `json:"uri_params"`
 	Users      []dbServiceGrafanaUserShowOutput      `json:"users"`
 	Version    string                                `json:"version"`
 }

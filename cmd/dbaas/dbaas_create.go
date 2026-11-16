@@ -197,28 +197,28 @@ func (c *dbaasServiceCreateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 
 	switch c.Type {
 	case "grafana":
-		return c.createGrafana(cmd, args)
+		return c.createGrafana()
 	case "kafka":
-		return c.createKafka(cmd, args)
+		return c.createKafka() // todo: check if necessary
 	case "opensearch":
-		return c.createOpensearch(cmd, args)
+		return c.createOpensearch(cmd) // todo: check if cmd is necessary
 	case "mysql":
-		return c.createMysql(cmd, args)
+		return c.createMysql()
 	case "pg":
-		return c.createPG(cmd, args)
+		return c.createPG()
 	case "valkey":
-		return c.createValkey(cmd, args)
+		return c.createValkey()
 	case "thanos":
-		return c.createThanos(cmd, args)
+		return c.createThanos()
 	case "clickhouse":
-		return c.createClickhouse(cmd, args)
+		return c.createClickhouse()
 	default:
 		return fmt.Errorf("unsupported service type %q", c.Type)
 	}
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceCreateCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasServiceCreateCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		TerminationProtection: true,

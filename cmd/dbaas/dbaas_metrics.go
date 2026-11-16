@@ -70,7 +70,7 @@ func (c *dbaasServiceMetricsCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceMetricsCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasServiceMetricsCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		Period: "hour",
