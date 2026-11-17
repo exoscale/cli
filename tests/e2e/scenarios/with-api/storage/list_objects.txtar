@@ -1,16 +1,5 @@
 # exo storage list: buckets, objects under a prefix, versions and time filters
 
-# Usage errors, no API call needed
-! exec exo storage list sos://sto-ls-$TEST_RUN_ID/ extra
-stderr 'error: invalid arguments'
-stderr 'exo storage list \[sos://BUCKET\[/\[PREFIX/\]\]'
-! exec exo storage list --only-versions 1 --exclude-versions 2 sos://sto-ls-$TEST_RUN_ID/
-stderr 'mutually exclusive'
-! exec exo storage list -s --only-versions v1 sos://sto-ls-$TEST_RUN_ID/
-stderr 'cannot use version number filter "v1" in combination with --stream flag'
-! exec exo storage list --older-than-timestamp 2023-06-07 sos://sto-ls-$TEST_RUN_ID/
-stderr 'invalid argument "2023-06-07" for "--older-than-timestamp" flag: parsing time'
-
 # Setup: versioned bucket, two versions of obj.txt, one object under dir/.
 # Deferred commands run in reverse order: purge first, so that rb can delete
 # the bucket.

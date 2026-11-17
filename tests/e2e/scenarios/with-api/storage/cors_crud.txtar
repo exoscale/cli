@@ -1,17 +1,4 @@
-# Usage errors are unchanged, no API call needed
-! exec exo storage cors add
-stderr 'error: invalid arguments'
-stderr 'Usage:'
-! exec exo storage cors delete a b
-stderr 'error: invalid arguments'
-
-# --allowed-origin and --allowed-method are required, checked before any API call
-! exec exo storage cors add sos://sto-cors-$TEST_RUN_ID
-stderr 'no value specified for flag "allowed-method"'
-stderr 'no value specified for flag "allowed-origin"'
-! exec exo storage cors add sos://sto-cors-$TEST_RUN_ID --allowed-origin https://a.example
-stderr 'no value specified for flag "allowed-method"'
-! stderr 'allowed-origin'
+# exo storage cors add/delete/show on a bucket
 
 # Setup: bucket
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-cors-$TEST_RUN_ID

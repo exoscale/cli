@@ -1,21 +1,5 @@
 # exo storage show, on a bucket and on an object
 
-# Usage errors, no API call needed
-! exec exo storage show
-stderr 'error: invalid arguments'
-stderr 'Usage:'
-stderr 'exo storage show sos://BUCKET/\[OBJECT\]'
-! exec exo storage show sos://sto-show-$TEST_RUN_ID sos://sto-show-$TEST_RUN_ID/obj.txt
-stderr 'error: invalid arguments'
-
-# Empty bucket name
-! exec exo storage show sos://
-stderr 'error: invalid argument: "sos://"'
-! exec exo storage show sos:///obj.txt
-stderr 'error: invalid argument: "sos:///obj.txt"'
-! exec exo storage show /obj.txt
-stderr 'error: invalid argument: "/obj.txt"'
-
 # Setup: bucket with one object at the root and one under a prefix
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-show-$TEST_RUN_ID
 defer exo storage rb -r -f sos://sto-show-$TEST_RUN_ID

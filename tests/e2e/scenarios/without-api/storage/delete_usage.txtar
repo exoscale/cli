@@ -1,0 +1,24 @@
+# exo storage delete: usage errors, raised before any API call
+
+env EXOSCALE_CONFIG=test-config.toml
+
+# Usage errors
+! exec exo storage delete
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+stderr 'exo storage delete sos://BUCKET/\[OBJECT\|PREFIX/\]'
+! exec exo storage delete -f sos://my-bucket/a.txt sos://my-bucket/b.txt
+stderr 'error: invalid arguments'
+! exec exo storage delete -f sos://
+stderr 'error: invalid argument: "sos://"'
+! exec exo storage delete -f sos:///dir/
+stderr 'error: invalid argument: "sos:///dir/"'
+
+-- test-config.toml --
+defaultaccount = "Exoscale-Test"
+
+[[accounts]]
+name = "Exoscale-Test"
+key = "EXOtest123"
+secret = "testsecret123"
+defaultZone = "ch-gva-2"

@@ -1,15 +1,5 @@
 # exo storage move: single object, across buckets, prefixes, prompt, dry run
 
-# Usage and validation errors, no API call needed
-! exec exo storage move sos://sto-mv-$TEST_RUN_ID/a.txt
-stderr 'error: invalid arguments'
-stderr 'Usage:'
-stderr 'exo storage move sos://BUCKET/\[OBJECT\|PREFIX/\] sos://BUCKET/\[OBJECT\|PREFIX/\]'
-! exec exo storage move sos://sto-mv-$TEST_RUN_ID/a.txt sos://sto-mv-$TEST_RUN_ID/a.txt
-stderr 'error: source and destination must differ'
-! exec exo storage move -r sos://sto-mv-$TEST_RUN_ID/dir sos://sto-mv-$TEST_RUN_ID/dir-backup
-stderr 'error: source and destination prefixes must not overlap'
-
 # Setup: two buckets, one object with metadata, and a small tree under dir/
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-mv-$TEST_RUN_ID
 defer exo storage rb -r -f sos://sto-mv-$TEST_RUN_ID

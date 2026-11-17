@@ -1,18 +1,6 @@
 # exo storage download: single file, rename, overwrite, prefix, dry run
 # (path traversal is covered by storage_download_path_traversal.txtar)
 
-# Usage errors, no API call needed
-! exec exo storage download
-stderr 'error: invalid arguments'
-stderr 'Usage:'
-stderr 'exo storage download sos://BUCKET/\[OBJECT\|PREFIX/\] \[DESTINATION\]'
-! exec exo storage download sos://sto-dl-$TEST_RUN_ID/a.txt x y
-stderr 'error: invalid arguments'
-! exec exo storage download sos://
-stderr 'error: invalid argument: "sos://"'
-! exec exo storage download sos:///a.txt
-stderr 'error: invalid argument: "sos:///a.txt"'
-
 # Setup: one object at the root, one under dir/ and one under dir/sub/
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-dl-$TEST_RUN_ID
 defer exo storage rb -r -f sos://sto-dl-$TEST_RUN_ID

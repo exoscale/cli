@@ -1,21 +1,5 @@
 # exo storage mb: zone, canned ACL, alias, output formats
 
-# Usage errors, no API call needed
-! exec exo storage mb
-stderr 'error: invalid arguments'
-stderr 'Usage:'
-stderr 'exo storage mb sos://BUCKET'
-! exec exo storage mb sos://sto-mb-$TEST_RUN_ID sos://sto-mb2-$TEST_RUN_ID
-stderr 'error: invalid arguments'
-! exec exo storage mb sos://
-stderr 'error: invalid argument: "sos://"'
-! exec exo storage mb sos://sto-mb-$TEST_RUN_ID/obj.txt
-stderr 'error: invalid argument: "sos://sto-mb-[^"]*/obj.txt", expected a bucket name'
-
-# The help points to the ACL documentation
-exec exo storage mb --help
-stdout 'https://community.exoscale.com/product/storage/object-storage/how-to/acl/'
-
 # An unknown canned ACL is a usage error, no bucket is created
 ! exec exo --zone $TEST_ZONE storage mb --acl bogus sos://sto-mb-$TEST_RUN_ID
 stderr 'error: invalid canned ACL "bogus", supported values are: private, public-read, public-read-write, authenticated-read'

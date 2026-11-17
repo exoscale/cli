@@ -1,0 +1,27 @@
+# exo storage upload: usage errors, raised before any API call
+
+env EXOSCALE_CONFIG=test-config.toml
+
+# Usage errors
+! exec exo storage upload
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+stderr 'exo storage upload FILE... sos://BUCKET/\[PREFIX/\]'
+! exec exo storage upload hello.txt
+stderr 'error: invalid arguments'
+! exec exo storage upload hello.txt sos://
+stderr 'error: invalid argument: "sos://"'
+! exec exo storage upload hello.txt sos:///hello.txt
+stderr 'error: invalid argument: "sos:///hello.txt"'
+! exec exo storage upload --acl bogus hello.txt sos://my-bucket/
+stderr 'error: invalid canned ACL "bogus"'
+stderr 'Usage:'
+
+-- test-config.toml --
+defaultaccount = "Exoscale-Test"
+
+[[accounts]]
+name = "Exoscale-Test"
+key = "EXOtest123"
+secret = "testsecret123"
+defaultZone = "ch-gva-2"

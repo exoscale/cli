@@ -1,0 +1,25 @@
+# exo storage metadata add/delete: usage errors, raised before any API call
+
+env EXOSCALE_CONFIG=test-config.toml
+
+# Usage errors
+! exec exo storage metadata add
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+! exec exo storage metadata add sos://my-bucket/obj.txt
+stderr 'error: invalid arguments'
+! exec exo storage metadata add sos://my-bucket k1=v1
+stderr 'error: invalid argument: "my-bucket"'
+! exec exo storage metadata add sos://my-bucket/obj.txt k1
+stderr 'error: invalid argument: "k1"'
+! exec exo storage metadata delete sos://my-bucket/obj.txt
+stderr 'error: invalid arguments'
+
+-- test-config.toml --
+defaultaccount = "Exoscale-Test"
+
+[[accounts]]
+name = "Exoscale-Test"
+key = "EXOtest123"
+secret = "testsecret123"
+defaultZone = "ch-gva-2"

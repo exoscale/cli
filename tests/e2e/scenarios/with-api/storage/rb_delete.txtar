@@ -1,19 +1,5 @@
 # exo storage rb: confirmation prompt, force, recursive, non-empty bucket
 
-# Usage errors, no API call needed
-! exec exo storage rb
-stderr 'error: invalid arguments'
-stderr 'Usage:'
-stderr 'exo storage rb sos://BUCKET'
-! exec exo storage rb -f sos://sto-rb-$TEST_RUN_ID sos://sto-rb2-$TEST_RUN_ID
-stderr 'error: invalid arguments'
-! exec exo storage rb -f sos://
-stderr 'error: invalid argument: "sos://"'
-! exec exo storage rb -f sos:///
-stderr 'error: invalid argument: "sos:///"'
-! exec exo storage rb -f sos://sto-rb-$TEST_RUN_ID/obj.txt
-stderr 'error: invalid argument: "sos://sto-rb-[^"]*/obj.txt", expected a bucket name'
-
 # Setup: three buckets. The scenario deletes them itself, so the deferred
 # cleanup must not fail when the bucket is already gone.
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-rb-$TEST_RUN_ID

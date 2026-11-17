@@ -1,0 +1,28 @@
+# exo storage show: usage errors, raised before any API call
+
+env EXOSCALE_CONFIG=test-config.toml
+
+# Usage errors
+! exec exo storage show
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+stderr 'exo storage show sos://BUCKET/\[OBJECT\]'
+! exec exo storage show sos://my-bucket sos://my-bucket/obj.txt
+stderr 'error: invalid arguments'
+
+# Empty bucket name
+! exec exo storage show sos://
+stderr 'error: invalid argument: "sos://"'
+! exec exo storage show sos:///obj.txt
+stderr 'error: invalid argument: "sos:///obj.txt"'
+! exec exo storage show /obj.txt
+stderr 'error: invalid argument: "/obj.txt"'
+
+-- test-config.toml --
+defaultaccount = "Exoscale-Test"
+
+[[accounts]]
+name = "Exoscale-Test"
+key = "EXOtest123"
+secret = "testsecret123"
+defaultZone = "ch-gva-2"

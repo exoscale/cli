@@ -1,20 +1,5 @@
 # exo storage upload: single file, rename, several files, directories, ACL, dry run
 
-# Usage errors, no API call needed
-! exec exo storage upload
-stderr 'error: invalid arguments'
-stderr 'Usage:'
-stderr 'exo storage upload FILE... sos://BUCKET/\[PREFIX/\]'
-! exec exo storage upload hello.txt
-stderr 'error: invalid arguments'
-! exec exo storage upload hello.txt sos://
-stderr 'error: invalid argument: "sos://"'
-! exec exo storage upload hello.txt sos:///hello.txt
-stderr 'error: invalid argument: "sos:///hello.txt"'
-! exec exo storage upload --acl bogus hello.txt sos://sto-up-$TEST_RUN_ID/
-stderr 'error: invalid canned ACL "bogus"'
-stderr 'Usage:'
-
 # Setup
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-up-$TEST_RUN_ID
 defer exo storage rb -r -f sos://sto-up-$TEST_RUN_ID

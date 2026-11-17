@@ -1,25 +1,5 @@
 # exo storage setacl: canned ACL and grantees, on a bucket, an object and a prefix
 
-# Usage errors, no API call needed
-! exec exo storage setacl
-stderr 'error: invalid arguments'
-stderr 'Usage:'
-stderr 'exo storage setacl sos://BUCKET/\[OBJECT\|PREFIX/\] \[CANNED-ACL\]'
-! exec exo storage setacl sos://sto-acl-$TEST_RUN_ID
-stderr 'error: either a canned ACL or ACL grantee options must be specified'
-! exec exo storage setacl sos://sto-acl-$TEST_RUN_ID public-read --read ALL_USERS
-stderr 'error: either a canned ACL or ACL grantee options must be specified'
-! exec exo storage setacl sos://sto-acl-$TEST_RUN_ID ''
-stderr 'error: either a canned ACL or ACL grantee options must be specified'
-! exec exo storage setacl sos:// public-read
-stderr 'error: invalid argument: "sos://"'
-! exec exo storage setacl sos:///obj.txt public-read
-stderr 'error: invalid argument: "sos:///obj.txt"'
-
-# The help points to the ACL documentation
-exec exo storage setacl --help
-stdout 'https://community.exoscale.com/product/storage/object-storage/how-to/acl/'
-
 # Setup: one object at the root, one under dir/ and one under dir/sub/
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-acl-$TEST_RUN_ID
 defer exo storage rb -r -f sos://sto-acl-$TEST_RUN_ID

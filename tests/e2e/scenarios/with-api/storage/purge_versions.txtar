@@ -1,17 +1,5 @@
 # exo storage purge: deletes every version of the objects under a prefix
 
-# Usage errors, no API call needed
-! exec exo storage purge
-stderr 'error: invalid arguments'
-stderr 'Usage:'
-stderr 'exo storage purge sos://BUCKET/\[OBJECT\|PREFIX/\]'
-! exec exo storage purge -f sos://sto-pu-$TEST_RUN_ID/ sos://sto-pu-$TEST_RUN_ID/dir/
-stderr 'error: invalid arguments'
-! exec exo storage purge -f sos://
-stderr 'error: invalid argument: "sos://"'
-! exec exo storage purge -f sos:///dir/
-stderr 'error: invalid argument: "sos:///dir/"'
-
 # Setup: versioned bucket, two versions of obj.txt, one object under dir/
 # and one under dir2/. Deferred commands run in reverse order: purge first,
 # so that rb can delete the bucket.

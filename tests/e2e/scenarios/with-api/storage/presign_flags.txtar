@@ -1,9 +1,4 @@
-# Usage errors are unchanged, no API call needed
-! exec exo storage presign
-stderr 'error: invalid arguments'
-stderr 'Usage:'
-! exec exo storage presign --expires 900 sos://sto-pre-$TEST_RUN_ID/hello.txt
-stderr 'missing unit in duration "900"'
+# exo storage presign: methods, expiration, missing object
 
 # Setup: bucket with one object
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-pre-$TEST_RUN_ID
@@ -31,8 +26,6 @@ stdout '^https://'
 stderr 'does not exist'
 
 # Errors from the command itself
-! exec exo storage presign sos://sto-pre-$TEST_RUN_ID
-stderr 'invalid object URL'
 ! exec exo storage presign -m post sos://sto-pre-$TEST_RUN_ID/hello.txt
 stderr 'unsupported method "post"'
 

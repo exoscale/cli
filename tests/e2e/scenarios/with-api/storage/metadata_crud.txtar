@@ -1,18 +1,5 @@
 # exo storage metadata add/delete, single object and recursive on a prefix
 
-# Usage errors are unchanged, no API call needed
-! exec exo storage metadata add
-stderr 'error: invalid arguments'
-stderr 'Usage:'
-! exec exo storage metadata add sos://sto-md-$TEST_RUN_ID/obj.txt
-stderr 'error: invalid arguments'
-! exec exo storage metadata add sos://sto-md-$TEST_RUN_ID k1=v1
-stderr 'error: invalid argument: "sto-md-'$TEST_RUN_ID'"'
-! exec exo storage metadata add sos://sto-md-$TEST_RUN_ID/obj.txt k1
-stderr 'error: invalid argument: "k1"'
-! exec exo storage metadata delete sos://sto-md-$TEST_RUN_ID/obj.txt
-stderr 'error: invalid arguments'
-
 # Setup: bucket with one object at the root and two under a prefix
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-md-$TEST_RUN_ID
 defer exo storage rb -r -f sos://sto-md-$TEST_RUN_ID
