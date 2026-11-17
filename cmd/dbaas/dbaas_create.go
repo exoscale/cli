@@ -199,9 +199,9 @@ func (c *dbaasServiceCreateCmd) CmdRun(cmd *cobra.Command, args []string) error 
 	case "grafana":
 		return c.createGrafana()
 	case "kafka":
-		return c.createKafka() // todo: check if necessary
+		return c.createKafka()
 	case "opensearch":
-		return c.createOpensearch(cmd) // todo: check if cmd is necessary
+		return c.createOpensearch(cmd)
 	case "mysql":
 		return c.createMysql()
 	case "pg":
