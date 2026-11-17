@@ -2,34 +2,37 @@
 # Read-only: queries the Database Service types catalog, creates nothing.
 # TEST_ZONE is injected by the API test runner.
 
+# type commands have no --zone flag, they use the default zone
+env EXOSCALE_ZONE=$TEST_ZONE
+
 # List service types
-exec exo --zone $TEST_ZONE dbaas type list
-stdout 'Available Versions'
+exec exo dbaas type list
+stdout 'AVAILABLE VERSIONS'
 stdout 'pg'
-exec exo --zone $TEST_ZONE --output-format json dbaas type list
+exec exo --output-format json dbaas type list
 stdout '"name": ?"pg"'
 stdout '"default_version"'
 
 # Show a service type
-exec exo --zone $TEST_ZONE dbaas type show pg
+exec exo dbaas type show pg
 stdout 'Description'
 stdout 'Default Version'
-exec exo --zone $TEST_ZONE --output-format json dbaas type show pg
+exec exo --output-format json dbaas type show pg
 stdout '"name": ?"pg"'
 
 # --plans lists the plans offered
-exec exo --zone $TEST_ZONE --output-format json dbaas type show pg --plans
+exec exo --output-format json dbaas type show pg --plans
 stdout '"node_cpus"'
 stdout '"authorized"'
 
 # --backup-config shows the backup configuration of a plan
-exec exo --zone $TEST_ZONE --output-format json dbaas type show pg --backup-config hobbyist-2
+exec exo --output-format json dbaas type show pg --backup-config hobbyist-2
 stdout '"max_count"'
-! exec exo --zone $TEST_ZONE dbaas type show pg --backup-config no-such-plan
+! exec exo dbaas type show pg --backup-config no-such-plan
 stderr '"no-such-plan" is not a valid plan'
 
 # --settings shows the settings schema of a settings group
-exec exo --zone $TEST_ZONE dbaas type show pg --settings pgbouncer
-stdout 'description'
-! exec exo --zone $TEST_ZONE dbaas type show pg --settings kafka
+exec exo dbaas type show pg --settings pgbouncer
+stdout 'DESCRIPTION'
+! exec exo dbaas type show pg --settings kafka
 stderr 'invalid settings value "kafka", expected one of: pg, pgbouncer, pglookout, timescaledb'

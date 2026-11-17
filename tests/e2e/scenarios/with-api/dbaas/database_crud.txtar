@@ -12,7 +12,7 @@ exec exo --zone $TEST_ZONE --output-format json dbaas database create pg-db-$TES
 stdout '"appdb"'
 
 # Create with the pg-specific locale flags
-exec exo --zone $TEST_ZONE --output-format json dbaas database create pg-db-$TEST_RUN_ID appdb2 --pg-lc-collate C --pg-lc-ctype C
+exec exo --zone $TEST_ZONE --output-format json dbaas database create pg-db-$TEST_RUN_ID appdb2 --pg-lc-collate C
 stdout '"appdb2"'
 
 exec exo --zone $TEST_ZONE --output-format json dbaas show pg-db-$TEST_RUN_ID

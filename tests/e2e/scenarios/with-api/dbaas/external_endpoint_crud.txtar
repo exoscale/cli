@@ -37,11 +37,11 @@ stdout 'rsys-ee-'$TEST_RUN_ID
 # Update prints the updated endpoint
 exec exo --output-format json dbaas external-endpoint update prometheus $PROM_ID --prometheus-basic-auth-username exo-e2e-2
 stdout '"basic-auth-username": ?"exo-e2e-2"'
-exec exo --output-format json dbaas external-endpoint update rsyslog $RSYS_ID --rsyslog-port 1514
+exec exo --output-format json dbaas external-endpoint update rsyslog $RSYS_ID --rsyslog-server 192.0.2.10 --rsyslog-port 1514 --rsyslog-format rfc5424 --rsyslog-tls=false
 stdout '"port": ?1514'
 
 # --quiet prints nothing
-exec exo --quiet dbaas external-endpoint update rsyslog $RSYS_ID --rsyslog-port 514
+exec exo --quiet dbaas external-endpoint update rsyslog $RSYS_ID --rsyslog-server 192.0.2.10 --rsyslog-port 514 --rsyslog-format rfc5424 --rsyslog-tls=false
 ! stdout .
 
 # Errors
@@ -53,6 +53,9 @@ stderr 'invalid endpoint ID'
 stderr 'invalid endpoint ID'
 
 # Delete
-exec exo dbaas external-endpoint delete rsyslog $RSYS_ID
+exec exo --output-format json dbaas external-endpoint create prometheus prom-del-$TEST_RUN_ID --prometheus-basic-auth-username exo-e2e --prometheus-basic-auth-password exo-e2e-$TEST_RUN_ID
+json-setenv DEL_ID id stdout
+exec exo dbaas external-endpoint delete prometheus $DEL_ID
 exec exo --output-format json dbaas external-endpoint list
-! stdout $RSYS_ID
+! stdout $DEL_ID
+stdout $RSYS_ID
