@@ -1,0 +1,50 @@
+# Test: dns domain create/list/delete
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# dns commands have no --zone flag, they use the default zone
+env EXOSCALE_ZONE=$TEST_ZONE
+env DOMAIN=$TEST_RUN_ID.net
+env DOMAIN2=$TEST_RUN_ID-2.net
+
+# The scenario deletes the domains itself, so the deferred cleanup must not
+# fail when they are already gone.
+exec exo dns create $DOMAIN
+stdout 'Domain "'$DOMAIN'" was created successfully'
+defer sh -c 'exo dns delete -f '$DOMAIN' >/dev/null 2>&1 || true'
+
+# Through the "add" alias of create
+exec exo dns add $DOMAIN2
+stdout 'Domain "'$DOMAIN2'" was created successfully'
+defer sh -c 'exo dns delete -f '$DOMAIN2' >/dev/null 2>&1 || true'
+
+# List all domains
+exec exo --output-format json dns list
+stdout '"name": ?"'$DOMAIN'"'
+stdout '"name": ?"'$DOMAIN2'"'
+
+# A filter keeps the domains matching it, through the "ls" alias
+exec exo --output-format json dns ls $TEST_RUN_ID-2
+stdout '"name": ?"'$DOMAIN2'"'
+! stdout '"name": ?"'$DOMAIN'"'
+
+# Table output
+exec exo dns list $TEST_RUN_ID
+stdout 'ID'
+stdout $DOMAIN
+
+# --quiet prints nothing
+exec exo --quiet dns delete -f $DOMAIN2
+! stdout .
+
+# Delete by ID, through the "del" alias
+exec exo --output-format json dns list $DOMAIN
+json-setenv DOMAIN_ID id stdout
+exec exo dns del -f $DOMAIN_ID
+stdout 'Domain "'$DOMAIN'" was deleted successfully'
+
+exec exo --output-format json dns list $TEST_RUN_ID
+! stdout $DOMAIN
+
+# Unknown domain
+! exec exo dns delete -f $DOMAIN
+stderr 'resource not found'
