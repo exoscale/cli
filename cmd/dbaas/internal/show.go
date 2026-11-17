@@ -1,4 +1,4 @@
-package dbaasutils
+package internal
 
 import (
 	"fmt"

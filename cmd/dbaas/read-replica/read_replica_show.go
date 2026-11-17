@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -63,7 +63,7 @@ func (c *dbaasReadReplicaShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func (c *dbaasReadReplicaShowCmd) showReadReplica(ctx context.Context) (output.Outputter, error) {
-	commonSvc, err := dbaasutils.GetV3(ctx, c.Name, c.Zone)
+	commonSvc, err := internal.GetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return nil, err
 	}

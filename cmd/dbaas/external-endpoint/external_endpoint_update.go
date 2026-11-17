@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
@@ -94,15 +94,15 @@ func (c *dbaasExternalEndpointUpdateCmd) CmdShort() string {
 
 func (c *dbaasExternalEndpointUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error {
 	switch c.Type {
-	case dbaasutils.ExternalEndpointTypeDatadog:
+	case internal.ExternalEndpointTypeDatadog:
 		return c.updateDatadog(cmd, args)
-	case dbaasutils.ExternalEndpointTypeOpensearch:
+	case internal.ExternalEndpointTypeOpensearch:
 		return c.updateOpensearch(cmd, args)
-	case dbaasutils.ExternalEndpointTypeElasticsearch:
+	case internal.ExternalEndpointTypeElasticsearch:
 		return c.updateElasticsearch(cmd, args)
-	case dbaasutils.ExternalEndpointTypePrometheus:
+	case internal.ExternalEndpointTypePrometheus:
 		return c.updatePrometheus(cmd, args)
-	case dbaasutils.ExternalEndpointTypeRsyslog:
+	case internal.ExternalEndpointTypeRsyslog:
 		return c.updateRsyslog(cmd, args)
 	default:
 		return fmt.Errorf("unsupported external endpoint type %q", c.Type)

@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
@@ -46,7 +46,7 @@ func (c *dbaasMigrationStopCmd) CmdRun(cmd *cobra.Command, args []string) error 
 		return err
 	}
 
-	db, err := dbaasutils.GetV3(ctx, c.Name, c.Zone)
+	db, err := internal.GetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		if errors.Is(err, v3.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)

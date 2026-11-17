@@ -1,4 +1,4 @@
-package dbaasutils
+package internal
 
 import (
 	"bytes"
@@ -13,7 +13,6 @@ import (
 	"github.com/mitchellh/go-wordwrap"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	servicetype "github.com/exoscale/cli/cmd/dbaas/type"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -198,7 +197,7 @@ func opensearchShowSettings(setting string, db *v3.DBAASServiceOpensearch) error
 		fmt.Println(string(out))
 
 	default:
-		return fmt.Errorf("invalid settings value %q, expected one of: %s", setting, strings.Join(servicetype.OpensearchSettings, ", "))
+		return fmt.Errorf("invalid settings value %q, expected one of: %s", setting, strings.Join(OpensearchSettings, ", "))
 	}
 
 	return nil

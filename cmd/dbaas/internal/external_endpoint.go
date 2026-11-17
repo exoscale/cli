@@ -1,4 +1,4 @@
-package dbaasutils
+package internal
 
 // External endpoint types, shared by the external-endpoint and
 // external-integration commands.

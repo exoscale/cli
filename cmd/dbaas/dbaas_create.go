@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 
@@ -149,7 +149,7 @@ Supported values for --maintenance-dow: %s
 
 Supported output template annotations: %s`,
 		strings.Join(dbServiceMaintenanceDOWs, ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceShowOutput{}), ", "))
 }
 
 func (c *dbaasServiceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {

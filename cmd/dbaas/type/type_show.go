@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -126,13 +127,13 @@ Supported output template annotations:
 * When showing a Database Service: %s
 
 * When listing Database Service plans: %s`,
-		strings.Join(GrafanaSettings, ", "),
-		strings.Join(OpensearchSettings, ", "),
-		strings.Join(KafkaSettings, ", "),
-		strings.Join(MysqlSettings, ", "),
-		strings.Join(PGSettings, ", "),
-		strings.Join(ValkeySettings, ", "),
-		strings.Join(ThanosSettings, ", "),
+		strings.Join(internal.GrafanaSettings, ", "),
+		strings.Join(internal.OpensearchSettings, ", "),
+		strings.Join(internal.KafkaSettings, ", "),
+		strings.Join(internal.MysqlSettings, ", "),
+		strings.Join(internal.PGSettings, ", "),
+		strings.Join(internal.ValkeySettings, ", "),
+		strings.Join(internal.ThanosSettings, ", "),
 		strings.Join(output.TemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
 }
@@ -175,11 +176,11 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 
 		switch c.Name {
 		case "grafana":
-			if !utils.IsInList(GrafanaSettings, c.ShowSettings) {
+			if !utils.IsInList(internal.GrafanaSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(GrafanaSettings, ", "),
+					strings.Join(internal.GrafanaSettings, ", "),
 				)
 			}
 
@@ -194,11 +195,11 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 
 			showSettings(settings)
 		case "kafka":
-			if !utils.IsInList(KafkaSettings, c.ShowSettings) {
+			if !utils.IsInList(internal.KafkaSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(KafkaSettings, ", "),
+					strings.Join(internal.KafkaSettings, ", "),
 				)
 			}
 
@@ -221,11 +222,11 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 			showSettings(settings)
 
 		case "opensearch":
-			if !utils.IsInList(OpensearchSettings, c.ShowSettings) {
+			if !utils.IsInList(internal.OpensearchSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(OpensearchSettings, ", "),
+					strings.Join(internal.OpensearchSettings, ", "),
 				)
 			}
 
@@ -241,11 +242,11 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 			showSettings(settings)
 
 		case "mysql":
-			if !utils.IsInList(MysqlSettings, c.ShowSettings) {
+			if !utils.IsInList(internal.MysqlSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(MysqlSettings, ", "),
+					strings.Join(internal.MysqlSettings, ", "),
 				)
 			}
 
@@ -261,11 +262,11 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 			showSettings(settings)
 
 		case "pg":
-			if !utils.IsInList(PGSettings, c.ShowSettings) {
+			if !utils.IsInList(internal.PGSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(PGSettings, ", "),
+					strings.Join(internal.PGSettings, ", "),
 				)
 			}
 
@@ -286,11 +287,11 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 			showSettings(settings)
 
 		case "valkey":
-			if !utils.IsInList(ValkeySettings, c.ShowSettings) {
+			if !utils.IsInList(internal.ValkeySettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(ValkeySettings, ", "),
+					strings.Join(internal.ValkeySettings, ", "),
 				)
 			}
 
@@ -307,11 +308,11 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 			showSettings(settings)
 
 		case "thanos":
-			if !utils.IsInList(ThanosSettings, c.ShowSettings) {
+			if !utils.IsInList(internal.ThanosSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(ThanosSettings, ", "),
+					strings.Join(internal.ThanosSettings, ", "),
 				)
 			}
 
@@ -328,11 +329,11 @@ func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint
 			showSettings(settings)
 
 		case "clickhouse":
-			if !utils.IsInList(ClickhouseSettings, c.ShowSettings) {
+			if !utils.IsInList(internal.ClickhouseSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
-					strings.Join(ClickhouseSettings, ", "),
+					strings.Join(internal.ClickhouseSettings, ", "),
 				)
 			}
 

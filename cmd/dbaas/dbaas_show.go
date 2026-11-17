@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 )
@@ -54,23 +54,23 @@ Supported output template annotations:
 * When showing a Database Service backups: %s
 
 * When showing a Database Service notifications: %s`,
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceKafkaShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceKafkaACLShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceKafkaAuthenticationShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceKafkaComponentShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceKafkaConnectionInfoShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceKafkaUserShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceOpensearchShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceMysqlShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceMysqlComponentShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceMysqlUserShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServicePGShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServicePGComponentShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServicePGConnectionPool{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServicePGUserShowOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceBackupListItemOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&dbaasutils.DBServiceNotificationListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceKafkaShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceKafkaACLShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceKafkaAuthenticationShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceKafkaComponentShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceKafkaConnectionInfoShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceKafkaUserShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceOpensearchShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceMysqlShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceMysqlComponentShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceMysqlUserShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServicePGShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServicePGComponentShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServicePGConnectionPool{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServicePGUserShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceBackupListItemOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&internal.DBServiceNotificationListItemOutput{}), ", "))
 }
 
 func (c *dbaasServiceShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -82,12 +82,12 @@ func (c *dbaasServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 	var err error
 
-	svc, err := dbaasutils.GetV3(ctx, c.Name, c.Zone)
+	svc, err := internal.GetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	s := &dbaasutils.ServiceShow{
+	s := &internal.ServiceShow{
 		Name:              c.Name,
 		Zone:              c.Zone,
 		ShowBackups:       c.ShowBackups,

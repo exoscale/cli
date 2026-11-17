@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
@@ -37,7 +37,7 @@ func (c *dbaasUserDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error 
 func (c *dbaasUserDeleteCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
 	ctx := exocmd.GContext
-	db, err := dbaasutils.GetV3(ctx, c.Name, c.Zone)
+	db, err := internal.GetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
 	}

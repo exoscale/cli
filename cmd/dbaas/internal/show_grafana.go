@@ -1,4 +1,4 @@
-package dbaasutils
+package internal
 
 import (
 	"bytes"
@@ -11,7 +11,6 @@ import (
 	"github.com/mitchellh/go-wordwrap"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	servicetype "github.com/exoscale/cli/cmd/dbaas/type"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -136,7 +135,7 @@ func (c *ServiceShow) ShowDatabaseServiceGrafana(ctx context.Context) (output.Ou
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
 				c.ShowSettings,
-				strings.Join(servicetype.GrafanaSettings, ", "),
+				strings.Join(GrafanaSettings, ", "),
 			)
 		}
 

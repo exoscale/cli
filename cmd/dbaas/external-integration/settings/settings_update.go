@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/spf13/cobra"
 )
@@ -42,7 +42,7 @@ func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdPreRun(cmd *cobra.Command
 
 func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error {
 	switch c.Type {
-	case dbaasutils.ExternalEndpointTypeDatadog:
+	case internal.ExternalEndpointTypeDatadog:
 		return c.updateDatadog(cmd, args)
 	default:
 		return fmt.Errorf("unsupported updating external integration settings for type %q", c.Type)

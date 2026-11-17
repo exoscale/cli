@@ -1,5 +1,5 @@
-// Package dbaasutils holds helpers shared by the dbaas command packages.
-package dbaasutils
+// package internal holds helpers shared by the dbaas command packages.
+package internal
 
 import (
 	"context"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	dbaasutils "github.com/exoscale/cli/cmd/dbaas/internal"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -73,7 +73,7 @@ func (c *dbaasServiceCreateCmd) createGrafana() error {
 	}
 
 	if !globalstate.Quiet {
-		return c.OutputFunc((&dbaasutils.ServiceShow{
+		return c.OutputFunc((&internal.ServiceShow{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).ShowDatabaseServiceGrafana(ctx))
