@@ -53,15 +53,12 @@ func (c *storageUploadCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 	}
 
-	target := args[len(args)-1]
-	args[len(args)-1] = strings.TrimPrefix(args[len(args)-1], sos.BucketPrefix)
-
-	if bucket, _, _ := strings.Cut(args[len(args)-1], "/"); bucket == "" {
-		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", target))
-	}
-
 	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
 		return err
+	}
+
+	if _, _, err := parsePath(c.Destination); err != nil {
+		clicmd.CmdExitOnUsageError(cmd, err.Error())
 	}
 
 	if c.ACL != "" && !slices.Contains(sos.ObjectCannedACLToStrings(), c.ACL) {
@@ -73,21 +70,13 @@ func (c *storageUploadCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *storageUploadCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var prefix string
+	bucket, prefix, err := parsePath(c.Destination)
+	if err != nil {
+		return err
+	}
 
-	dstParts := strings.SplitN(c.Destination, "/", 2)
-	bucket := dstParts[0]
-	if len(dstParts) > 1 {
-		// Tricky case: if the user specifies "<bucket>/" as destination,
-		// strings.SplitN()'s result slice contains an empty string as last
-		// item: in this case we set the prefix as "/" to mean the root of
-		// the bucket.
-		if dstParts[len(dstParts)-1] == "" {
-			prefix = "/"
-		} else {
-			prefix = dstParts[1]
-		}
-	} else {
+	// The caller wants to upload the files at the root of the bucket.
+	if prefix == "" {
 		prefix = "/"
 	}
 

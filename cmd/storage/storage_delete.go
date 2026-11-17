@@ -3,7 +3,6 @@ package storage
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/hashicorp/go-multierror"
@@ -45,29 +44,28 @@ func (c *storageDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 	}
 
-	args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
-
-	if !strings.Contains(args[0], "/") {
-		args[0] += "/"
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
 	}
 
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	if _, _, err := parsePath(c.Target); err != nil {
+		clicmd.CmdExitOnUsageError(cmd, err.Error())
+	}
+
+	return nil
 }
 
 func (c *storageDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var prefix string
+	bucket, prefix, err := parsePath(c.Target)
+	if err != nil {
+		return err
+	}
 
-	parts := strings.SplitN(c.Target, "/", 2)
-	bucket := parts[0]
-	if len(parts) > 1 {
-		prefix = parts[1]
-
-		// Special case: the caller wants to target objects at the root of
-		// the bucket, in this case the prefix is empty so we set the key
-		// to a symbolic value that shall be removed later on.
-		if prefix == "" {
-			prefix = "/"
-		}
+	// Special case: the caller wants to target objects at the root of the
+	// bucket, in this case the prefix is empty so we set it to a symbolic
+	// value that shall be removed later on.
+	if prefix == "" {
+		prefix = "/"
 	}
 
 	if !c.Force {

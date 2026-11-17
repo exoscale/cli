@@ -3,7 +3,6 @@ package storage
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/spf13/cobra"
@@ -52,37 +51,32 @@ func (c *storageDownloadCmd) CmdPreRun(cmd *cobra.Command, args []string) error 
 		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 	}
 
-	target := args[0]
-	args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
-
-	if bucket, _, _ := strings.Cut(args[0], "/"); bucket == "" {
-		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", target))
-	}
-
-	// Append implicit root prefix ("/") if only a bucket name is specified in the source
-	if !strings.Contains(args[0], "/") {
-		args[0] += "/"
-	}
-
 	// Only clean a destination that was given: an explicit "" becomes ".",
 	// while a missing destination stays "" (current directory, object name).
 	if len(args) == 2 {
 		args[1] = filepath.Clean(args[1])
 	}
 
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
+
+	if _, _, err := parsePath(c.Source); err != nil {
+		clicmd.CmdExitOnUsageError(cmd, err.Error())
+	}
+
+	return nil
 }
 
 func (c *storageDownloadCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var prefix string
+	bucket, prefix, err := parsePath(c.Source)
+	if err != nil {
+		return err
+	}
 
-	parts := strings.SplitN(c.Source, "/", 2)
-	bucket := parts[0]
-	if len(parts) > 1 {
-		prefix = parts[1]
-		if prefix == "" {
-			prefix = "/"
-		}
+	// The caller wants to download the objects at the root of the bucket.
+	if prefix == "" {
+		prefix = "/"
 	}
 
 	storage, err := sos.NewStorageClient(

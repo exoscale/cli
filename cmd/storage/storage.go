@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 
 	exocmd "github.com/exoscale/cli/cmd"
 
@@ -75,4 +76,17 @@ func init() {
 var storageCmdLongHelp = func() string {
 	long := "Manage Exoscale Object Storage"
 	return long
+}
+
+// Splits a "[sos://]BUCKET[/KEY]" argument into its bucket and key.
+// The key is returned as given, trailing "/" included, so callers can still
+// tell an object from a prefix. An argument with no bucket name ("sos://",
+// "sos:///key") is an error.
+func parsePath(arg string) (bucket, key string, err error) {
+	bucket, key, _ = strings.Cut(strings.TrimPrefix(arg, sos.BucketPrefix), "/")
+	if bucket == "" {
+		return "", "", fmt.Errorf("invalid argument: %q", arg)
+	}
+
+	return bucket, key, nil
 }

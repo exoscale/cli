@@ -9,6 +9,8 @@ stderr 'exo storage mb sos://BUCKET'
 stderr 'error: invalid arguments'
 ! exec exo storage mb sos://
 stderr 'error: invalid argument: "sos://"'
+! exec exo storage mb sos://sto-mb-$TEST_RUN_ID/obj.txt
+stderr 'error: invalid argument: "sos://sto-mb-[^"]*/obj.txt", expected a bucket name'
 
 # The help points to the ACL documentation
 exec exo storage mb --help

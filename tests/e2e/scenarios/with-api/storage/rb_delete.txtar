@@ -11,6 +11,8 @@ stderr 'error: invalid arguments'
 stderr 'error: invalid argument: "sos://"'
 ! exec exo storage rb -f sos:///
 stderr 'error: invalid argument: "sos:///"'
+! exec exo storage rb -f sos://sto-rb-$TEST_RUN_ID/obj.txt
+stderr 'error: invalid argument: "sos://sto-rb-[^"]*/obj.txt", expected a bucket name'
 
 # Setup: three buckets. The scenario deletes them itself, so the deferred
 # cleanup must not fail when the bucket is already gone.

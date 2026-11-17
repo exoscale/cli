@@ -39,23 +39,21 @@ func (c *storageShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 	}
 
-	target := args[0]
-	args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
-
-	if bucket, _, _ := strings.Cut(args[0], "/"); bucket == "" {
-		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", target))
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
 	}
 
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	if _, _, err := parsePath(c.Target); err != nil {
+		clicmd.CmdExitOnUsageError(cmd, err.Error())
+	}
+
+	return nil
 }
 
 func (c *storageShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var key string
-
-	parts := strings.SplitN(c.Target, "/", 2)
-	bucket := parts[0]
-	if len(parts) > 1 {
-		key = parts[1]
+	bucket, key, err := parsePath(c.Target)
+	if err != nil {
+		return err
 	}
 
 	storage, err := sos.NewStorageClient(

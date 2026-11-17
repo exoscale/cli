@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -33,38 +32,45 @@ func (c *storageRbCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 	}
 
-	target := args[0]
-	args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
-	args[0] = strings.TrimRight(args[0], "/")
-
-	if args[0] == "" {
-		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", target))
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
 	}
 
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	if _, key, err := parsePath(c.Bucket); err != nil {
+		clicmd.CmdExitOnUsageError(cmd, err.Error())
+	} else if key != "" {
+		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q, expected a bucket name", c.Bucket))
+	}
+
+	return nil
 }
 
 func (c *storageRbCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	bucket, _, err := parsePath(c.Bucket)
+	if err != nil {
+		return err
+	}
+
 	if !c.Force {
-		if !utils.AskQuestion(exocmd.GContext, fmt.Sprintf("Are you sure you want to delete %s%s?", sos.BucketPrefix, c.Bucket)) {
+		if !utils.AskQuestion(exocmd.GContext, fmt.Sprintf("Are you sure you want to delete %s%s?", sos.BucketPrefix, bucket)) {
 			return nil
 		}
 	}
 
 	storage, err := sos.NewStorageClient(
 		exocmd.GContext,
-		sos.ClientOptZoneFromBucket(exocmd.GContext, c.Bucket),
+		sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
 	)
 	if err != nil {
 		return fmt.Errorf("unable to initialize storage client: %w", err)
 	}
 
-	if err := storage.DeleteBucket(exocmd.GContext, c.Bucket, c.Recursive); err != nil {
+	if err := storage.DeleteBucket(exocmd.GContext, bucket, c.Recursive); err != nil {
 		return fmt.Errorf("unable to delete bucket: %w", err)
 	}
 
 	if !globalstate.Quiet {
-		fmt.Printf("Bucket %s%s deleted successfully\n", sos.BucketPrefix, c.Bucket)
+		fmt.Printf("Bucket %s%s deleted successfully\n", sos.BucketPrefix, bucket)
 	}
 
 	return nil

@@ -7,6 +7,10 @@ stderr 'Usage:'
 stderr 'exo storage delete sos://BUCKET/\[OBJECT\|PREFIX/\]'
 ! exec exo storage delete -f sos://sto-del-$TEST_RUN_ID/a.txt sos://sto-del-$TEST_RUN_ID/b.txt
 stderr 'error: invalid arguments'
+! exec exo storage delete -f sos://
+stderr 'error: invalid argument: "sos://"'
+! exec exo storage delete -f sos:///dir/
+stderr 'error: invalid argument: "sos:///dir/"'
 
 # Setup: two objects at the root, one under dir/ and one under dir/sub/
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-del-$TEST_RUN_ID

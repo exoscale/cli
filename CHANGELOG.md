@@ -32,7 +32,7 @@
 
 ### Bug fixes
 
-- storage: `exo storage {show,rb,mb,purge,download,setacl,upload}` rejects an empty bucket name (`sos://`, `sos:///key`) with a usage error instead of querying the API or crashing
+- storage: `exo storage {delete,show,rb,mb,purge,download,setacl,upload}` rejects an empty bucket name (`sos://`, `sos:///key`) with a usage error instead of querying the API or crashing
 - storage: `exo storage setacl` treats an empty canned ACL (`""`) as missing, instead of silently replacing the ACL with an owner-only one
 - storage: `exo storage list` rejects more than one argument with a usage error, instead of ignoring the extra ones and listing a bucket named `sos:`
 - storage: `exo storage list` names the flag when `--older-than-timestamp` or `--newer-than-timestamp` is not a valid timestamp
