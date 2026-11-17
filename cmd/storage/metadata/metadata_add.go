@@ -57,13 +57,17 @@ func (c *addCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
 	}
 
-	for _, kv := range args[1:] {
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
+
+	for _, kv := range c.KeyValues {
 		if !strings.Contains(kv, "=") {
 			clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", kv))
 		}
 	}
 
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	return nil
 }
 
 func (c *addCmd) CmdRun(_ *cobra.Command, _ []string) error {

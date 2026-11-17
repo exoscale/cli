@@ -14,6 +14,8 @@ stderr 'error: no header flag specified'
 stderr 'error: no header flag specified'
 ! exec exo storage headers delete sos://sto-hdrs-$TEST_RUN_ID/obj.txt
 stderr 'error: no header flag specified'
+! exec exo storage headers delete sos://sto-hdrs-$TEST_RUN_ID/obj.txt --cache-control=false
+stderr 'error: no header flag specified'
 
 # Setup: one object at the root and two under a prefix
 exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-hdrs-$TEST_RUN_ID

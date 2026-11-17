@@ -59,26 +59,17 @@ func (c *deleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
 	}
 
-	// A header flag counts as soon as it is set, even to false.
-	var hasHeaderFlagsSet bool
-	for _, flag := range []string{
-		sos.ObjectHeaderCacheControl,
-		sos.ObjectHeaderContentDisposition,
-		sos.ObjectHeaderContentEncoding,
-		sos.ObjectHeaderContentLanguage,
-		sos.ObjectHeaderContentType,
-		sos.ObjectHeaderExpires,
-	} {
-		if cmd.Flags().Changed(strings.ToLower(flag)) {
-			hasHeaderFlagsSet = true
-			break
-		}
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
 	}
-	if !hasHeaderFlagsSet {
+
+	// A header flag set to false doesn't count, there would be nothing to delete.
+	if !c.CacheControl && !c.ContentDisposition && !c.ContentEncoding &&
+		!c.ContentLanguage && !c.ContentType && !c.Expires {
 		clicmd.CmdExitOnUsageError(cmd, "no header flag specified")
 	}
 
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	return nil
 }
 
 func (c *deleteCmd) CmdRun(_ *cobra.Command, _ []string) error {

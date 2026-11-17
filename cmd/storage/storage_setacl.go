@@ -82,31 +82,19 @@ func (c *storageSetACLCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 	}
 
-	// A canned ACL or a grantee flag only counts when its value is not empty.
-	hasCannedACL := len(args) == 2 && args[1] != ""
-	var hasGranteeFlagsSet bool
-	for _, flag := range []string{
-		sos.SetACLCmdFlagRead,
-		sos.SetACLCmdFlagWrite,
-		sos.SetACLCmdFlagReadACP,
-		sos.SetACLCmdFlagWriteACP,
-		sos.SetACLCmdFlagFullControl,
-	} {
-		if v, _ := cmd.Flags().GetString(flag); v != "" {
-			hasGranteeFlagsSet = true
-			break
-		}
-	}
-	if hasCannedACL == hasGranteeFlagsSet {
-		clicmd.CmdExitOnUsageError(cmd, "either a canned ACL or ACL grantee options must be specified")
-	}
-
 	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
 		return err
 	}
 
 	if _, _, err := parsePath(c.Target); err != nil {
 		clicmd.CmdExitOnUsageError(cmd, err.Error())
+	}
+
+	// A canned ACL or a grantee flag only counts when its value is not empty.
+	hasCannedACL := c.CannedACL != ""
+	hasGranteeFlagsSet := c.Read != "" || c.Write != "" || c.ReadACP != "" || c.WriteACP != "" || c.FullControl != ""
+	if hasCannedACL == hasGranteeFlagsSet {
+		clicmd.CmdExitOnUsageError(cmd, "either a canned ACL or ACL grantee options must be specified")
 	}
 
 	return nil

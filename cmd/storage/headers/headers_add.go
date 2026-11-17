@@ -59,26 +59,17 @@ func (c *addCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
 	}
 
-	// A header flag only counts when its value is not empty.
-	var hasHeaderFlagsSet bool
-	for _, header := range []string{
-		sos.ObjectHeaderCacheControl,
-		sos.ObjectHeaderContentDisposition,
-		sos.ObjectHeaderContentEncoding,
-		sos.ObjectHeaderContentLanguage,
-		sos.ObjectHeaderContentType,
-		sos.ObjectHeaderExpires,
-	} {
-		if v, _ := cmd.Flags().GetString(strings.ToLower(header)); v != "" {
-			hasHeaderFlagsSet = true
-			break
-		}
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
 	}
-	if !hasHeaderFlagsSet {
+
+	// A header flag only counts when its value is not empty.
+	if c.CacheControl == "" && c.ContentDisposition == "" && c.ContentEncoding == "" &&
+		c.ContentLanguage == "" && c.ContentType == "" && c.Expires == "" {
 		clicmd.CmdExitOnUsageError(cmd, "no header flag specified")
 	}
 
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	return nil
 }
 
 func (c *addCmd) CmdRun(_ *cobra.Command, _ []string) error {
