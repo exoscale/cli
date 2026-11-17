@@ -17,25 +17,27 @@
 - storage: migrate `exo storage bucket versioning` to the clicmd framework #962
 - storage: migrate `exo storage bucket object-ownership` to the clicmd framework #962
 - storage: move `exo storage bucket lifecycle` from package storage to package bucket #962
-- storage: migrate `exo storage metadata` commands to the struct-based command framework
-- storage: migrate `exo storage show` command to the struct-based command framework
-- storage: migrate `exo storage rb` command to the struct-based command framework
-- storage: migrate `exo storage mb` command to the struct-based command framework
-- storage: migrate `exo storage purge` command to the struct-based command framework
-- storage: migrate `exo storage delete` command to the struct-based command framework
-- storage: migrate `exo storage download` command to the struct-based command framework
-- storage: migrate `exo storage headers` commands to the struct-based command framework
-- storage: migrate `exo storage setacl` command to the struct-based command framework
-- storage: migrate `exo storage upload` command to the struct-based command framework
-- storage: migrate `exo storage copy` command to the struct-based command framework
-- storage: migrate `exo storage list` command to the struct-based command framework
+- storage: migrate `exo storage metadata` commands to the struct-based command framework #963
+- storage: migrate `exo storage show` command to the struct-based command framework #963
+- storage: migrate `exo storage rb` command to the struct-based command framework #963
+- storage: migrate `exo storage mb` command to the struct-based command framework #963
+- storage: migrate `exo storage purge` command to the struct-based command framework #963
+- storage: migrate `exo storage delete` command to the struct-based command framework #963
+- storage: migrate `exo storage download` command to the struct-based command framework #963
+- storage: migrate `exo storage headers` commands to the struct-based command framework #963
+- storage: migrate `exo storage setacl` command to the struct-based command framework #963
+- storage: migrate `exo storage upload` command to the struct-based command framework #963
+- storage: migrate `exo storage copy` command to the struct-based command framework #963
+- storage: migrate `exo storage list` command to the struct-based command framework #963
+- storage: migrate `exo storage cors` command to the struct-based command framework #963
 
 ### Bug fixes
 
-- storage: `exo storage {delete,show,rb,mb,purge,download,setacl,upload}` rejects an empty bucket name (`sos://`, `sos:///key`) with a usage error instead of querying the API or crashing
-- storage: `exo storage setacl` treats an empty canned ACL (`""`) as missing, instead of silently replacing the ACL with an owner-only one
-- storage: `exo storage list` rejects more than one argument with a usage error, instead of ignoring the extra ones and listing a bucket named `sos:`
-- storage: `exo storage list` names the flag when `--older-than-timestamp` or `--newer-than-timestamp` is not a valid timestamp
+- storage: `exo storage {delete,show,rb,mb,purge,download,setacl,upload}` rejects an empty bucket name (`sos://`, `sos:///key`) with a usage error instead of querying the API or crashing #963
+- storage: `exo storage setacl` treats an empty canned ACL (`""`) as missing, instead of silently replacing the ACL with an owner-only one #963
+- storage: `exo storage list` rejects more than one argument with a usage error, instead of ignoring the extra ones and listing a bucket named `sos:` #963
+- storage: `exo storage list` names the flag when `--older-than-timestamp` or `--newer-than-timestamp` is not a valid timestamp #963
+- storage cors add: report missing --allowed-origin/--allowed-method as a usage error instead of failing on the API or panicking #963
 
 
 ## 1.104.1
