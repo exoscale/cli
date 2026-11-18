@@ -5,6 +5,8 @@
 exec exo --zone $TEST_ZONE --output-format json dbaas create pg startup-4 pg-rr-$TEST_RUN_ID --termination-protection=false
 defer exo --zone $TEST_ZONE dbaas delete -f pg-rr-$TEST_RUN_ID
 wait-dbaas-state $TEST_ZONE pg-rr-$TEST_RUN_ID running 1200
+# A replica is created from a backup: "running" comes before the first one exists
+wait-dbaas-backup $TEST_ZONE pg-rr-$TEST_RUN_ID 1200
 
 # Create a replica (deferred deletes run last-in first-out: replica first)
 exec exo --output-format json dbaas read-replica create pg-rr-replica-$TEST_RUN_ID --source-service pg-rr-$TEST_RUN_ID --replica-zone $TEST_ZONE --plan startup-4 --termination-protection=false

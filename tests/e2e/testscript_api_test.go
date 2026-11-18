@@ -105,6 +105,7 @@ func runAPITestSuite(t *testing.T, dir string) {
 			"json-setenv-match":   cmdJSONSetenvMatch,
 			"wait-instance-state": cmdWaitInstanceState,
 			"wait-dbaas-state":    cmdWaitDBAASState,
+			"wait-dbaas-backup":   cmdWaitDBAASBackup,
 		},
 		Setup: func(e *testscript.Env) error {
 			return setupAPITestEnv(e, suite)
@@ -294,25 +295,7 @@ func cmdWaitInstanceState(ts *testscript.TestScript, neg bool, args []string) {
 	// real process environment.
 	// We filter the real env first: on Linux getenv() returns the first match,
 	// so simply appending overrides to os.Environ() would have no effect.
-	overrides := map[string]string{
-		"HOME":                ts.Getenv("HOME"),
-		"XDG_CONFIG_HOME":     ts.Getenv("XDG_CONFIG_HOME"),
-		"EXOSCALE_API_KEY":    ts.Getenv("EXOSCALE_API_KEY"),
-		"EXOSCALE_API_SECRET": ts.Getenv("EXOSCALE_API_SECRET"),
-	}
-	pollEnv := make([]string, 0, len(os.Environ()))
-	for _, kv := range os.Environ() {
-		key := kv
-		if i := strings.IndexByte(kv, '='); i >= 0 {
-			key = kv[:i]
-		}
-		if _, overridden := overrides[key]; !overridden {
-			pollEnv = append(pollEnv, kv)
-		}
-	}
-	for k, v := range overrides {
-		pollEnv = append(pollEnv, k+"="+v)
-	}
+	pollEnv := scriptPollEnv(ts)
 
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
@@ -362,25 +345,7 @@ func cmdWaitDBAASState(ts *testscript.TestScript, neg bool, args []string) {
 		timeout = time.Duration(secs) * time.Second
 	}
 
-	overrides := map[string]string{
-		"HOME":                ts.Getenv("HOME"),
-		"XDG_CONFIG_HOME":     ts.Getenv("XDG_CONFIG_HOME"),
-		"EXOSCALE_API_KEY":    ts.Getenv("EXOSCALE_API_KEY"),
-		"EXOSCALE_API_SECRET": ts.Getenv("EXOSCALE_API_SECRET"),
-	}
-	pollEnv := make([]string, 0, len(os.Environ()))
-	for _, kv := range os.Environ() {
-		key := kv
-		if i := strings.IndexByte(kv, '='); i >= 0 {
-			key = kv[:i]
-		}
-		if _, overridden := overrides[key]; !overridden {
-			pollEnv = append(pollEnv, kv)
-		}
-	}
-	for k, v := range overrides {
-		pollEnv = append(pollEnv, k+"="+v)
-	}
+	pollEnv := scriptPollEnv(ts)
 
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
@@ -407,6 +372,84 @@ func cmdWaitDBAASState(ts *testscript.TestScript, neg bool, args []string) {
 		time.Sleep(15 * time.Second)
 	}
 	ts.Fatalf("wait-dbaas-state: timed out waiting for service %s to reach state %q", serviceName, targetState)
+}
+
+// cmdWaitDBAASBackup is a testscript custom command:
+//
+//	wait-dbaas-backup ZONE SERVICE_NAME [TIMEOUT_SECONDS]
+//
+// Polls `exo dbaas show --backups` until the service has at least one backup
+// or the timeout elapses (default: 900 seconds). Fails the test on timeout.
+// A service reaches "running" before its first backup exists, and some
+// operations (e.g. creating a read replica) are refused until then.
+func cmdWaitDBAASBackup(ts *testscript.TestScript, neg bool, args []string) {
+	if len(args) < 2 || len(args) > 3 {
+		ts.Fatalf("usage: wait-dbaas-backup ZONE SERVICE_NAME [TIMEOUT_SECONDS]")
+	}
+	zone, serviceName := args[0], args[1]
+	timeout := 900 * time.Second
+	if len(args) == 3 {
+		var secs int
+		if _, err := fmt.Sscan(args[2], &secs); err != nil {
+			ts.Fatalf("wait-dbaas-backup: invalid timeout %q: %v", args[2], err)
+		}
+		timeout = time.Duration(secs) * time.Second
+	}
+
+	pollEnv := scriptPollEnv(ts)
+
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		out, err := runCLIWithEnv(pollEnv,
+			"--zone", zone,
+			"--output-format", "json",
+			"dbaas", "show", "--backups",
+			serviceName,
+		)
+		if err != nil {
+			ts.Logf("wait-dbaas-backup: poll error (will retry): %v", err)
+			time.Sleep(15 * time.Second)
+			continue
+		}
+		var backups []json.RawMessage
+		if err := json.Unmarshal([]byte(out), &backups); err != nil {
+			ts.Logf("wait-dbaas-backup: unexpected output (will retry): %v", err)
+			time.Sleep(15 * time.Second)
+			continue
+		}
+		ts.Logf("wait-dbaas-backup: %s → %d backup(s)", serviceName, len(backups))
+		if len(backups) > 0 {
+			return
+		}
+		time.Sleep(15 * time.Second)
+	}
+	ts.Fatalf("wait-dbaas-backup: timed out waiting for a backup of service %s", serviceName)
+}
+
+// scriptPollEnv returns the process environment with the script's HOME,
+// XDG_CONFIG_HOME and API credentials, for polling commands that run the CLI
+// outside of testscript's exec.
+func scriptPollEnv(ts *testscript.TestScript) []string {
+	overrides := map[string]string{
+		"HOME":                ts.Getenv("HOME"),
+		"XDG_CONFIG_HOME":     ts.Getenv("XDG_CONFIG_HOME"),
+		"EXOSCALE_API_KEY":    ts.Getenv("EXOSCALE_API_KEY"),
+		"EXOSCALE_API_SECRET": ts.Getenv("EXOSCALE_API_SECRET"),
+	}
+	env := make([]string, 0, len(os.Environ()))
+	for _, kv := range os.Environ() {
+		key := kv
+		if i := strings.IndexByte(kv, '='); i >= 0 {
+			key = kv[:i]
+		}
+		if _, overridden := overrides[key]; !overridden {
+			env = append(env, kv)
+		}
+	}
+	for k, v := range overrides {
+		env = append(env, k+"="+v)
+	}
+	return env
 }
 
 // runCLI runs the exo binary with the given arguments and returns combined stdout+stderr.
