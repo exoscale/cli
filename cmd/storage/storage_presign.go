@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -32,17 +31,22 @@ func (c *storagePresignCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 	}
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
+
+	if _, key, err := parsePath(c.Object); err != nil || key == "" {
+		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid object URL: %q", c.Object))
+	}
+
+	return nil
 }
 
 func (c *storagePresignCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	object := strings.TrimPrefix(c.Object, sos.BucketPrefix)
-
-	parts := strings.SplitN(object, "/", 2)
-	if len(parts) < 2 {
-		return fmt.Errorf("invalid object URL: %q", object)
+	bucket, key, err := parsePath(c.Object)
+	if err != nil {
+		return err
 	}
-	bucket, key := parts[0], parts[1]
 
 	storage, err := sos.NewStorageClient(
 		exocmd.GContext,

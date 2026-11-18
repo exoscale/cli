@@ -13,6 +13,12 @@ stderr 'cannot use version number filter "v1" in combination with --stream flag'
 ! exec exo storage list --older-than-timestamp 2023-06-07 sos://my-bucket/
 stderr 'invalid argument "2023-06-07" for "--older-than-timestamp" flag: parsing time'
 
+# Empty bucket name
+! exec exo storage list sos://
+stderr 'error: invalid argument: "sos://"'
+! exec exo storage list sos:///prefix/
+stderr 'error: invalid argument: "sos:///prefix/"'
+
 -- test-config.toml --
 defaultaccount = "Exoscale-Test"
 

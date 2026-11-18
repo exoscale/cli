@@ -73,12 +73,14 @@ func (c *storageListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 	}
 
-	if len(args) == 1 {
-		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
-	}
-
 	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
 		return err
+	}
+
+	if len(args) == 1 {
+		if _, _, err := parsePath(c.Path); err != nil {
+			clicmd.CmdExitOnUsageError(cmd, err.Error())
+		}
 	}
 
 	if len(c.OnlyVersions) > 0 && len(c.ExcludeVersions) > 0 {
@@ -102,12 +104,14 @@ func (c *storageListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *storageListCmd) CmdRun(_ *cobra.Command, args []string) error {
-	// Not c.Path == "": "list sos://" (an empty bucket) lists objects, not buckets.
 	if len(args) == 0 {
 		return utils.PrintOutput(listStorageBuckets(c.Zone))
 	}
 
-	bucket, prefix, _ := strings.Cut(c.Path, "/")
+	bucket, prefix, err := parsePath(c.Path)
+	if err != nil {
+		return err
+	}
 
 	filters := listTimeFilters(c.OlderThan, c.OlderThanTimestamp, c.NewerThan, c.NewerThanTimestamp)
 

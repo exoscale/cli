@@ -12,6 +12,10 @@ stderr 'missing unit in duration "900"'
 # A bucket without an object key
 ! exec exo storage presign sos://my-bucket
 stderr 'invalid object URL'
+! exec exo storage presign sos://my-bucket/
+stderr 'error: invalid object URL: "sos://my-bucket/"'
+! exec exo storage presign sos:///hello.txt
+stderr 'error: invalid object URL: "sos:///hello.txt"'
 
 -- test-config.toml --
 defaultaccount = "Exoscale-Test"
