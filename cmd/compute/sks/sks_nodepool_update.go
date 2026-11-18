@@ -33,6 +33,7 @@ type sksNodepoolUpdateCmd struct {
 	Labels             []string    `cli-flag:"label" cli-usage:"Nodepool label (format: KEY=VALUE, can be repeated multiple times)"`
 	Name               string      `cli-usage:"Nodepool name"`
 	NvidiaMigProfile   string      `cli-flag:"nvidia-mig-profile" cli-usage:"Nvidia MIG profile to enable on the Nodepool GPUs (e.g. 4g.24gb), empty to disable; the GPU family is inferred from the instance type"`
+	NvidiaDraDriver    bool        `cli-flag:"nvidia-dra-driver" cli-usage:"expose the Nodepool GPUs with the Nvidia DRA driver instead of the device plugin (requires Kubernetes 1.34+, --nvidia-dra-driver=false to disable)"`
 	PrivateNetworks    []string    `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
 	SecurityGroups     []string    `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	Taints             []string    `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
@@ -234,6 +235,11 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 				return err
 			}
 		}
+		updated = true
+	}
+
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.NvidiaDraDriver)) {
+		updateReq.NvidiaDraDriver = &c.NvidiaDraDriver
 		updated = true
 	}
 

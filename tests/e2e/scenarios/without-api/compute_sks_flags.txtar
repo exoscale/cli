@@ -1,0 +1,18 @@
+# Test: SKS commands --help show the allowlist, template pinning, DRA and MIG flags
+
+exec exo compute sks create --help
+stdout '--allowed-network strings'
+stdout '--nodepool-nvidia-dra-driver'
+stdout '--nodepool-nvidia-mig-profile string'
+
+exec exo compute sks update --help
+stdout '--allowed-network strings'
+
+exec exo compute sks nodepool add --help
+stdout '--nvidia-dra-driver'
+stdout '--nvidia-mig-profile string'
+
+exec exo compute sks nodepool update --help
+stdout '--nvidia-dra-driver'
+stdout '--nvidia-mig-profile string'
+stdout '--template string'

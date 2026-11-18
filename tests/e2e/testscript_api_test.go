@@ -47,15 +47,20 @@ func TestScriptsAPIAIService(t *testing.T) {
 }
 
 // TestScriptsAPIKMS runs API e2e scenarios under scenarios/with-api/kms/.
-// Key store scenarios need a reachable XKS proxy, see xksProxyEnv.
+// Key store scenarios need a reachable XKS proxy, see conditionEnv.
 // Run with: go test -v -tags=api -timeout 10m -run TestScriptsAPIKMS
 func TestScriptsAPIKMS(t *testing.T) {
 	runAPITestSuite(t, "scenarios/with-api/kms")
 }
 
-// xksProxyEnv lists the variables describing a customer-managed XKS proxy.
-// Scenarios guarded by the [xks] condition are skipped unless all are set.
-var xksProxyEnv = []string{"XKS_PROXY_ENDPOINT", "XKS_PROXY_ACCESS_KEY", "XKS_PROXY_SECRET_KEY"}
+// conditionEnv lists the variables each scenario condition needs. Scenarios
+// guarded by a condition are skipped unless all its variables are set.
+var conditionEnv = map[string][]string{
+	// A customer-managed XKS proxy
+	"xks": {"XKS_PROXY_ENDPOINT", "XKS_PROXY_ACCESS_KEY", "XKS_PROXY_SECRET_KEY"},
+	// A GPU instance type available in the test zone and a MIG profile valid for it
+	"gpu": {"TEST_GPU_INSTANCE_TYPE", "TEST_GPU_MIG_PROFILE"},
+}
 
 // runAPITestSuite is the shared runner for per-suite API test functions.
 // dir is the directory of .txtar scenarios to run (relative to the e2e package).
@@ -111,10 +116,11 @@ func runAPITestSuite(t *testing.T, dir string) {
 			return setupAPITestEnv(e, suite)
 		},
 		Condition: func(cond string) (bool, error) {
-			if cond != "xks" {
+			vars, ok := conditionEnv[cond]
+			if !ok {
 				return false, fmt.Errorf("unknown condition %q", cond)
 			}
-			for _, k := range xksProxyEnv {
+			for _, k := range vars {
 				if os.Getenv(k) == "" {
 					return false, nil
 				}
@@ -144,10 +150,12 @@ func setupAPITestEnv(e *testscript.Env, suite *APITestSuite) error {
 		e.Setenv("EXOSCALE_API_ENDPOINT", endpoint)
 	}
 
-	// Optional XKS proxy settings for key store scenarios.
-	for _, k := range xksProxyEnv {
-		if v := os.Getenv(k); v != "" {
-			e.Setenv(k, v)
+	// Optional settings for the scenarios guarded by a condition.
+	for _, vars := range conditionEnv {
+		for _, k := range vars {
+			if v := os.Getenv(k); v != "" {
+				e.Setenv(k, v)
+			}
 		}
 	}
 
