@@ -1,0 +1,56 @@
+# exo storage copy: single object, across buckets, prefixes, prompt, dry run
+
+# Setup: two buckets, one object with metadata and a public-read ACL, and a
+# small tree under dir/
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-cp-$TEST_RUN_ID
+defer exo storage rb -r -f sos://sto-cp-$TEST_RUN_ID
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-cp2-$TEST_RUN_ID
+defer exo storage rb -r -f sos://sto-cp2-$TEST_RUN_ID
+exec exo storage upload hello.txt sos://sto-cp-$TEST_RUN_ID/a.txt
+exec exo storage upload hello.txt sos://sto-cp-$TEST_RUN_ID/dir/b.txt
+exec exo storage upload hello.txt sos://sto-cp-$TEST_RUN_ID/dir/sub/c.txt
+exec exo -Q storage metadata add sos://sto-cp-$TEST_RUN_ID/a.txt owner=e2e
+exec exo -Q storage setacl sos://sto-cp-$TEST_RUN_ID/a.txt public-read
+
+# Single object in the same bucket: metadata and ACL are kept, the source stays
+exec exo storage copy sos://sto-cp-$TEST_RUN_ID/a.txt sos://sto-cp-$TEST_RUN_ID/z.txt
+exec exo --output-format json storage show sos://sto-cp-$TEST_RUN_ID/z.txt
+stdout '"owner":"e2e"'
+stdout '"read":"ALL_USERS"'
+exec exo storage show sos://sto-cp-$TEST_RUN_ID/a.txt
+
+# Across buckets, cp alias, bare bucket names, verbose
+exec exo storage cp -v sto-cp-$TEST_RUN_ID/a.txt sto-cp2-$TEST_RUN_ID/a.txt
+stdout 'copied: a.txt -> '
+exec exo --output-format json storage show sos://sto-cp2-$TEST_RUN_ID/a.txt
+stdout '"owner":"e2e"'
+
+# Dry run prints the plan and copies nothing
+exec exo storage copy -n sos://sto-cp-$TEST_RUN_ID/a.txt sos://sto-cp2-$TEST_RUN_ID/dry.txt
+stdout '\[DRY-RUN\]'
+stdout 'copy sos://sto-cp-'$TEST_RUN_ID'/a.txt -> sos://sto-cp2-'$TEST_RUN_ID'/dry.txt'
+! exec exo storage show sos://sto-cp2-$TEST_RUN_ID/dry.txt
+
+# A prefix asks for confirmation, answering no copies nothing
+stdin no.txt
+exec exo storage copy sos://sto-cp-$TEST_RUN_ID/dir/ sos://sto-cp2-$TEST_RUN_ID/p/
+stdout 'Are you sure you want to copy all objects from sos://sto-cp-'$TEST_RUN_ID'/dir/ to sos://sto-cp2-'$TEST_RUN_ID'/p/\?'
+! exec exo storage show sos://sto-cp2-$TEST_RUN_ID/p/b.txt
+
+# Prefix without -r: only the objects directly under it
+exec exo storage copy -f sos://sto-cp-$TEST_RUN_ID/dir/ sos://sto-cp2-$TEST_RUN_ID/p/
+exec exo storage ls -r sos://sto-cp2-$TEST_RUN_ID/p/
+stdout 'p/b.txt'
+! stdout 'sub'
+
+# Prefix with -r, long flags, verbose
+exec exo storage copy --force --recursive --verbose sos://sto-cp-$TEST_RUN_ID/dir/ sos://sto-cp2-$TEST_RUN_ID/r/
+stdout 'copied 2 objects'
+exec exo storage ls -r sos://sto-cp2-$TEST_RUN_ID/r/
+stdout 'r/b.txt'
+stdout 'r/sub/c.txt'
+
+-- hello.txt --
+hello from e2e test
+-- no.txt --
+n

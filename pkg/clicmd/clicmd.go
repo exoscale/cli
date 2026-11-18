@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/iancoleman/strcase"
@@ -46,10 +47,15 @@ func CmdCheckRequiredFlags(cmd *cobra.Command, flags []string) error {
 				var hasValue bool
 
 				switch flag.Value.Type() {
-				case "string", "stringSlice":
+				case "string":
 					if flag.Value.String() != "" {
 						hasValue = true
 					}
+
+				// Slice flags print as "[]" when empty, so check their
+				// length rather than their string value.
+				case "stringSlice", "stringArray":
+					hasValue = len(flag.Value.(pflag.SliceValue).GetSlice()) > 0
 
 				case "int", "uint", "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64",
 					"float32", "float64":
@@ -199,6 +205,11 @@ func MustCLICommandFlagName(c cliCommand, field interface{}) string {
 	return v
 }
 
+var (
+	durationType = reflect.TypeFor[time.Duration]()
+	timeType     = reflect.TypeFor[time.Time]()
+)
+
 // isPflagValue returns true if a pointer to the specified type implements
 // the pflag.Value interface.
 func isPflagValue(t reflect.Type) bool {
@@ -229,7 +240,9 @@ func cliCommandArgLabel(f reflect.StructField) string {
 //     and display the deprecation message when used.
 //
 // Fields of a type implementing pflag.Value (through a pointer receiver) are
-// registered as generic flags, cf. BinaryValue.
+// registered as generic flags, cf. BinaryValue. time.Duration fields are
+// registered as duration flags (e.g. "--expires 15m"), and time.Time fields
+// as RFC 3339 timestamps (e.g. "--since 2023-06-07T10:00:00+02:00").
 func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 	fs := pflag.NewFlagSet("", pflag.ExitOnError)
 	cv := reflect.ValueOf(c)
@@ -276,6 +289,19 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 		flagDefaultValue := cv.Field(i).Interface()
 
 		switch t := cTypeField.Type.Kind(); {
+		case cTypeField.Type == durationType:
+			// durationType is checked before the reflect.Kind switches: the kind of
+			// time.Duration is reflect.Int64, so it would otherwise be handled as a
+			// plain int64 and reject values such as "15m".
+			fs.DurationP(flagName, flagShort, flagDefaultValue.(time.Duration), flagUsage)
+
+		case cTypeField.Type == timeType:
+			// time.Time is a struct: it would otherwise be refused as unsupported.
+			// The flag holds its own copy of the value, which is copied back to
+			// the struct field by CliCommandDefaultPreRun().
+			v := timeValue(flagDefaultValue.(time.Time))
+			fs.VarP(&v, flagName, flagShort, flagUsage)
+
 		case isPflagValue(cTypeField.Type):
 			// The flag holds its own copy of the value, which is copied back
 			// to the struct field by CliCommandDefaultPreRun().
@@ -350,11 +376,15 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 //     type definition, or "?" to declare an optional single argument. If the
 //     struct field is a []string, the result is a variadic (i.e. 0 or more)
 //     list of remaining arguments; if "cli-arg:"?"` is specified, the list
-//     will be marked as optional in the "use" command help.
+//     will be marked as optional in the "use" command help. A []string
+//     argument can be followed by required ("#") single arguments, which take
+//     the last command line arguments (e.g. "FILE... DESTINATION"); an
+//     optional argument or another list can't follow it.
 func cliCommandUse(c cliCommand) (string, error) {
 	var (
 		commandName string
 		use         = make([]string, 0)
+		afterList   bool
 	)
 
 	cv := reflect.ValueOf(c)
@@ -374,8 +404,18 @@ func cliCommandUse(c cliCommand) (string, error) {
 		if v, ok := cTypeField.Tag.Lookup("cli-arg"); ok {
 			argLabel := cliCommandArgLabel(cTypeField)
 
+			// After a list, the arguments are split from the end: only required
+			// single arguments are unambiguous there.
+			if afterList && (v == "?" || cTypeField.Type.Kind() == reflect.Slice) {
+				return "", cliCommandImplemError{fmt.Sprintf(
+					"field %s.%s: only required single arguments can follow a list argument",
+					cv.Type(),
+					cTypeField.Name,
+				)}
+			}
+
 			switch t := cTypeField.Type.Kind(); {
-			case isPflagValue(cTypeField.Type), t == reflect.Int64, t == reflect.String:
+			case cTypeField.Type == timeType, isPflagValue(cTypeField.Type), t == reflect.Int64, t == reflect.String:
 				if v == "?" {
 					use = append(use, "["+argLabel+"]")
 				} else {
@@ -397,6 +437,7 @@ func cliCommandUse(c cliCommand) (string, error) {
 				} else {
 					use = append(use, argLabel+"...")
 				}
+				afterList = true
 
 			default:
 				return "", cliCommandImplemError{fmt.Sprintf(
@@ -447,6 +488,37 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 		// Positional args handling:
 		if argMode, ok := cTypeField.Tag.Lookup("cli-arg"); ok {
 			switch t := cTypeField.Type.Kind(); {
+			case cTypeField.Type == durationType:
+				// durationType is checked before the reflect.Kind switches: the kind of
+				// time.Duration is reflect.Int64, so it would otherwise be handled as a
+				// plain int64 and reject values such as "15m".
+				if argp >= len(args) {
+					if argMode == "#" {
+						return fmt.Errorf("missing arguments, run with --help for usage")
+					}
+					break
+				}
+
+				argVal, err := time.ParseDuration(args[argp])
+				if err != nil {
+					return fmt.Errorf("invalid value for %s: %w", cliCommandArgLabel(cTypeField), err)
+				}
+				cField.Set(reflect.ValueOf(argVal))
+
+			case cTypeField.Type == timeType:
+				if argp >= len(args) {
+					if argMode == "#" {
+						return fmt.Errorf("missing arguments, run with --help for usage")
+					}
+					break
+				}
+
+				var argVal timeValue
+				if err := argVal.Set(args[argp]); err != nil {
+					return fmt.Errorf("invalid value for %s: %w", cliCommandArgLabel(cTypeField), err)
+				}
+				cField.Set(reflect.ValueOf(time.Time(argVal)))
+
 			case isPflagValue(cTypeField.Type):
 				if argp >= len(args) {
 					if argMode == "#" {
@@ -508,9 +580,24 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 					)}
 				}
 
-				if argp < len(args) {
-					cField.Set(reflect.ValueOf(args[argp:]))
+				// Leave one argument to each argument declared after the list
+				// (only required single ones are allowed there, cf.
+				// cliCommandUse): "FILE... DESTINATION" gives the last
+				// argument to DESTINATION.
+				end := len(args)
+				for j := i + 1; j < cv.NumField(); j++ {
+					if _, ok := cv.Type().Field(j).Tag.Lookup("cli-arg"); ok {
+						end--
+					}
 				}
+
+				if argp < end {
+					cField.Set(reflect.ValueOf(args[argp:end]))
+				}
+
+				// The arguments declared after the list start where it stops.
+				argp = max(argp, end)
+				continue
 
 			default:
 				return cliCommandImplemError{fmt.Sprintf(
@@ -538,6 +625,30 @@ func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 		}
 
 		switch t := cTypeField.Type.Kind(); {
+		case cTypeField.Type == durationType:
+			// durationType is checked before the reflect.Kind switches: the kind of
+			// time.Duration is reflect.Int64, so it would otherwise be handled as a
+			// plain int64 and reject values such as "15m".
+			v, err := cmd.Flags().GetDuration(flagName)
+			if err != nil {
+				return fmt.Errorf("error retrieving value for flag --%s: %s", flagName, err)
+			}
+			cField.Set(reflect.ValueOf(v))
+
+		case cTypeField.Type == timeType:
+			// The value has already been parsed by pflag, copy it to the struct field.
+			v, ok := cmd.Flags().Lookup(flagName).Value.(*timeValue)
+			if !ok {
+				return cliCommandImplemError{fmt.Sprintf(
+					"flag --%s has type %T, expected *clicmd.timeValue for field %s.%s",
+					flagName,
+					cmd.Flags().Lookup(flagName).Value,
+					cv.Type(),
+					cTypeField.Name,
+				)}
+			}
+			cField.Set(reflect.ValueOf(time.Time(*v)))
+
 		case isPflagValue(cTypeField.Type):
 			// The value has already been parsed by pflag, copy it to the struct field.
 			fv := reflect.ValueOf(cmd.Flags().Lookup(flagName).Value)

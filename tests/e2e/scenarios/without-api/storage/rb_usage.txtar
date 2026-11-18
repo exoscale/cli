@@ -1,0 +1,26 @@
+# exo storage rb: usage errors, raised before any API call
+
+env EXOSCALE_CONFIG=test-config.toml
+
+# Usage errors
+! exec exo storage rb
+stderr 'error: invalid arguments'
+stderr 'Usage:'
+stderr 'exo storage rb sos://BUCKET'
+! exec exo storage rb -f sos://my-bucket sos://my-bucket2
+stderr 'error: invalid arguments'
+! exec exo storage rb -f sos://
+stderr 'error: invalid argument: "sos://"'
+! exec exo storage rb -f sos:///
+stderr 'error: invalid argument: "sos:///"'
+! exec exo storage rb -f sos://my-bucket/obj.txt
+stderr 'error: invalid argument: "sos://my-bucket/obj.txt", expected a bucket name'
+
+-- test-config.toml --
+defaultaccount = "Exoscale-Test"
+
+[[accounts]]
+name = "Exoscale-Test"
+key = "EXOtest123"
+secret = "testsecret123"
+defaultZone = "ch-gva-2"

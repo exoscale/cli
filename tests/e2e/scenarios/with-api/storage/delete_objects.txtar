@@ -1,0 +1,46 @@
+# exo storage delete: single object, prefix, recursive, aliases
+
+# Setup: two objects at the root, one under dir/ and one under dir/sub/
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-del-$TEST_RUN_ID
+defer exo storage rb -r -f sos://sto-del-$TEST_RUN_ID
+exec exo storage upload hello.txt sos://sto-del-$TEST_RUN_ID/a.txt
+exec exo storage upload hello.txt sos://sto-del-$TEST_RUN_ID/b.txt
+exec exo storage upload hello.txt sos://sto-del-$TEST_RUN_ID/dir/c.txt
+exec exo storage upload hello.txt sos://sto-del-$TEST_RUN_ID/dir/sub/d.txt
+
+# Answering no to the confirmation prompt keeps the object
+stdin no.txt
+exec exo storage delete sos://sto-del-$TEST_RUN_ID/a.txt
+stdout 'Are you sure you want to delete sos://sto-del-'$TEST_RUN_ID'/a.txt\?'
+exec exo storage show sos://sto-del-$TEST_RUN_ID/a.txt
+
+# Single object, sos:// syntax, verbose prints the deleted key
+exec exo storage delete -f -v sos://sto-del-$TEST_RUN_ID/a.txt
+stdout '^a.txt$'
+! exec exo storage show sos://sto-del-$TEST_RUN_ID/a.txt
+
+# rm alias, bare bucket name, without -v nothing is printed
+exec exo storage rm -f sto-del-$TEST_RUN_ID/b.txt
+! stdout .
+! exec exo storage show sos://sto-del-$TEST_RUN_ID/b.txt
+
+# Prefix without -r: only the objects directly under dir/
+exec exo storage delete -f -v sos://sto-del-$TEST_RUN_ID/dir/
+stdout '^dir/c.txt$'
+! stdout 'sub'
+exec exo storage ls -r sos://sto-del-$TEST_RUN_ID/
+! stdout 'dir/c.txt'
+stdout 'dir/sub/d.txt'
+
+# Prefix with -r, del alias, long flags
+exec exo storage upload hello.txt sos://sto-del-$TEST_RUN_ID/dir/c.txt
+exec exo storage del --force --verbose --recursive sos://sto-del-$TEST_RUN_ID/dir/
+stdout '^dir/c.txt$'
+stdout '^dir/sub/d.txt$'
+exec exo storage ls -r sos://sto-del-$TEST_RUN_ID/
+! stdout .
+
+-- hello.txt --
+hello from e2e test
+-- no.txt --
+n

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,63 +15,82 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-var storageMbCmd = &cobra.Command{
-	Use:     "mb sos://BUCKET",
-	Aliases: []string{"create"},
-	Short:   "Create a new bucket",
-	Long: fmt.Sprintf(`This command creates a new bucket.
+type storageMbCmd struct {
+	clicmd.CliCommandSettings `cli-cmd:"-"`
+
+	_ bool `cli-cmd:"mb"`
+
+	Bucket string `cli-arg:"#" cli-usage:"sos://BUCKET"`
+
+	ACL  string `cli-usage:"canned ACL to set on bucket (private|public-read|public-read-write|authenticated-read), see https://community.exoscale.com/product/storage/object-storage/how-to/acl/"`
+	Zone string `cli-short:"z" cli-usage:"bucket zone"`
+}
+
+func (c *storageMbCmd) CmdAliases() []string { return []string{"create"} }
+func (c *storageMbCmd) CmdShort() string     { return "Create a new bucket" }
+func (c *storageMbCmd) CmdLong() string {
+	return fmt.Sprintf(`This command creates a new bucket.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&sos.ShowBucketOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&sos.ShowBucketOutput{}), ", "))
+}
 
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
-		}
+func (c *storageMbCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
+	}
 
-		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
+	clicmd.CmdSetZoneFlagFromDefault(cmd)
 
-		clicmd.CmdSetZoneFlagFromDefault(cmd)
+	if err := clicmd.CmdCheckRequiredFlags(cmd, []string{"zone"}); err != nil {
+		return err
+	}
 
-		return clicmd.CmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
 
-	RunE: func(cmd *cobra.Command, args []string) error {
-		bucket := args[0]
+	if _, key, err := parsePath(c.Bucket); err != nil {
+		clicmd.CmdExitOnUsageError(cmd, err.Error())
+	} else if key != "" {
+		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q, expected a bucket name", c.Bucket))
+	}
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
+	if c.ACL != "" && !slices.Contains(sos.BucketCannedACLToStrings(), c.ACL) {
+		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid canned ACL %q, supported values are: %s",
+			c.ACL, strings.Join(sos.BucketCannedACLToStrings(), ", ")))
+	}
 
-		acl, err := cmd.Flags().GetString("acl")
-		if err != nil {
-			return err
-		}
+	return nil
+}
 
-		storage, err := sos.NewStorageClient(
-			exocmd.GContext,
-			sos.ClientOptWithZone(zone),
-		)
-		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %w", err)
-		}
+func (c *storageMbCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	bucket, _, err := parsePath(c.Bucket)
+	if err != nil {
+		return err
+	}
 
-		if err := storage.CreateNewBucket(exocmd.GContext, bucket, acl); err != nil {
-			return fmt.Errorf("unable to create bucket: %w", err)
-		}
+	storage, err := sos.NewStorageClient(
+		exocmd.GContext,
+		sos.ClientOptWithZone(c.Zone),
+	)
+	if err != nil {
+		return fmt.Errorf("unable to initialize storage client: %w", err)
+	}
 
-		if !globalstate.Quiet {
-			return utils.PrintOutput(storage.ShowBucket(exocmd.GContext, bucket))
-		}
+	if err := storage.CreateNewBucket(exocmd.GContext, bucket, c.ACL); err != nil {
+		return fmt.Errorf("unable to create bucket: %w", err)
+	}
 
-		return nil
-	},
+	if !globalstate.Quiet {
+		return utils.PrintOutput(storage.ShowBucket(exocmd.GContext, bucket))
+	}
+
+	return nil
 }
 
 func init() {
-	storageMbCmd.Flags().String("acl", "",
-		fmt.Sprintf("canned ACL to set on bucket (%s)", strings.Join(sos.BucketCannedACLToStrings(), "|")))
-	storageMbCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
-	storageCmd.AddCommand(storageMbCmd)
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &storageMbCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
+	}))
 }

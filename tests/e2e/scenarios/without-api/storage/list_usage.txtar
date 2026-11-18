@@ -1,0 +1,29 @@
+# exo storage list: usage errors, raised before any API call
+
+env EXOSCALE_CONFIG=test-config.toml
+
+# Usage errors
+! exec exo storage list sos://my-bucket/ extra
+stderr 'error: invalid arguments'
+stderr 'exo storage list \[sos://BUCKET\[/\[PREFIX/\]\]'
+! exec exo storage list --only-versions 1 --exclude-versions 2 sos://my-bucket/
+stderr 'mutually exclusive'
+! exec exo storage list -s --only-versions v1 sos://my-bucket/
+stderr 'cannot use version number filter "v1" in combination with --stream flag'
+! exec exo storage list --older-than-timestamp 2023-06-07 sos://my-bucket/
+stderr 'invalid argument "2023-06-07" for "--older-than-timestamp" flag: parsing time'
+
+# Empty bucket name
+! exec exo storage list sos://
+stderr 'error: invalid argument: "sos://"'
+! exec exo storage list sos:///prefix/
+stderr 'error: invalid argument: "sos:///prefix/"'
+
+-- test-config.toml --
+defaultaccount = "Exoscale-Test"
+
+[[accounts]]
+name = "Exoscale-Test"
+key = "EXOtest123"
+secret = "testsecret123"
+defaultZone = "ch-gva-2"

@@ -15,11 +15,25 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-var storageMoveCmd = &cobra.Command{
-	Use:     "move sos://BUCKET/[OBJECT|PREFIX/] sos://BUCKET/[OBJECT|PREFIX/]",
-	Aliases: []string{"mv"},
-	Short:   "Move objects within a bucket or across buckets",
-	Long: `Move objects within a bucket or across buckets.
+type storageMoveCmd struct {
+	clicmd.CliCommandSettings `cli-cmd:"-"`
+
+	_ bool `cli-cmd:"move"`
+
+	Source      string `cli-arg:"#" cli-usage:"sos://BUCKET/[OBJECT|PREFIX/]"`
+	Destination string `cli-arg:"#" cli-usage:"sos://BUCKET/[OBJECT|PREFIX/]"`
+
+	DryRun               bool  `cli-short:"n" cli-usage:"simulate the move operation"`
+	Force                bool  `cli-short:"f" cli-usage:"skip confirmation prompt"`
+	Recursive            bool  `cli-short:"r" cli-usage:"move objects recursively"`
+	Verbose              bool  `cli-short:"v" cli-usage:"output moved objects"`
+	MultipartConcurrency int64 `cli-usage:"number of concurrent parts for multipart moves"`
+}
+
+func (c *storageMoveCmd) CmdAliases() []string { return []string{"mv"} }
+func (c *storageMoveCmd) CmdShort() string     { return "Move objects within a bucket or across buckets" }
+func (c *storageMoveCmd) CmdLong() string {
+	return `Move objects within a bucket or across buckets.
 
 This command moves objects by performing a server-side copy followed by
 a delete of the source object. Object metadata, headers, and ACLs are
@@ -41,51 +55,54 @@ Examples:
     exo storage move -r sos://my-bucket/prefix/ sos://other-bucket/prefix/
 
     exo storage move -n sos://my-bucket/file-a sos://other-bucket/file-a
-`,
-	PreRunE: validateStorageTransferCommand,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return runStorageTransfer(cmd, args, true)
-	},
+`
 }
 
-func init() {
-	storageMoveCmd.Flags().BoolP("dry-run", "n", false, "simulate the move operation")
-	storageMoveCmd.Flags().BoolP("force", "f", false, "skip confirmation prompt")
-	storageMoveCmd.Flags().BoolP("recursive", "r", false, "move objects recursively")
-	storageMoveCmd.Flags().BoolP("verbose", "v", false, "output moved objects")
-	storageMoveCmd.Flags().Int("multipart-concurrency", 4, "number of concurrent parts for multipart moves")
-	storageCmd.AddCommand(storageMoveCmd)
-}
-
-func validateStorageTransferCommand(cmd *cobra.Command, args []string) error {
+func (c *storageMoveCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 2 {
 		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
 	}
 
-	recursive, err := cmd.Flags().GetBool("recursive")
-	if err != nil {
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
 		return err
 	}
 
-	return validateStorageTransferArgs(args, recursive)
+	return validateStorageTransferArgs(c.Source, c.Destination, c.Recursive)
 }
 
-func validateStorageTransferArgs(args []string, recursive bool) error {
-	srcBucket, srcKey := parseBucketKey(args[0])
-	dstBucket, dstKey := parseBucketKey(args[1])
+func (c *storageMoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	return runStorageTransfer(cmd.Name(), c.Source, c.Destination, storageTransferOptions{
+		Recursive:            c.Recursive,
+		Force:                c.Force,
+		Verbose:              c.Verbose,
+		DryRun:               c.DryRun,
+		MultipartConcurrency: int(c.MultipartConcurrency),
+	}, true)
+}
+
+func init() {
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &storageMoveCmd{
+		CliCommandSettings:   clicmd.DefaultCLICmdSettings(),
+		MultipartConcurrency: 4,
+	}))
+}
+
+func validateStorageTransferArgs(src, dst string, recursive bool) error {
+	srcBucket, srcKey := parseBucketKey(src)
+	dstBucket, dstKey := parseBucketKey(dst)
 	isPrefix := strings.HasSuffix(srcKey, "/") || recursive
 
 	if srcBucket == "" {
-		return fmt.Errorf("source must include a bucket name: %s", args[0])
+		return fmt.Errorf("source must include a bucket name: %s", src)
 	}
 	if dstBucket == "" {
-		return fmt.Errorf("destination must include a bucket name: %s", args[1])
+		return fmt.Errorf("destination must include a bucket name: %s", dst)
 	}
 	if srcKey == "" && dstKey == "" {
 		return fmt.Errorf("at least one of source/destination must include an object key or prefix")
 	}
 	if !isPrefix && srcKey != "" && dstKey == "" {
-		return fmt.Errorf("destination must include an object key when source is a single object: %s", args[1])
+		return fmt.Errorf("destination must include an object key when source is a single object: %s", dst)
 	}
 	if srcBucket == dstBucket && srcKey == dstKey {
 		return fmt.Errorf("source and destination must differ")
@@ -107,30 +124,29 @@ func parseBucketKey(url string) (bucket, key string) {
 	return
 }
 
-func runStorageTransfer(cmd *cobra.Command, args []string, move bool) error {
-	recursive, err := cmd.Flags().GetBool("recursive")
-	if err != nil {
-		return err
-	}
-	force, err := cmd.Flags().GetBool("force")
-	if err != nil {
-		return err
-	}
-	multipartConcurrency, err := cmd.Flags().GetInt("multipart-concurrency")
-	if err != nil {
-		return err
-	}
-	verbose, err := cmd.Flags().GetBool("verbose")
-	if err != nil {
-		return err
-	}
-	dryRun, err := cmd.Flags().GetBool("dry-run")
-	if err != nil {
-		return err
-	}
+// storageTransferOptions holds the flags shared by "exo storage copy" and
+// "exo storage move".
+type storageTransferOptions struct {
+	Recursive            bool
+	Force                bool
+	Verbose              bool
+	DryRun               bool
+	MultipartConcurrency int
+}
 
-	srcBucket, srcKey := parseBucketKey(args[0])
-	dstBucket, dstKey := parseBucketKey(args[1])
+// runStorageTransfer copies (move=false) or moves (move=true) src to dst.
+// action is the command name ("copy" or "move"), used in messages.
+func runStorageTransfer(action, src, dst string, opts storageTransferOptions, move bool) error {
+	var (
+		recursive            = opts.Recursive
+		force                = opts.Force
+		multipartConcurrency = opts.MultipartConcurrency
+		verbose              = opts.Verbose
+		dryRun               = opts.DryRun
+	)
+
+	srcBucket, srcKey := parseBucketKey(src)
+	dstBucket, dstKey := parseBucketKey(dst)
 
 	storage, err := sos.NewStorageClient(
 		exocmd.GContext,
@@ -140,7 +156,6 @@ func runStorageTransfer(cmd *cobra.Command, args []string, move bool) error {
 		return fmt.Errorf("unable to initialize storage client: %w", err)
 	}
 
-	action := cmd.Name()
 	pastTense := "copied"
 	if move {
 		pastTense = "moved"

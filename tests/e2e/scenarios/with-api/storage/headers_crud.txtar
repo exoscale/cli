@@ -1,0 +1,51 @@
+# exo storage headers add/delete, single object and recursive on a prefix
+# (keys with special characters are covered by storage_headers_special_chars.txtar)
+
+# Setup: one object at the root and two under a prefix
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-hdrs-$TEST_RUN_ID
+defer exo storage rb -r -f sos://sto-hdrs-$TEST_RUN_ID
+exec exo storage upload hello.txt sos://sto-hdrs-$TEST_RUN_ID/obj.txt
+exec exo storage upload hello.txt sos://sto-hdrs-$TEST_RUN_ID/dir/a.txt
+exec exo storage upload hello.txt sos://sto-hdrs-$TEST_RUN_ID/dir/b.txt
+
+# Add several headers, sos:// syntax: the object is printed with its headers
+exec exo --output-format json storage headers add sos://sto-hdrs-$TEST_RUN_ID/obj.txt --cache-control no-store --content-type application/json
+stdout '"Cache-Control":"no-store"'
+stdout '"Content-Type":"application/json"'
+
+# Bare bucket name, quiet mode prints nothing, the other headers are kept
+exec exo -Q storage headers add sto-hdrs-$TEST_RUN_ID/obj.txt --content-language fr --expires '01 Jan 30 00:00 GMT'
+! stdout .
+exec exo --output-format json storage show sos://sto-hdrs-$TEST_RUN_ID/obj.txt
+stdout '"Content-Language":"fr"'
+stdout '"Expires":"2030-01-01 00:00:00'
+stdout '"Cache-Control":"no-store"'
+
+# Delete a header with the del alias, the others are kept
+exec exo --output-format json storage headers del sos://sto-hdrs-$TEST_RUN_ID/obj.txt --cache-control
+! stdout 'no-store'
+stdout '"Content-Language":"fr"'
+stdout '"Content-Type":"application/json"'
+
+# Recursive add on a prefix only prints a confirmation
+exec exo storage headers add -r sos://sto-hdrs-$TEST_RUN_ID/dir/ --cache-control max-age=60
+stdout 'Headers added successfully'
+exec exo --output-format json storage show sos://sto-hdrs-$TEST_RUN_ID/dir/a.txt
+stdout '"Cache-Control":"max-age=60"'
+exec exo --output-format json storage show sos://sto-hdrs-$TEST_RUN_ID/dir/b.txt
+stdout '"Cache-Control":"max-age=60"'
+
+# The object outside the prefix is untouched
+exec exo --output-format json storage show sos://sto-hdrs-$TEST_RUN_ID/obj.txt
+! stdout 'max-age=60'
+
+# Recursive delete, long flag
+exec exo storage headers delete --recursive sos://sto-hdrs-$TEST_RUN_ID/dir/ --cache-control
+stdout 'Headers deleted successfully'
+exec exo --output-format json storage show sos://sto-hdrs-$TEST_RUN_ID/dir/a.txt
+! stdout 'max-age=60'
+exec exo --output-format json storage show sos://sto-hdrs-$TEST_RUN_ID/dir/b.txt
+! stdout 'max-age=60'
+
+-- hello.txt --
+hello from e2e test

@@ -1,0 +1,72 @@
+# exo storage list: buckets, objects under a prefix, versions and time filters
+
+# Setup: versioned bucket, two versions of obj.txt, one object under dir/.
+# Deferred commands run in reverse order: purge first, so that rb can delete
+# the bucket.
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-ls-$TEST_RUN_ID
+defer exo storage rb -f sos://sto-ls-$TEST_RUN_ID
+defer exo storage purge -f sos://sto-ls-$TEST_RUN_ID/
+exec exo storage bucket versioning enable -z $TEST_ZONE sos://sto-ls-$TEST_RUN_ID
+exec exo storage upload v1.txt sos://sto-ls-$TEST_RUN_ID/obj.txt
+exec exo storage upload v2.txt sos://sto-ls-$TEST_RUN_ID/obj.txt
+exec exo storage upload v1.txt sos://sto-ls-$TEST_RUN_ID/dir/a.txt
+
+# Buckets listing (no argument), filtered by zone
+exec exo --output-format json storage list --zone $TEST_ZONE
+stdout '"name":"sto-ls-'$TEST_RUN_ID'"'
+exec exo storage ls -z $TEST_ZONE
+stdout 'sto-ls-'$TEST_RUN_ID'/'
+
+# Bucket root, sos:// and bare bucket: objects and directories, not recursive
+exec exo storage list sos://sto-ls-$TEST_RUN_ID/
+stdout 'DIR +dir/'
+stdout 'obj.txt'
+! stdout 'dir/a.txt'
+exec exo storage list sto-ls-$TEST_RUN_ID
+stdout 'DIR +dir/'
+stdout 'obj.txt'
+
+# Prefix, and -r
+exec exo storage list sos://sto-ls-$TEST_RUN_ID/dir/
+stdout 'dir/a.txt'
+! stdout 'obj.txt'
+exec exo storage list -r sos://sto-ls-$TEST_RUN_ID/
+stdout 'dir/a.txt'
+stdout 'obj.txt'
+! stdout 'DIR'
+
+# Stream mode prints the keys only
+exec exo storage list -s -r sos://sto-ls-$TEST_RUN_ID/
+stdout '^dir/a.txt$'
+stdout '^obj.txt$'
+
+# JSON output
+exec exo --output-format json storage list -r sos://sto-ls-$TEST_RUN_ID/
+stdout '"name":"obj.txt"'
+
+# Versions: both versions of obj.txt, then filtered by version number
+exec exo storage list -r --versions sos://sto-ls-$TEST_RUN_ID/
+stdout 'obj.txt .* v1'
+stdout 'obj.txt .* v0'
+exec exo storage list -r --only-versions v1 sos://sto-ls-$TEST_RUN_ID/
+stdout 'obj.txt .* v1'
+! stdout 'v0'
+exec exo storage list -r --exclude-versions v1 sos://sto-ls-$TEST_RUN_ID/
+stdout 'obj.txt .* v0'
+stdout 'dir/a.txt .* v0'
+! stdout 'v1'
+
+# Time filters: the objects were just uploaded
+exec exo storage list -r --newer-than 1h sos://sto-ls-$TEST_RUN_ID/
+stdout 'obj.txt'
+exec exo storage list -r --older-than 1h sos://sto-ls-$TEST_RUN_ID/
+! stdout 'obj.txt'
+exec exo storage list -r --newer-than-timestamp 2020-01-01T00:00:00Z sos://sto-ls-$TEST_RUN_ID/
+stdout 'obj.txt'
+exec exo storage list -r --older-than-timestamp 2020-01-01T00:00:00Z sos://sto-ls-$TEST_RUN_ID/
+! stdout 'obj.txt'
+
+-- v1.txt --
+version 1
+-- v2.txt --
+version 2

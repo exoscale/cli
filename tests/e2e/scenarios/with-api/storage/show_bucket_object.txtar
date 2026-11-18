@@ -1,0 +1,42 @@
+# exo storage show, on a bucket and on an object
+
+# Setup: bucket with one object at the root and one under a prefix
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-show-$TEST_RUN_ID
+defer exo storage rb -r -f sos://sto-show-$TEST_RUN_ID
+exec exo storage upload hello.txt sos://sto-show-$TEST_RUN_ID/obj.txt
+exec exo storage upload hello.txt sos://sto-show-$TEST_RUN_ID/dir/a.txt
+
+# Bucket, sos:// syntax, table output
+exec exo storage show sos://sto-show-$TEST_RUN_ID
+stdout 'Name +\| sto-show-'$TEST_RUN_ID
+stdout 'Zone +\| '$TEST_ZONE
+
+# Bucket, sos:// syntax with a trailing slash, JSON output
+exec exo --output-format json storage show sos://sto-show-$TEST_RUN_ID/
+stdout '"name":"sto-show-'$TEST_RUN_ID'"'
+stdout '"zone":"'$TEST_ZONE'"'
+
+# Bucket, bare name, output template
+exec exo --output-template '{{.Name}} {{.Zone}}' storage show sto-show-$TEST_RUN_ID
+stdout '^sto-show-'$TEST_RUN_ID' '$TEST_ZONE'$'
+
+# Object, sos:// syntax, JSON output
+exec exo --output-format json storage show sos://sto-show-$TEST_RUN_ID/obj.txt
+stdout '"name":"obj.txt"'
+stdout '"bucket":"sto-show-'$TEST_RUN_ID'"'
+stdout '"size":20'
+
+# Object under a prefix, bare bucket name, output template
+exec exo --output-template '{{.Path}} {{.Size}}' storage show sto-show-$TEST_RUN_ID/dir/a.txt
+stdout '^dir/a.txt 20$'
+
+# Quiet mode does not silence show, the object is still printed
+exec exo -Q --output-format json storage show sos://sto-show-$TEST_RUN_ID/obj.txt
+stdout '"name":"obj.txt"'
+
+# Missing object
+! exec exo storage show sos://sto-show-$TEST_RUN_ID/missing.txt
+stderr 'error: unable to retrieve object information'
+
+-- hello.txt --
+hello from e2e test

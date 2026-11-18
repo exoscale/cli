@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -9,14 +10,27 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/storage/sos"
-	"github.com/exoscale/cli/utils"
 )
 
-var storageUploadCmd = &cobra.Command{
-	Use:     "upload FILE... sos://BUCKET/[PREFIX/]",
-	Aliases: []string{"put"},
-	Short:   "Upload files to a bucket",
-	Long: `This command uploads local files to a bucket.
+type storageUploadCmd struct {
+	clicmd.CliCommandSettings `cli-cmd:"-"`
+
+	_ bool `cli-cmd:"upload"`
+
+	Files       []string `cli-arg:"#" cli-usage:"FILE"`
+	Destination string   `cli-arg:"#" cli-usage:"sos://BUCKET/[PREFIX/]"`
+
+	// The usage lists sos.ObjectCannedACLToStrings(): struct tags can't be
+	// computed, update it if the SDK adds a canned ACL.
+	ACL       string `cli-usage:"canned ACL to set on object (private|public-read|public-read-write|authenticated-read|aws-exec-read|bucket-owner-read|bucket-owner-full-control)"`
+	DryRun    bool   `cli-short:"n" cli-usage:"simulate files upload, don't actually do it"`
+	Recursive bool   `cli-short:"r" cli-usage:"upload directories recursively"`
+}
+
+func (c *storageUploadCmd) CmdAliases() []string { return []string{"put"} }
+func (c *storageUploadCmd) CmdShort() string     { return "Upload files to a bucket" }
+func (c *storageUploadCmd) CmdLong() string {
+	return `This command uploads local files to a bucket.
 
 Examples:
 
@@ -31,86 +45,60 @@ Examples:
 
     # Upload a directory recursively
     exo storage upload -r my-files/ sos://my-bucket
-`,
+`
+}
 
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 2 {
-			clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
-		}
+func (c *storageUploadCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	if len(args) < 2 {
+		clicmd.CmdExitOnUsageError(cmd, "invalid arguments")
+	}
 
-		args[len(args)-1] = strings.TrimPrefix(args[len(args)-1], sos.BucketPrefix)
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
 
-		return nil
-	},
+	if _, _, err := parsePath(c.Destination); err != nil {
+		clicmd.CmdExitOnUsageError(cmd, err.Error())
+	}
 
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			bucket string
-			prefix string
+	if c.ACL != "" && !slices.Contains(sos.ObjectCannedACLToStrings(), c.ACL) {
+		clicmd.CmdExitOnUsageError(cmd, fmt.Sprintf("invalid canned ACL %q, supported values are: %s",
+			c.ACL, strings.Join(sos.ObjectCannedACLToStrings(), ", ")))
+	}
 
-			sources = args[:len(args)-1]
-			dst     = args[len(args)-1]
-		)
+	return nil
+}
 
-		acl, err := cmd.Flags().GetString("acl")
-		if err != nil {
-			return err
-		}
-		if acl != "" && !utils.IsInList(sos.ObjectCannedACLToStrings(), acl) {
-			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
-				acl, strings.Join(sos.ObjectCannedACLToStrings(), ", "))
-		}
+func (c *storageUploadCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	bucket, prefix, err := parsePath(c.Destination)
+	if err != nil {
+		return err
+	}
 
-		dryRun, err := cmd.Flags().GetBool("dry-run")
-		if err != nil {
-			return err
-		}
+	// The caller wants to upload the files at the root of the bucket.
+	if prefix == "" {
+		prefix = "/"
+	}
 
-		recursive, err := cmd.Flags().GetBool("recursive")
-		if err != nil {
-			return err
-		}
+	storage, err := sos.NewStorageClient(
+		exocmd.GContext,
+		sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
+	)
+	if err != nil {
+		return fmt.Errorf("unable to initialize storage client: %w", err)
+	}
 
-		dstParts := strings.SplitN(dst, "/", 2)
-		bucket = dstParts[0]
-		if len(dstParts) > 1 {
-			// Tricky case: if the user specifies "<bucket>/" as destination,
-			// strings.SplitN()'s result slice contains an empty string as last
-			// item: in this case we set the prefix as "/" to mean the root of
-			// the bucket.
-			if dstParts[len(dstParts)-1] == "" {
-				prefix = "/"
-			} else {
-				prefix = dstParts[1]
-			}
-		} else {
-			prefix = "/"
-		}
-
-		storage, err := sos.NewStorageClient(
-			exocmd.GContext,
-			sos.ClientOptZoneFromBucket(exocmd.GContext, bucket),
-		)
-		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %w", err)
-		}
-
-		return storage.UploadFiles(exocmd.GContext, sources, &sos.StorageUploadConfig{
-			Bucket:    bucket,
-			Prefix:    prefix,
-			ACL:       acl,
-			Recursive: recursive,
-			DryRun:    dryRun,
-		})
-	},
+	return storage.UploadFiles(exocmd.GContext, c.Files, &sos.StorageUploadConfig{
+		Bucket:    bucket,
+		Prefix:    prefix,
+		ACL:       c.ACL,
+		Recursive: c.Recursive,
+		DryRun:    c.DryRun,
+	})
 }
 
 func init() {
-	storageUploadCmd.Flags().String("acl", "",
-		fmt.Sprintf("canned ACL to set on object (%s)", strings.Join(sos.ObjectCannedACLToStrings(), "|")))
-	storageUploadCmd.Flags().BoolP("dry-run", "n", false,
-		"simulate files upload, don't actually do it")
-	storageUploadCmd.Flags().BoolP("recursive", "r", false,
-		"upload directories recursively")
-	storageCmd.AddCommand(storageUploadCmd)
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &storageUploadCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
+	}))
 }

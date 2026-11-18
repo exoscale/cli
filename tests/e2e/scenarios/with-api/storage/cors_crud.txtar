@@ -1,0 +1,36 @@
+# exo storage cors add/delete/show on a bucket
+
+# Setup: bucket
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-cors-$TEST_RUN_ID
+defer exo storage rb -f sos://sto-cors-$TEST_RUN_ID
+
+# Add a first rule, sos:// syntax: the bucket is printed with its CORS configuration
+exec exo --output-format json storage cors add sos://sto-cors-$TEST_RUN_ID --allowed-origin https://a.example --allowed-method GET
+stdout '"name":"sto-cors-'$TEST_RUN_ID'"'
+stdout '"allowed_origins":\["https://a.example"\],"allowed_methods":\["GET"\]'
+
+# Add a second rule, bare bucket name, comma-separated and repeated flags,
+# quiet mode prints nothing
+exec exo -Q storage cors add sto-cors-$TEST_RUN_ID --allowed-origin https://b.example,https://c.example --allowed-method GET --allowed-method PUT --allowed-header X-Foo
+! stdout .
+
+# Both rules are kept, in order
+exec exo --output-format json storage show sos://sto-cors-$TEST_RUN_ID
+stdout '"allowed_origins":\["https://a.example"\],"allowed_methods":\["GET"\]\},\{"allowed_origins":\["https://b.example","https://c.example"\],"allowed_methods":\["GET","PUT"\],"allowed_headers":\["X-Foo"\]'
+
+# Answering no to the confirmation prompt keeps the configuration
+stdin no.txt
+exec exo storage cors delete sos://sto-cors-$TEST_RUN_ID
+stdout 'Are you sure you want to delete bucket sto-cors-'$TEST_RUN_ID' CORS configuration\?'
+! stdout 'deleted successfully'
+exec exo --output-format json storage show sos://sto-cors-$TEST_RUN_ID
+stdout 'https://a.example'
+
+# Delete with the del alias and -f
+exec exo storage cors del -f sto-cors-$TEST_RUN_ID
+stdout 'CORS configuration deleted successfully'
+exec exo --output-format json storage show sos://sto-cors-$TEST_RUN_ID
+! stdout 'allowed_origins'
+
+-- no.txt --
+n

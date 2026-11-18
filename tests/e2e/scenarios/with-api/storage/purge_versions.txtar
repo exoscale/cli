@@ -1,0 +1,49 @@
+# exo storage purge: deletes every version of the objects under a prefix
+
+# Setup: versioned bucket, two versions of obj.txt, one object under dir/
+# and one under dir2/. Deferred commands run in reverse order: purge first,
+# so that rb can delete the bucket.
+exec exo --zone $TEST_ZONE --output-format json storage mb sos://sto-pu-$TEST_RUN_ID
+defer exo storage rb -f sos://sto-pu-$TEST_RUN_ID
+defer exo storage purge -f sos://sto-pu-$TEST_RUN_ID/
+exec exo storage bucket versioning enable -z $TEST_ZONE sos://sto-pu-$TEST_RUN_ID
+exec exo storage upload v1.txt sos://sto-pu-$TEST_RUN_ID/obj.txt
+exec exo storage upload v2.txt sos://sto-pu-$TEST_RUN_ID/obj.txt
+exec exo storage upload v1.txt sos://sto-pu-$TEST_RUN_ID/dir/a.txt
+exec exo storage upload v1.txt sos://sto-pu-$TEST_RUN_ID/dir2/b.txt
+exec exo storage ls --versions -r sos://sto-pu-$TEST_RUN_ID/
+stdout 'obj.txt .* v1'
+stdout 'obj.txt .* v0'
+
+# Answering no to the confirmation prompt keeps everything
+stdin no.txt
+exec exo storage purge sos://sto-pu-$TEST_RUN_ID/dir/
+stdout 'Are you sure you want to delete sos://sto-pu-'$TEST_RUN_ID'/dir/\?'
+! stdout 'Purge completed'
+exec exo storage ls --versions -r sos://sto-pu-$TEST_RUN_ID/
+stdout 'dir/a.txt'
+
+# Purge a prefix, verbose: only dir/ is purged, not dir2/
+exec exo storage purge -f -v sos://sto-pu-$TEST_RUN_ID/dir/
+stdout '^deleted: dir/a.txt$'
+! stdout 'dir2'
+stdout 'Purge completed'
+exec exo storage ls --versions -r sos://sto-pu-$TEST_RUN_ID/
+! stdout 'dir/a.txt'
+stdout 'dir2/b.txt'
+stdout 'obj.txt'
+
+# Purge the whole bucket, bare bucket name, long flags: all versions are gone
+exec exo storage purge --force --verbose sto-pu-$TEST_RUN_ID
+stdout '^deleted: obj.txt$'
+stdout '^deleted: dir2/b.txt$'
+stdout 'Purge completed'
+exec exo storage ls --versions -r sos://sto-pu-$TEST_RUN_ID/
+! stdout .
+
+-- v1.txt --
+version 1
+-- v2.txt --
+version 2
+-- no.txt --
+n

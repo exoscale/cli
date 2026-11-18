@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Features
+
+- cmd: struct-based commands support `time.Duration` fields, as flags or positional arguments (e.g. `--expires 15m`)
+- cmd: struct-based commands support `time.Time` fields, as flags or positional arguments taking an RFC 3339 timestamp (e.g. `--since 2023-06-07T10:00:00+02:00`); an empty value leaves the zero time
+- cmd: struct-based commands can declare required positional arguments after a `[]string` one, which take the last arguments (e.g. `FILE... DESTINATION`); an optional argument or a second list after it is refused at startup
+
 ### Improvements
 
 - split cmd package into two packages #956
@@ -11,6 +17,28 @@
 - storage: migrate `exo storage bucket versioning` to the clicmd framework #962
 - storage: migrate `exo storage bucket object-ownership` to the clicmd framework #962
 - storage: move `exo storage bucket lifecycle` from package storage to package bucket #962
+- storage: migrate `exo storage metadata` commands to the struct-based command framework #963
+- storage: migrate `exo storage show` command to the struct-based command framework #963
+- storage: migrate `exo storage rb` command to the struct-based command framework #963
+- storage: migrate `exo storage mb` command to the struct-based command framework #963
+- storage: migrate `exo storage purge` command to the struct-based command framework #963
+- storage: migrate `exo storage delete` command to the struct-based command framework #963
+- storage: migrate `exo storage download` command to the struct-based command framework #963
+- storage: migrate `exo storage headers` commands to the struct-based command framework #963
+- storage: migrate `exo storage setacl` command to the struct-based command framework #963
+- storage: migrate `exo storage upload` command to the struct-based command framework #963
+- storage: migrate `exo storage copy` command to the struct-based command framework #963
+- storage: migrate `exo storage list` command to the struct-based command framework #963
+- storage: migrate `exo storage cors` command to the struct-based command framework #963
+
+### Bug fixes
+
+- storage: `exo storage {delete,show,rb,mb,purge,download,setacl,upload,list,presign}` rejects an empty bucket name (`sos://`, `sos:///key`) with a usage error instead of querying the API or crashing #963
+- storage: `exo storage setacl` treats an empty canned ACL (`""`) as missing, instead of silently replacing the ACL with an owner-only one #963
+- storage: `exo storage list` rejects more than one argument with a usage error, instead of ignoring the extra ones and listing a bucket named `sos:` #963
+- storage: `exo storage list` names the flag when `--older-than-timestamp` or `--newer-than-timestamp` is not a valid timestamp #963
+- storage: `exo storage cors add` reports a missing `--allowed-origin`/`--allowed-method` as a usage error instead of querying the API #963
+
 
 ## 1.104.1
 
