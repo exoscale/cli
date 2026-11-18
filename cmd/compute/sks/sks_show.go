@@ -28,6 +28,7 @@ type sksShowOutput struct {
 	ServiceLevel          string                  `json:"service_level"`
 	CNI                   string                  `json:"cni"`
 	AddOns                []string                `json:"addons"`
+	AllowedNetworks       []string                `json:"allowed_networks"`
 	AuditEnabled          bool                    `json:"audit_enabled"`
 	AuditEndpoint         string                  `json:"audit_endpoint"`
 	AuditInitialBackoff   string                  `json:"audit_initial_backoff"`
@@ -57,6 +58,7 @@ func (o *sksShowOutput) ToTable() {
 	t.Append([]string{"Service Level", o.ServiceLevel})
 	t.Append([]string{"CNI", o.CNI})
 	t.Append([]string{"Add-Ons", strings.Join(o.AddOns, "\n")})
+	t.Append([]string{"Allowed Networks", strings.Join(o.AllowedNetworks, "\n")})
 	t.Append([]string{"Audit Enabled", fmt.Sprintf("%t", o.AuditEnabled)})
 	if o.AuditEnabled {
 		t.Append([]string{"Audit Endpoint", o.AuditEndpoint})
@@ -164,6 +166,12 @@ func (c *sksShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			AddOns: func() (v []string) {
 				if len(cluster.Addons) > 0 {
 					v = cluster.Addons
+				}
+				return
+			}(),
+			AllowedNetworks: func() (v []string) {
+				if cluster.AllowedNetworks != nil {
+					v = *cluster.AllowedNetworks
 				}
 				return
 			}(),
