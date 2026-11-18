@@ -8,6 +8,7 @@
 - cmd: struct-based commands support `time.Time` fields, as flags or positional arguments taking an RFC 3339 timestamp (e.g. `--since 2023-06-07T10:00:00+02:00`); an empty value leaves the zero time
 - cmd: struct-based commands can declare required positional arguments after a `[]string` one, which take the last arguments (e.g. `FILE... DESTINATION`); an optional argument or a second list after it is refused at startup
 - sks: add `--allowed-network` to `sks create`/`update` to restrict the API server to a list of IPv4 CIDRs, shown in `sks show`
+- sks: add `--template` to `sks nodepool update` to pin a Nodepool to a template (`--template ""` to follow the latest one again); `sks nodepool show` shows the template ID and selection
 
 ### Improvements
 

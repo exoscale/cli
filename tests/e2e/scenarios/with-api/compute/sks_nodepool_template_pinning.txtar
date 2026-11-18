@@ -1,0 +1,27 @@
+# SKS Nodepool template pinning: a new Nodepool follows the latest template,
+# --template pins it, --template "" makes it follow the latest one again.
+# Every command passes -z $TEST_ZONE: the CLI does not read EXO_ZONE.
+
+exec exo --output-format json compute sks create $TEST_RUN_ID-sks-pinning -z $TEST_ZONE --service-level starter --nodepool-size 1 --nodepool-name $TEST_RUN_ID-np --nodepool-instance-type standard.small
+defer exo compute sks delete --force --nodepools -z $TEST_ZONE $TEST_RUN_ID-sks-pinning
+
+exec exo --output-format json compute sks nodepool show -z $TEST_ZONE $TEST_RUN_ID-sks-pinning $TEST_RUN_ID-np
+stdout '"template_selection":"auto"'
+cp stdout nodepool.json
+json-setenv TEMPLATE_ID template_id nodepool.json
+
+# Pin the Nodepool to its current template
+exec exo --output-format json compute sks nodepool update -z $TEST_ZONE $TEST_RUN_ID-sks-pinning $TEST_RUN_ID-np --template $TEMPLATE_ID
+stdout '"template_selection":"pinned"'
+stdout '"template_id":"'$TEMPLATE_ID'"'
+
+# An update without --template keeps the pin
+exec exo --output-format json compute sks nodepool update -z $TEST_ZONE $TEST_RUN_ID-sks-pinning $TEST_RUN_ID-np --description 'cli e2e'
+stdout '"template_selection":"pinned"'
+
+# Follow the latest template again
+exec exo --output-format json compute sks nodepool update -z $TEST_ZONE $TEST_RUN_ID-sks-pinning $TEST_RUN_ID-np --template ''
+stdout '"template_selection":"auto"'
+
+! exec exo compute sks nodepool update -z $TEST_ZONE $TEST_RUN_ID-sks-pinning $TEST_RUN_ID-np --template no-such-template-$TEST_RUN_ID
+stderr 'no template'

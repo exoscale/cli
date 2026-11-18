@@ -24,6 +24,8 @@ type sksNodepoolShowOutput struct {
 	InstancePrefix       string                           `json:"instance_prefix"`
 	InstanceType         string                           `json:"instance_type"`
 	Template             string                           `json:"template"`
+	TemplateID           v3.UUID                          `json:"template_id"`
+	TemplateSelection    string                           `json:"template_selection"`
 	DiskSize             int64                            `json:"disk_size"`
 	PublicIPAssignment   v3.SKSNodepoolPublicIPAssignment `json:"public_ip"`
 	IPv6                 bool                             `json:"ipv6_enabled" outputLabel:"IPv6"`
@@ -142,6 +144,8 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		PrivateNetworks:    make([]string, 0),
 		Size:               nodepool.Size,
 		State:              string(nodepool.State),
+		TemplateID:         nodepool.Template.ID,
+		TemplateSelection:  string(nodepool.TemplateSelection),
 		IPv6:               nodepool.PublicIPAssignment == v3.SKSNodepoolPublicIPAssignmentDual,
 		PublicIPAssignment: nodepool.PublicIPAssignment,
 		Taints: func() (v []string) {
