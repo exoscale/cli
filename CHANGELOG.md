@@ -37,7 +37,7 @@
 - storage: `exo storage setacl` treats an empty canned ACL (`""`) as missing, instead of silently replacing the ACL with an owner-only one #963
 - storage: `exo storage list` rejects more than one argument with a usage error, instead of ignoring the extra ones and listing a bucket named `sos:` #963
 - storage: `exo storage list` names the flag when `--older-than-timestamp` or `--newer-than-timestamp` is not a valid timestamp #963
-- storage cors add: report missing --allowed-origin/--allowed-method as a usage error instead of failing on the API or panicking #963
+- storage: `exo storage cors add` reports a missing `--allowed-origin`/`--allowed-method` as a usage error instead of querying the API #963
 
 
 ## 1.104.1

@@ -697,11 +697,6 @@ func computeSeekerLength(s io.Seeker) (int64, error) {
 }
 
 func (c *Client) ShowObject(ctx context.Context, bucket, key string) (*ShowObjectOutput, error) {
-	// TODO: use HeadObject instead of GetObject. GetObject requests the whole
-	// object content only to read its headers, and the response body is never
-	// closed, so showing a large object starts a download and keeps the
-	// connection open. ObjectHeadersFromS3 takes a *s3.GetObjectOutput and
-	// needs adapting to *s3.HeadObjectOutput.
 	obj, err := c.S3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
