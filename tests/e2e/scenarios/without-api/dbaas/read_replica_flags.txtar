@@ -1,0 +1,37 @@
+# Test: dbaas read-replica help and argument checks (no API call)
+
+exec exo dbaas read-replica --help
+stdout 'create'
+stdout 'list'
+stdout 'promote'
+stdout 'show'
+
+exec exo dbaas read-replica create --help
+stdout '--source-service'
+stdout '--replica-zone'
+stdout '--plan'
+
+# create flags are checked before any API call
+! exec exo dbaas read-replica create replica
+stderr '--source-service is required'
+! exec exo dbaas read-replica create replica --source-service primary
+stderr '--replica-zone is required'
+! exec exo dbaas read-replica create replica --source-service primary --replica-zone ch-gva-2
+stderr '--plan is required'
+
+# Name arguments are required
+! exec exo dbaas read-replica list
+stderr 'missing arguments'
+! exec exo dbaas read-replica show
+stderr 'missing arguments'
+! exec exo dbaas read-replica promote
+stderr 'missing arguments'
+
+-- .config/exoscale/exoscale.toml --
+defaultaccount = "test"
+
+[[accounts]]
+name = "test"
+key = "EXO000000000000000000"
+secret = "dummy-secret-for-help-test"
+defaultZone = "ch-gva-2"

@@ -1,0 +1,41 @@
+# Test: dbaas external-endpoint help and argument checks (no API call)
+
+exec exo dbaas external-endpoint --help
+stdout 'create'
+stdout 'delete'
+stdout 'list'
+stdout 'show'
+stdout 'update'
+
+# Type-specific flags are listed by --help-<type>
+exec exo dbaas external-endpoint create --help-datadog
+stdout '--datadog-api-key'
+exec exo dbaas external-endpoint create --help-elasticsearch
+stdout '--elasticsearch-url'
+exec exo dbaas external-endpoint create --help-opensearch
+stdout '--opensearch-url'
+exec exo dbaas external-endpoint create --help-prometheus
+stdout '--prometheus-basic-auth-username'
+exec exo dbaas external-endpoint create --help-rsyslog
+stdout '--rsyslog-server'
+exec exo dbaas external-endpoint update --help-rsyslog
+stdout '--rsyslog-port'
+
+# Positional arguments are required
+! exec exo dbaas external-endpoint create prometheus
+stderr 'missing arguments'
+! exec exo dbaas external-endpoint show prometheus
+stderr 'missing arguments'
+! exec exo dbaas external-endpoint update prometheus
+stderr 'missing arguments'
+! exec exo dbaas external-endpoint delete prometheus
+stderr 'missing arguments'
+
+-- .config/exoscale/exoscale.toml --
+defaultaccount = "test"
+
+[[accounts]]
+name = "test"
+key = "EXO000000000000000000"
+secret = "dummy-secret-for-help-test"
+defaultZone = "ch-gva-2"

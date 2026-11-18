@@ -8,13 +8,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string) error {
+func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command) error {
 	ctx := exocmd.GContext
 
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
@@ -136,10 +137,10 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 	}
 
 	if !globalstate.Quiet {
-		return c.OutputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&internal.ServiceShow{
 			Name: c.Name,
 			Zone: c.Zone,
-		}).showDatabaseServiceOpensearch(ctx))
+		}).ShowDatabaseServiceOpensearch(ctx))
 	}
 
 	return nil

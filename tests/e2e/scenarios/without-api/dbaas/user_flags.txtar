@@ -1,0 +1,42 @@
+# Test: dbaas user help and argument checks (no API call)
+
+exec exo dbaas user --help
+stdout 'create'
+stdout 'delete'
+stdout 'list'
+stdout 'reset-credentials'
+stdout 'reveal-secrets'
+stdout 'show'
+
+# Engine-specific flags are listed by --help-<engine>
+exec exo dbaas user create --help-pg
+stdout '--pg-allow-replication'
+exec exo dbaas user create --help-mysql
+stdout '--mysql-authentication'
+exec exo dbaas user reset-credentials --help
+stdout '--password'
+exec exo dbaas user delete --help
+stdout '--force'
+
+# Positional arguments are required
+! exec exo dbaas user list
+stderr 'missing arguments'
+! exec exo dbaas user create svc
+stderr 'missing arguments'
+! exec exo dbaas user show svc
+stderr 'missing arguments'
+! exec exo dbaas user delete svc
+stderr 'missing arguments'
+! exec exo dbaas user reset-credentials svc
+stderr 'missing arguments'
+! exec exo dbaas user reveal-secrets svc
+stderr 'missing arguments'
+
+-- .config/exoscale/exoscale.toml --
+defaultaccount = "test"
+
+[[accounts]]
+name = "test"
+key = "EXO000000000000000000"
+secret = "dummy-secret-for-help-test"
+defaultZone = "ch-gva-2"

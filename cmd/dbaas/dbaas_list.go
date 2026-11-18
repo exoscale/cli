@@ -97,7 +97,7 @@ func runDbaasList(c *dbaasServiceListCmd, stdout, stderr io.Writer) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceListCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasServiceListCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

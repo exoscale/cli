@@ -1,0 +1,36 @@
+# Test: dbaas database create/delete on a PostgreSQL service
+# create and delete print the updated service, so this also covers the
+# shared show code.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+exec exo --zone $TEST_ZONE --output-format json dbaas create pg hobbyist-2 pg-db-$TEST_RUN_ID --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f pg-db-$TEST_RUN_ID
+wait-dbaas-state $TEST_ZONE pg-db-$TEST_RUN_ID running 1200
+
+# Create a database: the updated service is printed with it
+exec exo --zone $TEST_ZONE --output-format json dbaas database create pg-db-$TEST_RUN_ID appdb
+stdout '"appdb"'
+
+# Create with the pg-specific locale flags
+exec exo --zone $TEST_ZONE --output-format json dbaas database create pg-db-$TEST_RUN_ID appdb2 --pg-lc-collate C
+stdout '"appdb2"'
+
+exec exo --zone $TEST_ZONE --output-format json dbaas show pg-db-$TEST_RUN_ID
+stdout '"appdb"'
+stdout '"appdb2"'
+
+# Table output of the updated service
+exec exo --zone $TEST_ZONE dbaas database delete pg-db-$TEST_RUN_ID appdb2 -f
+stdout 'Databases'
+! stdout 'appdb2'
+
+# --quiet prints nothing
+exec exo --zone $TEST_ZONE --quiet dbaas database delete pg-db-$TEST_RUN_ID appdb -f
+! stdout .
+
+exec exo --zone $TEST_ZONE --output-format json dbaas show pg-db-$TEST_RUN_ID
+! stdout '"appdb"'
+
+# Unknown service
+! exec exo --zone $TEST_ZONE dbaas database create no-such-svc-$TEST_RUN_ID appdb
+stderr 'Database Service not found in zone'

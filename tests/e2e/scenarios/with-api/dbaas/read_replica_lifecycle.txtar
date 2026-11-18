@@ -1,0 +1,41 @@
+# Test: dbaas read-replica create/list/show/promote on a PostgreSQL primary
+# Also covers `dbaas delete` refusing a primary with an active replica.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+exec exo --zone $TEST_ZONE --output-format json dbaas create pg startup-4 pg-rr-$TEST_RUN_ID --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f pg-rr-$TEST_RUN_ID
+wait-dbaas-state $TEST_ZONE pg-rr-$TEST_RUN_ID running 1200
+# A replica is created from a backup: "running" comes before the first one exists
+wait-dbaas-backup $TEST_ZONE pg-rr-$TEST_RUN_ID 1200
+
+# Create a replica (deferred deletes run last-in first-out: replica first)
+exec exo --output-format json dbaas read-replica create pg-rr-replica-$TEST_RUN_ID --source-service pg-rr-$TEST_RUN_ID --replica-zone $TEST_ZONE --plan startup-4 --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f pg-rr-replica-$TEST_RUN_ID
+stdout '"source_service": ?"pg-rr-'$TEST_RUN_ID'"'
+wait-dbaas-state $TEST_ZONE pg-rr-replica-$TEST_RUN_ID running 1200
+
+# List replicas of the primary, across all zones
+exec exo --output-format json dbaas read-replica list pg-rr-$TEST_RUN_ID
+stdout '"replica_name": ?"pg-rr-replica-'$TEST_RUN_ID'"'
+stdout '"replica_zone": ?"'$TEST_ZONE'"'
+exec exo dbaas read-replica list pg-rr-$TEST_RUN_ID
+stdout 'pg-rr-replica-'$TEST_RUN_ID
+
+# Show the replica
+exec exo --zone $TEST_ZONE --output-format json dbaas read-replica show pg-rr-replica-$TEST_RUN_ID
+stdout '"type": ?"pg"'
+stdout '"source_service": ?"pg-rr-'$TEST_RUN_ID'"'
+
+# The primary is not a replica
+! exec exo --zone $TEST_ZONE dbaas read-replica show pg-rr-$TEST_RUN_ID
+stderr 'is not a read replica'
+
+# The primary can't be deleted while it has an active replica
+! exec exo --zone $TEST_ZONE dbaas delete -f pg-rr-$TEST_RUN_ID
+stderr 'with active read replica\(s\): pg-rr-replica-'$TEST_RUN_ID
+
+# Promote the replica to a standalone service
+exec exo --zone $TEST_ZONE --output-format json dbaas read-replica promote -f pg-rr-replica-$TEST_RUN_ID
+stdout '"name": ?"pg-rr-replica-'$TEST_RUN_ID'"'
+! exec exo --zone $TEST_ZONE dbaas read-replica show pg-rr-replica-$TEST_RUN_ID
+stderr 'is not a read replica'

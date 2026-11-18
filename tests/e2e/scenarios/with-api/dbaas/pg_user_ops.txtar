@@ -1,0 +1,40 @@
+# Test: dbaas user create/list/show/reset-credentials/reveal-secrets/delete
+# on a PostgreSQL service (clickhouse is covered by clickhouse_user_ops).
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+exec exo --zone $TEST_ZONE --output-format json dbaas create pg hobbyist-2 pg-user-$TEST_RUN_ID --termination-protection=false
+defer exo --zone $TEST_ZONE dbaas delete -f pg-user-$TEST_RUN_ID
+wait-dbaas-state $TEST_ZONE pg-user-$TEST_RUN_ID running 1200
+
+# Create prints the new user
+exec exo --zone $TEST_ZONE --output-format json dbaas user create pg-user-$TEST_RUN_ID appuser
+stdout '"username": ?"appuser"'
+
+# --pg-allow-replication is a pg-specific flag
+exec exo --zone $TEST_ZONE --output-format json dbaas user create pg-user-$TEST_RUN_ID repluser --pg-allow-replication
+stdout '"allow-replication": ?true'
+
+# List and show
+exec exo --zone $TEST_ZONE --output-format json dbaas user list pg-user-$TEST_RUN_ID
+stdout '"appuser"'
+stdout '"repluser"'
+exec exo --zone $TEST_ZONE dbaas user list pg-user-$TEST_RUN_ID
+stdout 'appuser'
+exec exo --zone $TEST_ZONE --output-format json dbaas user show pg-user-$TEST_RUN_ID appuser
+stdout '"username": ?"appuser"'
+
+# reset-credentials with a chosen password, then reveal it
+exec exo --zone $TEST_ZONE --output-format json dbaas user reset-credentials pg-user-$TEST_RUN_ID appuser --password Exo-e2e-pass-$TEST_RUN_ID
+exec exo --zone $TEST_ZONE --output-format json dbaas user reveal-secrets pg-user-$TEST_RUN_ID appuser
+stdout '"password": ?"Exo-e2e-pass-'$TEST_RUN_ID'"'
+
+# Delete prints the updated service, without the deleted user
+exec exo --zone $TEST_ZONE --output-format json dbaas user delete pg-user-$TEST_RUN_ID repluser -f
+stdout '"name": ?"pg-user-'$TEST_RUN_ID'"'
+! stdout '"repluser"'
+exec exo --zone $TEST_ZONE --quiet dbaas user delete pg-user-$TEST_RUN_ID appuser -f
+! stdout .
+
+# Unknown service
+! exec exo --zone $TEST_ZONE dbaas user list no-such-svc-$TEST_RUN_ID
+stderr 'Database Service not found in zone'

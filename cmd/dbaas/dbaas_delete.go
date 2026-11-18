@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
+	readreplica "github.com/exoscale/cli/cmd/dbaas/read-replica"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
@@ -51,12 +53,12 @@ func (c *dbaasServiceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	svc, err := dbaasGetV3(ctx, c.Name, c.Zone)
+	svc, err := internal.GetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	readReplicaNames := dbaasActiveReadReplicaNamesForPrimary(svc)
+	readReplicaNames := readreplica.ActiveReadReplicaNamesForPrimary(svc)
 	if len(readReplicaNames) > 0 {
 		return fmt.Errorf(
 			"cannot delete Database Service %s with active read replica(s): %s. Delete or promote the read replica(s) first",
@@ -87,7 +89,7 @@ func (c *dbaasServiceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceDeleteCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasServiceDeleteCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
 }

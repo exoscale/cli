@@ -139,7 +139,7 @@ func (c *dbaasServiceLogsCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(clicmd.RegisterCLICommand(dbaasCmd, &dbaasServiceLogsCmd{
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dbaasServiceLogsCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 
 		Limit: 10,

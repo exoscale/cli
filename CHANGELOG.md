@@ -30,6 +30,14 @@
 - storage: migrate `exo storage copy` command to the struct-based command framework #963
 - storage: migrate `exo storage list` command to the struct-based command framework #963
 - storage: migrate `exo storage cors` command to the struct-based command framework #963
+- dbaas: move `exo dbaas type` commands from package dbaas to their own package `cmd/dbaas/type` #965
+- dbaas: move `exo dbaas migration` commands from package dbaas to their own package `cmd/dbaas/migration` #965
+- dbaas: move `exo dbaas database` commands from package dbaas to their own package `cmd/dbaas/database` and the Database Service show logic to `cmd/dbaas/internal` #965
+- dbaas: move `exo dbaas read-replica` commands from package dbaas to their own package `cmd/dbaas/read-replica` #965
+- dbaas: move `exo dbaas external-integration` commands from package dbaas to their own package `cmd/dbaas/external-integration`, with `settings` in `cmd/dbaas/external-integration/settings` #965
+- dbaas: move `exo dbaas external-endpoint` commands from package dbaas to their own package `cmd/dbaas/external-endpoint` #965
+- dbaas: move `exo dbaas user` commands from package dbaas to their own package `cmd/dbaas/user` #965
+- dbaas: rework `exo dbaas` root group #965
 
 ### Bug fixes
 
@@ -38,6 +46,8 @@
 - storage: `exo storage list` rejects more than one argument with a usage error, instead of ignoring the extra ones and listing a bucket named `sos:` #963
 - storage: `exo storage list` names the flag when `--older-than-timestamp` or `--newer-than-timestamp` is not a valid timestamp #963
 - storage: `exo storage cors add` reports a missing `--allowed-origin`/`--allowed-method` as a usage error instead of querying the API #963
+- dbaas: `exo dbaas read-replica create` always failed with "--source-service is required", the flags were checked before being parsed #965
+- dbaas: `exo dbaas external-integration detach` alias is now `d` instead of `a`, which collided with `attach` #965
 
 
 ## 1.104.1

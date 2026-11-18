@@ -4,15 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/spf13/cobra"
-
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error {
+func (c *dbaasServiceCreateCmd) createKafka() error {
 	var err error
 
 	ctx := exocmd.GContext
@@ -132,10 +131,10 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 	}
 
 	if !globalstate.Quiet {
-		return c.OutputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&internal.ServiceShow{
 			Name: c.Name,
 			Zone: c.Zone,
-		}).showDatabaseServiceKafka(ctx))
+		}).ShowDatabaseServiceKafka(ctx))
 	}
 
 	return nil

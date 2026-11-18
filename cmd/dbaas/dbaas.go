@@ -1,25 +1,26 @@
 package dbaas
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
-	"os"
 	"strconv"
 	"strings"
 
-	"github.com/mitchellh/go-wordwrap"
 	"github.com/spf13/cobra"
 	"github.com/xeipuuv/gojsonschema"
 
 	exocmd "github.com/exoscale/cli/cmd"
+
 	"github.com/exoscale/cli/cmd/dbaas/acl"
+	"github.com/exoscale/cli/cmd/dbaas/database"
+	externalendpoint "github.com/exoscale/cli/cmd/dbaas/external-endpoint"
+	externalintegration "github.com/exoscale/cli/cmd/dbaas/external-integration"
+	"github.com/exoscale/cli/cmd/dbaas/migration"
+	readreplica "github.com/exoscale/cli/cmd/dbaas/read-replica"
 	"github.com/exoscale/cli/cmd/dbaas/role"
-	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/table"
-	v3 "github.com/exoscale/egoscale/v3"
+	servicetype "github.com/exoscale/cli/cmd/dbaas/type"
+	"github.com/exoscale/cli/cmd/dbaas/user"
 )
 
 var dbServiceMaintenanceDOWs = []string{
@@ -33,16 +34,23 @@ var dbServiceMaintenanceDOWs = []string{
 	"sunday",
 }
 
-var dbaasCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "dbaas",
 	Short: "Database as a Service management",
 }
 
 func init() {
-	exocmd.RootCmd.AddCommand(dbaasCmd)
+	exocmd.RootCmd.AddCommand(Cmd)
 	// Attach subcommand groups that live in their own packages.
-	dbaasCmd.AddCommand(role.Cmd)
-	dbaasCmd.AddCommand(acl.Cmd)
+	Cmd.AddCommand(role.Cmd)
+	Cmd.AddCommand(acl.Cmd)
+	Cmd.AddCommand(database.Cmd)
+	Cmd.AddCommand(externalendpoint.Cmd)
+	Cmd.AddCommand(externalintegration.Cmd)
+	Cmd.AddCommand(migration.Cmd)
+	Cmd.AddCommand(readreplica.Cmd)
+	Cmd.AddCommand(servicetype.Cmd)
+	Cmd.AddCommand(user.Cmd)
 }
 
 // parseDtabaseBackupSchedule parses a Database Service backup schedule value
@@ -69,8 +77,8 @@ func parseDatabaseBackupSchedule(v string) (int64, int64, error) {
 
 // validateDatabaseServiceSettings validates user-provided JSON-formatted
 // Database Service settings against a reference JSON Schema.
-func validateDatabaseServiceSettings(in string, schema interface{}) (map[string]interface{}, error) {
-	var userSettings map[string]interface{}
+func validateDatabaseServiceSettings(in string, schema any) (map[string]any, error) {
+	var userSettings map[string]any
 
 	if err := json.Unmarshal([]byte(in), &userSettings); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal JSON: %w", err)
@@ -103,89 +111,4 @@ func validateDatabaseServiceSettings(in string, schema interface{}) (map[string]
 	}
 
 	return userSettings, nil
-}
-
-// redactDatabaseServiceURI returns a redacted version of the URI provided
-// (i.e. masks potential password information).
-func redactDatabaseServiceURI(u string) string {
-	if uri, err := url.Parse(u); err == nil {
-		return uri.Redacted()
-	}
-
-	return u
-}
-
-// dbaasShowSettings outputs a table-formatted list of key/value settings.
-func dbaasShowSettings(settings map[string]interface{}) {
-	t := table.NewTable(os.Stdout)
-	defer t.Render()
-
-	t.SetHeader([]string{"key", "type", "description"})
-
-	for k, v := range settings {
-		s, ok := v.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		row := []string{k}
-
-		typ := "-"
-		if v, ok := s["type"]; ok {
-			typ = fmt.Sprint(v)
-		}
-		row = append(row, typ)
-
-		var description string
-		if v, ok := s["description"]; ok {
-			description = wordwrap.WrapString(v.(string), 50)
-
-			if v, ok := s["enum"]; ok {
-				description = fmt.Sprintf("%s\n  * Supported values:\n%s", description, func() string {
-					values := make([]string, len(v.([]interface{})))
-					for i, val := range v.([]interface{}) {
-						values[i] = fmt.Sprintf("    - %v", val)
-					}
-					return strings.Join(values, "\n")
-				}())
-			}
-
-			min, hasMin := s["minimum"]
-			max, hasMax := s["maximum"]
-			if hasMin && hasMax {
-				description = fmt.Sprintf("%s\n  * Minimum: %v / Maximum: %v", description, min, max)
-			}
-
-			if v, ok := s["default"]; ok {
-				description = fmt.Sprintf("%s\n  * Default: %v", description, v)
-			}
-
-			if v, ok := s["example"]; ok {
-				description = fmt.Sprintf("%s\n  * Example: %v", description, v)
-			}
-		}
-		row = append(row, description)
-
-		t.Append(row)
-	}
-}
-
-func dbaasGetV3(ctx context.Context, name, zone string) (v3.DBAASServiceCommon, error) {
-
-	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
-	if err != nil {
-		return v3.DBAASServiceCommon{}, err
-	}
-
-	dbs, err := client.ListDBAASServices(ctx)
-	if err != nil {
-		return v3.DBAASServiceCommon{}, err
-	}
-
-	for _, db := range dbs.DBAASServices {
-		if string(db.Name) == name {
-			return db, nil
-		}
-	}
-
-	return v3.DBAASServiceCommon{}, fmt.Errorf("%q Database Service not found in zone %q", name, zone)
 }

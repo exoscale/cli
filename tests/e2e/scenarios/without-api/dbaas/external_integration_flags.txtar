@@ -1,0 +1,42 @@
+# Test: dbaas external-integration help and argument checks (no API call)
+
+exec exo dbaas external-integration --help
+stdout 'attach'
+stdout 'detach'
+stdout 'list'
+stdout 'settings'
+stdout 'show'
+
+exec exo dbaas external-integration settings --help
+stdout 'show'
+stdout 'update'
+
+exec exo dbaas external-integration attach --help
+stdout '--source-service-name'
+stdout '--destination-endpoint-id'
+exec exo dbaas external-integration detach --help
+stdout '--integration-id'
+
+# Datadog-specific settings flags are listed by --help-datadog
+exec exo dbaas external-integration settings update --help-datadog
+stdout '--datadog-dbm-enabled'
+stdout '--datadog-pgbouncer-enabled'
+
+# Positional arguments are required
+! exec exo dbaas external-integration attach
+stderr 'missing arguments'
+! exec exo dbaas external-integration list
+stderr 'missing arguments'
+! exec exo dbaas external-integration show
+stderr 'missing arguments'
+! exec exo dbaas external-integration settings show datadog
+stderr 'missing arguments'
+
+-- .config/exoscale/exoscale.toml --
+defaultaccount = "test"
+
+[[accounts]]
+name = "test"
+key = "EXO000000000000000000"
+secret = "dummy-secret-for-help-test"
+defaultZone = "ch-gva-2"

@@ -9,13 +9,14 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/dbaas/internal"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) error {
+func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command) error {
 	var updated bool
 
 	ctx := exocmd.GContext
@@ -136,10 +137,10 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 	}
 
 	if !globalstate.Quiet {
-		return c.OutputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&internal.ServiceShow{
 			Name: c.Name,
 			Zone: c.Zone,
-		}).showDatabaseServiceMysql(ctx))
+		}).ShowDatabaseServiceMysql(ctx))
 	}
 
 	return nil
