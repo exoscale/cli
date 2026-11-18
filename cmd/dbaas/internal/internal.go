@@ -1,4 +1,4 @@
-// package internal holds helpers shared by the dbaas command packages.
+// Package internal holds helpers shared by the dbaas command packages.
 package internal
 
 import (
