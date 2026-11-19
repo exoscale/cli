@@ -28,20 +28,20 @@ exec exo --zone $TEST_ZONE --output-format json compute instance-pool create poo
 json-setenv POOL_ID id stdout
 defer exo --zone $TEST_ZONE compute instance-pool delete --force $POOL_ID
 stdout '"vpc":"vpc-[a-z0-9-]+"'
-stdout '"vpc_subnets":\["front-[a-z0-9-]+"\]'
+stdout '"vpc_subnets":\["front-[a-z0-9-]+ 10\.43\.0\.0/24"\]'
 stdout '"ip_forwarding":true'
 
 # Replace the Subnets, VPC and Subnets referenced by ID
 exec exo --zone $TEST_ZONE --output-format json compute instance-pool update $POOL_ID --vpc $VPC_ID --vpc-subnet $FRONT_ID --vpc-subnet $BACK_ID
-stdout '"vpc_subnets":\[[^]]*"front-[a-z0-9-]+"[^]]*\]'
-stdout '"vpc_subnets":\[[^]]*"back-[a-z0-9-]+"[^]]*\]'
+stdout '"vpc_subnets":\[[^]]*"front-[a-z0-9-]+ 10\.43\.0\.0/24"[^]]*\]'
+stdout '"vpc_subnets":\[[^]]*"back-[a-z0-9-]+ 10\.43\.1\.0/24"[^]]*\]'
 
 # An unrelated update keeps the VPC and IP forwarding
 exec exo --zone $TEST_ZONE --output-format json compute instance-pool update $POOL_ID --description vpc-test
 stdout '"description":"vpc-test"'
 stdout '"vpc":"vpc-[a-z0-9-]+"'
-stdout '"vpc_subnets":\[[^]]*"front-[a-z0-9-]+"[^]]*\]'
-stdout '"vpc_subnets":\[[^]]*"back-[a-z0-9-]+"[^]]*\]'
+stdout '"vpc_subnets":\[[^]]*"front-[a-z0-9-]+ 10\.43\.0\.0/24"[^]]*\]'
+stdout '"vpc_subnets":\[[^]]*"back-[a-z0-9-]+ 10\.43\.1\.0/24"[^]]*\]'
 stdout '"ip_forwarding":true'
 
 # Disable IP forwarding

@@ -53,25 +53,30 @@ func resolveVPC(
 	return vpcEntry.ID, subnetIDs, nil
 }
 
-// formatVPCSubnets returns the names of the Instance Pool VPC Subnets,
-// falling back to the Subnet ID when it is not part of the listed Subnets.
+// formatVPCSubnets returns the Instance Pool VPC Subnets as "NAME IPV4-BLOCK",
+// falling back to the Subnet ID when it has no name or is not part of the
+// listed Subnets.
 func formatVPCSubnets(poolVPC *v3.InstancePoolVpc, listed []v3.ListSubnetEntry) []string {
 	out := make([]string, 0)
 	if poolVPC == nil {
 		return out
 	}
 
-	names := make(map[v3.UUID]string, len(listed))
+	subnets := make(map[v3.UUID]v3.ListSubnetEntry, len(listed))
 	for _, s := range listed {
-		names[s.ID] = s.Name
+		subnets[s.ID] = s
 	}
 
 	for _, s := range poolVPC.Subnets {
-		if name, ok := names[s.ID]; ok && name != "" {
-			out = append(out, name)
-			continue
+		label := s.ID.String()
+		subnet, ok := subnets[s.ID]
+		if ok && subnet.Name != "" {
+			label = subnet.Name
 		}
-		out = append(out, s.ID.String())
+		if ok && subnet.Ipv4Block != "" {
+			label = fmt.Sprintf("%s %s", label, subnet.Ipv4Block)
+		}
+		out = append(out, label)
 	}
 
 	return out

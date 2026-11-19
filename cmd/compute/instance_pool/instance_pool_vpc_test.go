@@ -46,8 +46,8 @@ func TestValidateVPCFlags(t *testing.T) {
 
 func TestFormatVPCSubnets(t *testing.T) {
 	listed := []v3.ListSubnetEntry{
-		{ID: v3.UUID(testSubnetAID), Name: "front"},
-		{ID: v3.UUID(testSubnetBID), Name: "back"},
+		{ID: v3.UUID(testSubnetAID), Name: "front", Ipv4Block: "10.0.0.0/24"},
+		{ID: v3.UUID(testSubnetBID), Name: "back", Ipv4Block: "10.0.1.0/24"},
 	}
 
 	tests := []struct {
@@ -64,7 +64,7 @@ func TestFormatVPCSubnets(t *testing.T) {
 				{ID: v3.UUID(testSubnetAID)},
 			}},
 			listed: listed,
-			want:   []string{"back", "front"},
+			want:   []string{"back 10.0.1.0/24", "front 10.0.0.0/24"},
 		},
 		{
 			name: "unknown subnet falls back to its ID",
@@ -73,15 +73,23 @@ func TestFormatVPCSubnets(t *testing.T) {
 				{ID: v3.UUID("8f3a0000-0000-4000-8000-0000000000c1")},
 			}},
 			listed: listed,
-			want:   []string{"front", "8f3a0000-0000-4000-8000-0000000000c1"},
+			want:   []string{"front 10.0.0.0/24", "8f3a0000-0000-4000-8000-0000000000c1"},
 		},
 		{
 			name: "unnamed subnet falls back to its ID",
 			poolVPC: &v3.InstancePoolVpc{Subnets: []v3.InstancePoolVpcSubnets{
 				{ID: v3.UUID(testSubnetAID)},
 			}},
-			listed: []v3.ListSubnetEntry{{ID: v3.UUID(testSubnetAID)}},
-			want:   []string{testSubnetAID},
+			listed: []v3.ListSubnetEntry{{ID: v3.UUID(testSubnetAID), Ipv4Block: "10.0.0.0/24"}},
+			want:   []string{testSubnetAID + " 10.0.0.0/24"},
+		},
+		{
+			name: "subnet without IPv4 block shows its name only",
+			poolVPC: &v3.InstancePoolVpc{Subnets: []v3.InstancePoolVpcSubnets{
+				{ID: v3.UUID(testSubnetAID)},
+			}},
+			listed: []v3.ListSubnetEntry{{ID: v3.UUID(testSubnetAID), Name: "front"}},
+			want:   []string{"front"},
 		},
 	}
 
