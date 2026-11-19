@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -16,7 +16,7 @@ const testServiceAddPath = "/load-balancer/" + testNLBID + "/service"
 // defaults that init() sets in production, which CmdRun does not apply.
 func testNLBServiceAddCmd() *nlbServiceAddCmd {
 	return &nlbServiceAddCmd{
-		CliCommandSettings:  exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings:  clicmd.DefaultCLICmdSettings(),
 		NetworkLoadBalancer: "nlb-1",
 		Name:                "web",
 		Port:                443,

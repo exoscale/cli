@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/testutils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -190,7 +190,7 @@ func newServiceUpdateFlagSet(t *testing.T, c *nlbServiceUpdateCmd, changed ...st
 	t.Helper()
 
 	parent := &cobra.Command{Use: "test"}
-	if err := exocmd.RegisterCLICommand(parent, c); err != nil {
+	if err := clicmd.RegisterCLICommand(parent, c); err != nil {
 		t.Fatalf("register command: %v", err)
 	}
 

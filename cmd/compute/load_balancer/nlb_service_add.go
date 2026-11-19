@@ -90,7 +90,7 @@ func (c *nlbServiceAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	// an empty label selector is invalid on create (contrary to update, where
 	// it means "remove the selector")
-	labels := exocmd.ConvertIfSpecialEmptyMap(c.LabelSelector)
+	labels := clicmd.ConvertIfSpecialEmptyMap(c.LabelSelector)
 	if c.LabelSelector != nil && len(labels) == 0 {
 		return errors.New("--label-selector must contain at least one label (format: key=value)")
 	}

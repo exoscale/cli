@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/output"
 )
 
@@ -22,7 +22,7 @@ func TestNLBServiceShowSelectorOnlyService(t *testing.T) {
 	// selector-only service, with no Instance Pool and a label selector
 	var got *nlbServiceShowOutput
 	cmd := &nlbServiceShowCmd{
-		CliCommandSettings:  exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings:  clicmd.DefaultCLICmdSettings(),
 		NetworkLoadBalancer: testNLBName,
 		Service:             testSelectorSvcName,
 	}
@@ -46,7 +46,7 @@ func TestNLBServiceShowSelectorOnlyService(t *testing.T) {
 	// pool-backed service, with an Instance Pool and no label selector
 	got = nil
 	cmd = &nlbServiceShowCmd{
-		CliCommandSettings:  exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings:  clicmd.DefaultCLICmdSettings(),
 		NetworkLoadBalancer: testNLBName,
 		Service:             testPoolServiceName,
 	}

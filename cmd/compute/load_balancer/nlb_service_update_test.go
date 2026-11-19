@@ -6,12 +6,12 @@ import (
 	"strings"
 	"testing"
 
-	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/pkg/clicmd"
 )
 
 func testNLBServiceUpdateCmd(service string) *nlbServiceUpdateCmd {
 	return &nlbServiceUpdateCmd{
-		CliCommandSettings:  exocmd.DefaultCLICmdSettings(),
+		CliCommandSettings:  clicmd.DefaultCLICmdSettings(),
 		NetworkLoadBalancer: testNLBName,
 		Service:             service,
 	}

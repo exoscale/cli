@@ -162,8 +162,8 @@ func (c *nlbServiceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.LabelSelector)) {
-		labels := exocmd.ConvertIfSpecialEmptyMap(c.LabelSelector)
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.LabelSelector)) {
+		labels := clicmd.ConvertIfSpecialEmptyMap(c.LabelSelector)
 		if len(labels) == 0 {
 			// an empty label selector means "remove the selector", which the
 			// API rejects for services backed by no Instance Pool
