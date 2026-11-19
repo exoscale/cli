@@ -20,38 +20,38 @@ jobs:
       linux_amd64_checksum: ${{ steps.get-linux-amd64-checksum.outputs.linux_amd64_checksum }}
 
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
-      - uses: ./.github/actions/build
+      - uses: $/.github/actions/build
 
       - name: Import GPG key
         # This is a third-party GitHub action and we trust it with our GPG key.
         # To be on the safer side, we should always pin to the commit SHA.
         # It's not a perfect mitigation, but we should always do some due diligence before upgrading.
         # The author seems trustworthy, as the author is part of the docker and goreleaser organizations on GitHub.
-        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
+        uses: crazy-max/ghaction-import-gpg@v7.0.0
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Login to Docker Hub
-        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        uses: docker/login-action@v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # Needed for multiarch OCI builds
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+        uses: docker/setup-qemu-action@v4.4.0
         with:
           image: docker.io/tonistiigi/binfmt:latest@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        uses: docker/setup-buildx-action@v4.4.1
         with:
-          version: v0.38.1
+          version: v0.38.2
 
       - name: Compute goreleaser cache key
         id: goreleaser-cache-key
@@ -59,7 +59,7 @@ jobs:
 
       - name: Cache goreleaser
         id: cache-goreleaser
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/cache@v6.1.0
         with:
           path: /home/runner/go/bin/goreleaser
           key: ${{ steps.goreleaser-cache-key.outputs.GORELEASER_CACHE_KEY }}
