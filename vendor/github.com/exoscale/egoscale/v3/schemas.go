@@ -192,25 +192,21 @@ type BlockStorageVolumeRef struct {
 	ID UUID `json:"id,omitempty"`
 }
 
-type CPUManagerConfigCPUManagerPolicy string
+type CPUManagerPolicy string
 
 const (
-	CPUManagerConfigCPUManagerPolicyStatic CPUManagerConfigCPUManagerPolicy = "static"
-	CPUManagerConfigCPUManagerPolicyNone   CPUManagerConfigCPUManagerPolicy = "none"
+	CPUManagerPolicyStatic CPUManagerPolicy = "static"
+	CPUManagerPolicyNone   CPUManagerPolicy = "none"
 )
 
-// CPU manager config
-type CPUManagerConfig struct {
-	// CPU management policy used by the kubelet. The "static" policy grants exclusive CPUs to Guaranteed pods requesting integer CPU limits. When set to "static", a CPU reservation must be provided via kube-reserved or system-reserved
-	CPUManagerPolicy CPUManagerConfigCPUManagerPolicy `json:"cpu-manager-policy,omitempty"`
-	// CPU manager policy options used by the kubelet. They refine the behavior of the "static" cpu-manager-policy and are only valid when the policy is "static"
-	CPUManagerPolicyOptions []string `json:"cpu-manager-policy-options,omitempty"`
+// CPU manager (kubelet settings)
+type CPUManager struct {
+	// CPU management policy used by the kubelet. The "static" policy grants exclusive CPUs to Guaranteed pods requesting integer CPU limits. When set to "static", a cpu value must be set in the Nodepool kube-reserved or system-reserved
+	Policy CPUManagerPolicy `json:"policy,omitempty"`
+	// CPU manager policy options used by the kubelet. They refine the behavior of the "static" policy and are only valid when the policy is "static"
+	PolicyOptions []string `json:"policy-options,omitempty"`
 	// CPU manager reconcile period used by the kubelet, as a duration string (for example "10s").
-	CPUManagerReconcilePeriod string `json:"cpu-manager-reconcile-period,omitempty"`
-	// Resources reserved for kube or system components.
-	KubeReserved *ReservedResources `json:"kube-reserved,omitempty"`
-	// Resources reserved for kube or system components.
-	SystemReserved *ReservedResources `json:"system-reserved,omitempty"`
+	ReconcilePeriod string `json:"reconcile-period,omitempty"`
 }
 
 // Request to create a new AI API key.
@@ -3055,8 +3051,9 @@ type IAMSystemRole struct {
 }
 
 type ImpactBreakdown struct {
-	Impact map[string]ImpactValueWithUnit `json:"impact" validate:"required"`
-	Zones  map[string]ZoneImpact          `json:"zones" validate:"required"`
+	CalculationDate string                         `json:"calculation-date" validate:"required"`
+	Impact          map[string]ImpactValueWithUnit `json:"impact" validate:"required"`
+	Zones           map[string]ZoneImpact          `json:"zones" validate:"required"`
 }
 
 // Error response
@@ -3262,6 +3259,20 @@ const (
 	InstancePoolStateError       InstancePoolState = "error"
 )
 
+// VPC Subnet
+type InstancePoolVpcSubnets struct {
+	// Subnet ID
+	ID UUID `json:"id" validate:"required"`
+}
+
+// Instance Pool VPC
+type InstancePoolVpc struct {
+	// VPC ID
+	ID UUID `json:"id" validate:"required"`
+	// VPC Subnets to attach the Instances to
+	Subnets []InstancePoolVpcSubnets `json:"subnets" validate:"required"`
+}
+
 // Instance Pool
 type InstancePool struct {
 	// Instance Pool Anti-affinity Groups
@@ -3286,6 +3297,8 @@ type InstancePool struct {
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
 	// Instances
 	Instances []Instance `json:"instances,omitempty"`
+	// Enable IP forwarding on the Instances VPC interfaces
+	IPForwarding *bool `json:"ip-forwarding,omitempty"`
 	// Enable IPv6 for instances
 	Ipv6Enabled *bool  `json:"ipv6-enabled,omitempty"`
 	Labels      Labels `json:"labels,omitempty"`
@@ -3312,6 +3325,8 @@ type InstancePool struct {
 	Template *Template `json:"template,omitempty"`
 	// Instances Cloud-init user-data
 	UserData string `json:"user-data,omitempty" validate:"omitempty,gte=1"`
+	// Instance Pool VPC
+	Vpc *InstancePoolVpc `json:"vpc,omitempty"`
 }
 
 // Target Instance Pool
@@ -5691,7 +5706,7 @@ type ReplicateKmsKeyRequest struct {
 // Resources reserved for kube or system components.
 type ReservedResources struct {
 	// CPU reservation, e.g., "200m"
-	CPU string `json:"cpu" validate:"required"`
+	CPU string `json:"cpu,omitempty"`
 	// Ephemeral storage reservation, e.g., "1Gi"
 	EphemeralStorage string `json:"ephemeral-storage,omitempty"`
 	// Memory reservation, e.g., "512Mi"
@@ -6057,8 +6072,8 @@ type SKSNodepool struct {
 	Addons []string `json:"addons,omitempty"`
 	// Nodepool Anti-affinity Groups
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
-	// CPU manager config
-	CPUManagerConfig *CPUManagerConfig `json:"cpu-manager-config,omitempty"`
+	// CPU manager (kubelet settings)
+	CPUManager *CPUManager `json:"cpu-manager,omitempty"`
 	// Nodepool creation date
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Deploy target reference
@@ -6075,6 +6090,8 @@ type SKSNodepool struct {
 	InstancePrefix string `json:"instance-prefix,omitempty" validate:"omitempty,gte=1,lte=30"`
 	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
+	// Resources reserved for kube or system components.
+	KubeReserved *ReservedResources `json:"kube-reserved,omitempty"`
 	// Kubelet image GC options
 	KubeletImageGC *KubeletImageGC `json:"kubelet-image-gc,omitempty"`
 	// Maximum number of pods per node. Set to use a value other than the kubelet default.
@@ -6097,13 +6114,15 @@ type SKSNodepool struct {
 	// Number of instances
 	Size int64 `json:"size,omitempty" validate:"omitempty,gte=0"`
 	// Nodepool state
-	State  SKSNodepoolState  `json:"state,omitempty"`
-	Taints SKSNodepoolTaints `json:"taints,omitempty"`
+	State SKSNodepoolState `json:"state,omitempty"`
+	// Resources reserved for kube or system components.
+	SystemReserved *ReservedResources `json:"system-reserved,omitempty"`
+	Taints         SKSNodepoolTaints  `json:"taints,omitempty"`
 	// Template reference
 	Template *Template `json:"template,omitempty"`
 	// Nodepool template selection:
-	// * `pinned`: the template set with `update-sks-nodepool`.
-	// * `pinned`: the template set with `update-sks-nodepool`.
+	// * `pinned`: the template set at creation or with `update-sks-nodepool`.
+	// * `pinned`: the template set at creation or with `update-sks-nodepool`.
 	TemplateSelection SKSNodepoolTemplateSelection `json:"template-selection,omitempty"`
 	// Nodepool version
 	Version string `json:"version,omitempty"`

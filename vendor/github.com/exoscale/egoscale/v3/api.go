@@ -12,8 +12,6 @@ import (
 	"io"
 	"math"
 	"net/http"
-	"net/http/httputil"
-	"os"
 	"sort"
 	"strings"
 	"time"
@@ -206,17 +204,45 @@ func prepareJSONResponse(resp *http.Response, v any) error {
 	return nil
 }
 
+// signatureScheme is the authorization scheme of the Exoscale API.
+const signatureScheme = "EXO2-HMAC-SHA256"
+
+// signRequest signs req with the current credentials of c.
 func (c Client) signRequest(req *http.Request) error {
+	if c.credentials == nil {
+		return errors.New("no credentials")
+	}
+
+	values, err := c.credentials.Get()
+	if err != nil {
+		return err
+	}
+
+	return SignHTTPRequest(req, values.APIKey, values.APISecret, signatureExpiration())
+}
+
+// signatureExpiration returns the expiration of the signatures made by the Client.
+func signatureExpiration() time.Time {
+	return time.Now().UTC().Add(time.Minute * 10)
+}
+
+// SignHTTPRequest signs req with the EXO2-HMAC-SHA256 scheme of the Exoscale API, as the Client
+// does for every operation: it sets the Authorization header, with a signature valid until
+// expiration (the Client uses 10 minutes). The signature covers the method, the escaped URL path,
+// the body, and the query parameters that hold exactly one value. The body, if any, is read and
+// replaced, so req can still be sent.
+//
+// It is meant for callers that build their own requests, such as generic API tools following the
+// OpenAPI spec, for endpoints this version of the package does not know yet.
+func SignHTTPRequest(req *http.Request, apiKey, apiSecret string, expiration time.Time) error {
 	var (
 		sigParts    []string
 		headerParts []string
 	)
 
-	var expiration = time.Now().UTC().Add(time.Minute * 10)
-
 	// Request method/URL path
 	sigParts = append(sigParts, fmt.Sprintf("%s %s", req.Method, req.URL.EscapedPath()))
-	headerParts = append(headerParts, "EXO2-HMAC-SHA256 credential="+c.apiKey)
+	headerParts = append(headerParts, signatureScheme+" credential="+apiKey)
 
 	// Request body if present
 	body := ""
@@ -251,7 +277,7 @@ func (c Client) signRequest(req *http.Request) error {
 	sigParts = append(sigParts, fmt.Sprint(expiration.Unix()))
 	headerParts = append(headerParts, "expires="+fmt.Sprint(expiration.Unix()))
 
-	h := hmac.New(sha256.New, []byte(c.apiSecret))
+	h := hmac.New(sha256.New, []byte(apiSecret))
 	if _, err := h.Write([]byte(strings.Join(sigParts, "\n"))); err != nil {
 		return err
 	}
@@ -283,23 +309,6 @@ func extractRequestParameters(req *http.Request) ([]string, string) {
 	}
 
 	return names, values
-}
-
-func dumpRequest(req *http.Request, operationID string) {
-	if req != nil {
-		if dump, err := httputil.DumpRequest(req, true); err == nil {
-			fmt.Fprintf(os.Stderr, ">>> Operation: %s\n%s\n", operationID, dump)
-		}
-	}
-}
-
-func dumpResponse(resp *http.Response) {
-	if resp != nil {
-		if dump, err := httputil.DumpResponse(resp, true); err == nil {
-			fmt.Fprintf(os.Stderr, "<<< %s\n", dump)
-			fmt.Fprintln(os.Stderr, "----------------------------------------------------------------------")
-		}
-	}
 }
 
 // FindInstanceType attempts to find an InstanceType by id, or by a string or the form FAMILY.SIZE or SIZE,

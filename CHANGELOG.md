@@ -10,6 +10,7 @@
 
 ### Improvements
 
+- go.mod: bump egoscale to v3.1.64
 - split cmd package into two packages #956
 - compute: mark `exo compute private-network` and `exo compute instance private-network` commands as deprecated in their help, pointing to `exo networking vpc` (#951)
 - cmd: deprecated commands print a warning on stderr when run, `exo compute private-network` and `exo compute instance private-network` commands included (#959)
@@ -69,7 +70,6 @@
 - kms: add `--encryption-algorithm` to `exo kms crypto encrypt` and `decrypt`, and `--source-encryption-algorithm` and `--dest-encryption-algorithm` to `reencrypt`, to use RSA keys
 - kms: show the key spec in `exo kms key show` and `exo kms key list`
 - dbaas: add `exo dbaas acl list` for Kafka and OpenSearch, `exo dbaas acl create` and `delete` for Kafka, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
-- compute: add `--vpc` and `--vpc-subnet` to `exo compute instance create` to attach an instance to VPC Subnets at creation (#927)
 - api: add `exo api create-dbaas-mysql-upgrade-check` to run a MySQL service upgrade compatibility check
 - deps: bump egoscale v3 to v3.1.63 to use the new `CreateDBAASMysqlUpgradeCheck` client
 

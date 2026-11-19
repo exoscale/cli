@@ -2,29 +2,71 @@
 package v3
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"runtime"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/exoscale/egoscale/v3/credentials"
+	"github.com/exoscale/egoscale/v3/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/hashicorp/go-retryablehttp"
 )
 
-// defaultHTTPClient is HTTP client with retry logic.
-// Default retry configuration can be found in go-retryablehttp repo.
-var defaultHTTPClient = func() *http.Client {
-	rc := retryablehttp.NewClient()
-	// silence client by default
-	rc.Logger = log.New(io.Discard, "", 0)
-	return rc.StandardClient()
-}()
+// Client represents an Exoscale API client.
+type Client struct {
+	// credentials are read for every request, so that new ones (see credentials.ReloadableProvider)
+	// are used without creating a new client. Clones share them.
+	credentials       *credentials.Credentials
+	userAgent         string
+	serverEndpoint    string
+	defaultHTTPClient *retryablehttp.Client
+	httpClient        *http.Client
+	waitTimeout       time.Duration
+	validate          *validator.Validate
+
+	logger *slog.Logger
+
+	// A list of callbacks for modifying requests which are generated before sending over
+	// the network.
+	requestInterceptors []RequestInterceptorFn
+}
+
+// NewClient returns a new Exoscale API client.
+func NewClient(credentials *credentials.Credentials, opts ...ClientOpt) (*Client, error) {
+	if _, err := credentials.Get(); err != nil {
+		return nil, err
+	}
+
+	client := &Client{
+		credentials:    credentials,
+		serverEndpoint: string(CHGva2),
+		validate:       validator.New(),
+		userAgent:      getDefaultUserAgent(),
+		logger:         slog.New(slog.DiscardHandler), // no logs by default
+	}
+
+	client.defaultHTTPClient = retryablehttp.NewClient()
+	client.defaultHTTPClient.Logger = slog.New(slog.DiscardHandler)
+	client.httpClient = client.defaultHTTPClient.StandardClient()
+
+	for _, opt := range opts {
+		if err := opt(client); err != nil {
+			return nil, fmt.Errorf("client configuration error: %s", err)
+		}
+	}
+
+	return client, nil
+}
 
 func (c Client) GetZoneName(ctx context.Context, endpoint Endpoint) (ZoneName, error) {
 	zone, err := c.findZone(ctx, string(endpoint))
@@ -80,22 +122,6 @@ func (c Client) findZone(ctx context.Context, nameOrAPIEndpoint string) (Zone, e
 	return zone, nil
 }
 
-// Client represents an Exoscale API client.
-type Client struct {
-	apiKey         string
-	apiSecret      string
-	userAgent      string
-	serverEndpoint string
-	httpClient     *http.Client
-	waitTimeout    time.Duration
-	validate       *validator.Validate
-	trace          bool
-
-	// A list of callbacks for modifying requests which are generated before sending over
-	// the network.
-	requestInterceptors []RequestInterceptorFn
-}
-
 // RequestInterceptorFn is the function signature for the RequestInterceptor callback function
 type RequestInterceptorFn func(ctx context.Context, req *http.Request) error
 
@@ -105,10 +131,25 @@ var UserAgent = getDefaultUserAgent()
 // ClientOpt represents a function setting Exoscale API client option.
 type ClientOpt func(*Client) error
 
-// ClientOptWithTrace returns a ClientOpt enabling HTTP request/response tracing.
+// Deprecated: use ClientOptWithLogHandler instead.
 func ClientOptWithTrace() ClientOpt {
 	return func(c *Client) error {
-		c.trace = true
+		c.logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
+		if c.defaultHTTPClient != nil {
+			c.defaultHTTPClient.Logger = c.logger.With("subsystem", "retryablehttp")
+		}
+
+		return nil
+	}
+}
+
+// ClientOptWithLogHandler sets provided log handler.
+func ClientOptWithLogHandler(h slog.Handler) ClientOpt {
+	return func(c *Client) error {
+		c.logger = slog.New(h)
+		if c.defaultHTTPClient != nil {
+			c.defaultHTTPClient.Logger = c.logger.With("subsystem", "retryablehttp")
+		}
 		return nil
 	}
 }
@@ -161,6 +202,7 @@ func ClientOptWithRequestInterceptors(f ...RequestInterceptorFn) ClientOpt {
 // instead.
 func ClientOptWithHTTPClient(v *http.Client) ClientOpt {
 	return func(c *Client) error {
+		c.defaultHTTPClient = nil
 		c.httpClient = v
 
 		return nil
@@ -174,31 +216,6 @@ func getDefaultUserAgent() string {
 		runtime.Version(),
 		runtime.GOOS,
 		runtime.GOARCH)
-}
-
-// NewClient returns a new Exoscale API client.
-func NewClient(credentials *credentials.Credentials, opts ...ClientOpt) (*Client, error) {
-	values, err := credentials.Get()
-	if err != nil {
-		return nil, err
-	}
-
-	client := &Client{
-		apiKey:         values.APIKey,
-		apiSecret:      values.APISecret,
-		serverEndpoint: string(CHGva2),
-		httpClient:     defaultHTTPClient,
-		validate:       validator.New(),
-		userAgent:      getDefaultUserAgent(),
-	}
-
-	for _, opt := range opts {
-		if err := opt(client); err != nil {
-			return nil, fmt.Errorf("client configuration error: %s", err)
-		}
-	}
-
-	return client, nil
 }
 
 // getUserAgent only for compatibility with UserAgent.
@@ -243,11 +260,26 @@ func (c *Client) WithUserAgent(ua string) *Client {
 	return clone
 }
 
-// WithTrace returns a copy of Client with tracing enabled.
+// Deprecated: use WithLogHandler instead.
 func (c *Client) WithTrace() *Client {
 	clone := cloneClient(c)
 
-	clone.trace = true
+	clone.logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	if clone.defaultHTTPClient != nil {
+		clone.defaultHTTPClient.Logger = clone.logger.With("subsystem", "retryablehttp")
+	}
+
+	return clone
+}
+
+// WithLogHandler returns a copy of Client with new log handler set.
+func (c *Client) WithLogHandler(h slog.Handler) *Client {
+	clone := cloneClient(c)
+
+	clone.logger = slog.New(h)
+	if clone.defaultHTTPClient != nil {
+		clone.defaultHTTPClient.Logger = clone.logger.With("subsystem", "retryablehttp")
+	}
 
 	return clone
 }
@@ -290,16 +322,191 @@ func (c *Client) executeRequestInterceptors(ctx context.Context, req *http.Reque
 	return nil
 }
 
+// do sends request. If the API rejects the API key the request was signed with, it reloads the
+// credentials and, if they changed, signs the request again and retries it once.
+func (c *Client) do(request *http.Request) (*http.Response, error) {
+	response, err := c.send(request)
+	if err != nil || !isInvalidKeyResponse(response) {
+		return response, err
+	}
+
+	retry, ok := c.retryWithNewCredentials(request)
+	if !ok {
+		return response, nil
+	}
+
+	_ = response.Body.Close()
+
+	c.logger.DebugContext(request.Context(), "API key rejected, retrying with the reloaded credentials")
+
+	return c.send(retry)
+}
+
+// retryWithNewCredentials reloads the credentials of a request signed by c and rejected by the
+// API, and returns a copy of the request signed with the new ones. It returns false if the
+// credentials didn't change, or the request can't be sent again.
+func (c *Client) retryWithNewCredentials(request *http.Request) (*http.Request, bool) {
+	signedKey, ok := signedAPIKey(request)
+	if !ok || c.credentials == nil || (request.Body != nil && request.GetBody == nil) {
+		return nil, false
+	}
+
+	ctx := request.Context()
+	if err := c.credentials.Reload(ctx); err != nil {
+		c.logger.DebugContext(ctx, "unable to reload the credentials", "error", err)
+	}
+
+	values, err := c.credentials.Get()
+	if err != nil || values.APIKey == signedKey {
+		return nil, false
+	}
+
+	retry := request.Clone(ctx)
+	if request.GetBody != nil {
+		body, err := request.GetBody()
+		if err != nil {
+			return nil, false
+		}
+		retry.Body = body
+	}
+
+	if err := SignHTTPRequest(retry, values.APIKey, values.APISecret, signatureExpiration()); err != nil {
+		return nil, false
+	}
+
+	return retry, true
+}
+
+// isInvalidKeyResponse reports whether the API rejected the API key of the request
+// (unknown or deleted key, or wrong secret).
+// It keeps the response body readable.
+func isInvalidKeyResponse(response *http.Response) bool {
+	switch response.StatusCode {
+	case http.StatusUnauthorized:
+		return true
+	case http.StatusForbidden:
+	default:
+		return false
+	}
+
+	body, err := io.ReadAll(response.Body)
+	_ = response.Body.Close()
+	response.Body = io.NopCloser(bytes.NewReader(body))
+	if err != nil {
+		return false
+	}
+
+	var apiErr struct {
+		Message string `json:"message"`
+	}
+	if err := json.Unmarshal(body, &apiErr); err != nil {
+		return false
+	}
+
+	return strings.Contains(strings.ToLower(apiErr.Message), "invalid key")
+}
+
+// signedAPIKey returns the API key of a request signed by SignHTTPRequest.
+func signedAPIKey(request *http.Request) (string, bool) {
+	auth, ok := strings.CutPrefix(request.Header.Get("Authorization"), signatureScheme+" credential=")
+	if !ok {
+		return "", false
+	}
+	key, _, _ := strings.Cut(auth, ",")
+
+	return key, key != ""
+}
+
+// send is a wrapper for c.httpClient.Do to apply middleware.
+func (c *Client) send(request *http.Request) (*http.Response, error) {
+	ctx := request.Context()
+	if request == nil || !c.logger.Enabled(ctx, slog.LevelDebug) {
+		return c.httpClient.Do(request)
+	}
+
+	var (
+		meta []any
+	)
+
+	requestMeta := []any{
+		"method", request.Method,
+		"host", request.URL.Host,
+		"path", request.URL.EscapedPath(),
+		"headers", utils.PrintHeaders(request.Header),
+	}
+
+	if request.ContentLength != 0 &&
+		request.Body != nil &&
+		utils.IsLoggableContentType(request.Header) {
+		requestBody, err := io.ReadAll(request.Body)
+		if err != nil {
+			return nil, err
+		}
+		if err = request.Body.Close(); err != nil {
+			return nil, err
+		}
+		request.Body = io.NopCloser(bytes.NewReader(requestBody))
+
+		requestMeta = append(requestMeta, "json_body", string(requestBody))
+	}
+
+	meta = append(meta, slog.Group("request", requestMeta...))
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return response, err
+	}
+
+	responseMeta := []any{
+		"status", response.Status,
+		"headers", utils.PrintHeaders(response.Header),
+	}
+
+	if response.ContentLength != 0 &&
+		response.Body != nil &&
+		request.URL.Query().Get("streaming") != "true" &&
+		utils.IsLoggableContentType(response.Header) {
+		responseBody, err := io.ReadAll(response.Body)
+		if err != nil {
+			return nil, err
+		}
+		if err = response.Body.Close(); err != nil {
+			return nil, err
+		}
+		response.Body = io.NopCloser(bytes.NewReader(responseBody))
+
+		responseMeta = append(responseMeta, "json_body", string(responseBody))
+	}
+
+	meta = append(meta, slog.Group("response", responseMeta...))
+
+	c.logger.DebugContext(
+		ctx,
+		"api call trace",
+		meta...,
+	)
+
+	return response, err
+}
+
 func cloneClient(c *Client) *Client {
-	return &Client{
-		apiKey:              c.apiKey,
-		apiSecret:           c.apiSecret,
+	newc := Client{
+		credentials:         c.credentials,
 		userAgent:           c.userAgent,
 		serverEndpoint:      c.serverEndpoint,
+		defaultHTTPClient:   c.defaultHTTPClient,
 		httpClient:          c.httpClient,
 		requestInterceptors: c.requestInterceptors,
 		waitTimeout:         c.waitTimeout,
-		trace:               c.trace,
 		validate:            c.validate,
+		logger:              c.logger,
 	}
+
+	if c.defaultHTTPClient != nil {
+		rc := retryablehttp.NewClient()
+		rc.Logger = c.defaultHTTPClient.Logger
+		newc.defaultHTTPClient = rc
+	}
+
+	return &newc
 }
