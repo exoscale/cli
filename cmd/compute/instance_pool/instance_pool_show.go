@@ -191,7 +191,13 @@ func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		if err != nil {
 			return err
 		}
-		out.VPCSubnets = formatVPCSubnets(instancePool.Vpc, subnets.Subnets)
+		for _, subnet := range subnets.Subnets {
+			for _, poolSubnet := range instancePool.Vpc.Subnets {
+				if subnet.ID == poolSubnet.ID {
+					out.VPCSubnets = append(out.VPCSubnets, fmt.Sprintf("%v %v", subnet.Name, subnet.Ipv4Block))
+				}
+			}
+		}
 	}
 
 	if instancePool.SecurityGroups != nil {
