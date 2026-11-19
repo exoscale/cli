@@ -1,3 +1,4 @@
+// AI-modified by claude-opus-5-5 - not reviewed yet
 package instance_pool
 
 import (
@@ -31,6 +32,7 @@ type instancePoolUpdateCmd struct {
 	Description        string            `cli-usage:"Instance Pool description"`
 	DiskSize           int64             `cli-usage:"managed Compute instances disk size"`
 	ElasticIPs         []string          `cli-flag:"elastic-ip" cli-short:"e" cli-usage:"managed Compute instances Elastic IP ADDRESS|ID (can be specified multiple times)"`
+	IPForwarding       bool              `cli-flag:"ip-forwarding" cli-usage:"enable IP forwarding on managed Compute instances VPC interfaces (only applies to new instances)"`
 	IPv6               bool              `cli-flag:"ipv6" cli-short:"6" cli-usage:"enable IPv6 on managed Compute instances"`
 	InstancePrefix     string            `cli-usage:"string to prefix managed Compute instances names with"`
 	InstanceType       string            `cli-usage:"managed Compute instances type (format: [FAMILY.]SIZE)"`
@@ -42,6 +44,8 @@ type instancePoolUpdateCmd struct {
 	SecurityGroups     []string          `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
 	Template           string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
 	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
+	VPC                string            `cli-flag:"vpc" cli-usage:"managed Compute instances VPC NAME|ID (requires --vpc-subnet, use \"\" to detach the Instance Pool from its VPC)"`
+	VPCSubnets         []string          `cli-flag:"vpc-subnet" cli-usage:"managed Compute instances VPC Subnet NAME|ID (can be specified multiple times)"`
 	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
@@ -64,6 +68,16 @@ func (c *instancePoolUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 
 func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
 	var updated bool
+
+	vpcChanged := cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.VPC))
+	vpcSubnetsChanged := cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.VPCSubnets))
+	// --vpc "" detaches the Instance Pool from its VPC
+	clearVPC := vpcChanged && c.VPC == "" && len(c.VPCSubnets) == 0
+	if (vpcChanged || vpcSubnetsChanged) && !clearVPC {
+		if err := validateVPCFlags(c.VPC, c.VPCSubnets); err != nil {
+			return err
+		}
+	}
 
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
@@ -113,6 +127,19 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 	}
 	if instancePool.SSHKey != nil {
 		updateReq.SSHKey = &v3.SSHKey{Name: instancePool.SSHKey.Name}
+	}
+	// The VPC is sent as null when not set, which detaches the Instance Pool
+	if instancePool.Vpc != nil {
+		updateReq.Vpc = &v3.UpdateInstancePoolRequestVpc{
+			ID:      instancePool.Vpc.ID,
+			Subnets: make([]v3.UpdateInstancePoolRequestVpcSubnets, len(instancePool.Vpc.Subnets)),
+		}
+		for i, v := range instancePool.Vpc.Subnets {
+			updateReq.Vpc.Subnets[i] = v3.UpdateInstancePoolRequestVpcSubnets(v)
+		}
+	}
+	if instancePool.IPForwarding != nil {
+		updateReq.IPForwarding = instancePool.IPForwarding
 	}
 
 	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
@@ -186,6 +213,11 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.IPForwarding)) {
+		updateReq.IPForwarding = &c.IPForwarding
+		updated = true
+	}
+
 	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Labels)) {
 		updateReq.Labels = clicmd.ConvertIfSpecialEmptyMap(c.Labels)
 		updated = true
@@ -231,6 +263,24 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
 			updateReq.SecurityGroups[i] = v3.SecurityGroup{ID: securityGroup.ID}
+		}
+		updated = true
+	}
+
+	if clearVPC {
+		updateReq.Vpc = nil
+		updated = true
+	} else if vpcChanged || vpcSubnetsChanged {
+		vpcID, subnetIDs, err := resolveVPC(ctx, client, c.VPC, c.VPCSubnets)
+		if err != nil {
+			return err
+		}
+		updateReq.Vpc = &v3.UpdateInstancePoolRequestVpc{
+			ID:      vpcID,
+			Subnets: make([]v3.UpdateInstancePoolRequestVpcSubnets, len(subnetIDs)),
+		}
+		for i, id := range subnetIDs {
+			updateReq.Vpc.Subnets[i] = v3.UpdateInstancePoolRequestVpcSubnets{ID: id}
 		}
 		updated = true
 	}

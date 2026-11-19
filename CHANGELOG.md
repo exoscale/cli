@@ -4,6 +4,7 @@
 
 ### Features
 
+- compute: add `--vpc`, `--vpc-subnet` and `--ip-forwarding` to `exo compute instance-pool create` and `exo compute instance-pool update`, show the VPC, its Subnets and IP forwarding in `exo compute instance-pool show`
 - cmd: struct-based commands support `time.Duration` fields, as flags or positional arguments (e.g. `--expires 15m`)
 - cmd: struct-based commands support `time.Time` fields, as flags or positional arguments taking an RFC 3339 timestamp (e.g. `--since 2023-06-07T10:00:00+02:00`); an empty value leaves the zero time
 - cmd: struct-based commands can declare required positional arguments after a `[]string` one, which take the last arguments (e.g. `FILE... DESTINATION`); an optional argument or a second list after it is refused at startup
@@ -70,6 +71,7 @@
 - kms: add `--encryption-algorithm` to `exo kms crypto encrypt` and `decrypt`, and `--source-encryption-algorithm` and `--dest-encryption-algorithm` to `reencrypt`, to use RSA keys
 - kms: show the key spec in `exo kms key show` and `exo kms key list`
 - dbaas: add `exo dbaas acl list` for Kafka and OpenSearch, `exo dbaas acl create` and `delete` for Kafka, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
+- compute: add `--vpc` and `--vpc-subnet` to `exo compute instance create` to attach an instance to VPC Subnets at creation (#927)
 - api: add `exo api create-dbaas-mysql-upgrade-check` to run a MySQL service upgrade compatibility check
 - deps: bump egoscale v3 to v3.1.63 to use the new `CreateDBAASMysqlUpgradeCheck` client
 

@@ -1,3 +1,4 @@
+// AI-modified by claude-opus-5-5 - not reviewed yet
 package instance_pool
 
 import (
@@ -26,6 +27,9 @@ type instancePoolShowOutput struct {
 	AntiAffinityGroups []string              `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
 	SecurityGroups     []string              `json:"security_groups"`
 	PrivateNetworks    []string              `json:"private_networks"`
+	VPC                string                `json:"vpc" outputLabel:"VPC"`
+	VPCSubnets         []string              `json:"vpc_subnets" outputLabel:"VPC Subnets"`
+	IPForwarding       bool                  `json:"ip_forwarding" outputLabel:"IP Forwarding"`
 	ElasticIPs         []string              `json:"elastic_ips" outputLabel:"Elastic IPs"`
 	IPv6               bool                  `json:"ipv6" outputLabel:"IPv6"`
 	PublicIPAssignment v3.PublicIPAssignment `json:"public-ip" outputLabel:"Public IP"`
@@ -106,6 +110,7 @@ func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		ElasticIPs:         make([]string, 0),
 		ID:                 instancePool.ID.String(),
 		IPv6:               utils.DefaultBool(instancePool.Ipv6Enabled, false),
+		IPForwarding:       utils.DefaultBool(instancePool.IPForwarding, false),
 		PublicIPAssignment: instancePool.PublicIPAssignment,
 		InstancePrefix:     instancePool.InstancePrefix,
 		Instances:          make([]string, 0),
@@ -124,6 +129,7 @@ func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 			return "-"
 		}(),
 		SecurityGroups: make([]string, 0),
+		VPCSubnets:     make([]string, 0),
 		Size:           instancePool.Size,
 		State:          string(instancePool.State),
 		Zone:           c.Zone,
@@ -173,6 +179,20 @@ func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 			}
 			out.PrivateNetworks = append(out.PrivateNetworks, privateNetwork.Name)
 		}
+	}
+
+	if instancePool.Vpc != nil {
+		vpc, err := client.GetVpc(ctx, instancePool.Vpc.ID)
+		if err != nil {
+			return err
+		}
+		out.VPC = vpc.Name
+
+		subnets, err := client.ListSubnets(ctx, instancePool.Vpc.ID)
+		if err != nil {
+			return err
+		}
+		out.VPCSubnets = formatVPCSubnets(instancePool.Vpc, subnets.Subnets)
 	}
 
 	if instancePool.SecurityGroups != nil {
