@@ -38,6 +38,7 @@ type sksNodepoolShowOutput struct {
 	Taints               []string                         `json:"taints"`
 	Labels               map[string]string                `json:"labels"`
 	NvidiaMigProfile     string                           `json:"nvidia_mig_profile"`
+	NvidiaDraDriver      bool                             `json:"nvidia_dra_driver"`
 	AddOns               []string                         `json:"addons"`
 	ImageGCMin           string                           `json:"image_gc_min_age"`
 	ImageGcLowThreshold  int64                            `json:"image_gc_low_threshold"`
@@ -140,6 +141,7 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				return ""
 			}
 		}(),
+		NvidiaDraDriver:    nodepool.NvidiaDraDriver != nil && *nodepool.NvidiaDraDriver,
 		SecurityGroups:     make([]string, 0),
 		PrivateNetworks:    make([]string, 0),
 		Size:               nodepool.Size,

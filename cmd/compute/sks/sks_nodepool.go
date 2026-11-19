@@ -68,6 +68,7 @@ type CreateNodepoolOpts struct {
 	// The GPU family it applies to is inferred from the Nodepool instance type.
 	// Empty means "leave unset".
 	NvidiaMigProfile string
+	NvidiaDraDriver  bool
 }
 
 // nvidiaMigProfilesA30 and nvidiaMigProfilesRtxpro6000 list the MIG profiles
@@ -209,6 +210,10 @@ func createNodepoolRequest(
 		return nodepoolReq, err
 	}
 	nodepoolReq.NvidiaMigProfiles = migProfiles
+
+	if opts.NvidiaDraDriver {
+		nodepoolReq.NvidiaDraDriver = &opts.NvidiaDraDriver
+	}
 
 	return nodepoolReq, nil
 }
