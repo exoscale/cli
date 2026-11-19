@@ -4,14 +4,14 @@
 
 ### Features
 
-- compute: add `--vpc`, `--vpc-subnet` and `--ip-forwarding` to `exo compute instance-pool create` and `exo compute instance-pool update`, show the VPC, its Subnets and IP forwarding in `exo compute instance-pool show`
+- compute: add `--vpc`, `--vpc-subnet` and `--ip-forwarding` to `exo compute instance-pool create` and `exo compute instance-pool update`, show the VPC, its Subnets and IP forwarding in `exo compute instance-pool show` (#972)
 - cmd: struct-based commands support `time.Duration` fields, as flags or positional arguments (e.g. `--expires 15m`)
 - cmd: struct-based commands support `time.Time` fields, as flags or positional arguments taking an RFC 3339 timestamp (e.g. `--since 2023-06-07T10:00:00+02:00`); an empty value leaves the zero time
 - cmd: struct-based commands can declare required positional arguments after a `[]string` one, which take the last arguments (e.g. `FILE... DESTINATION`); an optional argument or a second list after it is refused at startup
 
 ### Improvements
 
-- go.mod: bump egoscale to v3.1.64
+- go.mod: bump egoscale to v3.1.64 (#972)
 - split cmd package into two packages #956
 - compute: mark `exo compute private-network` and `exo compute instance private-network` commands as deprecated in their help, pointing to `exo networking vpc` (#951)
 - cmd: deprecated commands print a warning on stderr when run, `exo compute private-network` and `exo compute instance private-network` commands included (#959)
