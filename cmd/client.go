@@ -1,4 +1,3 @@
-// AI-modified by claude-opus-5-5 - not reviewed yet
 package cmd
 
 import (

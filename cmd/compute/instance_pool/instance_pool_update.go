@@ -1,4 +1,3 @@
-// AI-modified by claude-opus-5-5 - not reviewed yet
 package instance_pool
 
 import (
@@ -69,14 +68,8 @@ func (c *instancePoolUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
 	var updated bool
 
-	vpcChanged := cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.VPC))
-	vpcSubnetsChanged := cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.VPCSubnets))
-	// --vpc "" detaches the Instance Pool from its VPC
-	clearVPC := vpcChanged && c.VPC == "" && len(c.VPCSubnets) == 0
-	if (vpcChanged || vpcSubnetsChanged) && !clearVPC {
-		if err := validateVPCFlags(c.VPC, c.VPCSubnets); err != nil {
-			return err
-		}
+	if err := validateVPCFlags(c.VPC, c.VPCSubnets); err != nil {
+		return err
 	}
 
 	ctx := exocmd.GContext
@@ -267,20 +260,22 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if clearVPC {
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.VPC)) ||
+		cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.VPCSubnets)) {
+		// --vpc "" detaches the Instance Pool from its VPC
 		updateReq.Vpc = nil
-		updated = true
-	} else if vpcChanged || vpcSubnetsChanged {
-		vpcID, subnetIDs, err := resolveVPC(ctx, client, c.VPC, c.VPCSubnets)
-		if err != nil {
-			return err
-		}
-		updateReq.Vpc = &v3.UpdateInstancePoolRequestVpc{
-			ID:      vpcID,
-			Subnets: make([]v3.UpdateInstancePoolRequestVpcSubnets, len(subnetIDs)),
-		}
-		for i, id := range subnetIDs {
-			updateReq.Vpc.Subnets[i] = v3.UpdateInstancePoolRequestVpcSubnets{ID: id}
+		if c.VPC != "" {
+			vpcID, subnetIDs, err := resolveVPC(ctx, client, c.VPC, c.VPCSubnets)
+			if err != nil {
+				return err
+			}
+			updateReq.Vpc = &v3.UpdateInstancePoolRequestVpc{
+				ID:      vpcID,
+				Subnets: make([]v3.UpdateInstancePoolRequestVpcSubnets, len(subnetIDs)),
+			}
+			for i, id := range subnetIDs {
+				updateReq.Vpc.Subnets[i] = v3.UpdateInstancePoolRequestVpcSubnets{ID: id}
+			}
 		}
 		updated = true
 	}
