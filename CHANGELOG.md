@@ -11,59 +11,33 @@
 ### Features
 
 - compute: add `--vpc`, `--vpc-subnet` and `--ip-forwarding` to `exo compute instance-pool create` and `exo compute instance-pool update`, show the VPC, its Subnets and IP forwarding in `exo compute instance-pool show` (#972)
-- cmd: struct-based commands support `time.Duration` fields, as flags or positional arguments (e.g. `--expires 15m`)
-- cmd: struct-based commands support `time.Time` fields, as flags or positional arguments taking an RFC 3339 timestamp (e.g. `--since 2023-06-07T10:00:00+02:00`); an empty value leaves the zero time
-- cmd: struct-based commands can declare required positional arguments after a `[]string` one, which take the last arguments (e.g. `FILE... DESTINATION`); an optional argument or a second list after it is refused at startup
-- sks: add `--allowed-network` to `sks create`/`update` to restrict the API server to a list of IPv4 CIDRs, shown in `sks show`
-- sks: add `--template` to `sks nodepool update` to pin a Nodepool to a template (`--template ""` to follow the latest one again); `sks nodepool show` shows the template ID and selection
-- sks: add `--vpc`, `--vpc-subnet` and `--ip-forwarding` to `sks nodepool add`/`update` (`--nodepool-vpc`, `--nodepool-vpc-subnet` and `--nodepool-ip-forwarding` on `sks create`) to attach Nodepools to VPC Subnets (`--vpc ""` to detach them); `sks nodepool show` shows them
+- compute: add a `--label-selector` flag to `exo compute load-balancer service add` and `update`, to select backend instances by labels, and show the selector in `service show` (#946)
+- sks: add `--allowed-network` to `sks create`/`update` to restrict the API server to a list of IPv4 CIDRs, shown in `sks show` (#968)
+- sks: add `--template` to `sks nodepool update` to pin a Nodepool to a template (`--template ""` to follow the latest one again); `sks nodepool show` shows the template ID and selection (#968)
+- sks: add `--vpc`, `--vpc-subnet` and `--ip-forwarding` to `sks nodepool add`/`update` (`--nodepool-vpc`, `--nodepool-vpc-subnet` and `--nodepool-ip-forwarding` on `sks create`) to attach Nodepools to VPC Subnets (`--vpc ""` to detach them); `sks nodepool show` shows them (#973)
 
 ### Improvements
 
 - go.mod: bump egoscale to v3.1.64 (#972)
-- split cmd package into two packages #956
 - compute: mark `exo compute private-network` and `exo compute instance private-network` commands as deprecated in their help, pointing to `exo networking vpc` (#951)
 - cmd: deprecated commands print a warning on stderr when run, `exo compute private-network` and `exo compute instance private-network` commands included (#959)
-- storage: migrate `exo storage bucket replication` commands to the clicmd framework #962
-- storage: migrate `exo storage bucket versioning` to the clicmd framework #962
-- storage: migrate `exo storage bucket object-ownership` to the clicmd framework #962
-- storage: move `exo storage bucket lifecycle` from package storage to package bucket #962
-- storage: migrate `exo storage metadata` commands to the struct-based command framework #963
-- storage: migrate `exo storage show` command to the struct-based command framework #963
-- storage: migrate `exo storage rb` command to the struct-based command framework #963
-- storage: migrate `exo storage mb` command to the struct-based command framework #963
-- storage: migrate `exo storage purge` command to the struct-based command framework #963
-- storage: migrate `exo storage delete` command to the struct-based command framework #963
-- storage: migrate `exo storage download` command to the struct-based command framework #963
-- storage: migrate `exo storage headers` commands to the struct-based command framework #963
-- storage: migrate `exo storage setacl` command to the struct-based command framework #963
-- storage: migrate `exo storage upload` command to the struct-based command framework #963
-- storage: migrate `exo storage copy` command to the struct-based command framework #963
-- storage: migrate `exo storage list` command to the struct-based command framework #963
-- storage: migrate `exo storage cors` command to the struct-based command framework #963
-- dbaas: move `exo dbaas type` commands from package dbaas to their own package `cmd/dbaas/type` #965
-- dbaas: move `exo dbaas migration` commands from package dbaas to their own package `cmd/dbaas/migration` #965
-- dbaas: move `exo dbaas database` commands from package dbaas to their own package `cmd/dbaas/database` and the Database Service show logic to `cmd/dbaas/internal` #965
-- dbaas: move `exo dbaas read-replica` commands from package dbaas to their own package `cmd/dbaas/read-replica` #965
-- dbaas: move `exo dbaas external-integration` commands from package dbaas to their own package `cmd/dbaas/external-integration`, with `settings` in `cmd/dbaas/external-integration/settings` #965
-- dbaas: move `exo dbaas external-endpoint` commands from package dbaas to their own package `cmd/dbaas/external-endpoint` #965
-- dbaas: move `exo dbaas user` commands from package dbaas to their own package `cmd/dbaas/user` #965
-- dbaas: rework `exo dbaas` root group #965
-- dns: migrate `exo dns {create,delete,list,remove,show}` commands to the struct-based command framework #969
-- dns: migrate `exo dns add` commands to the struct-based command framework, in their own package `cmd/dns/add` #969
-- dns: move `exo dns update` commands from package dns to their own package `cmd/dns/update` #969
 
 ### Bug fixes
 
 - compute: `exo compute instance-pool update` waits for the update to complete, a following update or delete of the Instance Pool could otherwise hang (#972)
-- storage: `exo storage {delete,show,rb,mb,purge,download,setacl,upload,list,presign}` rejects an empty bucket name (`sos://`, `sos:///key`) with a usage error instead of querying the API or crashing #963
-- storage: `exo storage setacl` treats an empty canned ACL (`""`) as missing, instead of silently replacing the ACL with an owner-only one #963
-- storage: `exo storage list` rejects more than one argument with a usage error, instead of ignoring the extra ones and listing a bucket named `sos:` #963
-- storage: `exo storage list` names the flag when `--older-than-timestamp` or `--newer-than-timestamp` is not a valid timestamp #963
-- storage: `exo storage cors add` reports a missing `--allowed-origin`/`--allowed-method` as a usage error instead of querying the API #963
-- dbaas: `exo dbaas read-replica create` always failed with "--source-service is required", the flags were checked before being parsed #965
-- dbaas: `exo dbaas external-integration detach` alias is now `d` instead of `a`, which collided with `attach` #965
+- storage: `exo storage {delete,show,rb,mb,purge,download,setacl,upload,list,presign}` rejects an empty bucket name (`sos://`, `sos:///key`) with a usage error instead of querying the API or crashing (#963)
+- storage: `exo storage setacl` treats an empty canned ACL (`""`) as missing, instead of silently replacing the ACL with an owner-only one (#963)
+- storage: `exo storage list` rejects more than one argument with a usage error, instead of ignoring the extra ones and listing a bucket named `sos:` (#963)
+- storage: `exo storage list` names the flag when `--older-than-timestamp` or `--newer-than-timestamp` is not a valid timestamp (#963)
+- storage: `exo storage cors add` reports a missing `--allowed-origin`/`--allowed-method` as a usage error instead of querying the API (#963)
+- dbaas: `exo dbaas read-replica create` always failed with "--source-service is required", the flags were checked before being parsed (#965)
+- dbaas: `exo dbaas external-integration detach` alias is now `d` instead of `a`, which collided with `attach` (#965)
 
+### Internal
+
+- refactor: migrate the `exo storage` commands to the struct-based command framework and split them into `bucket` and `storage` packages (#956, #962, #963)
+- refactor: split the `exo dbaas` subcommands into per-command packages and rework the root command group (#956, #965)
+- refactor: migrate the `exo dns` commands to the struct-based command framework and split them into per-command packages (#969)
 
 ## 1.104.1
 
@@ -80,13 +54,14 @@
 
 ### Features
 
-- kms: add `exo kms crypto sign`, `exo kms crypto verify` and `exo kms key get-public-key`, and a `--key-spec` flag on `exo kms key create` to create asymmetric keys
-- kms: add `--encryption-algorithm` to `exo kms crypto encrypt` and `decrypt`, and `--source-encryption-algorithm` and `--dest-encryption-algorithm` to `reencrypt`, to use RSA keys
-- kms: show the key spec in `exo kms key show` and `exo kms key list`
-- compute: add a `--label-selector` flag to `exo compute load-balancer service add` and `update`, to select backend instances by labels, and show the selector in `service show` (#946)
+- kms: add `exo kms crypto sign`, `exo kms crypto verify` and `exo kms key get-public-key`, and a `--key-spec` flag on `exo kms key create` to create asymmetric keys (#928)
+- kms: add `--encryption-algorithm` to `exo kms crypto encrypt` and `decrypt`, and `--source-encryption-algorithm` and `--dest-encryption-algorithm` to `reencrypt`, to use RSA keys (#928)
+- kms: show the key spec in `exo kms key show` and `exo kms key list` (#928)
+- kms: add `exo kms keystore` create/show/update/connect/disconnect/list/delete commands to manage external key stores (#929)
 - dbaas: add `exo dbaas acl list` for Kafka and OpenSearch, `exo dbaas acl create` and `delete` for Kafka, and Kafka and OpenSearch support in `exo dbaas acl show` (#923)
-- compute: add `--vpc` and `--vpc-subnet` to `exo compute instance create` to attach an instance to VPC Subnets at creation (#927)
-- api: add `exo api create-dbaas-mysql-upgrade-check` to run a MySQL service upgrade compatibility check
+- compute: add `--vpc` and `--vpc-subnet` to `exo compute instance create` to attach an instance to VPC Subnets at creation (#947)
+- api: add `exo api create-dbaas-mysql-upgrade-check` to run a MySQL service upgrade compatibility check (#954)
+- api: add `exo api list-sks-nodepool-templates` to list the available SKS Nodepool Templates (#954)
 - deps: bump egoscale v3 to v3.1.63 to use the new `CreateDBAASMysqlUpgradeCheck` client
 
 ### Bug fixes
@@ -97,6 +72,7 @@
 ### Improvements
 - cmd: commands can take binary arguments and flags given as base64, as `file://<path>` (file holding base64) or as `fileb://<path>` (raw binary file)
 - kms: `exo kms crypto` commands accept `file://<path>` and `fileb://<path>` for plaintext, ciphertext, message, signature and encryption context values (#942)
+- dbaas: `exo dbaas update --thanos-settings` now validates the settings against the settings schema returned by the API, and reports unknown or invalid fields as `invalid settings` errors instead of silently dropping them (#941)
 
 ## 1.103.2
 
@@ -134,7 +110,6 @@
 
 ### Features
 
-- kms: add `exo kms keystore` create/show/update/connect/disconnect/list/delete commands to manage external key stores
 - update exo x
 
 ### Bug fixes
@@ -144,6 +119,7 @@
 - dbaas: fix `dbaas update` crashing on the `--opensearch-dashboard-*` and `--opensearch-index-template-*` flags, and `--opensearch-dashboard-max-old-space-size` being ignored on `dbaas create` and `dbaas update` (#921)
 - storage: `headers add/delete`, `metadata add/delete`, `copy` and `move` no longer report a 404 on an existing object whose key contains `+` or a percent-encoded sequence such as `%26` (#922)
 - storage: `download -r` now skips objects whose name would be written outside of the destination folder once the prefix is stripped (e.g. `public/../file` downloaded from `public/`) (#920)
+- instance: `instance list` exits with a non-zero status when some zonal requests fail, instead of reporting incomplete results as a success (#927)
 
 ### Improvements
 
