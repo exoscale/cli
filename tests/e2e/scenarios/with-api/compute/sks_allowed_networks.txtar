@@ -1,0 +1,21 @@
+# SKS cluster API server allowlist: create with --allowed-network, keep it on
+# unrelated updates, replace it, then allow everything again.
+# Every command passes -z $TEST_ZONE: the CLI does not read EXO_ZONE.
+
+exec exo --output-format json compute sks create $TEST_RUN_ID-sks-allowlist -z $TEST_ZONE --service-level starter --allowed-network 10.0.0.0/8 --allowed-network 192.168.0.0/16
+defer exo compute sks delete --force -z $TEST_ZONE $TEST_RUN_ID-sks-allowlist
+stdout '"allowed_networks":\["10.0.0.0/8","192.168.0.0/16"\]'
+
+exec exo --output-format json compute sks show -z $TEST_ZONE $TEST_RUN_ID-sks-allowlist
+stdout '"allowed_networks":\["10.0.0.0/8","192.168.0.0/16"\]'
+
+# An update without --allowed-network leaves the list untouched
+exec exo --output-format json compute sks update -z $TEST_ZONE $TEST_RUN_ID-sks-allowlist --description 'cli e2e'
+stdout '"allowed_networks":\["10.0.0.0/8","192.168.0.0/16"\]'
+
+# --allowed-network replaces the whole list
+exec exo --output-format json compute sks update -z $TEST_ZONE $TEST_RUN_ID-sks-allowlist --allowed-network 203.0.113.0/24
+stdout '"allowed_networks":\["203.0.113.0/24"\]'
+
+exec exo --output-format json compute sks update -z $TEST_ZONE $TEST_RUN_ID-sks-allowlist --allowed-network 0.0.0.0/0
+stdout '"allowed_networks":\["0.0.0.0/0"\]'

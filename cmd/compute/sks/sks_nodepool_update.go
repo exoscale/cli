@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -35,6 +36,7 @@ type sksNodepoolUpdateCmd struct {
 	PrivateNetworks    []string    `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
 	SecurityGroups     []string    `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	Taints             []string    `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
+	Template           string      `cli-usage:"pin the Nodepool to a template NAME|ID of its Kubernetes version, empty to follow the latest template again"`
 	Zone               v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 	IPv6               bool        `cli-flag:"ipv6" cli-usage:"Enable public IPv6 assignment to Nodepool nodes"`
 	KubeletMaxPods     int64       `cli-flag:"kubelet-max-pods" cli-usage:"maximum number of pods that can run on a node"`
@@ -221,6 +223,17 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 			profiles = &v3.NvidiaMigProfiles{}
 		}
 		updateReq.NvidiaMigProfiles = profiles
+		updated = true
+	}
+
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.Template)) {
+		updateReq.Template = &v3.TemplateRef{}
+		if c.Template != "" {
+			updateReq.Template.ID, err = compute.ResolveTemplateID(ctx, client, c.Template, "public", c.Zone)
+			if err != nil {
+				return err
+			}
+		}
 		updated = true
 	}
 

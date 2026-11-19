@@ -34,6 +34,7 @@ type sksCreateCmd struct {
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
+	AllowedNetworks              []string          `cli-flag:"allowed-network" cli-usage:"IPv4 CIDR allowed to reach the SKS cluster API server (can be specified multiple times, default: 0.0.0.0/0)"`
 	AutoUpgrade                  bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version"`
 	CNI                          string            `cli-usage:"CNI plugin to deploy. e.g. 'calico', or 'cilium'"`
 	Description                  string            `cli-usage:"SKS cluster description"`
@@ -144,6 +145,11 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 	}
 	if c.NoCNI {
 		clusterReq.Cni = ""
+	}
+
+	if len(c.AllowedNetworks) > 0 {
+		allowedNetworks := v3.SKSClusterAllowedNetworks(c.AllowedNetworks)
+		clusterReq.AllowedNetworks = &allowedNetworks
 	}
 
 	if c.EnableKarpenterAddon && c.NoExoscaleCCM {

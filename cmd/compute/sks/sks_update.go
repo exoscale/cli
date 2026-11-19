@@ -24,6 +24,7 @@ type sksUpdateCmd struct {
 	Cluster string      `cli-arg:"#" cli-usage:"NAME|ID"`
 	Zone    v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
 
+	AllowedNetworks       []string          `cli-flag:"allowed-network" cli-usage:"IPv4 CIDR allowed to reach the SKS cluster API server, replaces the current list (can be specified multiple times, 0.0.0.0/0 to allow all)"`
 	AutoUpgrade           bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version(--auto-upgrade=false to disable again)"`
 	Description           string            `cli-usage:"SKS cluster description"`
 	FeatureGates          []string          `cli-flag:"feature-gates" cli-usage:"SKS cluster feature gates to enable"`
@@ -83,6 +84,12 @@ func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
 	updateReq := v3.UpdateSKSClusterRequest{
 		Oidc: cluster.Oidc,
+	}
+
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AllowedNetworks)) {
+		allowedNetworks := v3.SKSClusterAllowedNetworks(c.AllowedNetworks)
+		updateReq.AllowedNetworks = &allowedNetworks
+		updated = true
 	}
 
 	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AutoUpgrade)) {
