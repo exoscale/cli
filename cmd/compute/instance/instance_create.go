@@ -1,3 +1,4 @@
+// AI-modified by claude-opus-5-5 - not reviewed yet
 package instance
 
 import (
@@ -91,7 +92,7 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 		singleUseSSHPublicKey  ssh.PublicKey
 	)
 
-	if err := validateVPCFlags(c.VPC, c.VPCSubnets); err != nil {
+	if err := vpc.ValidateAttachFlags(c.VPC, len(c.VPCSubnets)); err != nil {
 		return err
 	}
 
@@ -415,16 +416,6 @@ func resolveCreateInstanceVPC(
 	}
 
 	return req, nil
-}
-
-func validateVPCFlags(vpcNameOrID string, subnetSpecs []vpcSubnetSpec) error {
-	if vpcNameOrID == "" && len(subnetSpecs) > 0 {
-		return fmt.Errorf("--vpc is required when --vpc-subnet is specified")
-	}
-	if vpcNameOrID != "" && len(subnetSpecs) == 0 {
-		return fmt.Errorf("at least one --vpc-subnet is required when --vpc is specified")
-	}
-	return nil
 }
 
 // vpcSubnetSpec is one --vpc-subnet value: NAME|ID[,ipv4=IP].

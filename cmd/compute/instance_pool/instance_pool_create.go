@@ -1,3 +1,4 @@
+// AI-modified by claude-opus-5-5 - not reviewed yet
 package instance_pool
 
 import (
@@ -10,6 +11,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/compute"
+	"github.com/exoscale/cli/cmd/networking/vpc"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -69,7 +71,7 @@ func (c *instancePoolCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
-	if err := validateVPCFlags(c.VPC, c.VPCSubnets); err != nil {
+	if err := vpc.ValidateAttachFlags(c.VPC, len(c.VPCSubnets)); err != nil {
 		return err
 	}
 

@@ -10,17 +10,6 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-// validateVPCFlags checks that --vpc and --vpc-subnet are used together.
-func validateVPCFlags(vpcNameOrID string, subnets []string) error {
-	if vpcNameOrID == "" && len(subnets) > 0 {
-		return fmt.Errorf("--vpc is required when --vpc-subnet is specified")
-	}
-	if vpcNameOrID != "" && len(subnets) == 0 {
-		return fmt.Errorf("at least one --vpc-subnet is required when --vpc is specified")
-	}
-	return nil
-}
-
 // resolveVPC resolves a VPC NAME|ID and a list of Subnet NAME|IDs to their IDs.
 func resolveVPC(
 	ctx context.Context,
