@@ -27,6 +27,13 @@ jobs:
   test-e2e-with-api:
     name: Run E2E (Testscript) Tests / With API / ${{ matrix.suite }}
     runs-on: ubuntu-latest
+    # One run per suite at a time across the whole repository: the suites share
+    # the account's resource quotas, so two compute (or dbaas...) runs from
+    # different PRs must not overlap. Different suites still run in parallel.
+    concurrency:
+      group: e2e-with-api-${{ matrix.suite }}
+      cancel-in-progress: false
+      queue: max # prevent new suite test to cancel old one.
     strategy:
       fail-fast: false
       matrix:
