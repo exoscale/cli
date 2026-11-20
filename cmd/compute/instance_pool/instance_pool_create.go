@@ -1,3 +1,4 @@
+// AI-modified by claude-opus-5.5 - not reviewed yet
 package instance_pool
 
 import (
@@ -66,14 +67,18 @@ func (c *instancePoolCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 
 	clicmd.CmdSetZoneFlagFromDefault(cmd)
 	clicmd.CmdSetTemplateFlagFromDefault(cmd)
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
-}
-
-func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
-	if err := vpc.ValidateAttachFlags(c.VPC, len(c.VPCSubnets)); err != nil {
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
 		return err
 	}
 
+	if err := vpc.ValidateAttachFlags(c.VPC, len(c.VPCSubnets)); err != nil {
+		clicmd.CmdExitOnUsageError(cmd, err.Error())
+	}
+
+	return nil
+}
+
+func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
