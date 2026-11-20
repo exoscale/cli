@@ -1,3 +1,4 @@
+# AI-modified by claude-opus-5.5 - not reviewed yet
 # Test: exo compute instance-pool create/update/show support --vpc,
 # --vpc-subnet and --ip-forwarding.
 # Creates a VPC with two Subnets, then an Instance Pool attached at creation
@@ -5,8 +6,9 @@
 # unrelated update keeps the VPC, toggles IP forwarding and detaches the VPC.
 # TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
 
-# Setup: VPC + two Subnets
-exec exo --zone $TEST_ZONE --output-format json networking vpc create vpc-$TEST_RUN_ID
+# Setup: VPC + two Subnets. The VPC name differs from instance_create_vpc's,
+# which runs in parallel in the same run.
+exec exo --zone $TEST_ZONE --output-format json networking vpc create vpc-pool-$TEST_RUN_ID
 json-setenv VPC_ID id stdout
 defer exo --zone $TEST_ZONE networking vpc delete --force $VPC_ID
 
@@ -19,11 +21,11 @@ json-setenv BACK_ID id stdout
 defer exo --zone $TEST_ZONE networking vpc subnet delete --force $VPC_ID $BACK_ID
 
 # Unknown Subnets are rejected
-! exec exo --zone $TEST_ZONE compute instance-pool create pool-err-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10 --vpc vpc-$TEST_RUN_ID --vpc-subnet nope
+! exec exo --zone $TEST_ZONE compute instance-pool create pool-err-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10 --vpc vpc-pool-$TEST_RUN_ID --vpc-subnet nope
 stderr 'subnet "nope" not found'
 
 # Instance Pool attached to a VPC Subnet, VPC and Subnet referenced by name
-exec exo --zone $TEST_ZONE --output-format json compute instance-pool create pool-$TEST_RUN_ID --size 1 --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10 --vpc vpc-$TEST_RUN_ID --vpc-subnet front-$TEST_RUN_ID --ip-forwarding
+exec exo --zone $TEST_ZONE --output-format json compute instance-pool create pool-$TEST_RUN_ID --size 1 --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10 --vpc vpc-pool-$TEST_RUN_ID --vpc-subnet front-$TEST_RUN_ID --ip-forwarding
 json-setenv POOL_ID id stdout
 defer exo --zone $TEST_ZONE compute instance-pool delete --force $POOL_ID
 stdout '"vpc":"vpc-[a-z0-9-]+"'
