@@ -47,7 +47,7 @@ $(OAS_FILE):
 x-cmd: $(OAS_FILE) ## Generates code for "exo x" experimental subcommands
 	@if [ ! -f "$(shell go env GOPATH)/bin/openapi-cli-generator" ]; then
 		echo "openapi-cli-generator tool not found, downloading"
-		go install github.com/exoscale/openapi-cli-generator@latest
+		go install github.com/exoscale/openapi-cli-generator@v1.3.0
 	fi
 	wget -q https://api-ch-gva-2.exoscale.com/v2/openapi.json
 	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go $(OAS_FILE)
