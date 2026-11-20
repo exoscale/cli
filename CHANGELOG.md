@@ -43,6 +43,7 @@
 
 ### Bug fixes
 
+- compute: `exo compute instance-pool update` waits for the update to complete, a following update or delete of the Instance Pool could otherwise hang (#972)
 - storage: `exo storage {delete,show,rb,mb,purge,download,setacl,upload,list,presign}` rejects an empty bucket name (`sos://`, `sos:///key`) with a usage error instead of querying the API or crashing #963
 - storage: `exo storage setacl` treats an empty canned ACL (`""`) as missing, instead of silently replacing the ACL with an owner-only one #963
 - storage: `exo storage list` rejects more than one argument with a usage error, instead of ignoring the extra ones and listing a bucket named `sos:` #963

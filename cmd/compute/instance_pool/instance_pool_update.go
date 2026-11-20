@@ -1,3 +1,4 @@
+// AI-modified by claude-opus-5.5 - not reviewed yet
 package instance_pool
 
 import (
@@ -327,9 +328,12 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 	}
 
 	if updated {
+		op, err := client.UpdateInstancePool(ctx, instancePool.ID, updateReq)
+		if err != nil {
+			return err
+		}
 		utils.DecorateAsyncOperation(fmt.Sprintf("Updating Instance Pool %q...", c.InstancePool), func() {
-			_, updateErr := client.UpdateInstancePool(ctx, instancePool.ID, updateReq)
-			err = updateErr
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 		if err != nil {
 			return err
