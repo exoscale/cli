@@ -1,4 +1,3 @@
-# AI-modified by claude-opus-5.5 - not reviewed yet
 # Test: compute instance-pool create/update expose the VPC flags and reject
 # invalid --vpc/--vpc-subnet combinations before any API call.
 # The config is passed with --config: XDG_CONFIG_HOME is ignored on macOS.

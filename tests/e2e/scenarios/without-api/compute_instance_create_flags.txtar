@@ -1,4 +1,3 @@
-# AI-modified by claude-opus-5.5 - not reviewed yet
 # Test: compute instance create --help shows the reverse DNS and VPC flags,
 # and invalid --vpc/--vpc-subnet combinations are rejected before any API call.
 # The config is passed with --config: XDG_CONFIG_HOME is ignored on macOS.
