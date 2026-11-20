@@ -1,0 +1,92 @@
+# Test: dns help, argument and flag checks (no API call)
+
+exec exo dns --help
+stdout 'create'
+stdout 'delete'
+stdout 'list'
+stdout 'remove'
+stdout 'show'
+stdout 'add'
+stdout 'update'
+
+# Domain commands: required positional arguments
+! exec exo dns create
+stderr 'missing arguments'
+! exec exo dns delete
+stderr 'missing arguments'
+! exec exo dns remove example.net
+stderr 'missing arguments'
+! exec exo dns show
+stderr 'show expects one DNS domain by name or id'
+
+exec exo dns list --help
+stdout 'list \[FILTER\]\.\.\.'
+stdout 'Supported output template annotations: \.ID, \.Name$'
+
+exec exo dns show --help
+stdout 'show DOMAIN-NAME\|ID \[RECORD-TYPE\]\.\.\.'
+stdout '-n, --name string'
+
+exec exo dns delete --help
+stdout '-f, --force'
+
+# add: one subcommand per record type, with a 3600s default TTL
+exec exo dns add --help
+stdout 'AAAA'
+stdout 'SSHFP'
+stdout 'URL'
+
+exec exo dns add A --help
+stdout 'A DOMAIN \[flags\]'
+stdout '-a, --address string'
+stdout '-t, --ttl int .*\(default 3600\)'
+
+exec exo dns add NAPTR --help
+stdout '--s  '
+stdout '--replacement string'
+
+exec exo dns add SRV --help
+stdout '-P, --port string'
+stdout '--priority int'
+
+# add: domain and required flags are checked before any API call
+! exec exo dns add A
+stderr 'invalid arguments'
+! exec exo dns add A example.net
+stderr 'no value specified for flag "address"'
+! exec exo dns add CNAME example.net
+stderr 'no value specified for flag "alias"'
+stderr 'no value specified for flag "name"'
+! exec exo dns add MX example.net -m mail.example.net
+stderr 'no value specified for flag "priority"'
+! exec exo dns add SRV example.net -s sip
+stderr '5 errors occurred'
+stderr 'no value specified for flag "target"'
+
+# add CAA: --tag is "KEY,VALUE", --flag is between 0 and 255
+! exec exo dns add CAA example.net --tag issue
+stderr 'flag error: --tag format is "KEY,VALUE"'
+! exec exo dns add CAA example.net --flag 256 --tag issue,letsencrypt.org
+stderr 'flag error: --flag must be between 0 and 255'
+
+# update: one subcommand per record type, sharing the same flags
+exec exo dns update --help
+stdout 'SPF'
+stdout 'TXT'
+
+exec exo dns update MX --help
+stdout 'Update MX record type to a domain'
+stdout 'MX DOMAIN-NAME\|ID RECORD-NAME\|ID \[flags\]'
+stdout '-c, --content string'
+stdout '-n, --name string'
+stdout '-p, --priority int'
+stdout '-t, --ttl int'
+
+-- .config/exoscale/exoscale.toml --
+defaultaccount = "test"
+
+[[accounts]]
+name = "test"
+key = "EXO000000000000000000"
+secret = "dummy-secret-for-help-test"
+defaultZone = "ch-gva-2"

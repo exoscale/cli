@@ -1,4 +1,4 @@
-package dns
+package update
 
 import (
 	"fmt"
@@ -73,7 +73,7 @@ func init() {
 					priority = &t
 				}
 
-				return updateDomainRecord(args[0], args[1], recordType, name, content, ttl, priority)
+				return updateDomainRecord(args[0], args[1], name, content, ttl, priority)
 			},
 		}
 
@@ -82,13 +82,12 @@ func init() {
 		cmdUpdateRecord.Flags().Int64P("ttl", "t", 0, "Update ttl")
 		cmdUpdateRecord.Flags().Int64P("priority", "p", 0, "Update priority")
 
-		dnsUpdateCmd.AddCommand(cmdUpdateRecord)
+		Cmd.AddCommand(cmdUpdateRecord)
 	}
 }
 
 func updateDomainRecord(
 	domainIdent, recordIdent string,
-	recordType v3.DNSDomainRecordType,
 	name, content *string,
 	ttl, priority *int64,
 ) error {

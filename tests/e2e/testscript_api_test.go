@@ -40,6 +40,12 @@ func TestScriptsAPIDBaaS(t *testing.T) {
 	runAPITestSuite(t, "scenarios/with-api/dbaas")
 }
 
+// TestScriptsAPIDNS runs API e2e scenarios under scenarios/with-api/dns/.
+// Run with: go test -v -tags=api -timeout 10m -run TestScriptsAPIDNS
+func TestScriptsAPIDNS(t *testing.T) {
+	runAPITestSuite(t, "scenarios/with-api/dns")
+}
+
 // TestScriptsAPIAIService runs API e2e scenarios under scenarios/with-api/aiservices/.
 // Run with: go test -v -tags=api -timeout 10m -run TestScriptsAPIAIService
 func TestScriptsAPIAIService(t *testing.T) {

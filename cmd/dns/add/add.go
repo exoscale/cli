@@ -1,4 +1,4 @@
-package dns
+package add
 
 import (
 	"errors"
@@ -13,17 +13,14 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-var dnsAddCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add record to domain",
 }
 
-func init() {
-	dnsCmd.AddCommand(dnsAddCmd)
-}
-
+// addDomainRecord creates a record of type rType in the DNS domain
+// domainIdent (name or ID). A nil priority leaves it unset.
 func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priority *int64) error {
-
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {

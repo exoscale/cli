@@ -13,33 +13,32 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func init() {
-	dnsCmd.AddCommand(&cobra.Command{
-		Use:     "create DOMAIN-NAME",
-		Short:   "Create a domain",
-		Aliases: clicmd.GCreateAlias,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 1 {
-				return cmd.Usage()
-			}
+type dnsCreateCmd struct {
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
-			return createDomain(args[0])
-		},
-	})
+	_ bool `cli-cmd:"create"`
+
+	DomainName string `cli-arg:"#" cli-usage:"DOMAIN-NAME"`
 }
 
-func createDomain(domainName string) error {
-	var err error
+func (c *dnsCreateCmd) CmdAliases() []string { return clicmd.GCreateAlias }
+func (c *dnsCreateCmd) CmdShort() string     { return "Create a domain" }
+func (c *dnsCreateCmd) CmdLong() string      { return "" }
 
+func (c *dnsCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *dnsCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
 
-	utils.DecorateAsyncOperation(fmt.Sprintf("Creating DNS domain %q...", domainName), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating DNS domain %q...", c.DomainName), func() {
 		_, err = client.CreateDNSDomain(ctx, v3.CreateDNSDomainRequest{
-			UnicodeName: domainName,
+			UnicodeName: c.DomainName,
 		})
 	})
 	if err != nil {
@@ -47,8 +46,14 @@ func createDomain(domainName string) error {
 	}
 
 	if !globalstate.Quiet {
-		fmt.Printf("Domain %q was created successfully\n", domainName)
+		fmt.Printf("Domain %q was created successfully\n", c.DomainName)
 	}
 
 	return nil
+}
+
+func init() {
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dnsCreateCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
+	}))
 }

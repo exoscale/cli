@@ -7,8 +7,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/utils"
-
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/clicmd"
@@ -43,38 +41,43 @@ func (o *dnsListOutput) ToTable() {
 	t.Render()
 }
 
-func init() {
-	dnsCmd.AddCommand(&cobra.Command{
-		Use:   "list [FILTER]...",
-		Short: "List domains",
-		Long: fmt.Sprintf(`This command lists existing DNS Domains.
+type dnsListCmd struct {
+	clicmd.CliCommandSettings `cli-cmd:"-"`
+
+	_ bool `cli-cmd:"list"`
+
+	Filters []string `cli-arg:"?" cli-usage:"FILTER"`
+}
+
+func (c *dnsListCmd) CmdAliases() []string { return clicmd.GListAlias }
+func (c *dnsListCmd) CmdShort() string     { return "List domains" }
+func (c *dnsListCmd) CmdLong() string {
+	return fmt.Sprintf(`This command lists existing DNS Domains.
 Optional patterns can be provided to filter results by ID, or name.
 
 Supported output template annotations: %s`,
-			strings.Join(output.TemplateAnnotations(&dnsListOutput{}), ", ")),
-		Aliases: clicmd.GListAlias,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return utils.PrintOutput(listDomains(args))
-		},
-	})
+		strings.Join(output.TemplateAnnotations(&dnsListOutput{}), ", "))
 }
 
-func listDomains(filters []string) (output.Outputter, error) {
+func (c *dnsListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *dnsListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	domainsList, err := client.ListDNSDomains(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	domains := domainsList.DNSDomains
 
 	out := dnsListOutput{}
 
-	for _, d := range domains {
+	for _, d := range domainsList.DNSDomains {
 		o := dnsListItemOutput{
 			ID: func() string {
 				if d.ID == "" {
@@ -90,14 +93,14 @@ func listDomains(filters []string) (output.Outputter, error) {
 			}(),
 		}
 
-		if len(filters) == 0 {
+		if len(c.Filters) == 0 {
 			out = append(out, o)
 			continue
 		}
 
 		s := strings.ToLower(fmt.Sprintf("%s#%s", o.ID, o.Name))
 
-		for _, filter := range filters {
+		for _, filter := range c.Filters {
 			substr := strings.ToLower(filter)
 			if strings.Contains(s, substr) {
 				out = append(out, o)
@@ -106,5 +109,11 @@ func listDomains(filters []string) (output.Outputter, error) {
 		}
 	}
 
-	return &out, nil
+	return c.OutputFunc(&out, nil)
+}
+
+func init() {
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dnsListCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
+	}))
 }
