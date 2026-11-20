@@ -38,6 +38,9 @@ type sksNodepoolUpdateCmd struct {
 	SecurityGroups     []string    `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	Taints             []string    `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
 	Template           string      `cli-usage:"pin the Nodepool to a template NAME|ID of its Kubernetes version, empty to follow the latest template again"`
+	VPC                string      `cli-flag:"vpc" cli-usage:"VPC NAME|ID to attach the Nodepool instances to (requires --vpc-subnet), empty to detach them"`
+	VPCSubnets         []string    `cli-flag:"vpc-subnet" cli-usage:"VPC Subnet NAME|ID to attach the Nodepool instances to (can be specified multiple times)"`
+	IPForwarding       bool        `cli-flag:"ip-forwarding" cli-usage:"allow the Nodepool instances to act as routers in their VPC (IP forwarding), only applies to new instances (--ip-forwarding=false to disable)"`
 	Zone               v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 	IPv6               bool        `cli-flag:"ipv6" cli-usage:"Enable public IPv6 assignment to Nodepool nodes"`
 	KubeletMaxPods     int64       `cli-flag:"kubelet-max-pods" cli-usage:"maximum number of pods that can run on a node"`
@@ -57,7 +60,10 @@ Supported output template annotations: %s`,
 
 func (c *sksNodepoolUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	clicmd.CmdSetZoneFlagFromDefault(cmd)
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
+	return validateVPCFlags("vpc", "vpc-subnet", c.VPC, c.VPCSubnets)
 }
 
 func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
@@ -235,6 +241,23 @@ func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //
 				return err
 			}
 		}
+		updated = true
+	}
+
+	// A null VPC detaches the Nodepool from it, so keep the current one unless
+	// --vpc is given.
+	updateReq.Vpc = (*v3.UpdateSKSNodepoolRequestVpc)(nodepool.Vpc)
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.VPC)) {
+		ref, err := lookupVPC(ctx, client, c.VPC, c.VPCSubnets)
+		if err != nil {
+			return err
+		}
+		updateReq.Vpc = (*v3.UpdateSKSNodepoolRequestVpc)(ref)
+		updated = true
+	}
+
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.IPForwarding)) {
+		updateReq.IPForwarding = &c.IPForwarding
 		updated = true
 	}
 

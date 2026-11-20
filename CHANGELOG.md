@@ -10,6 +10,7 @@
 - cmd: struct-based commands can declare required positional arguments after a `[]string` one, which take the last arguments (e.g. `FILE... DESTINATION`); an optional argument or a second list after it is refused at startup
 - sks: add `--allowed-network` to `sks create`/`update` to restrict the API server to a list of IPv4 CIDRs, shown in `sks show`
 - sks: add `--template` to `sks nodepool update` to pin a Nodepool to a template (`--template ""` to follow the latest one again); `sks nodepool show` shows the template ID and selection
+- sks: add `--vpc`, `--vpc-subnet` and `--ip-forwarding` to `sks nodepool add`/`update` (`--nodepool-vpc`, `--nodepool-vpc-subnet` and `--nodepool-ip-forwarding` on `sks create`) to attach Nodepools to VPC Subnets (`--vpc ""` to detach them); `sks nodepool show` shows them
 
 ### Improvements
 

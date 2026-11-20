@@ -15971,6 +15971,8 @@ type CreateSKSNodepoolRequest struct {
 	InstancePrefix string `json:"instance-prefix,omitempty" validate:"omitempty,gte=1,lte=30"`
 	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type" validate:"required"`
+	// Allow the Instances to act as routers in their VPC (IP forwarding). Only applies to new Instances
+	IPForwarding *bool `json:"ip-forwarding,omitempty"`
 	// Resources reserved for kube or system components.
 	KubeReserved *ReservedResources `json:"kube-reserved"`
 	// Kubelet image GC options
@@ -15999,6 +16001,8 @@ type CreateSKSNodepoolRequest struct {
 	Taints         SKSNodepoolTaints  `json:"taints,omitempty"`
 	// Template reference
 	Template *TemplateRef `json:"template,omitempty"`
+	// VPC
+	Vpc *VpcRef `json:"vpc,omitempty"`
 }
 
 // Create a new SKS Nodepool
@@ -16123,6 +16127,14 @@ const (
 	UpdateSKSNodepoolRequestPublicIPAssignmentDual  UpdateSKSNodepoolRequestPublicIPAssignment = "dual"
 )
 
+// Nodepool VPC: the Instances are attached to the given Subnets of the VPC, or none (`null` or `{}`) to detach them
+type UpdateSKSNodepoolRequestVpc struct {
+	// VPC ID, required with `subnets`
+	ID UUID `json:"id,omitempty"`
+	// VPC Subnets to attach the Instances to, required with `id`
+	Subnets []VpcSubnetRef `json:"subnets,omitempty"`
+}
+
 type UpdateSKSNodepoolRequest struct {
 	// Nodepool Anti-affinity Groups
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
@@ -16138,6 +16150,8 @@ type UpdateSKSNodepoolRequest struct {
 	InstancePrefix string `json:"instance-prefix,omitempty" validate:"omitempty,gte=1,lte=30"`
 	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
+	// Allow the Instances to act as routers in their VPC (IP forwarding). Only applies to new Instances
+	IPForwarding *bool `json:"ip-forwarding,omitempty"`
 	// Resources reserved for kube or system components.
 	KubeReserved *ReservedResources `json:"kube-reserved"`
 	// Kubelet image GC options
@@ -16164,6 +16178,8 @@ type UpdateSKSNodepoolRequest struct {
 	Taints         SKSNodepoolTaints  `json:"taints,omitempty"`
 	// Template reference
 	Template *TemplateRef `json:"template,omitempty"`
+	// Nodepool VPC: the Instances are attached to the given Subnets of the VPC, or none (`null` or `{}`) to detach them
+	Vpc *UpdateSKSNodepoolRequestVpc `json:"vpc"`
 }
 
 // Update an SKS Nodepool

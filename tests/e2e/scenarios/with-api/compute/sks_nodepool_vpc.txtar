@@ -1,0 +1,40 @@
+# SKS Nodepool VPC: a Nodepool attached to a VPC Subnet with IP forwarding at
+# cluster creation (VPC and Subnet by name), kept across updates, detached
+# with --vpc "", and a Nodepool added with the VPC and Subnet by ID.
+# Every command passes -z $TEST_ZONE: the CLI does not read EXO_ZONE.
+
+# Setup: VPC + Subnet
+exec exo --zone $TEST_ZONE --output-format json networking vpc create vpc-sks-$TEST_RUN_ID
+json-setenv VPC_ID id stdout
+defer exo --zone $TEST_ZONE networking vpc delete --force $VPC_ID
+
+exec exo --zone $TEST_ZONE --output-format json networking vpc subnet create $VPC_ID front-$TEST_RUN_ID --ipv4-block 10.42.0.0/24 --address-family inet4 --address-space private
+json-setenv SUBNET_ID id stdout
+defer exo --zone $TEST_ZONE networking vpc subnet delete --force $VPC_ID $SUBNET_ID
+
+exec exo --output-format json compute sks create $TEST_RUN_ID-sks-vpc -z $TEST_ZONE --service-level starter --nodepool-size 1 --nodepool-name $TEST_RUN_ID-np --nodepool-instance-type standard.small --nodepool-vpc vpc-sks-$TEST_RUN_ID --nodepool-vpc-subnet front-$TEST_RUN_ID --nodepool-ip-forwarding
+defer exo compute sks delete --force --nodepools -z $TEST_ZONE $TEST_RUN_ID-sks-vpc
+
+exec exo --output-format json compute sks nodepool show -z $TEST_ZONE $TEST_RUN_ID-sks-vpc $TEST_RUN_ID-np
+stdout '"vpc":"vpc-sks-'$TEST_RUN_ID'"'
+stdout '"vpc_subnets":\["front-'$TEST_RUN_ID'"\]'
+stdout '"ip_forwarding":true'
+
+# An update without --vpc keeps the VPC
+exec exo --output-format json compute sks nodepool update -z $TEST_ZONE $TEST_RUN_ID-sks-vpc $TEST_RUN_ID-np --description 'cli e2e'
+stdout '"vpc":"vpc-sks-'$TEST_RUN_ID'"'
+stdout '"vpc_subnets":\["front-'$TEST_RUN_ID'"\]'
+
+# Detach from the VPC and disable IP forwarding
+exec exo --output-format json compute sks nodepool update -z $TEST_ZONE $TEST_RUN_ID-sks-vpc $TEST_RUN_ID-np --vpc '' --ip-forwarding=false
+stdout '"vpc":""'
+stdout '"vpc_subnets":\[\]'
+stdout '"ip_forwarding":false'
+
+exec exo --output-format json compute sks nodepool add -z $TEST_ZONE $TEST_RUN_ID-sks-vpc $TEST_RUN_ID-np2 --size 1 --instance-type standard.small --vpc $VPC_ID --vpc-subnet $SUBNET_ID
+stdout '"vpc":"vpc-sks-'$TEST_RUN_ID'"'
+stdout '"vpc_subnets":\["front-'$TEST_RUN_ID'"\]'
+stdout '"ip_forwarding":false'
+
+! exec exo compute sks nodepool update -z $TEST_ZONE $TEST_RUN_ID-sks-vpc $TEST_RUN_ID-np2 --vpc $VPC_ID --vpc-subnet no-such-subnet-$TEST_RUN_ID
+stderr 'subnet "no-such-subnet-'$TEST_RUN_ID'" not found'

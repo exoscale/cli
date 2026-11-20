@@ -12,7 +12,7 @@ go.work
 .aptlydata
 .idea/
 .vscode/
-cli
+/cli
 
 public-api.json
 openapi.json*
