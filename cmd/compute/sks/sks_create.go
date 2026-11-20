@@ -65,6 +65,9 @@ type sksCreateCmd struct {
 	NodepoolSecurityGroups       []string          `cli-flag:"nodepool-security-group" cli-usage:"default Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	NodepoolSize                 int64             `cli-usage:"default Nodepool size. If 0, no default Nodepool will be added to the cluster."`
 	NodepoolTaints               []string          `cli-flag:"nodepool-taint" cli-usage:"Kubernetes taint to apply to default Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
+	NodepoolVPC                  string            `cli-flag:"nodepool-vpc" cli-usage:"VPC NAME|ID to attach the default Nodepool instances to (requires --nodepool-vpc-subnet)"`
+	NodepoolVPCSubnets           []string          `cli-flag:"nodepool-vpc-subnet" cli-usage:"VPC Subnet NAME|ID to attach the default Nodepool instances to (can be specified multiple times)"`
+	NodepoolIPForwarding         bool              `cli-flag:"nodepool-ip-forwarding" cli-usage:"allow the default Nodepool instances to act as routers in their VPC (IP forwarding)"`
 	NodePoolPublicIPAssignment   string            `cli-flag:"nodepool-public-ip" cli-usage:"Configures public IP assignment of the Instances (inet4|dual). (default: inet4)"`
 	OIDCClientID                 string            `cli-flag:"oidc-client-id" cli-usage:"OpenID client ID"`
 	OIDCGroupsClaim              string            `cli-flag:"oidc-groups-claim" cli-usage:"OpenID JWT claim to use as the user's group"`
@@ -105,7 +108,10 @@ Supported output template annotations: %s`,
 
 func (c *sksCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	clicmd.CmdSetZoneFlagFromDefault(cmd)
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
+	return validateVPCFlags("nodepool-vpc", "nodepool-vpc-subnet", c.NodepoolVPC, c.NodepoolVPCSubnets)
 }
 
 func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
@@ -259,6 +265,9 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 			PrivateNetworks:    c.NodepoolPrivateNetworks,
 			SecurityGroups:     c.NodepoolSecurityGroups,
 			Taints:             c.NodepoolTaints,
+			VPC:                c.NodepoolVPC,
+			VPCSubnets:         c.NodepoolVPCSubnets,
+			IPForwarding:       c.NodepoolIPForwarding,
 			PublicIPAssignment: nodePoolPublicIPAssignment,
 			KubeletImageGC: &v3.KubeletImageGC{
 				MinAge:        c.NodepoolImageGcMinAge,

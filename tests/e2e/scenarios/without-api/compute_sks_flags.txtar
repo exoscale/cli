@@ -1,9 +1,12 @@
-# Test: SKS commands --help show the allowlist, template pinning, DRA and MIG flags
+# Test: SKS commands --help show the allowlist, template pinning, DRA, MIG and VPC flags
 
 exec exo compute sks create --help
 stdout '--allowed-network strings'
 stdout '--nodepool-nvidia-dra-driver'
 stdout '--nodepool-nvidia-mig-profile string'
+stdout '--nodepool-vpc string'
+stdout '--nodepool-vpc-subnet strings'
+stdout '--nodepool-ip-forwarding'
 
 exec exo compute sks update --help
 stdout '--allowed-network strings'
@@ -11,8 +14,40 @@ stdout '--allowed-network strings'
 exec exo compute sks nodepool add --help
 stdout '--nvidia-dra-driver'
 stdout '--nvidia-mig-profile string'
+stdout '--vpc string'
+stdout '--vpc-subnet strings'
+stdout '--ip-forwarding'
 
 exec exo compute sks nodepool update --help
 stdout '--nvidia-dra-driver'
 stdout '--nvidia-mig-profile string'
 stdout '--template string'
+stdout '--vpc string'
+stdout '--vpc-subnet strings'
+stdout '--ip-forwarding'
+
+# A VPC and its Subnets must be given together, checked before any API call
+env EXOSCALE_CONFIG=test-config.toml
+! exec exo compute sks create my-cluster --nodepool-vpc-subnet front
+stderr '--nodepool-vpc is required when --nodepool-vpc-subnet is specified'
+
+! exec exo compute sks create my-cluster --nodepool-vpc my-vpc
+stderr 'at least one --nodepool-vpc-subnet is required when --nodepool-vpc is specified'
+
+! exec exo compute sks nodepool add my-cluster my-nodepool --vpc-subnet front
+stderr '--vpc is required when --vpc-subnet is specified'
+
+! exec exo compute sks nodepool update my-cluster my-nodepool --vpc my-vpc
+stderr 'at least one --vpc-subnet is required when --vpc is specified'
+
+! exec exo compute sks nodepool update my-cluster my-nodepool --vpc '' --vpc-subnet front
+stderr '--vpc is required when --vpc-subnet is specified'
+
+-- test-config.toml --
+defaultaccount = "Exoscale-Test"
+
+[[accounts]]
+name = "Exoscale-Test"
+key = "EXOtest123"
+secret = "testsecret123"
+defaultZone = "ch-gva-2"

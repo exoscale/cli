@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/cmd/networking/vpc"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -60,6 +61,9 @@ type CreateNodepoolOpts struct {
 	PrivateNetworks    []string
 	SecurityGroups     []string
 	Taints             []string
+	VPC                string
+	VPCSubnets         []string
+	IPForwarding       bool
 	KubeletImageGC     *v3.KubeletImageGC
 	PublicIPAssignment v3.CreateSKSNodepoolRequestPublicIPAssignment
 	KubeletMaxPods     int64
@@ -189,6 +193,15 @@ func createNodepoolRequest(
 	}
 	nodepoolReq.SecurityGroups = sg
 
+	nodepoolReq.Vpc, err = lookupVPC(ctx, client, opts.VPC, opts.VPCSubnets)
+	if err != nil {
+		return nodepoolReq, err
+	}
+
+	if opts.IPForwarding {
+		nodepoolReq.IPForwarding = &opts.IPForwarding
+	}
+
 	if len(opts.Taints) > 0 {
 		nodepoolTaints := make(v3.SKSNodepoolTaints)
 		for _, t := range opts.Taints {
@@ -304,6 +317,37 @@ func lookupSecurityGroups(ctx context.Context, client *v3.Client, names []string
 		groups[i] = group
 	}
 	return groups, nil
+}
+
+func validateVPCFlags(vpcFlag, subnetFlag, vpcNameOrID string, subnets []string) error {
+	if vpcNameOrID == "" && len(subnets) > 0 {
+		return fmt.Errorf("--%s is required when --%s is specified", vpcFlag, subnetFlag)
+	}
+	if vpcNameOrID != "" && len(subnets) == 0 {
+		return fmt.Errorf("at least one --%s is required when --%s is specified", subnetFlag, vpcFlag)
+	}
+	return nil
+}
+
+func lookupVPC(ctx context.Context, client *v3.Client, vpcNameOrID string, subnets []string) (*v3.VpcRef, error) {
+	if vpcNameOrID == "" {
+		return nil, nil
+	}
+
+	vpcEntry, err := vpc.FindVPC(ctx, client, vpcNameOrID)
+	if err != nil {
+		return nil, err
+	}
+
+	ref := &v3.VpcRef{ID: vpcEntry.ID}
+	for _, s := range subnets {
+		subnet, err := vpc.FindSubnet(ctx, client, vpcEntry.ID, s)
+		if err != nil {
+			return nil, err
+		}
+		ref.Subnets = append(ref.Subnets, v3.VpcSubnetRef{ID: subnet.ID})
+	}
+	return ref, nil
 }
 
 func init() {
