@@ -1,0 +1,41 @@
+# Test: compute instance-pool create/update expose the VPC flags and reject
+# invalid --vpc/--vpc-subnet combinations before any API call.
+# The config is passed with --config: XDG_CONFIG_HOME is ignored on macOS.
+
+exec exo compute instance-pool create --help
+stdout '--vpc string'
+stdout '--vpc-subnet'
+stdout '--ip-forwarding'
+
+exec exo compute instance-pool update --help
+stdout '--vpc string'
+stdout '--vpc-subnet'
+stdout '--ip-forwarding'
+stdout 'only applies to new instances'
+
+# --vpc and --vpc-subnet must be used together
+! exec exo --config exoscale.toml compute instance-pool create pool --vpc-subnet front
+stderr '--vpc is required when --vpc-subnet is specified'
+stderr 'Usage:'
+
+! exec exo --config exoscale.toml compute instance-pool create pool --vpc prod
+stderr 'at least one --vpc-subnet is required when --vpc is specified'
+
+! exec exo --config exoscale.toml compute instance-pool update pool --vpc-subnet front
+stderr '--vpc is required when --vpc-subnet is specified'
+
+! exec exo --config exoscale.toml compute instance-pool update pool --vpc prod
+stderr 'at least one --vpc-subnet is required when --vpc is specified'
+
+# --vpc "" only detaches, it can't be combined with --vpc-subnet
+! exec exo --config exoscale.toml compute instance-pool update pool --vpc '' --vpc-subnet front
+stderr '--vpc is required when --vpc-subnet is specified'
+
+-- exoscale.toml --
+defaultaccount = "test"
+
+[[accounts]]
+name = "test"
+key = "EXO000000000000000000"
+secret = "dummy-secret-for-help-test"
+defaultZone = "ch-gva-2"

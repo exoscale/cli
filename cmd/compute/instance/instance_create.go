@@ -82,7 +82,15 @@ Supported output template annotations: %s`,
 func (c *instanceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	clicmd.CmdSetZoneFlagFromDefault(cmd)
 	clicmd.CmdSetTemplateFlagFromDefault(cmd)
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
+
+	if err := vpc.ValidateAttachFlags(c.VPC, len(c.VPCSubnets)); err != nil {
+		clicmd.CmdExitOnUsageError(cmd, err.Error())
+	}
+
+	return nil
 }
 
 func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
@@ -90,10 +98,6 @@ func (c *instanceCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nol
 		singleUseSSHPrivateKey *rsa.PrivateKey
 		singleUseSSHPublicKey  ssh.PublicKey
 	)
-
-	if err := validateVPCFlags(c.VPC, c.VPCSubnets); err != nil {
-		return err
-	}
 
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
@@ -415,16 +419,6 @@ func resolveCreateInstanceVPC(
 	}
 
 	return req, nil
-}
-
-func validateVPCFlags(vpcNameOrID string, subnetSpecs []vpcSubnetSpec) error {
-	if vpcNameOrID == "" && len(subnetSpecs) > 0 {
-		return fmt.Errorf("--vpc is required when --vpc-subnet is specified")
-	}
-	if vpcNameOrID != "" && len(subnetSpecs) == 0 {
-		return fmt.Errorf("at least one --vpc-subnet is required when --vpc is specified")
-	}
-	return nil
 }
 
 // vpcSubnetSpec is one --vpc-subnet value: NAME|ID[,ipv4=IP].

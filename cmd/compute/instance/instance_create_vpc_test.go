@@ -174,32 +174,3 @@ func TestResolveCreateInstanceVPCErrors(t *testing.T) {
 		})
 	}
 }
-
-func TestValidateVPCFlags(t *testing.T) {
-	tests := []struct {
-		name    string
-		vpc     string
-		subnets []vpcSubnetSpec
-		wantErr string
-	}{
-		{name: "no vpc flags"},
-		{name: "vpc and subnet", vpc: "prod", subnets: []vpcSubnetSpec{{NameOrID: "front"}}},
-		{name: "subnet without vpc", subnets: []vpcSubnetSpec{{NameOrID: "front"}}, wantErr: "--vpc is required"},
-		{name: "vpc without subnet", vpc: "prod", wantErr: "at least one --vpc-subnet"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := validateVPCFlags(tt.vpc, tt.subnets)
-			if tt.wantErr == "" {
-				if err != nil {
-					t.Fatalf("unexpected error: %v", err)
-				}
-				return
-			}
-			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
-				t.Fatalf("expected error containing %q, got %v", tt.wantErr, err)
-			}
-		})
-	}
-}

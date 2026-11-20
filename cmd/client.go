@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -47,7 +48,7 @@ func buildClient() {
 	}
 
 	if v := os.Getenv("EXOSCALE_TRACE"); v != "" {
-		clientV3 = clientV3.WithTrace()
+		clientV3 = clientV3.WithLogHandler(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	}
 	globalstate.EgoscaleV3Client = clientV3
 }

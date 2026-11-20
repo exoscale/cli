@@ -42,6 +42,17 @@ func FindVPC(ctx context.Context, client *v3.Client, nameOrID string) (v3.ListVp
 	return vpc, nil
 }
 
+// ValidateAttachFlags checks that --vpc and --vpc-subnet are used together.
+func ValidateAttachFlags(vpcNameOrID string, subnetCount int) error {
+	if vpcNameOrID == "" && subnetCount > 0 {
+		return fmt.Errorf("--vpc is required when --vpc-subnet is specified")
+	}
+	if vpcNameOrID != "" && subnetCount == 0 {
+		return fmt.Errorf("at least one --vpc-subnet is required when --vpc is specified")
+	}
+	return nil
+}
+
 // FindSubnet resolves a Subnet by name or ID within the given VPC.
 func FindSubnet(ctx context.Context, client *v3.Client, vpcID v3.UUID, nameOrID string) (v3.ListSubnetEntry, error) {
 	resp, err := client.ListSubnets(ctx, vpcID)

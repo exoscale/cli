@@ -1,4 +1,6 @@
-# Test: compute instance create --help shows the reverse DNS and VPC flags
+# Test: compute instance create --help shows the reverse DNS and VPC flags,
+# and invalid --vpc/--vpc-subnet combinations are rejected before any API call.
+# The config is passed with --config: XDG_CONFIG_HOME is ignored on macOS.
 
 exec exo compute instance create --help
 stdout '--reverse-dns'
@@ -6,3 +8,20 @@ stdout '--instance-type'
 stdout '--template'
 stdout '--vpc string'
 stdout '--vpc-subnet'
+
+# --vpc and --vpc-subnet must be used together
+! exec exo --config exoscale.toml compute instance create vm --vpc-subnet front
+stderr '--vpc is required when --vpc-subnet is specified'
+stderr 'Usage:'
+
+! exec exo --config exoscale.toml compute instance create vm --vpc prod
+stderr 'at least one --vpc-subnet is required when --vpc is specified'
+
+-- exoscale.toml --
+defaultaccount = "test"
+
+[[accounts]]
+name = "test"
+key = "EXO000000000000000000"
+secret = "dummy-secret-for-help-test"
+defaultZone = "ch-gva-2"

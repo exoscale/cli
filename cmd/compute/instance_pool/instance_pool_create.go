@@ -10,6 +10,7 @@ import (
 
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/cmd/compute"
+	"github.com/exoscale/cli/cmd/networking/vpc"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -33,6 +34,7 @@ type instancePoolCreateCmd struct {
 	Description        string            `cli-usage:"Instance Pool description"`
 	DiskSize           int64             `cli-usage:"managed Compute instances disk size"`
 	ElasticIPs         []string          `cli-flag:"elastic-ip" cli-short:"e" cli-usage:"managed Compute instances Elastic IP ADDRESS|ID (can be specified multiple times)"`
+	IPForwarding       bool              `cli-flag:"ip-forwarding" cli-usage:"enable IP forwarding on managed Compute instances VPC interfaces"`
 	PublicIPAssignment string            `cli-flag:"public-ip" cli-usage:"Configures public IP assignment of the instance pool (none|inet4|dual). (default: inet4)"`
 	InstancePrefix     string            `cli-usage:"string to prefix managed Compute instances names with"`
 	InstanceType       string            `cli-usage:"managed Compute instances type (format: [FAMILY.]SIZE)"`
@@ -44,6 +46,8 @@ type instancePoolCreateCmd struct {
 	Size               int64             `cli-usage:"Instance Pool size"`
 	Template           string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
 	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
+	VPC                string            `cli-flag:"vpc" cli-usage:"managed Compute instances VPC NAME|ID (requires --vpc-subnet)"`
+	VPCSubnets         []string          `cli-flag:"vpc-subnet" cli-usage:"managed Compute instances VPC Subnet NAME|ID (can be specified multiple times)"`
 	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
@@ -62,11 +66,18 @@ func (c *instancePoolCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) err
 
 	clicmd.CmdSetZoneFlagFromDefault(cmd)
 	clicmd.CmdSetTemplateFlagFromDefault(cmd)
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
+
+	if err := vpc.ValidateAttachFlags(c.VPC, len(c.VPCSubnets)); err != nil {
+		clicmd.CmdExitOnUsageError(cmd, err.Error())
+	}
+
+	return nil
 }
 
 func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
-
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -217,6 +228,24 @@ func (c *instancePoolCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 			}
 			instancePoolReq.SecurityGroups[i] = v3.SecurityGroup{ID: securityGroup.ID}
 		}
+	}
+
+	if c.VPC != "" {
+		vpcID, subnetIDs, err := resolveVPC(ctx, client, c.VPC, c.VPCSubnets)
+		if err != nil {
+			return err
+		}
+		instancePoolReq.Vpc = &v3.CreateInstancePoolRequestVpc{
+			ID:      vpcID,
+			Subnets: make([]v3.CreateInstancePoolRequestVpcSubnets, len(subnetIDs)),
+		}
+		for i, id := range subnetIDs {
+			instancePoolReq.Vpc.Subnets[i] = v3.CreateInstancePoolRequestVpcSubnets{ID: id}
+		}
+	}
+
+	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.IPForwarding)) {
+		instancePoolReq.IPForwarding = &c.IPForwarding
 	}
 
 	if instancePoolReq.SSHKey == nil && account.CurrentAccount.DefaultSSHKey != "" {
