@@ -11,7 +11,7 @@ runs:
       with:
         go-version-file: go.mod
 
-    - uses: ./go.mk/.github/actions/pre-check
+    - run: make pre-check
 
     - run: make build
       shell: bash
