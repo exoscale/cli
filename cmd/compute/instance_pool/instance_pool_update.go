@@ -95,6 +95,7 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 	updateReq := v3.UpdateInstancePoolRequest{
 		AntiAffinityGroups: make([]v3.AntiAffinityGroup, len(instancePool.AntiAffinityGroups)),
 		ElasticIPS:         make([]v3.ElasticIP, len(instancePool.ElasticIPS)),
+		IPForwarding:       instancePool.IPForwarding,
 		PrivateNetworks:    make([]v3.PrivateNetwork, len(instancePool.PrivateNetworks)),
 		SecurityGroups:     make([]v3.SecurityGroup, len(instancePool.SecurityGroups)),
 		SSHKeys:            make([]v3.SSHKey, len(instancePool.SSHKeys)),
@@ -131,9 +132,6 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 		for i, v := range instancePool.Vpc.Subnets {
 			updateReq.Vpc.Subnets[i] = v3.UpdateInstancePoolRequestVpcSubnets(v)
 		}
-	}
-	if instancePool.IPForwarding != nil {
-		updateReq.IPForwarding = instancePool.IPForwarding
 	}
 
 	if cmd.Flags().Changed(clicmd.MustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
