@@ -3123,6 +3123,8 @@ const (
 	InferenceEngineVersion0300 InferenceEngineVersion = "0.30.0"
 	InferenceEngineVersion0310 InferenceEngineVersion = "0.31.0"
 	InferenceEngineVersion0320 InferenceEngineVersion = "0.32.0"
+	InferenceEngineVersion0330 InferenceEngineVersion = "0.33.0"
+	InferenceEngineVersion0340 InferenceEngineVersion = "0.34.0"
 )
 
 // Router flush payload: the router's full in-memory usage map with flush identity fields
@@ -3915,6 +3917,107 @@ type JSONSchemaKafkaRest struct {
 	SimpleconsumerPoolSizeMax int `json:"simpleconsumer_pool_size_max,omitempty" validate:"omitempty,gte=10,lte=250"`
 }
 
+type JSONSchemaMysqlCollationServer string
+
+const (
+	JSONSchemaMysqlCollationServerUtf8mb40900AICI       JSONSchemaMysqlCollationServer = "utf8mb4_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb40900ASCI       JSONSchemaMysqlCollationServer = "utf8mb4_0900_as_ci"
+	JSONSchemaMysqlCollationServerUtf8mb40900ASCS       JSONSchemaMysqlCollationServer = "utf8mb4_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb40900Bin        JSONSchemaMysqlCollationServer = "utf8mb4_0900_bin"
+	JSONSchemaMysqlCollationServerUtf8mb4BG0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_bg_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4BG0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_bg_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4Bin            JSONSchemaMysqlCollationServer = "utf8mb4_bin"
+	JSONSchemaMysqlCollationServerUtf8mb4BS0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_bs_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4BS0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_bs_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4CroatianCI     JSONSchemaMysqlCollationServer = "utf8mb4_croatian_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4CS0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_cs_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4CS0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_cs_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4CzechCI        JSONSchemaMysqlCollationServer = "utf8mb4_czech_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4DanishCI       JSONSchemaMysqlCollationServer = "utf8mb4_danish_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4DA0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_da_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4DA0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_da_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4DEPB0900AICI   JSONSchemaMysqlCollationServer = "utf8mb4_de_pb_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4DEPB0900ASCS   JSONSchemaMysqlCollationServer = "utf8mb4_de_pb_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4EO0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_eo_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4EO0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_eo_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4EsperantoCI    JSONSchemaMysqlCollationServer = "utf8mb4_esperanto_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4EstonianCI     JSONSchemaMysqlCollationServer = "utf8mb4_estonian_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4ES0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_es_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4ES0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_es_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4ESTrad0900AICI JSONSchemaMysqlCollationServer = "utf8mb4_es_trad_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4ESTrad0900ASCS JSONSchemaMysqlCollationServer = "utf8mb4_es_trad_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4ET0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_et_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4ET0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_et_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4GeneralCI      JSONSchemaMysqlCollationServer = "utf8mb4_general_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4German2CI      JSONSchemaMysqlCollationServer = "utf8mb4_german2_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Gl0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_gl_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Gl0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_gl_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4Hr0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_hr_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Hr0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_hr_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4HungarianCI    JSONSchemaMysqlCollationServer = "utf8mb4_hungarian_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Hu0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_hu_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Hu0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_hu_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4IcelandicCI    JSONSchemaMysqlCollationServer = "utf8mb4_icelandic_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4IS0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_is_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4IS0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_is_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4JA0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_ja_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4JA0900ASCSKs   JSONSchemaMysqlCollationServer = "utf8mb4_ja_0900_as_cs_ks"
+	JSONSchemaMysqlCollationServerUtf8mb4LatvianCI      JSONSchemaMysqlCollationServer = "utf8mb4_latvian_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4LA0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_la_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4LA0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_la_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4LithuanianCI   JSONSchemaMysqlCollationServer = "utf8mb4_lithuanian_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4LT0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_lt_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4LT0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_lt_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4LV0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_lv_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4LV0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_lv_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4MNCyrl0900AICI JSONSchemaMysqlCollationServer = "utf8mb4_mn_cyrl_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4MNCyrl0900ASCS JSONSchemaMysqlCollationServer = "utf8mb4_mn_cyrl_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4Nb0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_nb_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Nb0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_nb_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4Nn0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_nn_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Nn0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_nn_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4PersianCI      JSONSchemaMysqlCollationServer = "utf8mb4_persian_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4PL0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_pl_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4PL0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_pl_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4PolishCI       JSONSchemaMysqlCollationServer = "utf8mb4_polish_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4RomanianCI     JSONSchemaMysqlCollationServer = "utf8mb4_romanian_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4RomanCI        JSONSchemaMysqlCollationServer = "utf8mb4_roman_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4RO0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_ro_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4RO0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_ro_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4Ru0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_ru_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Ru0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_ru_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4SinhalaCI      JSONSchemaMysqlCollationServer = "utf8mb4_sinhala_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Sk0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_sk_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Sk0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_sk_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4SlovakCI       JSONSchemaMysqlCollationServer = "utf8mb4_slovak_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4SlovenianCI    JSONSchemaMysqlCollationServer = "utf8mb4_slovenian_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4SL0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_sl_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4SL0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_sl_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4Spanish2CI     JSONSchemaMysqlCollationServer = "utf8mb4_spanish2_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4SpanishCI      JSONSchemaMysqlCollationServer = "utf8mb4_spanish_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4SrLatn0900AICI JSONSchemaMysqlCollationServer = "utf8mb4_sr_latn_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4SrLatn0900ASCS JSONSchemaMysqlCollationServer = "utf8mb4_sr_latn_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4SV0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_sv_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4SV0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_sv_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4SwedishCI      JSONSchemaMysqlCollationServer = "utf8mb4_swedish_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4TR0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_tr_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4TR0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_tr_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4TurkishCI      JSONSchemaMysqlCollationServer = "utf8mb4_turkish_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Unicode520CI   JSONSchemaMysqlCollationServer = "utf8mb4_unicode_520_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4UnicodeCI      JSONSchemaMysqlCollationServer = "utf8mb4_unicode_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4VietnameseCI   JSONSchemaMysqlCollationServer = "utf8mb4_vietnamese_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Vi0900AICI     JSONSchemaMysqlCollationServer = "utf8mb4_vi_0900_ai_ci"
+	JSONSchemaMysqlCollationServerUtf8mb4Vi0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_vi_0900_as_cs"
+	JSONSchemaMysqlCollationServerUtf8mb4Zh0900ASCS     JSONSchemaMysqlCollationServer = "utf8mb4_zh_0900_as_cs"
+)
+
+type JSONSchemaMysqlEventScheduler string
+
+const (
+	JSONSchemaMysqlEventSchedulerON  JSONSchemaMysqlEventScheduler = "ON"
+	JSONSchemaMysqlEventSchedulerOFF JSONSchemaMysqlEventScheduler = "OFF"
+)
+
 type JSONSchemaMysqlInternalTmpMemStorageEngine string
 
 const (
@@ -3922,36 +4025,89 @@ const (
 	JSONSchemaMysqlInternalTmpMemStorageEngineMEMORY    JSONSchemaMysqlInternalTmpMemStorageEngine = "MEMORY"
 )
 
+type JSONSchemaMysqlLowerCaseTableNames int
+
+const (
+	JSONSchemaMysqlLowerCaseTableNames0 JSONSchemaMysqlLowerCaseTableNames = 0
+	JSONSchemaMysqlLowerCaseTableNames1 JSONSchemaMysqlLowerCaseTableNames = 1
+)
+
 // mysql.conf configuration values
 type JSONSchemaMysql struct {
+	// When enabled, the server automatically grants the EXECUTE and ALTER ROUTINE privileges to the creator of a stored routine and drops them when the routine is dropped.
+	AutomaticSPPrivileges *bool `json:"automatic_sp_privileges,omitempty"`
+	// The default collation for databases created without one, which their new tables then inherit. Only collations of the utf8mb4 character set are accepted. Databases Aiven creates, defaultdb and those added through the API or Console, keep utf8mb4_0900_ai_ci. Changing it leaves existing databases as they are. A change applies to new connections at once. After the next server restart, for example at maintenance, an upgrade, a plan change or a node replacement, sessions reset with COM_RESET_CONNECTION also compare strings with this collation, which a change without a restart does not do. Every 0900 collation except utf8mb4_0900_ai_ci has an id above 255, so after that restart MySQL announces a wrong character set to connecting clients. Clients that take their character set from the server, such as PHP mysqli and PDO without a charset option and MySQL Connector/NET (MySql.Data) without CharSet, must then set utf8mb4 themselves. Default is utf8mb4_0900_ai_ci.
+	CollationServer JSONSchemaMysqlCollationServer `json:"collation_server,omitempty"`
 	// The number of seconds that the mysqld server waits for a connect packet before responding with Bad handshake
 	ConnectTimeout int `json:"connect_timeout,omitempty" validate:"omitempty,gte=2,lte=3600"`
 	// Default server time zone as an offset from UTC (from -12:00 to +12:00), a time zone name, or 'SYSTEM' to use the MySQL server default.
 	DefaultTimeZone string `json:"default_time_zone,omitempty" validate:"omitempty,gte=2,lte=100"`
+	// Number of digits by which to increase the scale of the result of division operations performed with the / operator. Default is 4.
+	DivPrecisionIncrement int `json:"div_precision_increment,omitempty" validate:"omitempty,gte=0,lte=30"`
+	// Whether optimizer JSON output such as EXPLAIN FORMAT=JSON adds end markers that repeat a structure's key near its closing bracket, making large JSON structures easier to read.
+	EndMarkersInJSON *bool `json:"end_markers_in_json,omitempty"`
+	// The number of equality ranges in a query at or above which the optimizer switches from index dives to index statistics when estimating the number of qualifying rows. 0 means always use index dives. Default is 200.
+	EqRangeIndexDiveLimit int `json:"eq_range_index_dive_limit,omitempty" validate:"omitempty,gte=0,lte=4.294967295e+09"`
+	// Whether the event scheduler runs the events created with CREATE EVENT. Set OFF to stop every event on the service without dropping it, and ON to start them again. A change applies at once, without a restart. Events take effect only on the primary node. After a failover, they are re-enabled on the new primary. Default is ON.
+	EventScheduler JSONSchemaMysqlEventScheduler `json:"event_scheduler,omitempty"`
 	// The maximum permitted result length in bytes for the GROUP_CONCAT() function.
 	GroupConcatMaxLen int `json:"group_concat_max_len,omitempty" validate:"omitempty,gte=4,lte=1.8446744073709552e+19"`
 	// The time, in seconds, before cached statistics expire
 	InformationSchemaStatsExpiry int `json:"information_schema_stats_expiry,omitempty" validate:"omitempty,gte=900,lte=3.1536e+07"`
+	// Whether InnoDB adaptive hash indexing is enabled. The optimal setting is workload-dependent: it speeds up lookups for some workloads but its internal latch can become a contention point under high concurrency, in which case disabling it can improve throughput.
+	InnodbAdaptiveHashIndex *bool `json:"innodb_adaptive_hash_index,omitempty"`
 	// Maximum size for the InnoDB change buffer, as a percentage of the total size of the buffer pool. Default is 25
 	InnodbChangeBufferMaxSize int `json:"innodb_change_buffer_max_size,omitempty" validate:"omitempty,gte=0,lte=50"`
 	// Specifies whether flushing a page from the InnoDB buffer pool also flushes other dirty pages in the same extent (default is 1): 0 - dirty pages in the same extent are not flushed, 1 - flush contiguous dirty pages in the same extent, 2 - flush dirty pages in the same extent
 	InnodbFlushNeighbors int `json:"innodb_flush_neighbors,omitempty" validate:"omitempty,gte=0,lte=2"`
+	// The size in bytes of the InnoDB FULLTEXT index cache for each table. Pending index updates are flushed to disk when the cache reaches this limit. innodb_ft_total_cache_size controls the combined cache limit for all tables. Default is 8000000. Changing this parameter will lead to a restart of the MySQL service.
+	InnodbFTCacheSize int `json:"innodb_ft_cache_size,omitempty" validate:"omitempty,gte=1.6e+06,lte=8e+07"`
+	// Whether stopword processing is applied when creating or rebuilding an InnoDB FULLTEXT index. Enabled by default.
+	InnodbFTEnableStopword *bool `json:"innodb_ft_enable_stopword,omitempty"`
+	// Maximum length of words that are stored in an InnoDB FULLTEXT index. Changing this parameter will lead to a restart of the MySQL service.
+	InnodbFTMaxTokenSize int `json:"innodb_ft_max_token_size,omitempty" validate:"omitempty,gte=10,lte=84"`
 	// Minimum length of words that are stored in an InnoDB FULLTEXT index. Changing this parameter will lead to a restart of the MySQL service.
 	InnodbFTMinTokenSize int `json:"innodb_ft_min_token_size,omitempty" validate:"omitempty,gte=0,lte=16"`
+	// Number of words processed during each OPTIMIZE TABLE operation on an InnoDB FULLTEXT index. Default is 2000.
+	InnodbFTNumWordOptimize int `json:"innodb_ft_num_word_optimize,omitempty" validate:"omitempty,gte=1000,lte=10000"`
+	// Maximum memory in bytes used per query for the InnoDB FULLTEXT search query result cache. Aiven sizes this automatically based on the service plan's memory; setting a value overrides the calculated default.
+	InnodbFTResultCacheLimit int `json:"innodb_ft_result_cache_limit,omitempty" validate:"omitempty,gte=1e+06,lte=4.294967295e+09"`
 	// This option is used to specify your own InnoDB FULLTEXT index stopword list for all InnoDB tables.
 	InnodbFTServerStopwordTable *string `json:"innodb_ft_server_stopword_table,omitempty" validate:"omitempty,lte=1024"`
+	// The number of parallel threads used to tokenize and index text when building an InnoDB FULLTEXT index. Default is 2. Changing this parameter will lead to a restart of the MySQL service.
+	InnodbFTSortPllDegree int `json:"innodb_ft_sort_pll_degree,omitempty" validate:"omitempty,gte=1,lte=32"`
+	// The combined memory limit in bytes for InnoDB FULLTEXT index caches across all tables. When an index operation reaches this limit, InnoDB forces cached index updates to disk to reduce memory usage. Values above 5% of plan RAM are rejected. Changing this parameter will lead to a restart of the MySQL service.
+	InnodbFTTotalCacheSize int `json:"innodb_ft_total_cache_size,omitempty" validate:"omitempty,gte=3.2e+07,lte=1.6e+09"`
+	// This option is used to specify your own InnoDB FULLTEXT index stopword list for specific InnoDB tables.
+	InnodbFTUserStopwordTable *string `json:"innodb_ft_user_stopword_table,omitempty" validate:"omitempty,lte=1024"`
+	// The number of I/O operations per second (IOPS) available to InnoDB background tasks, such as flushing pages from the buffer pool and merging data from the change buffer. Set this to a value appropriate for the underlying storage; it must not exceed innodb_io_capacity_max.
+	InnodbIoCapacity int `json:"innodb_io_capacity,omitempty" validate:"omitempty,gte=100,lte=4.294967295e+09"`
+	// The maximum number of I/O operations per second (IOPS) that InnoDB background tasks may perform when flushing falls behind. Defaults to twice innodb_io_capacity (minimum 2000). This must be greater than or equal to innodb_io_capacity.
+	InnodbIoCapacityMax int `json:"innodb_io_capacity_max,omitempty" validate:"omitempty,gte=100,lte=4.294967295e+09"`
 	// The length of time in seconds an InnoDB transaction waits for a row lock before giving up. Default is 120.
 	InnodbLockWaitTimeout int `json:"innodb_lock_wait_timeout,omitempty" validate:"omitempty,gte=1,lte=3600"`
 	// The size in bytes of the buffer that InnoDB uses to write to the log files on disk.
 	InnodbLogBufferSize int `json:"innodb_log_buffer_size,omitempty" validate:"omitempty,gte=1.048576e+06,lte=4.294967295e+09"`
+	// Percentage of dirty pages in the InnoDB buffer pool at which InnoDB starts flushing aggressively. Lowering it spreads write I/O more evenly and shortens crash recovery, at the cost of flushing pages that might have been modified again. Must stay at or above innodb_max_dirty_pages_pct_lwm. Default is 90.
+	InnodbMaxDirtyPagesPct float64 `json:"innodb_max_dirty_pages_pct,omitempty" validate:"omitempty,gte=5,lte=99"`
+	// Percentage of dirty pages in the InnoDB buffer pool at which InnoDB starts pre-flushing, to keep the dirty page ratio from reaching innodb_max_dirty_pages_pct. 0 turns pre-flushing off. Cannot be set above innodb_max_dirty_pages_pct. Default is 10.
+	InnodbMaxDirtyPagesPctLwm float64 `json:"innodb_max_dirty_pages_pct_lwm,omitempty" validate:"omitempty,gte=0,lte=99"`
+	// Number of outstanding transactions the InnoDB purge operation may fall behind by before INSERT, UPDATE and DELETE are delayed to let it catch up. The delay applies per row and grows with the lag, and it is capped by innodb_max_purge_lag_delay, which has to be set as well for this option to have any effect. Default is 0, which never delays anything.
+	InnodbMaxPurgeLag int `json:"innodb_max_purge_lag,omitempty" validate:"omitempty,gte=0,lte=4.294967295e+09"`
+	// Cap in microseconds on the per-row delay innodb_max_purge_lag applies to INSERT, UPDATE and DELETE. MySQL clamps the delay to this value unconditionally, so while this is 0 no delay is ever applied and innodb_max_purge_lag on its own does nothing. Both options must be non-zero for either to take effect. Default is 0.
+	InnodbMaxPurgeLagDelay int `json:"innodb_max_purge_lag_delay,omitempty" validate:"omitempty,gte=0,lte=1e+07"`
 	// The upper limit in bytes on the size of the temporary log files used during online DDL operations for InnoDB tables.
 	InnodbOnlineAlterLogMaxSize int `json:"innodb_online_alter_log_max_size,omitempty" validate:"omitempty,gte=65536,lte=1.099511627776e+12"`
+	// When enabled, OPTIMIZE TABLE on InnoDB tables only updates the FULLTEXT index instead of rebuilding the table. Intended to be enabled temporarily during FULLTEXT index maintenance and disabled afterwards; while enabled, OPTIMIZE TABLE does not reclaim table space.
+	InnodbOptimizeFulltextOnly *bool `json:"innodb_optimize_fulltext_only,omitempty"`
 	// When enabled, information about all deadlocks in InnoDB user transactions is recorded in the error log. Disabled by default.
 	InnodbPrintAllDeadlocks *bool `json:"innodb_print_all_deadlocks,omitempty"`
 	// The number of I/O threads for read operations in InnoDB. Default is 4. Changing this parameter will lead to a restart of the MySQL service.
 	InnodbReadIoThreads int `json:"innodb_read_io_threads,omitempty" validate:"omitempty,gte=1,lte=64"`
 	// When enabled a transaction timeout causes InnoDB to abort and roll back the entire transaction. Changing this parameter will lead to a restart of the MySQL service.
 	InnodbRollbackOnTimeout *bool `json:"innodb_rollback_on_timeout,omitempty"`
+	// The size in bytes of the sort buffer used when creating InnoDB indexes. Also controls the read and write buffer sizes for the temporary log used during online DDL operations. Default is 1048576 (1 MiB). Changing this parameter will lead to a restart of the MySQL service.
+	InnodbSortBufferSize int `json:"innodb_sort_buffer_size,omitempty" validate:"omitempty,gte=65536,lte=6.7108864e+07"`
 	// Defines the maximum number of threads permitted inside of InnoDB. Default is 0 (infinite concurrency - no limit)
 	InnodbThreadConcurrency int `json:"innodb_thread_concurrency,omitempty" validate:"omitempty,gte=0,lte=1000"`
 	// The number of I/O threads for write operations in InnoDB. Default is 4. Changing this parameter will lead to a restart of the MySQL service.
@@ -3964,16 +4120,38 @@ type JSONSchemaMysql struct {
 	LogOutput string `json:"log_output,omitempty"`
 	// The slow_query_logs work as SQL statements that take more than long_query_time seconds to execute. Default is 10s
 	LongQueryTime float64 `json:"long_query_time,omitempty" validate:"omitempty,gte=0,lte=3600"`
+	// Sets how table and database names are stored and compared. 0 = case-sensitive (default), 1 = names stored lowercase, comparisons are case-insensitive. This option can only be set when creating the service and cannot be changed later. See https://dev.mysql.com/doc/refman/8.0/en/identifier-case-sensitivity.html for details.
+	LowerCaseTableNames JSONSchemaMysqlLowerCaseTableNames `json:"lower_case_table_names,omitempty"`
 	// Size of the largest message in bytes that can be received by the server. Default is 67108864 (64M)
 	MaxAllowedPacket int `json:"max_allowed_packet,omitempty" validate:"omitempty,gte=102400,lte=1.073741824e+09"`
+	// The maximum permitted number of simultaneous client connections. Lower this to reserve memory for other work. The value cannot exceed the limit provided by your service plan. Upgrading the plan does not raise a value you have set explicitly, so increase it yourself after an upgrade.
+	MaxConnections int `json:"max_connections,omitempty" validate:"omitempty,gte=30,lte=100000"`
+	// Execution timeout in milliseconds for read-only top-level SELECT statements. 0 (the default) means no timeout.
+	MaxExecutionTime int `json:"max_execution_time,omitempty" validate:"omitempty,gte=0,lte=4.294967295e+09"`
 	// Limits the size of internal in-memory tables. Also set tmp_table_size. Default is 16777216 (16M)
 	MaxHeapTableSize int `json:"max_heap_table_size,omitempty" validate:"omitempty,gte=1.048576e+06,lte=1.073741824e+09"`
+	// Limit on the assumed maximum number of index seeks when looking up rows based on a key. Lowering this value causes the optimizer to prefer index lookups over table scans.
+	MaxSeeksForKey int `json:"max_seeks_for_key,omitempty" validate:"omitempty,gte=1,lte=1.8446744073709552e+19"`
+	// The maximum number of simultaneous connections permitted to any single user account. 0, the default, means no per-account limit. Any other value must be at least 10 below max_connections, so that monitoring and your own admin sessions can still connect when an application saturates its own limit. Aiven's replication and management connections are unaffected however low you set this.
+	MaxUserConnections int `json:"max_user_connections,omitempty" validate:"omitempty,gte=0,lte=99990"`
 	// Start sizes of connection buffer and result buffer. Default is 16384 (16K). Changing this parameter will lead to a restart of the MySQL service.
 	NetBufferLength int `json:"net_buffer_length,omitempty" validate:"omitempty,gte=1024,lte=1.048576e+06"`
 	// The number of seconds to wait for more data from a connection before aborting the read.
 	NetReadTimeout int `json:"net_read_timeout,omitempty" validate:"omitempty,gte=1,lte=3600"`
 	// The number of seconds to wait for a block to be written to a connection before aborting the write.
 	NetWriteTimeout int `json:"net_write_timeout,omitempty" validate:"omitempty,gte=1,lte=3600"`
+	// Controls the heuristics applied during query optimization to prune less-promising partial plans from the optimizer search space. 0 disables heuristics (exhaustive search); 1 prunes plans based on the number of rows retrieved.
+	OptimizerPruneLevel int `json:"optimizer_prune_level,omitempty" validate:"omitempty,gte=0,lte=1"`
+	// Maximum depth of search performed by the query optimizer when choosing a join order. Larger values produce better plans for joins over many tables but take longer to compile; 0 lets the optimizer choose the depth automatically.
+	OptimizerSearchDepth int `json:"optimizer_search_depth,omitempty" validate:"omitempty,gte=0,lte=62"`
+	// Comma-separated list of optimizer flag assignments in the form flag=on|off|default, or the single value 'default' to reset all flags. Flags not listed keep their current values. Controls query optimizer behaviors such as index merge, hash join and semijoin strategies.
+	OptimizerSwitch string `json:"optimizer_switch,omitempty"`
+	// The number of rows per thread in the events_statements_history table. Changing this parameter will lead to a restart of the MySQL service.
+	PerformanceSchemaEventsStatementsHistorySize *int `json:"performance_schema_events_statements_history_size,omitempty" validate:"omitempty,gte=0,lte=1024"`
+	// The maximum amount of space in bytes to use for all relay logs while replicating from an external migration source. When the limit is reached, the replication I/O thread stops fetching relay log events until the SQL thread has caught up. Raise this to give a large migration a bigger relay-log budget; ensure the service disk is sized accordingly. The setting applies only on the node replicating from the external source; standby nodes always use the Aiven-managed default (the smaller of 5 GiB and 30% of the service disk), which is also used when this option is left unset. Changing this parameter will lead to a restart of the MySQL service.
+	RelayLogSpaceLimit int `json:"relay_log_space_limit,omitempty" validate:"omitempty,gte=1.34217728e+08,lte=1.8446744073709552e+19"`
+	// The number of schema definition objects the data dictionary object cache can hold. Raise it above the number of schemas on the service to keep their definitions in memory. Each cached definition uses a small amount of memory, and the cache never holds more than the service's own schemas, so a high value costs nothing extra on a service with few schemas. Default is 256.
+	SchemaDefinitionCache int `json:"schema_definition_cache,omitempty" validate:"omitempty,gte=256,lte=524288"`
 	// Slow query log enables capturing of slow queries. Setting slow_query_log to false also truncates the mysql.slow_log table. Default is off
 	SlowQueryLog *bool `json:"slow_query_log,omitempty"`
 	// Sort buffer size in bytes for ORDER BY optimization. Default is 262144 (256K)
@@ -3982,6 +4160,8 @@ type JSONSchemaMysql struct {
 	SQLMode string `json:"sql_mode,omitempty" validate:"omitempty,lte=1024"`
 	// Require primary key to be defined for new tables or old tables modified with ALTER TABLE and fail if missing. It is recommended to always have primary keys because various functionality may break if any large table is missing them.
 	SQLRequirePrimaryKey *bool `json:"sql_require_primary_key,omitempty"`
+	// The number of tablespace definition objects the data dictionary object cache can hold. Each InnoDB table stored in its own file is a separate tablespace, so raise it above the number of tables on the service to keep their tablespace definitions in memory. Each cached definition uses a small amount of memory, and the cache never holds more than the service's own tables, so a high value costs nothing extra on a service with few tables. Default is 256.
+	TablespaceDefinitionCache int `json:"tablespace_definition_cache,omitempty" validate:"omitempty,gte=256,lte=524288"`
 	// Limits the size of internal in-memory tables. Also set max_heap_table_size. Default is 16777216 (16M)
 	TmpTableSize int `json:"tmp_table_size,omitempty" validate:"omitempty,gte=1.048576e+06,lte=1.073741824e+09"`
 	// The number of seconds the server waits for activity on a noninteractive connection before closing it.
@@ -6090,6 +6270,8 @@ type SKSNodepool struct {
 	InstancePrefix string `json:"instance-prefix,omitempty" validate:"omitempty,gte=1,lte=30"`
 	// Instance type reference
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
+	// Allow the Instances to act as routers in their VPC (IP forwarding). Only applies to new Instances
+	IPForwarding *bool `json:"ip-forwarding,omitempty"`
 	// Resources reserved for kube or system components.
 	KubeReserved *ReservedResources `json:"kube-reserved,omitempty"`
 	// Kubelet image GC options
@@ -6126,6 +6308,8 @@ type SKSNodepool struct {
 	TemplateSelection SKSNodepoolTemplateSelection `json:"template-selection,omitempty"`
 	// Nodepool version
 	Version string `json:"version,omitempty"`
+	// VPC
+	Vpc *VpcRef `json:"vpc,omitempty"`
 }
 
 type SKSNodepoolLabels map[string]string
@@ -6487,6 +6671,20 @@ type VpcDHCPOptions struct {
 	// Domain search list, limited to 255 octets post RFC3397 compression
 	DomainSearch []string `json:"domain-search,omitempty"`
 	NtpServers   []net.IP `json:"ntp-servers,omitempty"`
+}
+
+// VPC
+type VpcRef struct {
+	// VPC ID
+	ID UUID `json:"id" validate:"required"`
+	// VPC Subnets to attach the Instances to
+	Subnets []VpcSubnetRef `json:"subnets" validate:"required"`
+}
+
+// VPC Subnet
+type VpcSubnetRef struct {
+	// Subnet ID
+	ID UUID `json:"id" validate:"required"`
 }
 
 // [BETA] External key store reference of a KMS Key with source `external-key-store`.

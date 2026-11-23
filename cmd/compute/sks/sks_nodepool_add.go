@@ -48,6 +48,9 @@ type sksNodepoolAddCmd struct {
 	Size                 int64    `cli-usage:"Nodepool size"`
 	StorageLvm           bool     `cli-usage:"Create nodes with non-standard partitioning for persistent storage"`
 	Taints               []string `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
+	VPC                  string   `cli-flag:"vpc" cli-usage:"VPC NAME|ID to attach the Nodepool instances to (requires --vpc-subnet)"`
+	VPCSubnets           []string `cli-flag:"vpc-subnet" cli-usage:"VPC Subnet NAME|ID to attach the Nodepool instances to (can be specified multiple times)"`
+	IPForwarding         bool     `cli-flag:"ip-forwarding" cli-usage:"allow the Nodepool instances to act as routers in their VPC (IP forwarding)"`
 	Zone                 string   `cli-short:"z" cli-usage:"SKS cluster zone"`
 	PublicIPAssignment   string   `cli-flag:"public-ip" cli-usage:"Configures public IP assignment of the Instances (inet4|dual). (default: inet4)"`
 }
@@ -65,7 +68,10 @@ Supported output template annotations: %s`,
 
 func (c *sksNodepoolAddCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	clicmd.CmdSetZoneFlagFromDefault(cmd)
-	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+	if err := clicmd.CliCommandDefaultPreRun(c, cmd, args); err != nil {
+		return err
+	}
+	return validateVPCFlags("vpc", "vpc-subnet", c.VPC, c.VPCSubnets)
 }
 
 func (c *sksNodepoolAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -116,6 +122,9 @@ func (c *sksNodepoolAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		PrivateNetworks:    c.PrivateNetworks,
 		SecurityGroups:     c.SecurityGroups,
 		Taints:             c.Taints,
+		VPC:                c.VPC,
+		VPCSubnets:         c.VPCSubnets,
+		IPForwarding:       c.IPForwarding,
 		KubeletImageGC: &v3.KubeletImageGC{
 			MinAge:        c.ImageGcMinAge,
 			LowThreshold:  c.ImageGcLowThreshold,

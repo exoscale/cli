@@ -32,6 +32,9 @@ type sksNodepoolShowOutput struct {
 	AntiAffinityGroups   []string                         `json:"anti_affinity_groups"`
 	SecurityGroups       []string                         `json:"security_groups"`
 	PrivateNetworks      []string                         `json:"private_networks"`
+	VPC                  string                           `json:"vpc"`
+	VPCSubnets           []string                         `json:"vpc_subnets"`
+	IPForwarding         bool                             `json:"ip_forwarding"`
 	Version              string                           `json:"version"`
 	Size                 int64                            `json:"size"`
 	State                string                           `json:"state"`
@@ -144,6 +147,8 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		NvidiaDraDriver:    nodepool.NvidiaDraDriver != nil && *nodepool.NvidiaDraDriver,
 		SecurityGroups:     make([]string, 0),
 		PrivateNetworks:    make([]string, 0),
+		VPCSubnets:         make([]string, 0),
+		IPForwarding:       nodepool.IPForwarding != nil && *nodepool.IPForwarding,
 		Size:               nodepool.Size,
 		State:              string(nodepool.State),
 		TemplateID:         nodepool.Template.ID,
@@ -203,6 +208,22 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
 			out.PrivateNetworks = append(out.PrivateNetworks, privateNetwork.Name)
+		}
+	}
+
+	if nodepool.Vpc != nil {
+		vpc, err := client.GetVpc(ctx, nodepool.Vpc.ID)
+		if err != nil {
+			return fmt.Errorf("error retrieving VPC: %w", err)
+		}
+		out.VPC = vpc.Name
+
+		for _, s := range nodepool.Vpc.Subnets {
+			subnet, err := client.GetSubnet(ctx, nodepool.Vpc.ID, s.ID)
+			if err != nil {
+				return fmt.Errorf("error retrieving VPC Subnet: %w", err)
+			}
+			out.VPCSubnets = append(out.VPCSubnets, subnet.Name)
 		}
 	}
 
