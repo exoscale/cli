@@ -6,37 +6,33 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/clicmd"
-	"github.com/exoscale/cli/utils"
-
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/clicmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func init() {
-	dnsRemoveCmd := &cobra.Command{
-		Use:     "remove DOMAIN-NAME|ID RECORD-NAME|ID",
-		Short:   "Remove a domain record",
-		Aliases: clicmd.GRemoveAlias,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 2 {
-				return cmd.Usage()
-			}
+type dnsRemoveCmd struct {
+	clicmd.CliCommandSettings `cli-cmd:"-"`
 
-			force, err := cmd.Flags().GetBool("force")
-			if err != nil {
-				return err
-			}
+	_ bool `cli-cmd:"remove"`
 
-			return removeDomainRecord(args[0], args[1], force)
-		},
-	}
-	dnsRemoveCmd.Flags().BoolP("force", "f", false, clicmd.CmdFlagForceHelp)
-	dnsCmd.AddCommand(dnsRemoveCmd)
+	Domain string `cli-arg:"#" cli-usage:"DOMAIN-NAME|ID"`
+	Record string `cli-arg:"#" cli-usage:"RECORD-NAME|ID"`
+
+	Force bool `cli-short:"f" cli-usage:"attempt to perform the operation without prompting for confirmation"`
 }
 
-func removeDomainRecord(domainIdent, recordIdent string, force bool) error {
+func (c *dnsRemoveCmd) CmdAliases() []string { return clicmd.GRemoveAlias }
+func (c *dnsRemoveCmd) CmdShort() string     { return "Remove a domain record" }
+func (c *dnsRemoveCmd) CmdLong() string      { return "" }
+
+func (c *dnsRemoveCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return clicmd.CliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *dnsRemoveCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
@@ -47,7 +43,7 @@ func removeDomainRecord(domainIdent, recordIdent string, force bool) error {
 	if err != nil {
 		return err
 	}
-	domain, err := domainsList.FindDNSDomain(domainIdent)
+	domain, err := domainsList.FindDNSDomain(c.Domain)
 	if err != nil {
 		return err
 	}
@@ -56,11 +52,12 @@ func removeDomainRecord(domainIdent, recordIdent string, force bool) error {
 	if err != nil {
 		return err
 	}
-	record, err := domainRecordsList.FindDNSDomainRecord(recordIdent)
+	record, err := domainRecordsList.FindDNSDomainRecord(c.Record)
 	if err != nil {
 		return err
 	}
-	if !force && !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete record %q?", record.ID)) {
+
+	if !c.Force && !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete record %q?", record.ID)) {
 		return nil
 	}
 
@@ -81,4 +78,10 @@ func removeDomainRecord(domainIdent, recordIdent string, force bool) error {
 	}
 
 	return nil
+}
+
+func init() {
+	cobra.CheckErr(clicmd.RegisterCLICommand(Cmd, &dnsRemoveCmd{
+		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
+	}))
 }

@@ -1,0 +1,74 @@
+# Test: dns record add/show/update/remove
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# dns commands have no --zone flag, they use the default zone
+env EXOSCALE_ZONE=$TEST_ZONE
+env DOMAIN=$TEST_RUN_ID-rec.net
+
+exec exo dns create $DOMAIN
+defer exo dns delete -f $DOMAIN
+
+# Add records of several types: plain content, and content assembled from
+# several flags (MX priority, SRV name and content, CAA tag)
+exec exo dns add A $DOMAIN -n www -a 192.0.2.1
+stdout 'Record "A" was created successfully to "'$DOMAIN'"'
+exec exo dns add A $DOMAIN -n api -a 192.0.2.2 -t 300
+exec exo dns add TXT $DOMAIN -n txt -c 'cli e2e'
+exec exo dns add MX $DOMAIN -m mail.example.net -p 10
+exec exo dns add SRV $DOMAIN -s sip -p tcp --priority 20 -w 5 -P 5060 --target sip.example.net
+exec exo dns add CAA $DOMAIN -f 0 --tag issue,letsencrypt.org
+
+# Show every record
+exec exo --output-format json dns show $DOMAIN
+stdout '"name": ?"www"'
+stdout '"content": ?"192.0.2.1"'
+stdout '"ttl": ?3600'
+stdout '"ttl": ?300'
+stdout '"content": ?"cli e2e"'
+stdout '"record_type": ?"MX"'
+stdout '"prio": ?10'
+stdout '"name": ?"_sip._tcp"'
+stdout '"content": ?"5 5060 sip.example.net"'
+stdout '"content": ?"0 issue .*letsencrypt.org'
+
+# Table output
+exec exo dns show $DOMAIN
+stdout 'www'
+stdout '192.0.2.1'
+
+# RECORD-TYPE arguments keep only those types
+exec exo --output-format json dns show $DOMAIN A MX
+stdout '"record_type": ?"A"'
+stdout '"record_type": ?"MX"'
+! stdout '"record_type": ?"TXT"'
+! stdout '"record_type": ?"SRV"'
+
+# Update a record by ID: only the flags given are changed
+json-setenv-match RECORD_ID id name=www record_type=A stdout
+exec exo dns update A $DOMAIN $RECORD_ID -c 192.0.2.10 -t 600
+stdout 'Record "'$RECORD_ID'" was updated successfully'
+
+exec exo --output-format json dns show $DOMAIN A
+stdout '"content": ?"192.0.2.10"'
+stdout '"ttl": ?600'
+stdout '"name": ?"www"'
+! stdout '"content": ?"192.0.2.1"'
+
+# Update a record by name: rename it
+exec exo dns update TXT $DOMAIN txt -n txt2
+exec exo --output-format json dns show $DOMAIN TXT
+stdout '"name": ?"txt2"'
+stdout '"content": ?"cli e2e"'
+
+# Remove a record by ID, through the "rm" alias
+exec exo dns rm -f $DOMAIN $RECORD_ID
+stdout 'Record "'$RECORD_ID'" removed successfully from "'$DOMAIN'"'
+
+exec exo --output-format json dns show $DOMAIN A
+! stdout '192.0.2.10'
+stdout '"name": ?"api"'
+
+# Remove a record by name
+exec exo dns remove -f $DOMAIN txt2
+exec exo --output-format json dns show $DOMAIN TXT
+! stdout 'txt2'

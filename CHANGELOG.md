@@ -43,6 +43,9 @@
 - dbaas: move `exo dbaas external-endpoint` commands from package dbaas to their own package `cmd/dbaas/external-endpoint` #965
 - dbaas: move `exo dbaas user` commands from package dbaas to their own package `cmd/dbaas/user` #965
 - dbaas: rework `exo dbaas` root group #965
+- dns: migrate `exo dns {create,delete,list,remove,show}` commands to the struct-based command framework #969
+- dns: migrate `exo dns add` commands to the struct-based command framework, in their own package `cmd/dns/add` #969
+- dns: move `exo dns update` commands from package dns to their own package `cmd/dns/update` #969
 
 ### Bug fixes
 
