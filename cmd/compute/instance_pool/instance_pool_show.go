@@ -194,7 +194,7 @@ func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		for _, poolSubnet := range instancePool.Vpc.Subnets {
 			for _, subnet := range subnets.Subnets {
 				if subnet.ID == poolSubnet.ID {
-					out.VPCSubnets = append(out.VPCSubnets, fmt.Sprintf("%v %v", subnet.Name, subnet.Ipv4Block))
+					out.VPCSubnets = append(out.VPCSubnets, formatVPCSubnetBlocks(subnet))
 				}
 			}
 		}
@@ -224,4 +224,16 @@ func init() {
 	cobra.CheckErr(clicmd.RegisterCLICommand(instancePoolCmd, &instancePoolShowCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
+}
+
+// formatVPCSubnetBlocks returns the subnet name followed by its non-empty
+// IPv4 and IPv6 blocks.
+func formatVPCSubnetBlocks(s v3.ListSubnetEntry) string {
+	parts := []string{s.Name}
+	for _, block := range []string{s.Ipv4Block, s.Ipv6Block} {
+		if block != "" {
+			parts = append(parts, block)
+		}
+	}
+	return strings.Join(parts, " ")
 }

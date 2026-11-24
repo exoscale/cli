@@ -25,6 +25,7 @@ type instanceAttachToSubnetCmd struct {
 	Subnet   string `cli-arg:"#" cli-usage:"SUBNET-NAME|ID"`
 
 	IPv4 string      `cli-flag:"ipv4" cli-usage:"IPv4 address to assign to the Compute instance in the Subnet"`
+	IPv6 string      `cli-flag:"ipv6" cli-usage:"IPv6 address to assign to the Compute instance in the Subnet"`
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"instance zone"`
 }
 
@@ -35,7 +36,10 @@ func (c *instanceAttachToSubnetCmd) CmdShort() string {
 }
 
 func (c *instanceAttachToSubnetCmd) CmdLong() string {
-	return "This command attaches a Compute instance to a VPC Subnet."
+	return `This command attaches a Compute instance to a VPC Subnet.
+
+Without --ipv4 or --ipv6, the instance gets a random address from each block
+of the Subnet.`
 }
 
 func (c *instanceAttachToSubnetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -80,6 +84,14 @@ func (c *instanceAttachToSubnetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			return fmt.Errorf("invalid IPv4 address: %q", c.IPv4)
 		}
 		req.Ipv4 = ip
+	}
+
+	if c.IPv6 != "" {
+		ip := net.ParseIP(c.IPv6)
+		if ip == nil || ip.To4() != nil {
+			return fmt.Errorf("invalid IPv6 address: %q", c.IPv6)
+		}
+		req.Ipv6 = ip
 	}
 
 	if err := utils.RunAsync(

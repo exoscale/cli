@@ -22,8 +22,9 @@ type vpcSubnetCreateCmd struct {
 	VPC  string `cli-arg:"#" cli-usage:"VPC-NAME|ID"`
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
-	IPv4Block     string            `cli-flag:"ipv4-block" cli-usage:"Subnet IPv4 CIDR (e.g. 10.0.0.0/24)"`
-	AddressFamily string            `cli-flag:"address-family" cli-usage:"Subnet address family (currently only \"inet4\" is supported)"`
+	IPv4Block     string            `cli-flag:"ipv4-block" cli-usage:"Subnet IPv4 CIDR, required for inet4 and dual subnets (e.g. 10.0.0.0/24)"`
+	IPv6Block     string            `cli-flag:"ipv6-block" cli-usage:"Subnet IPv6 CIDR within fd00::/8, required for inet6 and dual subnets (e.g. fd00:1::/64)"`
+	AddressFamily string            `cli-flag:"address-family" cli-usage:"Subnet address family (inet4|inet6|dual)"`
 	AddressSpace  string            `cli-flag:"address-space" cli-usage:"Subnet address space (currently only \"private\" is supported)"`
 	Description   string            `cli-usage:"Subnet description"`
 	Labels        map[string]string `cli-flag:"label" cli-usage:"Subnet label (format: key=value)"`
@@ -37,7 +38,8 @@ func (c *vpcSubnetCreateCmd) CmdShort() string { return "Create a VPC Subnet" }
 func (c *vpcSubnetCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates a Subnet in a Virtual Private Cloud.
 
---address-family and --address-space are required.
+--address-family and --address-space are required. An inet4 subnet needs
+--ipv4-block, an inet6 subnet needs --ipv6-block, and a dual subnet needs both.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&vpcSubnetShowOutput{}), ", "))
@@ -68,6 +70,7 @@ func (c *vpcSubnetCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		Name:          c.Name,
 		Description:   c.Description,
 		Ipv4Block:     c.IPv4Block,
+		Ipv6Block:     c.IPv6Block,
 		AddressSpace:  v3.CreateSubnetRequestAddressSpace(c.AddressSpace),
 		Addressfamily: v3.CreateSubnetRequestAddressfamily(c.AddressFamily),
 	}

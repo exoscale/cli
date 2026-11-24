@@ -1,4 +1,3 @@
-// Package v3 provides primitives to interact with the openapi HTTP API.
 package v3
 
 import (

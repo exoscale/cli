@@ -5,14 +5,18 @@
 ### Features
 
 - compute: add `--labels` (`-l`) filter to `exo compute instance list`
+- networking: VPC Subnets support IPv6: `exo networking vpc subnet create` accepts the `inet6` and `dual` address families and a `--ipv6-block` (within `fd00::/8`); `vpc show`, `vpc subnet list` and `vpc subnet show` show the IPv6 block and the instances' IPv6 addresses
+- compute: add `--ipv6` to `exo compute instance attach-to-subnet` and an `ipv6=IP` option to `--vpc-subnet` on `exo compute instance create`; `instance show` and `instance-pool show` show the IPv6 address and block of VPC Subnets
 
 ### Improvements
 
 - compute: show zones in `exo compute instance-type list -v` and `exo compute instance-type show` (#975)
+- go.mod: update egoscale v3 for VPC Subnet IPv6 support
 
 ### Bug fixes
 
 - compute: `exo compute instance-pool show` lists the VPC Subnets in the Instance Pool order, which is the order the Instances are attached to them (#978)
+- compute: `exo compute instance show` no longer prints `<nil>` for the IPv4 address of an instance on a VPC Subnet without an IPv4 block
 
 ## 1.105.0
 

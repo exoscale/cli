@@ -27,6 +27,7 @@ func TestParseVPCSubnetSpec(t *testing.T) {
 		spec    string
 		name    string
 		ip      string
+		ip6     string
 		wantErr string
 	}{
 		{spec: "front", name: "front"},
@@ -42,7 +43,15 @@ func TestParseVPCSubnetSpec(t *testing.T) {
 		{spec: "front,ipv4=nope", wantErr: "invalid IPv4"},
 		{spec: "front,ipv4=fd00::1", wantErr: "invalid IPv4"},
 		{spec: "front,ipv4=10.0.0.5,ipv4=10.0.0.6", wantErr: "more than once"},
-		{spec: "front,ipv6=fd00::1", wantErr: `unsupported option "ipv6"`},
+		{spec: "front,ipv6=fd00::1", name: "front", ip6: "fd00::1"},
+		{spec: "front,ipv4=10.0.0.5,ipv6=fd00::5", name: "front", ip: "10.0.0.5", ip6: "fd00::5"},
+		{spec: "front,ipv6=fd00::5,ipv4=10.0.0.5", name: "front", ip: "10.0.0.5", ip6: "fd00::5"},
+		{spec: "front,ipv6=", wantErr: "invalid IPv6"},
+		{spec: "front,ipv6=nope", wantErr: "invalid IPv6"},
+		{spec: "front,ipv6=10.0.0.5", wantErr: "invalid IPv6"},
+		{spec: "front,ipv6=::ffff:10.0.0.5", wantErr: "invalid IPv6"},
+		{spec: "front,ipv6=fd00::1,ipv6=fd00::2", wantErr: "ipv6 specified more than once"},
+		{spec: "front,mac=00:11", wantErr: `unsupported option "mac" (supported: ipv4, ipv6)`},
 	}
 
 	for _, tt := range tests {
@@ -66,6 +75,12 @@ func TestParseVPCSubnetSpec(t *testing.T) {
 			if tt.ip != "" && !spec.IPv4.Equal(net.ParseIP(tt.ip)) {
 				t.Errorf("ip = %v, want %s", spec.IPv4, tt.ip)
 			}
+			if tt.ip6 == "" && spec.IPv6 != nil {
+				t.Errorf("ip6 = %v, want nil", spec.IPv6)
+			}
+			if tt.ip6 != "" && !spec.IPv6.Equal(net.ParseIP(tt.ip6)) {
+				t.Errorf("ip6 = %v, want %s", spec.IPv6, tt.ip6)
+			}
 		})
 	}
 }
@@ -83,7 +98,7 @@ func TestVPCSubnetFlagKeepsCommas(t *testing.T) {
 	if err := cmd.ParseFlags([]string{
 		"--vpc", "prod",
 		"--vpc-subnet", "front,ipv4=10.0.0.5",
-		"--vpc-subnet", "back",
+		"--vpc-subnet", "back,ipv6=fd00::7",
 	}); err != nil {
 		t.Fatalf("parse flags: %v", err)
 	}
@@ -97,7 +112,8 @@ func TestVPCSubnetFlagKeepsCommas(t *testing.T) {
 	if c.VPCSubnets[0].NameOrID != "front" || !c.VPCSubnets[0].IPv4.Equal(net.ParseIP("10.0.0.5")) {
 		t.Errorf("subnet[0] = %+v", c.VPCSubnets[0])
 	}
-	if c.VPCSubnets[1].NameOrID != "back" || c.VPCSubnets[1].IPv4 != nil {
+	if c.VPCSubnets[1].NameOrID != "back" || c.VPCSubnets[1].IPv4 != nil ||
+		!c.VPCSubnets[1].IPv6.Equal(net.ParseIP("fd00::7")) {
 		t.Errorf("subnet[1] = %+v", c.VPCSubnets[1])
 	}
 }

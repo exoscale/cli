@@ -17,6 +17,16 @@ stderr 'Usage:'
 ! exec exo --config exoscale.toml compute instance create vm --vpc prod
 stderr 'at least one --vpc-subnet is required when --vpc is specified'
 
+# --vpc-subnet options are validated while parsing the flag
+! exec exo --config exoscale.toml compute instance create vm --vpc prod --vpc-subnet front,ipv6=10.0.0.5
+stderr 'invalid IPv6 address "10.0.0.5"'
+
+! exec exo --config exoscale.toml compute instance create vm --vpc prod --vpc-subnet front,ipv6=fd00::1,ipv6=fd00::2
+stderr 'ipv6 specified more than once'
+
+! exec exo --config exoscale.toml compute instance create vm --vpc prod --vpc-subnet front,mac=00:11
+stderr 'unsupported option "mac" \(supported: ipv4, ipv6\)'
+
 -- exoscale.toml --
 defaultaccount = "test"
 
