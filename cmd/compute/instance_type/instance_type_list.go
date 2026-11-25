@@ -18,12 +18,13 @@ import (
 )
 
 type instanceTypeListItemOutput struct {
-	ID         string `json:"id"`
-	Family     string `json:"family"`
-	Size       string `json:"name"`
-	CPUs       int64  `json:"cpus"`
-	Memory     int64  `json:"memory"`
-	Authorized bool   `json:"authorized"`
+	ID         string   `json:"id"`
+	Family     string   `json:"family"`
+	Size       string   `json:"name"`
+	CPUs       int64    `json:"cpus"`
+	Memory     int64    `json:"memory"`
+	Authorized bool     `json:"authorized"`
+	Zones      []string `json:"zones"`
 }
 
 type instanceTypeListOutput struct {
@@ -36,7 +37,7 @@ func (o *instanceTypeListOutput) ToText() { output.Text(o.data) }
 func (o *instanceTypeListOutput) ToTable() {
 	header := []string{"ID", "Family", "Size"}
 	if o.verbose {
-		header = append(header, "# CPUs", "Memory", "Authorized")
+		header = append(header, "# CPUs", "Memory", "Authorized", "Zones")
 	}
 
 	t := table.NewTable(os.Stdout)
@@ -52,6 +53,7 @@ func (o *instanceTypeListOutput) ToTable() {
 				fmt.Sprint(p.CPUs),
 				humanize.IBytes(uint64(p.Memory)),
 				fmt.Sprint(p.Authorized),
+				strings.Join(p.Zones, ", "),
 			)
 		}
 
@@ -106,6 +108,7 @@ func (c *instanceTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			Memory:     t.Memory,
 			CPUs:       t.Cpus,
 			Authorized: *t.Authorized,
+			Zones:      zoneNames(t.Zones),
 		})
 	}
 

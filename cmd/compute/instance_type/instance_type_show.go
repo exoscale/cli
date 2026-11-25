@@ -19,13 +19,14 @@ import (
 )
 
 type instanceTypeShowOutput struct {
-	ID         string `json:"id"`
-	Family     string `json:"family"`
-	Size       string `json:"name"`
-	Memory     int64  `json:"memory"`
-	CPUs       int64  `json:"cpus"`
-	GPUs       int64  `json:"gpus"`
-	Authorized bool   `json:"authorized"`
+	ID         string   `json:"id"`
+	Family     string   `json:"family"`
+	Size       string   `json:"name"`
+	Memory     int64    `json:"memory"`
+	CPUs       int64    `json:"cpus"`
+	GPUs       int64    `json:"gpus"`
+	Authorized bool     `json:"authorized"`
+	Zones      []string `json:"zones"`
 }
 
 func (o *instanceTypeShowOutput) ToJSON() { output.JSON(o) }
@@ -46,6 +47,7 @@ func (o *instanceTypeShowOutput) ToTable() {
 	}
 
 	t.Append([]string{"Authorized", fmt.Sprint(o.Authorized)})
+	t.Append([]string{"Zones", strings.Join(o.Zones, "\n")})
 }
 
 type instanceTypeShowCmd struct {
@@ -96,6 +98,7 @@ func (c *instanceTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		CPUs:       t.Cpus,
 		GPUs:       t.Gpus,
 		Authorized: utils.DefaultBool(t.Authorized, false),
+		Zones:      zoneNames(t.Zones),
 	}, nil)
 }
 
