@@ -191,13 +191,7 @@ func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		if err != nil {
 			return err
 		}
-		for _, subnet := range subnets.Subnets {
-			for _, poolSubnet := range instancePool.Vpc.Subnets {
-				if subnet.ID == poolSubnet.ID {
-					out.VPCSubnets = append(out.VPCSubnets, fmt.Sprintf("%v %v", subnet.Name, subnet.Ipv4Block))
-				}
-			}
-		}
+		out.VPCSubnets = formatPoolVPCSubnets(instancePool.Vpc.Subnets, subnets.Subnets)
 	}
 
 	if instancePool.SecurityGroups != nil {
@@ -218,6 +212,28 @@ func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	out.Template = template.Name
 
 	return c.OutputFunc(&out, nil)
+}
+
+// formatPoolVPCSubnets formats the Instance Pool VPC Subnets in the pool's
+// order, which is the order the Instances are attached to them. A Subnet
+// missing from the VPC Subnets is shown by its ID.
+func formatPoolVPCSubnets(poolSubnets []v3.InstancePoolVpcSubnets, vpcSubnets []v3.ListSubnetEntry) []string {
+	byID := make(map[v3.UUID]v3.ListSubnetEntry, len(vpcSubnets))
+	for _, subnet := range vpcSubnets {
+		byID[subnet.ID] = subnet
+	}
+
+	out := make([]string, 0, len(poolSubnets))
+	for _, poolSubnet := range poolSubnets {
+		subnet, ok := byID[poolSubnet.ID]
+		if !ok {
+			out = append(out, poolSubnet.ID.String())
+			continue
+		}
+		out = append(out, fmt.Sprintf("%v %v", subnet.Name, subnet.Ipv4Block))
+	}
+
+	return out
 }
 
 func init() {

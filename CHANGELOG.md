@@ -6,6 +6,10 @@
 
 - compute: show zones in `exo compute instance-type list -v` and `exo compute instance-type show` (#975)
 
+### Bug fixes
+
+- compute: `exo compute instance-pool show` lists the VPC Subnets in the Instance Pool order, which is the order the Instances are attached to them
+
 ## 1.105.0
 
 ### Features
