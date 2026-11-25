@@ -12,6 +12,7 @@ runs:
         go-version-file: go.mod
 
     - run: make pre-check
+      shell: bash
 
     - run: make build
       shell: bash
