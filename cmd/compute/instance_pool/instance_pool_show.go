@@ -191,8 +191,8 @@ func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		if err != nil {
 			return err
 		}
-		for _, subnet := range subnets.Subnets {
-			for _, poolSubnet := range instancePool.Vpc.Subnets {
+		for _, poolSubnet := range instancePool.Vpc.Subnets {
+			for _, subnet := range subnets.Subnets {
 				if subnet.ID == poolSubnet.ID {
 					out.VPCSubnets = append(out.VPCSubnets, fmt.Sprintf("%v %v", subnet.Name, subnet.Ipv4Block))
 				}
