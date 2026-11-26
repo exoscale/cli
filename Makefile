@@ -1,4 +1,4 @@
-GO_MK_REF := v2.0.8
+GO_MK_REF := v2.1.0
 
 # make go.mk a dependency for all targets
 .EXTRA_PREREQS = go.mk
