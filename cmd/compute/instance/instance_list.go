@@ -63,7 +63,8 @@ type instanceListCmd struct {
 
 	_ bool `cli-cmd:"list"`
 
-	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
+	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"zone to filter results to"`
+	Labels map[string]string `cli-usage:"only list instances carrying all these labels (format: key=value)"`
 }
 
 func (c *instanceListCmd) CmdAliases() []string { return clicmd.GListAlias }
@@ -82,6 +83,15 @@ func (c *instanceListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	var listOpts []v3.ListInstancesOpt
+	if len(c.Labels) > 0 {
+		labels, err := instanceListLabelsFilter(c.Labels)
+		if err != nil {
+			return err
+		}
+		listOpts = append(listOpts, v3.ListInstancesWithLabels(labels))
+	}
+
 	client := globalstate.EgoscaleV3Client
 	ctx := exocmd.GContext
 
@@ -105,7 +115,7 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
 
 		c := client.WithEndpoint(zone.APIEndpoint)
-		instances, err := c.ListInstances(ctx)
+		instances, err := c.ListInstances(ctx, listOpts...)
 
 		if err != nil {
 			return err

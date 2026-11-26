@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- compute: add `--labels` filter to `exo compute instance list`
+
 ### Improvements
 
 - compute: show zones in `exo compute instance-type list -v` and `exo compute instance-type show` (#975)
