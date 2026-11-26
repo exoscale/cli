@@ -8,7 +8,7 @@
 
 ### Bug fixes
 
-- compute: `exo compute instance-pool show` lists the VPC Subnets in the Instance Pool order, which is the order the Instances are attached to them
+- compute: `exo compute instance-pool show` lists the VPC Subnets in the Instance Pool order, which is the order the Instances are attached to them (#978)
 
 ## 1.105.0
 
