@@ -4,7 +4,7 @@
 
 ### Features
 
-- compute: add `--labels` filter to `exo compute instance list`
+- compute: add `--labels` (`-l`) filter to `exo compute instance list`
 
 ### Improvements
 

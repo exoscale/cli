@@ -64,7 +64,7 @@ type instanceListCmd struct {
 	_ bool `cli-cmd:"list"`
 
 	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"zone to filter results to"`
-	Labels map[string]string `cli-usage:"only list instances carrying all these labels (format: key=value)"`
+	Labels map[string]string `cli-short:"l" cli-usage:"only list instances carrying all these labels (format: key=value)"`
 }
 
 func (c *instanceListCmd) CmdAliases() []string { return clicmd.GListAlias }
