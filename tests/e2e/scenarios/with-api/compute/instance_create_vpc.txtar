@@ -23,8 +23,8 @@ defer exo --zone $TEST_ZONE networking vpc subnet delete --force $VPC_ID $SUBNET
 ! exec exo --zone $TEST_ZONE compute instance create vpc-err-$TEST_RUN_ID --vpc vpc-$TEST_RUN_ID --vpc-subnet front-$TEST_RUN_ID,ipv4=not-an-ip
 stderr 'invalid IPv4 address'
 
-! exec exo --zone $TEST_ZONE compute instance create vpc-err-$TEST_RUN_ID --vpc vpc-$TEST_RUN_ID --vpc-subnet front-$TEST_RUN_ID,ipv6=fd00::1
-stderr 'unsupported option "ipv6"'
+! exec exo --zone $TEST_ZONE compute instance create vpc-err-$TEST_RUN_ID --vpc vpc-$TEST_RUN_ID --vpc-subnet front-$TEST_RUN_ID,ipv6=10.42.0.10
+stderr 'invalid IPv6 address'
 
 # Instance with a fixed IPv4, VPC and Subnet referenced by name
 exec exo --zone $TEST_ZONE --output-format json compute instance create vpc-a-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10 --vpc vpc-$TEST_RUN_ID --vpc-subnet front-$TEST_RUN_ID,ipv4=10.42.0.10

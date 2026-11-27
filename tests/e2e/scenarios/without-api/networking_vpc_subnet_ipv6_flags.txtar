@@ -1,0 +1,10 @@
+# Test: the VPC subnet and instance attach commands expose the IPv6 flags.
+
+exec exo networking vpc subnet create --help
+stdout '--ipv6-block string'
+stdout '--ipv4-block string'
+stdout 'inet4\|inet6\|dual'
+
+exec exo compute instance attach-to-subnet --help
+stdout '--ipv6 string'
+stdout '--ipv4 string'

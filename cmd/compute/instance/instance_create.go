@@ -58,7 +58,7 @@ type instanceCreateCmd struct {
 	Template              string            `cli-usage:"instance template NAME|ID"`
 	TemplateVisibility    string            `cli-usage:"instance template visibility (public|private)"`
 	VPC                   string            `cli-flag:"vpc" cli-usage:"VPC NAME|ID to attach the instance to (requires --vpc-subnet)"`
-	VPCSubnets            vpcSubnetSpecs    `cli-flag:"vpc-subnet" cli-usage:"VPC Subnet to attach the instance to (format: NAME|ID[,ipv4=IP]; can be specified multiple times)"`
+	VPCSubnets            vpcSubnetSpecs    `cli-flag:"vpc-subnet" cli-usage:"VPC Subnet to attach the instance to (format: NAME|ID[,ipv4=IP][,ipv6=IP]; can be specified multiple times)"`
 	Zone                  v3.ZoneName       `cli-short:"z" cli-usage:"instance zone"`
 }
 
@@ -415,16 +415,21 @@ func resolveCreateInstanceVPC(
 			return nil, fmt.Errorf("error retrieving VPC Subnet: %w", err)
 		}
 
-		req.Subnets = append(req.Subnets, v3.CreateInstanceRequestVpcSubnets{ID: subnet.ID, Ipv4: spec.IPv4})
+		req.Subnets = append(req.Subnets, v3.CreateInstanceRequestVpcSubnets{
+			ID:   subnet.ID,
+			Ipv4: spec.IPv4,
+			Ipv6: spec.IPv6,
+		})
 	}
 
 	return req, nil
 }
 
-// vpcSubnetSpec is one --vpc-subnet value: NAME|ID[,ipv4=IP].
+// vpcSubnetSpec is one --vpc-subnet value: NAME|ID[,ipv4=IP][,ipv6=IP].
 type vpcSubnetSpec struct {
 	NameOrID string
 	IPv4     net.IP
+	IPv6     net.IP
 }
 
 // vpcSubnetSpecs implements pflag.Value. Unlike a []string flag, it does not
@@ -448,18 +453,21 @@ func (s *vpcSubnetSpecs) String() string {
 		if spec.IPv4 != nil {
 			out[i] += ",ipv4=" + spec.IPv4.String()
 		}
+		if spec.IPv6 != nil {
+			out[i] += ",ipv6=" + spec.IPv6.String()
+		}
 	}
 	return strings.Join(out, " ")
 }
 
 func (s *vpcSubnetSpecs) Type() string { return "stringArray" }
 
-// parseVPCSubnetSpec parses a NAME|ID[,ipv4=IP] subnet spec.
+// parseVPCSubnetSpec parses a NAME|ID[,ipv4=IP][,ipv6=IP] subnet spec.
 func parseVPCSubnetSpec(v string) (vpcSubnetSpec, error) {
 	parts := strings.Split(v, ",")
 	spec := vpcSubnetSpec{NameOrID: parts[0]}
 	if spec.NameOrID == "" || strings.Contains(spec.NameOrID, "=") {
-		return vpcSubnetSpec{}, fmt.Errorf("missing subnet NAME|ID (format: NAME|ID[,ipv4=IP])")
+		return vpcSubnetSpec{}, fmt.Errorf("missing subnet NAME|ID (format: NAME|ID[,ipv4=IP][,ipv6=IP])")
 	}
 
 	for _, opt := range parts[1:] {
@@ -478,8 +486,17 @@ func parseVPCSubnetSpec(v string) (vpcSubnetSpec, error) {
 				return vpcSubnetSpec{}, fmt.Errorf("invalid IPv4 address %q", value)
 			}
 			spec.IPv4 = ip.To4()
+		case "ipv6":
+			if spec.IPv6 != nil {
+				return vpcSubnetSpec{}, fmt.Errorf("ipv6 specified more than once")
+			}
+			ip := net.ParseIP(value)
+			if ip == nil || ip.To4() != nil {
+				return vpcSubnetSpec{}, fmt.Errorf("invalid IPv6 address %q", value)
+			}
+			spec.IPv6 = ip
 		default:
-			return vpcSubnetSpec{}, fmt.Errorf("unsupported option %q (supported: ipv4)", key)
+			return vpcSubnetSpec{}, fmt.Errorf("unsupported option %q (supported: ipv4, ipv6)", key)
 		}
 	}
 

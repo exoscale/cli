@@ -17,6 +17,7 @@ type vpcSubnetListItemOutput struct {
 	ID            v3.UUID `json:"id"`
 	Name          string  `json:"name"`
 	IPv4Block     string  `json:"ipv4_block" outputLabel:"IPv4 Block"`
+	IPv6Block     string  `json:"ipv6_block" outputLabel:"IPv6 Block"`
 	AddressFamily string  `json:"address_family"`
 	Description   string  `json:"description"`
 }
@@ -86,6 +87,7 @@ func (c *vpcSubnetListCmd) list() (*vpcSubnetListOutput, error) {
 			ID:            s.ID,
 			Name:          s.Name,
 			IPv4Block:     s.Ipv4Block,
+			IPv6Block:     s.Ipv6Block,
 			AddressFamily: string(s.Addressfamily),
 			Description:   s.Description,
 		})

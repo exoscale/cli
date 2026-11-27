@@ -3,6 +3,7 @@ package vpc
 import (
 	"bytes"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 
@@ -20,6 +21,7 @@ import (
 type vpcSubnetInstanceOutput struct {
 	Name string `json:"name"`
 	IPv4 string `json:"ipv4"`
+	IPv6 string `json:"ipv6"`
 }
 
 type vpcSubnetShowOutput struct {
@@ -31,6 +33,7 @@ type vpcSubnetShowOutput struct {
 	AddressFamily string                    `json:"address_family"`
 	AddressSpace  string                    `json:"address_space"`
 	IPv4Block     string                    `json:"ipv4_block"`
+	IPv6Block     string                    `json:"ipv6_block"`
 	Labels        map[string]string         `json:"labels"`
 	Instances     []vpcSubnetInstanceOutput `json:"instances"`
 }
@@ -50,6 +53,7 @@ func (o *vpcSubnetShowOutput) ToTable() {
 	t.Append([]string{"Address Family", o.AddressFamily})
 	t.Append([]string{"Address Space", o.AddressSpace})
 	t.Append([]string{"IPv4 Block", o.IPv4Block})
+	t.Append([]string{"IPv6 Block", o.IPv6Block})
 	t.Append([]string{"Labels", func() string {
 		if len(o.Labels) == 0 {
 			return "n/a"
@@ -125,18 +129,16 @@ func (c *vpcSubnetShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		AddressFamily: string(subnet.Addressfamily),
 		AddressSpace:  string(subnet.AddressSpace),
 		IPv4Block:     subnet.Ipv4Block,
+		IPv6Block:     subnet.Ipv6Block,
 		Labels:        subnet.Labels,
 		Instances:     []vpcSubnetInstanceOutput{},
 	}
 
 	for _, i := range subnet.Instances {
-		ipv4 := ""
-		if i.Ipv4 != nil {
-			ipv4 = i.Ipv4.String()
-		}
 		out.Instances = append(out.Instances, vpcSubnetInstanceOutput{
 			Name: i.Name,
-			IPv4: ipv4,
+			IPv4: ipString(i.Ipv4),
+			IPv6: ipString(i.Ipv6),
 		})
 	}
 
@@ -160,9 +162,17 @@ func formatSubnetInstances(instances []vpcSubnetInstanceOutput) string {
 	at.SetAlignment(tablewriter.ALIGN_LEFT)
 
 	for _, i := range instances {
-		at.Append([]string{i.Name, i.IPv4})
+		at.Append([]string{i.Name, i.IPv4, i.IPv6})
 	}
 	at.Render()
 
 	return buf.String()
+}
+
+// ipString returns ip as a string, or "" when it is unset.
+func ipString(ip net.IP) string {
+	if ip == nil {
+		return ""
+	}
+	return ip.String()
 }

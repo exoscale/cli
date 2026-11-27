@@ -135,7 +135,7 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		VpcSubnets: func() []string {
 			list := make([]string, 0)
 			for _, v := range instance.Vpc.Subnets {
-				list = append(list, fmt.Sprintf("%v %v", v.Name, v.Ipv4))
+				list = append(list, formatInstanceVPCSubnet(v))
 			}
 			return list
 		}(),
@@ -271,4 +271,16 @@ func init() {
 	cobra.CheckErr(clicmd.RegisterCLICommand(instanceCmd, &instanceShowCmd{
 		CliCommandSettings: clicmd.DefaultCLICmdSettings(),
 	}))
+}
+
+// formatInstanceVPCSubnet returns the subnet name followed by the instance
+// addresses set on it: an IPv4-only or IPv6-only subnet leaves the other unset.
+func formatInstanceVPCSubnet(s v3.InstanceVpcSubnets) string {
+	parts := []string{s.Name}
+	for _, ip := range []net.IP{s.Ipv4, s.Ipv6} {
+		if ip != nil {
+			parts = append(parts, ip.String())
+		}
+	}
+	return strings.Join(parts, " ")
 }

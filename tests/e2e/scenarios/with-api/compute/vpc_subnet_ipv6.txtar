@@ -1,0 +1,69 @@
+# Test: VPC Subnets with IPv6 (inet6 and dual address families).
+# Creates a dual and an inet6 Subnet, checks their blocks in list/show output,
+# creates an instance on the dual Subnet with fixed IPv4 and IPv6 addresses
+# (NAME,ipv4=IP,ipv6=IP syntax), then attaches a second instance to the inet6
+# Subnet with --ipv6.
+# TEST_ZONE and TEST_RUN_ID are injected by the API test runner.
+
+# Setup: VPC
+exec exo --zone $TEST_ZONE --output-format json networking vpc create vpc6-$TEST_RUN_ID
+json-setenv VPC_ID id stdout
+defer exo --zone $TEST_ZONE networking vpc delete --force $VPC_ID
+
+# Dual-stack Subnet
+exec exo --zone $TEST_ZONE --output-format json networking vpc subnet create $VPC_ID dual-$TEST_RUN_ID --address-family dual --address-space private --ipv4-block 10.43.0.0/24 --ipv6-block fd00:43::/64
+json-setenv DUAL_ID id stdout
+defer exo --zone $TEST_ZONE networking vpc subnet delete --force $VPC_ID $DUAL_ID
+stdout '"address_family":"dual"'
+stdout '"ipv4_block":"10\.43\.0\.0/24"'
+stdout '"ipv6_block":"fd00:43::/64"'
+
+# IPv6-only Subnet
+exec exo --zone $TEST_ZONE --output-format json networking vpc subnet create $VPC_ID v6-$TEST_RUN_ID --address-family inet6 --address-space private --ipv6-block fd00:44::/64
+json-setenv V6_ID id stdout
+defer exo --zone $TEST_ZONE networking vpc subnet delete --force $VPC_ID $V6_ID
+stdout '"address_family":"inet6"'
+stdout '"ipv4_block":""'
+stdout '"ipv6_block":"fd00:44::/64"'
+
+# The blocks are listed, and shown in vpc show
+exec exo --zone $TEST_ZONE --output-format json networking vpc subnet list $VPC_ID
+stdout '"name":"dual-[a-z0-9-]+","ipv4_block":"10\.43\.0\.0/24","ipv6_block":"fd00:43::/64"'
+stdout '"name":"v6-[a-z0-9-]+","ipv4_block":"","ipv6_block":"fd00:44::/64"'
+
+exec exo --zone $TEST_ZONE networking vpc subnet list $VPC_ID
+stdout 'IPV6 BLOCK'
+stdout 'fd00:44::/64'
+
+exec exo --zone $TEST_ZONE --output-format json networking vpc show $VPC_ID
+stdout '"ipv6_block":"fd00:43::/64"'
+stdout '"ipv6_block":"fd00:44::/64"'
+
+# Instance on the dual Subnet with fixed IPv4 and IPv6
+exec exo --zone $TEST_ZONE --output-format json compute instance create vpc6-a-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10 --vpc vpc6-$TEST_RUN_ID --vpc-subnet dual-$TEST_RUN_ID,ipv4=10.43.0.10,ipv6=fd00:43::10
+json-setenv INSTANCE_A_ID id stdout
+defer exo --zone $TEST_ZONE compute instance delete --force $INSTANCE_A_ID
+
+wait-instance-state $TEST_ZONE $INSTANCE_A_ID running 300
+
+exec exo --zone $TEST_ZONE --output-format json compute instance show $INSTANCE_A_ID
+stdout '"vpc_subnets":\["dual-[a-z0-9-]+ 10\.43\.0\.10 fd00:43::10"\]'
+
+exec exo --zone $TEST_ZONE --output-format json networking vpc subnet show $VPC_ID $DUAL_ID
+stdout '"name":"vpc6-a-[a-z0-9-]+","ipv4":"10\.43\.0\.10","ipv6":"fd00:43::10"'
+
+# Second instance, attached afterwards to the inet6 Subnet with --ipv6
+exec exo --zone $TEST_ZONE --output-format json compute instance create vpc6-b-$TEST_RUN_ID --instance-type standard.tiny --template 'Linux Ubuntu 22.04 LTS 64-bit' --disk-size 10
+json-setenv INSTANCE_B_ID id stdout
+defer exo --zone $TEST_ZONE compute instance delete --force $INSTANCE_B_ID
+
+wait-instance-state $TEST_ZONE $INSTANCE_B_ID running 300
+
+! exec exo --zone $TEST_ZONE compute instance attach-to-subnet $INSTANCE_B_ID $VPC_ID $V6_ID --ipv6 10.0.0.1
+stderr 'invalid IPv6 address'
+
+exec exo --zone $TEST_ZONE --output-format json compute instance attach-to-subnet $INSTANCE_B_ID $VPC_ID $V6_ID --ipv6 fd00:44::20
+stdout '"vpc_subnets":\["v6-[a-z0-9-]+ fd00:44::20"\]'
+
+exec exo --zone $TEST_ZONE --output-format json networking vpc subnet show $VPC_ID $V6_ID
+stdout '"name":"vpc6-b-[a-z0-9-]+","ipv4":"","ipv6":"fd00:44::20"'

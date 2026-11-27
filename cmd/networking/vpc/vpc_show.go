@@ -21,6 +21,7 @@ import (
 type vpcSubnetItemOutput struct {
 	Name      string `json:"name"`
 	IPv4Block string `json:"ipv4_block"`
+	IPv6Block string `json:"ipv6_block"`
 }
 
 type vpcShowOutput struct {
@@ -130,6 +131,7 @@ func (c *vpcShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		out.Subnets = append(out.Subnets, vpcSubnetItemOutput{
 			Name:      s.Name,
 			IPv4Block: s.Ipv4Block,
+			IPv6Block: s.Ipv6Block,
 		})
 	}
 
@@ -153,7 +155,7 @@ func formatSubnets(subnets []vpcSubnetItemOutput) string {
 	at.SetAlignment(tablewriter.ALIGN_LEFT)
 
 	for _, s := range subnets {
-		at.Append([]string{s.Name, s.IPv4Block})
+		at.Append([]string{s.Name, s.IPv4Block, s.IPv6Block})
 	}
 	at.Render()
 
